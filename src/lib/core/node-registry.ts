@@ -2,6 +2,7 @@ import { BaseNode } from './base-node';
 import { NodeMeta } from '../types/flow';
 import semver from 'semver';
 
+// Using any here is intentional as nodes can accept arbitrary data types
 type NodeConstructor<T = any> = new (
     id: string,
     data: T,

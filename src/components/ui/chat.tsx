@@ -1,7 +1,7 @@
 "use client"
 
 import { forwardRef, useCallback, useState, type ReactElement } from "react"
-import { ArrowDown, ThumbsDown, ThumbsUp, Paperclip, Square, ArrowUp } from "lucide-react"
+import { ArrowDown, ThumbsDown, ThumbsUp } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { useAutoScroll } from "@/hooks/use-auto-scroll"
@@ -27,7 +27,6 @@ interface ChatPropsBase {
     messageId: string,
     rating: "thumbs-up" | "thumbs-down"
   ) => void
-  onReset?: () => void
 }
 
 interface ChatPropsWithoutSuggestions extends ChatPropsBase {
@@ -53,7 +52,6 @@ export function Chat({
   suggestions,
   className,
   onRateResponse,
-  onReset,
 }: ChatProps) {
   const lastMessage = messages.at(-1)
   const isEmpty = messages.length === 0
@@ -132,7 +130,6 @@ export function Chat({
               setFiles={setFiles}
               stop={stop}
               isGenerating={isGenerating}
-              onReset={onReset}
               placeholder="Ask AI..."
             />
           )}

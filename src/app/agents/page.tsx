@@ -7,23 +7,15 @@
 import { useEffect, useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { useAgents } from "@/lib/store"
-import { Agent, AgentTemplate } from "@/lib/store/types"
+import { AgentTemplate } from "@/lib/store/types"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select"
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Separator } from "@/components/ui/separator"
-import { Bot, Brain, MessageSquare, Settings, Square, Plus, Activity, Cpu, Power, Trash2 } from "lucide-react"
+import { Bot, MessageSquare, Settings, Plus } from "lucide-react"
 import { toast } from "sonner"
-import { cn } from "@/lib/utils"
 import { SettingsSheet } from "@/components/agents/settings-sheet"
-import { ErrorBoundary } from "@/components/error-boundary"
 import { SecureStorage, logger, LogCategory } from 'agentdock-core';
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 // Initialize storage
 const storage = SecureStorage.getInstance('agentdock');

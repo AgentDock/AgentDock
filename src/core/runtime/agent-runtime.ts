@@ -4,7 +4,7 @@
  */
 
 import { BaseNode } from '../types/node';
-import { BaseAgent, AgentContext, AgentState, AgentError } from '../types/agent';
+import { BaseAgent, AgentState, AgentError } from '../types/agent';
 
 /**
  * Node execution result

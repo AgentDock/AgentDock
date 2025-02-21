@@ -69,49 +69,6 @@ function ChatPageContent() {
   const [runtimeConfig, setRuntimeConfig] = useState<RuntimeConfig | null>(null);
   const chatContainerRef = useRef<{ handleReset: () => Promise<void> }>(null)
 
-  useEffect(() => {
-    // Redirect to /agents if no agent is selected
-    if (!agentId) {
-      router.replace('/agents')
-      return
-    }
-  }, [agentId, router])
-
-  // Don't render anything while redirecting
-  if (!agentId) {
-    return null
-  }
-
-  // Initialize store and load debug mode setting
-  useEffect(() => {
-    const loadSettings = async () => {
-      try {
-        const storage = SecureStorage.getInstance('agentdock');
-        const settings = await storage.get<GlobalSettings>('global_settings');
-        if (settings) {
-          setGlobalSettings(settings);
-          setDebugMode(settings.core.debugMode || false);
-        }
-
-        // Fetch runtime config for debug panel
-        const response = await fetch(`/api/chat/${agentId}/config`, {
-          headers: {
-            'x-api-key': settings?.apiKeys.anthropic || ''
-          }
-        });
-        if (response.ok) {
-          const config = await response.json();
-          setRuntimeConfig(config);
-        }
-      } catch (error) {
-        console.error('Failed to load settings:', error);
-      }
-    };
-    
-    initialize().catch(console.error);
-    loadSettings();
-  }, [initialize, agentId]);
-
   const {
     messages,
     setMessages,
@@ -124,8 +81,8 @@ function ChatPageContent() {
     stop,
     append
   } = useChat({
-    api: `/api/chat/${agentId}`,
-    id: agentId,
+    api: agentId ? `/api/chat/${agentId}` : '',
+    id: agentId || 'default',
     headers: {
       'x-api-key': globalSettings?.apiKeys?.anthropic || ''
     },
@@ -148,20 +105,17 @@ function ChatPageContent() {
       }
     },
     onFinish: async (message) => {
+      if (!agentId) return;
       try {
-        // Get the latest messages including the new one
         const updatedMessages = [...messages, message]
           .filter(m => m.role === 'user' || m.role === 'assistant')
           .map(m => ({
             ...m,
-            role: m.role === 'system' ? 'assistant' : m.role // Convert any system messages to assistant
+            role: m.role === 'system' ? 'assistant' : m.role
           }));
         
-        // Save messages to localStorage using consistent key format
         const storageKey = `ai-conversation-${agentId}`;
         localStorage.setItem(storageKey, JSON.stringify(updatedMessages));
-        
-        // Update the messages state with the latest messages
         setMessages(updatedMessages);
         
         logger.info(
@@ -193,8 +147,48 @@ function ChatPageContent() {
     }
   });
 
-  // Load saved messages on mount
+  // Handle redirection if no agent is selected
   useEffect(() => {
+    if (!agentId) {
+      router.replace('/agents')
+    }
+  }, [agentId, router])
+
+  // Initialize store and load settings
+  useEffect(() => {
+    const loadSettings = async () => {
+      if (!agentId) return;
+      
+      try {
+        const storage = SecureStorage.getInstance('agentdock');
+        const settings = await storage.get<GlobalSettings>('global_settings');
+        if (settings) {
+          setGlobalSettings(settings);
+          setDebugMode(settings.core.debugMode || false);
+        }
+
+        const response = await fetch(`/api/chat/${agentId}/config`, {
+          headers: {
+            'x-api-key': settings?.apiKeys.anthropic || ''
+          }
+        });
+        if (response.ok) {
+          const config = await response.json();
+          setRuntimeConfig(config);
+        }
+      } catch (error) {
+        console.error('Failed to load settings:', error);
+      }
+    };
+    
+    initialize().catch(console.error);
+    loadSettings();
+  }, [initialize, agentId]);
+
+  // Load saved messages
+  useEffect(() => {
+    if (!agentId) return;
+    
     try {
       const storageKey = `ai-conversation-${agentId}`;
       const savedMessages = localStorage.getItem(storageKey);
@@ -204,7 +198,7 @@ function ChatPageContent() {
           .filter((m: Message) => m.role === 'user' || m.role === 'assistant')
           .map((m: Message) => ({
             ...m,
-            role: m.role === 'system' ? 'assistant' : m.role // Convert any system messages to assistant
+            role: m.role === 'system' ? 'assistant' : m.role
           }));
         
         setMessages(parsedMessages);
@@ -230,18 +224,15 @@ function ChatPageContent() {
     }
   }, [agentId, setMessages]);
 
+  // Load agent settings
   useEffect(() => {
     const loadSettings = async () => {
+      if (!agentId) return;
+      
       try {
         setLoading(true)
         setError(null)
 
-        if (!agentId) {
-          setError('No agent ID provided')
-          return
-        }
-
-        // Try to get from bundled templates first (fastest)
         const bundledTemplate = templates[agentId as TemplateId]
         
         if (bundledTemplate) {
@@ -261,7 +252,7 @@ function ChatPageContent() {
             description: bundledTemplate.description,
             model: bundledTemplate.nodeConfigurations?.['llm.anthropic']?.model || "claude-3-opus",
             tools: [...(bundledTemplate.modules || [])],
-            apiKey: "",  // Templates don't store API keys
+            apiKey: "",
             temperature: bundledTemplate.nodeConfigurations?.['llm.anthropic']?.temperature?.toString() || "0.7",
             maxTokens: bundledTemplate.nodeConfigurations?.['llm.anthropic']?.maxTokens?.toString() || "2048",
             systemPrompt: bundledTemplate.personality || "",
@@ -270,7 +261,6 @@ function ChatPageContent() {
           return
         }
 
-        // If not in bundled templates, try API as fallback
         await logger.warn(
           LogCategory.SYSTEM,
           'ChatPage',
@@ -318,7 +308,7 @@ function ChatPageContent() {
           description: apiTemplate.description,
           model: apiTemplate.nodeConfigurations?.['llm.anthropic']?.model || "claude-3-opus",
           tools: [...(apiTemplate.modules || [])],
-          apiKey: "",  // Templates don't store API keys
+          apiKey: "",
           temperature: apiTemplate.nodeConfigurations?.['llm.anthropic']?.temperature?.toString() || "0.7",
           maxTokens: apiTemplate.nodeConfigurations?.['llm.anthropic']?.maxTokens?.toString() || "2048",
           systemPrompt: apiTemplate.personality || "",
@@ -336,6 +326,11 @@ function ChatPageContent() {
 
     loadSettings()
   }, [agentId])
+
+  // Early return for redirection
+  if (!agentId) {
+    return null
+  }
 
   const handleReset = async () => {
     try {

@@ -2,11 +2,10 @@
 
 import * as React from "react"
 import { useChat, Message } from 'ai/react'
-import { cn } from "@/lib/utils"
 import { useAgents } from "@/lib/store"
 import { Chat } from "@/components/ui/chat"
 import { toast } from "sonner"
-import { logger, LogLevel, LogCategory } from 'agentdock-core'
+import { logger, LogCategory } from 'agentdock-core'
 import { APIError, ErrorCode, SecureStorage, loadAgentConfig } from 'agentdock-core'
 import { ErrorBoundary } from "@/components/ui/error-boundary"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"

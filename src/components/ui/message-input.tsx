@@ -1,8 +1,8 @@
 "use client"
 
-import React, { useEffect, useRef, useState } from "react"
+import React, { useRef, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
-import { ArrowUp, Paperclip, Square, X } from "lucide-react"
+import { ArrowUp, Paperclip, Square } from "lucide-react"
 import { omit } from "remeda"
 
 import { cn } from "@/lib/utils"
@@ -18,8 +18,6 @@ interface MessageInputProps extends React.TextareaHTMLAttributes<HTMLTextAreaEle
   setFiles?: React.Dispatch<React.SetStateAction<File[] | null>>
   stop?: () => void
   isGenerating?: boolean
-  onReset?: () => void
-  enableInterrupt?: boolean
   submitOnEnter?: boolean
 }
 
@@ -40,8 +38,6 @@ export function MessageInput({
   submitOnEnter = true,
   stop,
   isGenerating,
-  enableInterrupt = true,
-  onReset,
   ...props
 }: MessageInputProps) {
   const [isDragging, setIsDragging] = useState(false)

@@ -98,8 +98,8 @@ export class AgentRuntime extends BaseAgent {
       return;
     }
 
-    const maxConcurrent = this.config.maxConcurrency || 1;
-    if (this.executing.size >= maxConcurrent) {
+    // Fixed concurrency limit of 1 for core implementation
+    if (this.executing.size >= 1) {
       return;
     }
 

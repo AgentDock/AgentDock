@@ -20,14 +20,4 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
 };
 
- // temporary fix for typescript errors
-module.exports = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: true,
-  }
-}
-
 export default nextConfig;

@@ -63,7 +63,7 @@ describe('Chat API Route', () => {
       });
 
       // Execute request
-      const response = await POST(request);
+      const response = await POST(request, { params: { agentId: mockAgentId } });
 
       // Verify the sequence of operations
       expect(mockLoadConfig).toHaveBeenCalledWith(mockAgentId);
@@ -98,7 +98,7 @@ describe('Chat API Route', () => {
       });
 
       // Execute request
-      const response = await POST(request);
+      const response = await POST(request, { params: { agentId: mockAgentId } });
       const reader = response.body?.getReader();
       const chunks: Uint8Array[] = [];
 
@@ -124,7 +124,7 @@ describe('Chat API Route', () => {
         body: JSON.stringify({ messages: [mockMessage] })
       });
 
-      const response = await POST(request);
+      const response = await POST(request, { params: { agentId: '' } });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -137,7 +137,7 @@ describe('Chat API Route', () => {
         body: JSON.stringify({})
       });
 
-      const response = await POST(request);
+      const response = await POST(request, { params: { agentId: mockAgentId } });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -150,7 +150,7 @@ describe('Chat API Route', () => {
         body: JSON.stringify({ messages: [{ role: 'assistant', content: 'Hello' }] })
       });
 
-      const response = await POST(request);
+      const response = await POST(request, { params: { agentId: mockAgentId } });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -165,7 +165,7 @@ describe('Chat API Route', () => {
         body: JSON.stringify({ messages: [mockMessage] })
       });
 
-      const response = await POST(request);
+      const response = await POST(request, { params: { agentId: mockAgentId } });
       const data = await response.json();
 
       expect(response.status).toBe(500);
@@ -181,7 +181,7 @@ describe('Chat API Route', () => {
         body: JSON.stringify({ messages: [mockMessage] })
       });
 
-      const response = await POST(request);
+      const response = await POST(request, { params: { agentId: mockAgentId } });
       const data = await response.json();
 
       expect(response.status).toBe(500);
@@ -197,7 +197,7 @@ describe('Chat API Route', () => {
         body: JSON.stringify({ messages: [mockMessage] })
       });
 
-      await POST(request);
+      await POST(request, { params: { agentId: mockAgentId } });
 
       // Verify logging sequence
       expect(mockLogger.info).toHaveBeenCalledWith(
@@ -225,7 +225,7 @@ describe('Chat API Route', () => {
         body: JSON.stringify({ messages: [mockMessage] })
       });
 
-      await POST(request);
+      await POST(request, { params: { agentId: mockAgentId } });
 
       expect(mockLogger.error).toHaveBeenCalledWith(
         expect.any(String),

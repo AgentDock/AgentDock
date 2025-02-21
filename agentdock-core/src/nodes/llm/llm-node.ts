@@ -4,40 +4,19 @@
  */
 
 import { BaseNode } from '../base-node';
-import { streamText, Message } from 'ai';
-import { anthropic } from '@ai-sdk/anthropic';
 import { createError, ErrorCode } from '../../errors';
 import { AgentDockConfig } from '../../types';
+import { LLMMessage, LLMConfig as LLMConfigBase } from '../../types/llm';
 
 /**
  * Configuration for LLM nodes
  */
-export interface LLMConfig {
-  /** API key for the LLM provider (BYOK) */
-  apiKey?: string;
-  
-  /** Model identifier */
-  model?: string;
-  
-  /** Temperature for response generation (0-2) */
-  temperature?: number;
-  
-  /** Maximum tokens in response */
-  maxTokens?: number;
-  
+export interface LLMConfig extends LLMConfigBase {
   /** Whether to only use BYOK (no fallback to service key) */
   byokOnly?: boolean;
 
   /** Framework configuration */
   frameworkConfig?: AgentDockConfig;
-}
-
-/**
- * Message format for LLM requests
- */
-export interface LLMMessage {
-  role: 'system' | 'user' | 'assistant';
-  content: string;
 }
 
 /**
@@ -258,7 +237,7 @@ export abstract class LLMNode extends BaseNode<LLMConfig> {
    * @returns A promise that resolves to a streaming configuration
    */
   protected abstract generateConfig(messages: LLMMessage[], apiKey: string): Promise<{
-    model: ReturnType<typeof anthropic>;
+    model: string;
     messages: LLMMessage[];
     temperature?: number;
     maxTokens?: number;

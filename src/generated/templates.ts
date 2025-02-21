@@ -3,7 +3,7 @@
 
 import { AgentConfig } from 'agentdock-core';
 
-export const templates = {
+export const templates: Record<string, AgentConfig> = {
   "chat-agent": {
     "version": "1.0",
     "agentId": "chat-agent",
@@ -114,11 +114,11 @@ export const templates = {
       ]
     }
   }
-} as const;
+};
 
 export type TemplateId = keyof typeof templates;
-export type Template = typeof templates[TemplateId];
+export type Template = AgentConfig;
 
 export function getTemplate(id: TemplateId): AgentConfig {
-  return templates[id] as AgentConfig;
+  return templates[id];
 }

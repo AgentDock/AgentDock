@@ -7,7 +7,7 @@ export const runtime = 'edge';
 
 export async function GET(req: NextRequest, { params }: { params: { agentId: string } }) {
   try {
-    const agentId = (await params).agentId.split('?')[0];
+    const agentId = params.agentId.split('?')[0];
     const apiKey = req.headers.get('x-api-key');
 
     if (!agentId) {

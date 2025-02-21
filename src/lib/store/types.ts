@@ -58,9 +58,25 @@ export interface AgentRuntimeSettings {
 }
 
 export interface Agent extends AgentTemplate {
+  id: string;
   state: AgentState;
   nodes: BaseNode[];
   runtimeSettings: AgentRuntimeSettings;
+  metadata: {
+    created: number;
+    lastStateChange: number;
+    error?: {
+      message: string;
+      code?: string;
+    };
+    chatWindow?: {
+      url: string;
+    };
+  };
+  start?: () => Promise<void>;
+  pause?: () => Promise<void>;
+  resume?: () => Promise<void>;
+  stop?: () => Promise<void>;
 }
 
 export enum AgentState {
@@ -88,9 +104,7 @@ export interface AppActions {
   reset: () => void;
 }
 
-export interface Store {
-  agents: Agent[];
-  isInitialized: boolean;
+export interface Store extends AppState, AppActions {
   initialize: () => Promise<void>;
   updateAgentRuntime: (agentId: string, settings: Partial<AgentRuntimeSettings>) => Promise<void>;
 } 

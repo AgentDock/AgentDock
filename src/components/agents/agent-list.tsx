@@ -27,9 +27,7 @@ import { Play, Pause, Square, AlertCircle, MessageSquare, Plus } from 'lucide-re
 import Link from 'next/link';
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ErrorInfo } from "react";
-import { Agent } from "@/lib/store";
-
-type AgentState = 'RUNNING' | 'PAUSED' | 'STOPPED' | 'CREATED' | 'INITIALIZING' | 'READY' | 'ERROR';
+import { Agent, AgentState } from "@/lib/store/types";
 
 /**
  * Agent state badge colors
@@ -109,7 +107,8 @@ function BaseAgentList() {
             </TableHeader>
             <TableBody>
               {agents.map((agent: Agent) => {
-                const badgeConfig = stateBadgeVariants[agent.state as AgentState];
+                const badgeConfig = stateBadgeVariants[agent.state];
+                const chatUrl = agent.metadata.chatWindow?.url || `/chat?agent=${agent.id}`;
                 return (
                   <TableRow
                     key={agent.id}
@@ -140,7 +139,10 @@ function BaseAgentList() {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Link
-                          href={agent.metadata.chatWindow?.url || `/chat?agent=${agent.id}`}
+                          href={{
+                            pathname: chatUrl.startsWith('/') ? chatUrl : '/chat',
+                            query: chatUrl.startsWith('/') ? undefined : { url: chatUrl }
+                          }}
                           onClick={(e) => e.stopPropagation()}
                         >
                           <Button size="sm" variant="outline">
@@ -154,7 +156,7 @@ function BaseAgentList() {
                             variant="outline"
                             onClick={(e) => {
                               e.stopPropagation();
-                              agent.start();
+                              agent.start?.();
                             }}
                           >
                             <Play className="h-4 w-4" />
@@ -166,7 +168,7 @@ function BaseAgentList() {
                             variant="outline"
                             onClick={(e) => {
                               e.stopPropagation();
-                              agent.pause();
+                              agent.pause?.();
                             }}
                           >
                             <Pause className="h-4 w-4" />
@@ -178,7 +180,7 @@ function BaseAgentList() {
                             variant="outline"
                             onClick={(e) => {
                               e.stopPropagation();
-                              agent.resume();
+                              agent.resume?.();
                             }}
                           >
                             <Play className="h-4 w-4" />
@@ -190,7 +192,7 @@ function BaseAgentList() {
                             variant="outline"
                             onClick={(e) => {
                               e.stopPropagation();
-                              agent.stop();
+                              agent.stop?.();
                             }}
                           >
                             <Square className="h-4 w-4" />

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
-import { AgentState, SecureStorage } from 'agentdock-core';
-import { Agent, AgentMetadata } from '@/lib/store/helpers';
+import { SecureStorage } from 'agentdock-core';
+import { Agent, AgentState } from '@/lib/store/types';
 
 export async function POST(req: Request) {
   try {
@@ -12,21 +12,28 @@ export async function POST(req: Request) {
     const now = Date.now();
     const agent: Agent = {
       id: uuidv4(),
+      agentId: uuidv4(),
       name: data.name,
       description: data.description || '',
-      storagePath: data.storagePath,
-      isActive: false,
-      state: AgentState.CREATED,
-      metadata: {
-        state: AgentState.CREATED,
-        createdAt: now,
-        lastStateChange: now,
-        systemPrompt: data.systemPrompt
+      personality: "helpful",
+      modules: [],
+      nodeConfigurations: {},
+      chatSettings: {
+        initialMessages: [],
+        historyPolicy: "lastN",
+        historyLength: 10
       },
-      maxConcurrency: data.maxConcurrency,
+      instructions: data.systemPrompt,
+      state: AgentState.CREATED,
       nodes: [],
-      createdAt: now,
-      updatedAt: now
+      runtimeSettings: {
+        temperature: 0.7,
+        maxTokens: 4096
+      },
+      metadata: {
+        created: now,
+        lastStateChange: now
+      }
     };
     
     // Get existing agents

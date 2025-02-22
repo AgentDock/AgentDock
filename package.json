@@ -12,7 +12,6 @@
     "predev": "tsx scripts/bundle-templates.ts",
     "dev": "next dev",
     "build": "next build",
-    "postbuild": "tsx scripts/post-build.ts",
     "start": "next start",
     "lint": "next lint",
     "test": "jest",

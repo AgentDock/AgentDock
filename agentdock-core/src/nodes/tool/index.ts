@@ -8,6 +8,18 @@ import { BaseNode, NodeMetadata } from '../base-node';
 import { createError, ErrorCode } from '../../errors';
 
 /**
+ * Options for registering a tool node
+ */
+export interface ToolRegistrationOptions {
+  /** Whether this node can act as a tool */
+  isTool?: boolean;
+  /** Tool parameters schema (if isTool is true) */
+  parameters?: z.ZodSchema;
+  /** Tool description (if isTool is true) */
+  description?: string;
+}
+
+/**
  * JSON Schema type for tool parameters
  */
 export type JSONSchema = {
@@ -110,7 +122,7 @@ export abstract class BaseTool<TParams = unknown, TResult = unknown> extends Bas
     // Register message handlers
     this.addMessageHandler('execute', async (params: unknown) => {
       const result = await this.execute(params as TParams);
-      await this.sendMessage('result', result);
+      await this.sendMessage('tool-result', 'result', JSON.stringify(result));
     });
   }
 
@@ -188,7 +200,7 @@ export function createTool<TParams, TResult>(config: {
  * Convert Zod schema to JSON Schema
  * This is a simplified version - extend as needed
  */
-function zodToJsonSchema(schema: z.ZodSchema<any>): JSONSchema {
+function zodToJsonSchema(schema: z.ZodType<any>): JSONSchema {
   if (!(schema instanceof z.ZodType)) {
     throw createError(
       'node',
@@ -203,9 +215,11 @@ function zodToJsonSchema(schema: z.ZodSchema<any>): JSONSchema {
     const required: string[] = [];
 
     for (const [key, value] of Object.entries(shape)) {
-      properties[key] = zodToJsonSchema(value);
-      if (!(value instanceof z.ZodOptional)) {
-        required.push(key);
+      if (value instanceof z.ZodType) {
+        properties[key] = zodToJsonSchema(value);
+        if (!(value instanceof z.ZodOptional)) {
+          required.push(key);
+        }
       }
     }
 

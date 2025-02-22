@@ -18,6 +18,14 @@ const nextConfig: NextConfig = {
 
   // Basic security - more in Pro version
   poweredByHeader: false,
+
+  // Output configuration
+  output: 'standalone',
+
+  // Disable image optimization in dev to reduce warnings
+  images: {
+    unoptimized: process.env.NODE_ENV === 'development'
+  }
 };
 
 export default nextConfig;

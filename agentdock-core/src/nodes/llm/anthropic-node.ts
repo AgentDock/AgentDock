@@ -2,9 +2,9 @@
  * @fileoverview Anthropic LLM node implementation using Vercel AI SDK.
  */
 
-import { LLMNode, LLMMessage, LLMConfig } from './llm-node';
-import { streamText } from 'ai';
 import { Anthropic } from '@anthropic-ai/sdk';
+import { LLMNode, LLMConfig } from './llm-node';
+import { LLMMessage } from '../../types/llm';
 import { createError, ErrorCode } from '../../errors';
 
 /**
@@ -15,6 +15,7 @@ interface AnthropicConfig extends LLMConfig {
   messages: LLMMessage[];
   temperature?: number;
   maxTokens?: number;
+  apiKey: string;
 }
 
 /**
@@ -22,14 +23,10 @@ interface AnthropicConfig extends LLMConfig {
  */
 export class AnthropicNode extends LLMNode {
   readonly type = 'llm.anthropic';
-  private anthropic: Anthropic;
+  private anthropicClient: Anthropic | null = null;
 
-  constructor(config: AnthropicConfig) {
-    super(config);
-    // Initialize Anthropic client
-    this.anthropic = new Anthropic({
-      apiKey: config.apiKey || ''
-    });
+  constructor(id: string, config: AnthropicConfig) {
+    super(id, config);
   }
 
   /**
@@ -39,7 +36,7 @@ export class AnthropicNode extends LLMNode {
     return {
       category: 'core' as const,
       label: 'Anthropic',
-      description: 'Anthropic language model with streaming support',
+      description: 'Anthropic Claude language model integration',
       inputs: [{
         id: 'messages',
         type: 'array',
@@ -65,7 +62,7 @@ export class AnthropicNode extends LLMNode {
   }
 
   protected getDescription(): string {
-    return 'Anthropic language model with streaming support';
+    return 'Anthropic Claude language model integration';
   }
 
   protected getProvider(): string {
@@ -73,58 +70,70 @@ export class AnthropicNode extends LLMNode {
   }
 
   protected async generateConfig(messages: LLMMessage[], apiKey: string): Promise<AnthropicConfig> {
-    if (!this.config.model) {
-      throw createError('llm', 'Model must be specified for Anthropic integration', ErrorCode.LLM_VALIDATION);
-    }
-
     return {
-      ...this.config,
-      apiKey,
+      model: this.config.model || 'claude-3-opus-20240229',
       messages,
-      model: this.config.model,
       temperature: this.config.temperature ?? 0.7,
-      maxTokens: this.config.maxTokens ?? 1000
+      maxTokens: this.config.maxTokens ?? 4096,
+      apiKey
     };
   }
 
-  /**
-   * Execute the node with streaming support via Vercel AI SDK
-   */
-  async execute(messages: LLMMessage[]): Promise<ReadableStream<string>> {
-    try {
-      // Validate input
-      if (!this.validateInput(messages)) {
-        throw createError('llm', 'Invalid message format', ErrorCode.LLM_REQUEST);
-      }
+  protected get llmProvider() {
+    const self = this;
+    return {
+      async generate(config: AnthropicConfig, messages: LLMMessage[]): Promise<ReadableStream<string>> {
+        if (!self.anthropicClient || self.anthropicClient.apiKey !== config.apiKey) {
+          self.anthropicClient = new Anthropic({ apiKey: config.apiKey });
+        }
 
-      // Get API key and config
-      const apiKey = await this.resolveApiKey();
-      const config = await this.generateConfig(messages, apiKey);
-
-      // Use Vercel AI SDK's streamText
-      const response = await streamText({
-        messages: messages.map(msg => ({
-          role: msg.role,
-          content: msg.content
-        })),
-        createStream: async () => {
-          const stream = await this.anthropic.messages.create({
-            model: config.model,
-            temperature: config.temperature ?? 0.7,
-            max_tokens: config.maxTokens ?? 1000,
-            messages: messages.map(msg => ({
-              role: msg.role === 'user' ? 'user' : 'assistant',
+        try {
+          // Convert messages to Anthropic format
+          const anthropicMessages = messages.map(msg => {
+            if (msg.role === 'system') {
+              // Prepend system message to first user message
+              return {
+                role: 'user' as const,
+                content: `${msg.content}\n\nUser: `
+              };
+            }
+            return {
+              role: msg.role === 'user' ? 'user' as const : 'assistant' as const,
               content: msg.content
-            })),
+            };
+          });
+
+          const response = await self.anthropicClient.messages.create({
+            model: config.model,
+            messages: anthropicMessages,
+            temperature: config.temperature ?? 0.7,
+            max_tokens: config.maxTokens ?? 4096,
             stream: true
           });
-          return stream;
-        }
-      });
 
-      return response.toDataStream();
-    } catch (error) {
-      throw createError('llm', 'Execution failed', ErrorCode.LLM_EXECUTION, { error });
-    }
+          return new ReadableStream({
+            async start(controller) {
+              try {
+                for await (const chunk of response) {
+                  if (chunk.type === 'content_block_delta') {
+                    const delta = chunk.delta;
+                    if ('text' in delta) {
+                      controller.enqueue(delta.text);
+                    }
+                  }
+                }
+                controller.close();
+              } catch (error) {
+                controller.error(error);
+              }
+            }
+          });
+        } catch (error) {
+          throw createError('llm', 'Anthropic API request failed', ErrorCode.LLM_REQUEST, {
+            cause: error
+          });
+        }
+      }
+    };
   }
 } 

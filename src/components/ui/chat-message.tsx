@@ -102,23 +102,36 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   toolInvocations,
 }) => {
   const files = useMemo(() => {
-    return experimental_attachments?.map((attachment) => {
+    if (!experimental_attachments) return undefined;
+    return experimental_attachments.map((attachment) => {
       const dataArray = dataUrlToUint8Array(attachment.url)
       const file = new File([dataArray], attachment.name ?? "Unknown")
       return file
     })
-  }, [experimental_attachments])
+  }, [experimental_attachments]);
+
+  const formattedTime = useMemo(() => {
+    if (!createdAt) return null;
+    try {
+      const date = createdAt instanceof Date ? createdAt : new Date(createdAt);
+      return {
+        formatted: date.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit"
+        }),
+        iso: date.toISOString()
+      };
+    } catch (error) {
+      console.error('Error formatting time:', error);
+      return null;
+    }
+  }, [createdAt]);
 
   if (toolInvocations && toolInvocations.length > 0) {
     return <ToolCall toolInvocations={toolInvocations} />
   }
 
   const isUser = role === "user"
-
-  const formattedTime = createdAt?.toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-  })
 
   return (
     <div className={cn("flex flex-col", isUser ? "items-end" : "items-start")}>
@@ -142,15 +155,15 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
         ) : null}
       </div>
 
-      {showTimeStamp && createdAt ? (
+      {showTimeStamp && formattedTime ? (
         <time
-          dateTime={createdAt.toISOString()}
+          dateTime={formattedTime.iso}
           className={cn(
             "mt-1 block px-1 text-xs opacity-50",
             animation !== "none" && "duration-500 animate-in fade-in-0"
           )}
         >
-          {formattedTime}
+          {formattedTime.formatted}
         </time>
       ) : null}
     </div>

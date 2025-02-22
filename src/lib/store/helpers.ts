@@ -1,45 +1,10 @@
 import { v4 as uuidv4 } from 'uuid';
-import { AgentState, BaseNode, ChatNode, ChatNodeConfig, SecureStorage } from 'agentdock-core';
-
-export interface AgentMetadata {
-  state: AgentState;
-  createdAt: number;
-  lastStateChange: number;
-  error?: {
-    code: string;
-    message: string;
-    timestamp: number;
-  };
-  chatWindow?: {
-    url: string;
-    isOpen: boolean;
-    lastMessage?: {
-      content: string;
-      timestamp: number;
-    };
-  };
-  systemPrompt?: string;
-}
-
-export interface Agent {
-  id: string;
-  name: string;
-  description: string;
-  storagePath: string;
-  isActive: boolean;
-  state: AgentState;
-  metadata: AgentMetadata;
-  maxConcurrency?: number;
-  nodes: BaseNode[];
-  createdAt: number;
-  updatedAt: number;
-}
+import { BaseNode, ChatNode, ChatNodeConfig, SecureStorage } from 'agentdock-core';
+import { Agent, AgentTemplate, AgentRuntimeSettings, AgentState } from './types';
 
 export interface CreateAgentParams {
   name: string;
   description: string;
-  storagePath: string;
-  maxConcurrency?: number;
   systemPrompt?: string;
 }
 
@@ -64,21 +29,28 @@ export async function createAgent(params: CreateAgentParams): Promise<Agent> {
 
   const agent: Agent = {
     id,
+    agentId: id,
     name: params.name,
     description: params.description,
-    storagePath: params.storagePath,
-    isActive: false,
-    state: AgentState.CREATED,
-    metadata: {
-      state: AgentState.CREATED,
-      createdAt: now,
-      lastStateChange: now,
-      systemPrompt: params.systemPrompt
+    personality: "helpful",
+    modules: [],
+    nodeConfigurations: {},
+    chatSettings: {
+      initialMessages: [],
+      historyPolicy: "lastN",
+      historyLength: 10
     },
-    maxConcurrency: params.maxConcurrency,
+    instructions: params.systemPrompt,
+    state: AgentState.CREATED,
     nodes: [],
-    createdAt: now,
-    updatedAt: now
+    runtimeSettings: {
+      temperature: 0.7,
+      maxTokens: 4096
+    },
+    metadata: {
+      created: now,
+      lastStateChange: now
+    }
   };
 
   // Store agent data

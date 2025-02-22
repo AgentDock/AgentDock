@@ -1,5 +1,6 @@
 import { logger, LogCategory } from 'agentdock-core';
 
+// Using any for data as the cache can store various types of configurations
 interface CacheEntry {
   data: any;
   timestamp: number;
@@ -22,6 +23,7 @@ export class ConfigCache {
     return ConfigCache.instance;
   }
 
+  // Returns any as the cache can store various types of configurations
   async get(agentId: string, templateVersion: string): Promise<any | null> {
     const cached = this.cache.get(agentId);
     
@@ -80,6 +82,7 @@ export class ConfigCache {
     return cached.data;
   }
 
+  // Accepts any as data parameter since the cache can store various types of configurations
   async set(agentId: string, data: any, templateVersion: string): Promise<void> {
     this.cache.set(agentId, {
       data,

@@ -1,9 +1,17 @@
 import { NextRequest } from 'next/server';
 import { Message, streamText } from 'ai';
-import { anthropic, createAnthropic } from '@ai-sdk/anthropic';
+import { createAnthropic } from '@ai-sdk/anthropic';
+import type { LanguageModelV1 } from '@ai-sdk/provider';
 import { APIError, ErrorCode, logger, LogCategory, loadAgentConfig } from 'agentdock-core';
-import { templates } from '@/generated/templates';
-import { ConfigCache } from '@/lib/services/config-cache';
+import { templates, TemplateId } from '@/generated/templates';
+
+// Log runtime configuration
+console.log('Route Handler Configuration:', {
+  runtime: 'edge',
+  path: '/api/chat/[agentId]',
+  method: 'POST',
+  timestamp: new Date().toISOString()
+});
 
 // ============================================================================
 // TEMPORARY IMPLEMENTATION FOR V1
@@ -17,157 +25,172 @@ import { ConfigCache } from '@/lib/services/config-cache';
 
 export const runtime = 'edge';
 
-// Supported file types and their handlers
-const SUPPORTED_FILE_TYPES = {
-  'image/png': true,
-  'image/jpeg': true,
-  'image/jpg': true,
-  'image/gif': true,
-  'image/webp': true,
-  'application/pdf': true,
-  'text/plain': true,
-  'text/markdown': true,
-  'text/csv': true,
-  'application/json': true
-} as const;
-
-type SupportedFileType = keyof typeof SUPPORTED_FILE_TYPES;
-
-// Validate file type
-const isValidFileType = (type: string): type is SupportedFileType => {
-  return type in SUPPORTED_FILE_TYPES;
-}
-
-interface StreamResponse {
-  messages: Message[];
-}
-
-// Maximum retries for connection errors
+// Retry configuration
 const MAX_RETRIES = 3;
-const RETRY_DELAY = 1000; // 1 second
+const INITIAL_RETRY_DELAY = 1000; // 1 second
+const MAX_RETRY_DELAY = 10000; // 10 seconds
+const BACKOFF_FACTOR = 2;
 
-// Helper to delay execution
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+interface RouteContext {
+  params: Promise<{ agentId: string }>;
+}
 
-// Helper to check if error is a connection error
+// Helper to delay execution with exponential backoff
+const delay = async (attempt: number) => {
+  const backoffDelay = Math.min(
+    INITIAL_RETRY_DELAY * Math.pow(BACKOFF_FACTOR, attempt),
+    MAX_RETRY_DELAY
+  );
+  await new Promise(resolve => setTimeout(resolve, backoffDelay));
+  return backoffDelay;
+};
+
+// Enhanced error type checking
 const isConnectionError = (error: unknown): boolean => {
-  return error instanceof Error && (
-    error.message.includes('ECONNRESET') ||
-    error.message.includes('Failed to fetch') ||
-    error.message.includes('Network error') ||
-    error.message.includes('connection closed') ||
-    error.message.includes('aborted')
+  if (!(error instanceof Error)) return false;
+  
+  const connectionErrors = [
+    'ECONNRESET',
+    'Failed to fetch',
+    'Network error',
+    'connection closed',
+    'aborted',
+    'timeout',
+    'network request failed'
+  ];
+  
+  return connectionErrors.some(errMsg => 
+    error.message.toLowerCase().includes(errMsg.toLowerCase())
   );
 };
 
-// Retry wrapper for streamText
-async function retryStreamText(params: Parameters<typeof streamText>[0], retries = MAX_RETRIES): Promise<ReturnType<typeof streamText>> {
+// Enhanced retry wrapper with exponential backoff
+async function retryStreamText(
+  params: Parameters<typeof streamText>[0], 
+  retries = MAX_RETRIES,
+  attempt = 0
+): Promise<ReturnType<typeof streamText>> {
   try {
     return await streamText(params);
   } catch (error) {
     if (isConnectionError(error) && retries > 0) {
+      const backoffDelay = await delay(attempt);
+      
       await logger.warn(
         LogCategory.API,
         'ChatRoute',
         `Connection error, retrying (${retries} attempts left)`,
-        { error: error instanceof Error ? error.message : 'Unknown error' }
+        { 
+          error: error instanceof Error ? error.message : 'Unknown error',
+          attempt: attempt + 1,
+          maxRetries: MAX_RETRIES,
+          backoffDelay,
+          nextAttemptIn: backoffDelay / 1000 + 's'
+        }
       );
       
-      await delay(RETRY_DELAY);
-      return retryStreamText(params, retries - 1);
+      return retryStreamText(params, retries - 1, attempt + 1);
     }
+    
+    // Log final retry failure
+    if (retries === 0) {
+      await logger.error(
+        LogCategory.API,
+        'ChatRoute',
+        'Max retries reached for connection error',
+        {
+          error: error instanceof Error ? error.message : 'Unknown error',
+          attempts: MAX_RETRIES
+        }
+      );
+    }
+    
     throw error;
   }
 }
 
-export async function POST(req: NextRequest, { params }: { params: { agentId: string } }) {
+export async function POST(
+  request: NextRequest,
+  context: RouteContext
+) {
   try {
-    const { messages, experimental_attachments, id, system } = await req.json();
-    const agentId = (await params).agentId.split('?')[0];
-    const apiKey = req.headers.get('x-api-key');
-
-    if (!apiKey) {
+    // Get agentId from params
+    const { agentId } = await context.params;
+    if (!agentId) {
       throw new APIError(
-        'API key is required',
+        'Agent ID is required',
         ErrorCode.CONFIG_NOT_FOUND,
-        req.url,
-        'POST',
-        { agentId }
+        request.url,
+        'POST'
       );
     }
 
-    // Get template first - we need this for version checking
-    const template = templates[agentId as keyof typeof templates];
+    // Parse request body
+    const { messages, experimental_attachments, id, system } = await request.json();
+    
+    // Clean agentId and get template
+    const cleanAgentId = agentId.split('?')[0] as TemplateId;
+    const template = templates[cleanAgentId];
+    
     if (!template) {
       throw new APIError(
         'Template not found',
         ErrorCode.CONFIG_NOT_FOUND,
-        req.url,
+        request.url,
         'POST',
-        { agentId }
+        { agentId: cleanAgentId }
+      );
+    }
+    
+    // Validate API key
+    const apiKey = request.headers.get('x-api-key');
+    if (!apiKey) {
+      throw new APIError(
+        'API key is required',
+        ErrorCode.CONFIG_NOT_FOUND,
+        request.url,
+        'POST'
       );
     }
 
-    // Try to get from cache first
-    const configCache = ConfigCache.getInstance();
-    const cachedConfig = await configCache.get(agentId, template.version);
+    // Validate template and inject API key
+    const config = await loadAgentConfig(template, apiKey);
     
-    let config;
-    if (cachedConfig) {
-      config = cachedConfig;
-    } else {
-      // Load and validate configuration
-      const agentConfig = await loadAgentConfig(template, apiKey);
-      const llmConfig = agentConfig.nodeConfigurations?.['llm.anthropic'];
-
-      if (!llmConfig) {
-        throw new APIError(
-          'LLM configuration not found',
-          ErrorCode.CONFIG_NOT_FOUND,
-          req.url,
-          'POST',
-          { agentId }
-        );
-      }
-
-      config = {
-        name: agentConfig.name,
-        description: agentConfig.description,
-        model: llmConfig.model || 'claude-3-opus-20240229',
-        temperature: llmConfig.temperature ?? 0.7,
-        maxTokens: llmConfig.maxTokens ?? 1000,
-        modules: agentConfig.modules,
-        personality: agentConfig.personality,
-        chatSettings: agentConfig.chatSettings
-      };
-
-      // Cache the configuration with template version
-      await configCache.set(agentId, config, template.version);
+    // Get LLM configuration from validated config
+    const llmConfig = config.nodeConfigurations?.['llm.anthropic'];
+    if (!llmConfig) {
+      throw new APIError(
+        'LLM configuration not found',
+        ErrorCode.CONFIG_NOT_FOUND,
+        request.url,
+        'POST',
+        { agentId: cleanAgentId }
+      );
     }
 
     // Create Anthropic provider with API key
     const anthropicProvider = createAnthropic({ apiKey });
 
     // Log request
-    logger.debug(
+    await logger.debug(
       LogCategory.API,
       'ChatRoute',
       'Processing chat request',
-      { 
-        agentId,
+      {
+        agentId: cleanAgentId,
         messageCount: messages.length,
-        model: config.model,
-        temperature: config.temperature,
-        maxTokens: config.maxTokens
+        model: llmConfig.model,
+        temperature: llmConfig.temperature,
+        maxTokens: llmConfig.maxTokens
       }
     );
 
     try {
       const result = await retryStreamText({
-        model: anthropicProvider(config.model),
+        model: anthropicProvider(llmConfig.model) as LanguageModelV1,
         messages,
-        temperature: config.temperature,
-        maxTokens: config.maxTokens,
+        temperature: llmConfig.temperature,
+        maxTokens: llmConfig.maxTokens,
         system: system ?? config.personality,
         ...(experimental_attachments ? { experimental_attachments } : {}),
         async onFinish({ response }) {
@@ -194,7 +217,7 @@ export async function POST(req: NextRequest, { params }: { params: { agentId: st
           'Connection error during chat after all retries',
           { 
             error: error instanceof Error ? error.message : 'Unknown error',
-            agentId,
+            agentId: cleanAgentId,
             messageCount: messages.length
           }
         );

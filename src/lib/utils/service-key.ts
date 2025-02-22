@@ -75,9 +75,10 @@ export async function resolveServiceKey(config: ServiceKeyConfig): Promise<Servi
     }
 
     // 5. Return appropriate service key
-    const keyMap = {
+    const keyMap: Record<ServiceProvider, string | undefined> = {
       'openrouter': env.OPENROUTER_API_KEY,
-      'google': env.GOOGLE_API_KEY
+      'google': env.GOOGLE_API_KEY,
+      'none': undefined
     };
 
     const key = keyMap[env.SERVICE_PROVIDER];
@@ -139,11 +140,11 @@ export async function validateServiceKey(
  * This will be moved to the provider registry in the future
  */
 export function getProviderDisplayName(provider: ServiceProvider): string {
-  const displayNames = {
+  const displayNames: Record<ServiceProvider, string> = {
     'openrouter': 'OpenRouter',
     'google': 'Google AI',
     'none': 'None'
-  } as const;
+  };
 
   return displayNames[provider];
 } 

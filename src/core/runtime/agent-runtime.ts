@@ -4,7 +4,7 @@
  */
 
 import { BaseNode } from '../types/node';
-import { BaseAgent, AgentContext, AgentState, AgentError } from '../types/agent';
+import { BaseAgent, AgentState, AgentError } from '../types/agent';
 
 /**
  * Node execution result
@@ -98,8 +98,8 @@ export class AgentRuntime extends BaseAgent {
       return;
     }
 
-    const maxConcurrent = this.config.maxConcurrency || 1;
-    if (this.executing.size >= maxConcurrent) {
+    // Fixed concurrency limit of 1 for core implementation
+    if (this.executing.size >= 1) {
       return;
     }
 

@@ -73,15 +73,8 @@ declare module 'agentdock-core/src/nodes/agent-node' {
   }
 }
 
-declare module 'agentdock-core/src/utils/load-agent-config' {
-  import { AgentConfig } from '../types/agent-config';
-  
-  /**
-   * Load and validate an agent configuration from a JSON file
-   * @param agentId - The unique identifier of the agent
-   * @returns Promise resolving to the validated agent configuration
-   */
-  export function loadAgentConfig(agentId: string): Promise<AgentConfig>;
+declare module 'agentdock-core/src/config/agent-config' {
+  export function loadAgentConfig(template: any, apiKey?: string): Promise<AgentConfig>;
 }
 
 declare module 'agentdock-core/src/logging' {

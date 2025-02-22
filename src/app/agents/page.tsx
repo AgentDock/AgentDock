@@ -4,33 +4,24 @@
 
 "use client"
 
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAgents } from "@/lib/store"
-import { Agent, AgentTemplate } from "@/lib/store/types"
+import { AgentTemplate } from "@/lib/store/types"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select"
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
-import { Separator } from "@/components/ui/separator"
-import { Bot, Brain, MessageSquare, Settings, Square, Plus, Activity, Cpu, Power, Trash2 } from "lucide-react"
+import { Bot, MessageSquare, Settings, Plus } from "lucide-react"
 import { toast } from "sonner"
-import { cn } from "@/lib/utils"
 import { SettingsSheet } from "@/components/agents/settings-sheet"
-import { ErrorBoundary } from "@/components/error-boundary"
-import { SecureStorage, logger, LogCategory } from 'agentdock-core';
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { SecureStorage, logger, LogCategory } from 'agentdock-core'
+import { templates } from '@/generated/templates'
 
 // Initialize storage
 const storage = SecureStorage.getInstance('agentdock');
 
 export default function AgentsPage() {
-  const { agents, initialize, isInitialized } = useAgents()
-  const [templates, setTemplates] = useState<AgentTemplate[]>([])
+  const { initialize, isInitialized } = useAgents()
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null)
@@ -43,161 +34,45 @@ export default function AgentsPage() {
     }
   }, [initialize, isInitialized])
 
-  const loadTemplates = useCallback(async () => {
+  // Load templates from bundled templates
+  useEffect(() => {
     try {
       setIsLoading(true)
       setError(null)
 
-      await logger.debug(
+      logger.debug(
         LogCategory.SYSTEM,
         'AgentsPage',
-        'Starting template load process'
+        'Loading bundled templates'
       )
 
-      // Try to get from localStorage first
-      try {
-        const storedTemplates = await storage.get<AgentTemplate[]>('agent_templates')
-        if (storedTemplates && Array.isArray(storedTemplates) && storedTemplates.length > 0) {
-          await logger.info(
-            LogCategory.SYSTEM,
-            'AgentsPage',
-            'Loading templates from localStorage',
-            { count: storedTemplates.length }
-          )
-          setTemplates(storedTemplates)
-          setIsLoading(false)
-          return
-        }
-      } catch (storageError) {
-        // If we get a tampering error, clear the storage and continue
-        await logger.warn(
-          LogCategory.SYSTEM,
-          'AgentsPage',
-          'Storage error detected, clearing corrupted data',
-          { error: storageError instanceof Error ? storageError.message : 'Unknown error' }
-        )
-        await storage.remove('agent_templates')
+      // Convert templates object to array
+      const templateArray = Object.values(templates)
+      if (templateArray.length === 0) {
+        throw new Error('No templates available')
       }
 
-      // If not in localStorage or storage error, load from API/filesystem
-      await logger.info(
+      logger.info(
         LogCategory.SYSTEM,
         'AgentsPage',
-        'Loading templates from filesystem'
+        'Templates loaded successfully',
+        { count: templateArray.length }
       )
-      
-      const response = await fetch("/api/agents/templates")
-      if (!response.ok) {
-        throw new Error(`Failed to load templates: ${response.statusText}`)
-      }
-      const data = await response.json()
-      
-      await logger.debug(
-        LogCategory.SYSTEM,
-        'AgentsPage',
-        'Received template data from API',
-        { data }
-      )
-      
-      // Ensure data is an array
-      if (!Array.isArray(data)) {
-        throw new Error('Invalid template data received')
-      }
 
-      // Store in localStorage for future use
-      if (data.length > 0) {
-        await logger.info(
-          LogCategory.SYSTEM,
-          'AgentsPage',
-          'Storing templates in localStorage',
-          { count: data.length }
-        )
-        await storage.set('agent_templates', data)
-      } else {
-        await logger.warn(
-          LogCategory.SYSTEM,
-          'AgentsPage',
-          'No templates received from API'
-        )
-      }
-
-      setTemplates(data)
+      setIsLoading(false)
     } catch (error) {
-      await logger.error(
+      logger.error(
         LogCategory.SYSTEM,
         'AgentsPage',
         'Failed to load templates',
         { error: error instanceof Error ? error.message : 'Unknown error' }
       )
-      console.error("Failed to load templates:", error)
       setError(error instanceof Error ? error.message : "Failed to load templates")
-      setTemplates([])
       toast.error("Failed to load agent templates")
     } finally {
       setIsLoading(false)
     }
   }, [])
-
-  // Load templates on mount and when settings change
-  useEffect(() => {
-    loadTemplates()
-  }, [loadTemplates])
-
-  // Function to reset templates from filesystem
-  const resetTemplates = async () => {
-    try {
-      const response = await fetch("/api/agents/templates", {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'load_from_fs' })
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to reset templates')
-      }
-
-      const { templates: freshTemplates } = await response.json()
-      
-      // Update localStorage
-      await storage.set('agent_templates', freshTemplates)
-      
-      // Update state
-      setTemplates(freshTemplates)
-      toast.success('Templates reset to filesystem version')
-    } catch (error) {
-      console.error('Failed to reset templates:', error)
-      toast.error('Failed to reset templates')
-    }
-  }
-
-  // Function to save template to filesystem
-  const saveTemplateToFS = async (template: AgentTemplate) => {
-    try {
-      const response = await fetch("/api/agents/templates", {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          action: 'save_to_fs',
-          template
-        })
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to save template')
-      }
-
-      const { templates: updatedTemplates } = await response.json()
-      
-      // Update localStorage and state
-      await storage.set('agent_templates', updatedTemplates)
-      setTemplates(updatedTemplates)
-      
-      toast.success('Template saved to filesystem')
-    } catch (error) {
-      console.error('Failed to save template:', error)
-      toast.error('Failed to save template')
-    }
-  }
 
   const handleChat = (agentId: string) => {
     router.push(`/chat?agent=${agentId}`)
@@ -212,8 +87,7 @@ export default function AgentsPage() {
             <p className="text-muted-foreground mt-2">Loading templates...</p>
           </div>
         </div>
-        <Separator className="my-6" />
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mt-8">
           {[1, 2, 3].map((i) => (
             <Card key={i} className="flex flex-col">
               <CardHeader>
@@ -251,25 +125,7 @@ export default function AgentsPage() {
               <Button onClick={() => window.location.reload()}>
                 Try Again
               </Button>
-              <Button 
-                variant="destructive" 
-                onClick={async () => {
-                  try {
-                    await storage.remove('agent_templates');
-                    toast.success('Storage cleared successfully');
-                    window.location.reload();
-                  } catch (error) {
-                    console.error('Failed to clear storage:', error);
-                    toast.error('Failed to clear storage');
-                  }
-                }}
-              >
-                Reset Storage
-              </Button>
             </div>
-            <p className="text-sm text-muted-foreground">
-              If you keep seeing errors, try using the "Reset Storage" button to clear cached data.
-            </p>
           </CardContent>
         </Card>
       </div>
@@ -290,7 +146,7 @@ export default function AgentsPage() {
       </div>
       
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mt-8">
-        {templates.map((template) => (
+        {Object.values(templates).map((template) => (
           <Card key={template.agentId} className="flex flex-col">
             <CardHeader>
               <div className="flex items-start justify-between">

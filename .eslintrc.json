@@ -2,6 +2,8 @@
   "extends": [
     "next/core-web-vitals"
   ],
+  // TODO: TEMPORARY DISABLE - These rules are temporarily disabled for initial deployment
+  // They should be re-enabled and fixed properly after deployment verification
   "rules": {
     "@typescript-eslint/no-unused-vars": "off",
     "@typescript-eslint/no-explicit-any": "off",
@@ -9,4 +11,4 @@
     "react-hooks/exhaustive-deps": "warn",
     "react/no-unescaped-entities": "off"
   }
-} 
+}

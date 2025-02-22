@@ -3,7 +3,7 @@
 
 import { AgentConfig } from 'agentdock-core';
 
-export const templates: Record<string, AgentConfig> = {
+export const templates = {
   "chat-agent": {
     "version": "1.0",
     "agentId": "chat-agent",
@@ -114,11 +114,21 @@ export const templates: Record<string, AgentConfig> = {
       ]
     }
   }
-};
+} as const;
 
 export type TemplateId = keyof typeof templates;
-export type Template = AgentConfig;
+export type Template = typeof templates[TemplateId];
 
 export function getTemplate(id: TemplateId): AgentConfig {
-  return templates[id];
+  const template = templates[id];
+  
+  // Create mutable copy of the template
+  return {
+    ...template,
+    modules: [...template.modules],
+    chatSettings: {
+      ...template.chatSettings,
+      initialMessages: template.chatSettings?.initialMessages ? [...template.chatSettings.initialMessages] : []
+    }
+  } as AgentConfig;
 }

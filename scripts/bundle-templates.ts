@@ -51,7 +51,17 @@ export type TemplateId = keyof typeof templates;
 export type Template = typeof templates[TemplateId];
 
 export function getTemplate(id: TemplateId): AgentConfig {
-  return templates[id] as AgentConfig;
+  const template = templates[id];
+  
+  // Create mutable copy of the template
+  return {
+    ...template,
+    modules: [...template.modules],
+    chatSettings: {
+      ...template.chatSettings,
+      initialMessages: template.chatSettings?.initialMessages ? [...template.chatSettings.initialMessages] : []
+    }
+  } as AgentConfig;
 }
 `;
 

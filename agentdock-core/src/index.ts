@@ -13,8 +13,8 @@ export * from './errors';             // Error handling
 export * from './logging';            // Logging system
 
 // Configuration and utilities
-export { loadAgentConfig } from './config';  // Configuration utilities
-export * from './utils';              // Utility functions
+export { loadAgentConfig } from './config/agent-config';  // Configuration utilities
+// export * from './utils';              // Utility functions for future use
 
 // Storage
 export { SecureStorage } from './storage/secure-storage';  // Secure storage for settings

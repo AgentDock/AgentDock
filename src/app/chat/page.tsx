@@ -59,7 +59,7 @@ interface RuntimeConfig {
 function ChatPageContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const agentId = searchParams.get('agent')
+  const agentId = searchParams.get('agent')?.split('?')[0] // Clean agentId
   const [agentSettings, setAgentSettings] = useState<AgentSettings | null>(null)
   const [globalSettings, setGlobalSettings] = useState<GlobalSettings | null>(null)
   const [loading, setLoading] = useState(true)
@@ -111,7 +111,8 @@ function ChatPageContent() {
           .filter(m => m.role === 'user' || m.role === 'assistant')
           .map(m => ({
             ...m,
-            role: m.role === 'system' ? 'assistant' : m.role
+            role: m.role === 'system' ? 'assistant' : m.role,
+            createdAt: m.createdAt ? new Date(m.createdAt) : new Date()
           }));
         
         const storageKey = `ai-conversation-${agentId}`;
@@ -151,6 +152,13 @@ function ChatPageContent() {
   useEffect(() => {
     if (!agentId) {
       router.replace('/agents')
+      return;
+    }
+
+    // Validate agentId against available templates
+    if (!templates[agentId as TemplateId]) {
+      router.replace('/agents')
+      toast.error('Invalid agent selected')
     }
   }, [agentId, router])
 
@@ -160,30 +168,71 @@ function ChatPageContent() {
       if (!agentId) return;
       
       try {
-        const storage = SecureStorage.getInstance('agentdock');
-        const settings = await storage.get<GlobalSettings>('global_settings');
-        if (settings) {
-          setGlobalSettings(settings);
-          setDebugMode(settings.core.debugMode || false);
+        setLoading(true)
+        setError(null)
+
+        const bundledTemplate = templates[agentId as TemplateId]
+        
+        if (!bundledTemplate) {
+          throw new Error('Template not found')
         }
 
-        const response = await fetch(`/api/chat/${agentId}/config`, {
-          headers: {
-            'x-api-key': settings?.apiKeys.anthropic || ''
+        await logger.info(
+          LogCategory.SYSTEM,
+          'ChatPage',
+          'Using bundled template',
+          { 
+            agentId,
+            name: bundledTemplate.name,
+            model: bundledTemplate.nodeConfigurations?.['llm.anthropic']?.model
+          }
+        )
+
+        // Load global settings for API key
+        const settings = await storage.get<GlobalSettings>('global_settings');
+        if (!settings?.apiKeys?.anthropic) {
+          throw new Error('Please add your Anthropic API key in settings to use the chat');
+        }
+        
+        setGlobalSettings(settings);
+        setDebugMode(settings.core.debugMode || false);
+
+        // Set runtime config from template
+        setRuntimeConfig({
+          name: bundledTemplate.name,
+          description: bundledTemplate.description,
+          model: bundledTemplate.nodeConfigurations?.['llm.anthropic']?.model || "claude-3-opus",
+          temperature: bundledTemplate.nodeConfigurations?.['llm.anthropic']?.temperature || 0.7,
+          maxTokens: bundledTemplate.nodeConfigurations?.['llm.anthropic']?.maxTokens || 2048,
+          personality: bundledTemplate.personality,
+          chatSettings: {
+            initialMessages: bundledTemplate.chatSettings?.initialMessages ? [...bundledTemplate.chatSettings.initialMessages] : []
           }
         });
-        if (response.ok) {
-          const config = await response.json();
-          setRuntimeConfig(config);
-        }
+        
+        setAgentSettings({
+          name: bundledTemplate.name,
+          description: bundledTemplate.description,
+          model: bundledTemplate.nodeConfigurations?.['llm.anthropic']?.model || "claude-3-opus",
+          tools: [...(bundledTemplate.modules || [])],
+          apiKey: "",
+          temperature: bundledTemplate.nodeConfigurations?.['llm.anthropic']?.temperature?.toString() || "0.7",
+          maxTokens: bundledTemplate.nodeConfigurations?.['llm.anthropic']?.maxTokens?.toString() || "2048",
+          systemPrompt: bundledTemplate.personality || "",
+          instructions: ""
+        })
+
       } catch (error) {
-        console.error('Failed to load settings:', error);
+        const message = error instanceof Error ? error.message : 'Failed to load agent settings'
+        setError(message)
+        toast.error(message)
+      } finally {
+        setLoading(false)
       }
-    };
-    
-    initialize().catch(console.error);
-    loadSettings();
-  }, [initialize, agentId]);
+    }
+
+    loadSettings()
+  }, [agentId])
 
   // Load saved messages
   useEffect(() => {
@@ -198,7 +247,8 @@ function ChatPageContent() {
           .filter((m: Message) => m.role === 'user' || m.role === 'assistant')
           .map((m: Message) => ({
             ...m,
-            role: m.role === 'system' ? 'assistant' : m.role
+            role: m.role === 'system' ? 'assistant' : m.role,
+            createdAt: m.createdAt ? new Date(m.createdAt) : new Date()
           }));
         
         setMessages(parsedMessages);
@@ -223,109 +273,6 @@ function ChatPageContent() {
       );
     }
   }, [agentId, setMessages]);
-
-  // Load agent settings
-  useEffect(() => {
-    const loadSettings = async () => {
-      if (!agentId) return;
-      
-      try {
-        setLoading(true)
-        setError(null)
-
-        const bundledTemplate = templates[agentId as TemplateId]
-        
-        if (bundledTemplate) {
-          await logger.info(
-            LogCategory.SYSTEM,
-            'ChatPage',
-            'Using bundled template',
-            { 
-              agentId,
-              name: bundledTemplate.name,
-              model: bundledTemplate.nodeConfigurations?.['llm.anthropic']?.model
-            }
-          )
-          
-          setAgentSettings({
-            name: bundledTemplate.name,
-            description: bundledTemplate.description,
-            model: bundledTemplate.nodeConfigurations?.['llm.anthropic']?.model || "claude-3-opus",
-            tools: [...(bundledTemplate.modules || [])],
-            apiKey: "",
-            temperature: bundledTemplate.nodeConfigurations?.['llm.anthropic']?.temperature?.toString() || "0.7",
-            maxTokens: bundledTemplate.nodeConfigurations?.['llm.anthropic']?.maxTokens?.toString() || "2048",
-            systemPrompt: bundledTemplate.personality || "",
-            instructions: ""
-          })
-          return
-        }
-
-        await logger.warn(
-          LogCategory.SYSTEM,
-          'ChatPage',
-          'Template not found in bundle, trying API',
-          { agentId }
-        )
-        
-        const response = await fetch(`/api/agents/templates/${agentId}`, {
-          headers: {
-            'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400'
-          }
-        })
-
-        if (!response.ok) {
-          const errorText = await response.text()
-          await logger.error(
-            LogCategory.SYSTEM,
-            'ChatPage',
-            'Failed to load template from API',
-            { 
-              agentId,
-              status: response.status,
-              statusText: response.statusText,
-              error: errorText
-            }
-          )
-          throw new Error(`Failed to load template: ${response.statusText} (${errorText})`)
-        }
-
-        const apiTemplate = await response.json() as Template
-        
-        await logger.info(
-          LogCategory.SYSTEM,
-          'ChatPage',
-          'Loaded template from API',
-          { 
-            agentId,
-            name: apiTemplate.name,
-            model: apiTemplate.nodeConfigurations?.['llm.anthropic']?.model
-          }
-        )
-        
-        setAgentSettings({
-          name: apiTemplate.name,
-          description: apiTemplate.description,
-          model: apiTemplate.nodeConfigurations?.['llm.anthropic']?.model || "claude-3-opus",
-          tools: [...(apiTemplate.modules || [])],
-          apiKey: "",
-          temperature: apiTemplate.nodeConfigurations?.['llm.anthropic']?.temperature?.toString() || "0.7",
-          maxTokens: apiTemplate.nodeConfigurations?.['llm.anthropic']?.maxTokens?.toString() || "2048",
-          systemPrompt: apiTemplate.personality || "",
-          instructions: ""
-        })
-
-      } catch (error) {
-        const message = error instanceof Error ? error.message : 'Failed to load agent settings'
-        setError(message)
-        toast.error(message)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadSettings()
-  }, [agentId])
 
   // Early return for redirection
   if (!agentId) {

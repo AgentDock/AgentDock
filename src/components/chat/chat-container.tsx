@@ -6,11 +6,11 @@ import { useAgents } from "@/lib/store"
 import { Chat } from "@/components/ui/chat"
 import { toast } from "sonner"
 import { logger, LogCategory } from 'agentdock-core'
-import { APIError, ErrorCode, SecureStorage, loadAgentConfig } from 'agentdock-core'
+import { APIError, ErrorCode, SecureStorage } from 'agentdock-core'
 import { ErrorBoundary } from "@/components/ui/error-boundary"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { useRouter } from "next/navigation"
-import { templates } from '@/generated/templates'
+import { templates, TemplateId } from '@/generated/templates'
 
 // ============================================================================
 // TEMPORARY IMPLEMENTATION FOR V1
@@ -40,15 +40,9 @@ interface ChatContainerProps {
 }
 
 interface RuntimeConfig {
-  name: string
-  description: string
-  model: string
-  temperature: number
-  maxTokens: number
-  personality?: string
-  chatSettings: {
-    initialMessages?: string[]
-  }
+  personality?: string;
+  temperature?: number;
+  maxTokens?: number;
 }
 
 function ChatError({ error, onRetry }: { error: Error, onRetry: () => void }) {
@@ -128,36 +122,6 @@ function ChatLoading() {
   );
 }
 
-// Helper function to save messages to storage
-async function saveMessages(storage: SecureStorage, agentId: string, messages: Message[]) {
-  const processedMessages = messages
-    .filter(m => m.role === 'user' || m.role === 'assistant')
-    .map(processMessage);
-  await storage.set(`chat_messages_${agentId}`, processedMessages);
-  return processedMessages;
-}
-
-// Helper function to process message dates
-function processMessage(message: Message): Message {
-  // Ensure createdAt is a proper Date object
-  let createdAt: Date;
-  if (!message.createdAt) {
-    createdAt = new Date();
-  } else if (typeof message.createdAt === 'string') {
-    createdAt = new Date(message.createdAt);
-  } else if (message.createdAt instanceof Date) {
-    createdAt = message.createdAt;
-  } else {
-    createdAt = new Date();
-  }
-
-  return {
-    ...message,
-    role: message.role === 'system' ? 'assistant' : message.role, // Convert any system messages to assistant
-    createdAt
-  };
-}
-
 const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, ChatContainerProps>(({ className, agentId = 'default' }, ref) => {
   const { agents } = useAgents()
   const [isInitializing, setIsInitializing] = React.useState(true)
@@ -165,11 +129,7 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
   const [runtimeConfig, setRuntimeConfig] = React.useState<RuntimeConfig | null>(null)
   const [savedMessages, setSavedMessages] = React.useState<Message[]>([])
   const storage = React.useMemo(() => SecureStorage.getInstance('agentdock'), []);
-
-  const agent = React.useMemo(() => 
-    agents.find(a => a.agentId === agentId), 
-    [agents, agentId]
-  )
+  const [error, setError] = React.useState<Error | null>(null);
 
   // Load saved messages and config on mount
   React.useEffect(() => {
@@ -191,7 +151,7 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
 
         setApiKey(apiKey);
 
-        const template = templates[agentId as keyof typeof templates];
+        const template = templates[agentId as TemplateId];
         if (!template) {
           throw new APIError(
             'Template not found',
@@ -202,54 +162,40 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
           );
         }
 
-        // Load and validate configuration
-        const agentConfig = await loadAgentConfig(template, apiKey);
-        const llmConfig = agentConfig.nodeConfigurations?.['llm.anthropic'];
-
-        if (!llmConfig) {
-          throw new APIError(
-            'LLM configuration not found',
-            ErrorCode.CONFIG_NOT_FOUND,
-            'ChatContainer',
-            'loadData',
-            { agentId }
-          );
-        }
-
+        // Set runtime config from template
         setRuntimeConfig({
-          name: agentConfig.name,
-          description: agentConfig.description,
-          model: llmConfig.model || 'claude-3-opus-20240229',
-          temperature: llmConfig.temperature ?? 0.7,
-          maxTokens: llmConfig.maxTokens ?? 1000,
-          personality: agentConfig.personality,
-          chatSettings: {
-            initialMessages: agentConfig.chatSettings?.initialMessages
-          }
+          personality: template.personality,
+          temperature: template.nodeConfigurations?.['llm.anthropic']?.temperature,
+          maxTokens: template.nodeConfigurations?.['llm.anthropic']?.maxTokens
         });
 
         // Load saved messages
-        const messages = await storage.get<Message[]>(`chat_messages_${agentId}`);
-        if (messages) {
-          // Filter out system messages and process dates
-          const processedMessages = messages
-            .filter(m => m.role === 'user' || m.role === 'assistant')
-            .map(processMessage);
-          setSavedMessages(processedMessages);
+        const storageKey = `ai-conversation-${agentId}`;
+        const savedMessages = localStorage.getItem(storageKey);
+        if (savedMessages) {
+          const messages = JSON.parse(savedMessages) as Message[];
+          setSavedMessages(messages);
         }
 
         setIsInitializing(false);
       } catch (error) {
-        logger.error(
-          LogCategory.API,
+        if (error instanceof APIError) {
+          throw error;
+        }
+        throw new APIError(
+          'Failed to initialize chat',
+          ErrorCode.CONFIG_NOT_FOUND,
           'ChatContainer',
-          'Failed to load data',
-          { error: error instanceof Error ? error.message : 'Unknown error' }
+          'loadData',
+          { agentId }
         );
-        throw error;
       }
     };
-    loadData();
+
+    loadData().catch((error) => {
+      setError(error);
+      setIsInitializing(false);
+    });
   }, [agentId, storage]);
 
   const {
@@ -258,7 +204,7 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
     handleInputChange,
     handleSubmit,
     isLoading,
-    error,
+    error: chatError,
     reload,
     stop,
     append,
@@ -390,16 +336,10 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
   // Effect to save messages whenever they change
   React.useEffect(() => {
     if (messages.length > 0) {
-      saveMessages(storage, agentId, messages).catch(error => {
-        logger.error(
-          LogCategory.API,
-          'ChatContainer',
-          'Failed to save messages',
-          { error: error instanceof Error ? error.message : 'Unknown error' }
-        );
-      });
+      const storageKey = `ai-conversation-${agentId}`;
+      localStorage.setItem(storageKey, JSON.stringify(messages));
     }
-  }, [messages, agentId, storage]);
+  }, [messages, agentId]);
 
   // Handle user message submission
   const handleUserSubmit = async (event?: { preventDefault?: () => void }, options?: { experimental_attachments?: FileList }) => {

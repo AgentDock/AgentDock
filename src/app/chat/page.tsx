@@ -283,7 +283,6 @@ function ChatPageContent() {
     try {
       if (chatContainerRef.current) {
         await chatContainerRef.current.handleReset();
-        toast.success('Chat reset successfully');
       }
     } catch (error) {
       console.error('Failed to reset chat:', error);

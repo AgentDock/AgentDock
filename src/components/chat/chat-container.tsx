@@ -282,7 +282,7 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
           LogCategory.API,
           'ChatContainer',
           `Reset progress: ${step}`,
-          { progress, total: 5 }
+          { progress, total: 3 }
         );
       };
 
@@ -296,17 +296,9 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
       localStorage.removeItem(storageKey);
       updateProgress('Cleared localStorage');
 
-      // Clear SecureStorage
-      await storage.set(`chat_messages_${agentId}`, null);
-      updateProgress('Cleared SecureStorage');
-
       // Reset Vercel AI SDK state
       reload();
       updateProgress('Reset AI SDK state');
-
-      // Clear any pending operations
-      await new Promise(resolve => setTimeout(resolve, 100));
-      updateProgress('Cleared pending operations');
 
       await logger.info(
         LogCategory.API,
@@ -326,7 +318,7 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
       );
       toast.error('Failed to reset chat session. Please try reloading the page.');
     }
-  }, [agentId, storage, reload, isLoading, stop, setMessages]);
+  }, [isLoading, stop, setMessages, setSavedMessages, agentId, reload]);
 
   // Expose handleReset through ref
   React.useImperativeHandle(ref, () => ({

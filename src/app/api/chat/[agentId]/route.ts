@@ -5,6 +5,14 @@ import type { LanguageModelV1 } from '@ai-sdk/provider';
 import { APIError, ErrorCode, logger, LogCategory, loadAgentConfig } from 'agentdock-core';
 import { templates, TemplateId } from '@/generated/templates';
 
+// Log runtime configuration
+console.log('Route Handler Configuration:', {
+  runtime: 'edge',
+  path: '/api/chat/[agentId]',
+  method: 'POST',
+  timestamp: new Date().toISOString()
+});
+
 // ============================================================================
 // TEMPORARY IMPLEMENTATION FOR V1
 // This is a simplified implementation using direct message handling.
@@ -105,11 +113,11 @@ async function retryStreamText(
 
 export async function POST(
   request: NextRequest,
-  context: RouteContext
+  context: { params: Record<string, string | string[]> }
 ) {
   try {
-    // Get agentId from context
-    const { agentId } = context.params;
+    // Get agentId from params
+    const agentId = context.params.agentId as string;
     if (!agentId) {
       throw new APIError(
         'Agent ID is required',

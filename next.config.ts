@@ -18,6 +18,19 @@ const nextConfig: NextConfig = {
 
   // Basic security - more in Pro version
   poweredByHeader: false,
+
+  // Add build logging through webpack
+  webpack: (config, { buildId, dev, isServer }) => {
+    // Log build information
+    console.log('Next.js Build Info:', { buildId, dev, isServer });
+    
+    // This is a good place to check route compilation
+    if (isServer) {
+      console.log('Compiling server routes...');
+    }
+    
+    return config;
+  }
 };
 
 export default nextConfig;

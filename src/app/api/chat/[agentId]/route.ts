@@ -32,9 +32,7 @@ const MAX_RETRY_DELAY = 10000; // 10 seconds
 const BACKOFF_FACTOR = 2;
 
 interface RouteContext {
-  params: {
-    agentId: string;
-  }
+  params: Promise<{ agentId: string }>;
 }
 
 // Helper to delay execution with exponential backoff
@@ -117,7 +115,7 @@ export async function POST(
 ) {
   try {
     // Get agentId from params
-    const { agentId } = context.params;
+    const { agentId } = await context.params;
     if (!agentId) {
       throw new APIError(
         'Agent ID is required',

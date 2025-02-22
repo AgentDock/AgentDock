@@ -33,13 +33,16 @@ export async function GET(req: NextRequest) {
       // Filter and format models
       const models = response.data
         .filter(model => model.id.startsWith('claude'))
-        .map(model => ({
-          id: model.id,
-          name: model.name || model.id,
-          description: model.description || 'Anthropic language model',
-          context_window: model.context_window,
-          created: model.created
-        }));
+        .map(model => {
+          const formatted: AnthropicModel = {
+            id: model.id,
+            name: model.id, // Use id as name since Anthropic doesn't provide a display name
+            description: 'Anthropic Claude language model',
+            context_window: 100000, // Default context window size
+            created: Math.floor(Date.now() / 1000) // Current timestamp since Anthropic doesn't provide creation date
+          };
+          return formatted;
+        });
 
       return NextResponse.json({ 
         valid: true,

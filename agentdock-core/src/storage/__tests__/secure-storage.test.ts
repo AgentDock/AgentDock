@@ -12,7 +12,7 @@ describe('SecureStorage', () => {
   const testValue = { foo: 'bar' };
 
   beforeEach(() => {
-    storage = new SecureStorage('test');
+    storage = SecureStorage.getInstance('test');
     jest.clearAllMocks();
 
     // Setup default mock implementations

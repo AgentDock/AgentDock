@@ -66,7 +66,12 @@ export class AnthropicProvider implements LLMProvider {
         }))
       });
 
-      return response.content[0].text;
+      // Handle content block type
+      const content = response.content[0];
+      if ('text' in content) {
+        return content.text;
+      }
+      throw createError('llm', 'Invalid content block type', ErrorCode.LLM_EXECUTION);
     } catch (error) {
       throw createError('llm', 'Text generation failed', ErrorCode.LLM_EXECUTION, { error });
     }

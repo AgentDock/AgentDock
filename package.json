@@ -12,12 +12,15 @@
     "predev": "tsx scripts/bundle-templates.ts",
     "dev": "next dev",
     "build": "next build",
+    "postbuild": "tsx scripts/post-build.ts",
     "start": "next start",
     "lint": "next lint",
     "test": "jest",
     "test:unit": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
+    "validate": "tsx tests/validation/pre-deploy.ts",
+    "predeploy": "pnpm run validate",
     "shadcn": "shadcn",
     "generate-favicons": "node scripts/generate-favicons.js"
   },
@@ -95,7 +98,8 @@
     "autoprefixer": "^10.4.20",
     "postcss": "^8.5.3",
     "tailwindcss": "^3.4.17",
-    "tsx": "^4.19.3"
+    "tsx": "^4.19.3",
+    "chalk": "^5.3.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",

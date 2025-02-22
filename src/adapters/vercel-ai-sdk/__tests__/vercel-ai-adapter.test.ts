@@ -1,18 +1,16 @@
 import { VercelAIAdapter } from '../vercel-ai-adapter';
-import { streamText, Message } from 'ai';
+import { Message } from 'ai';
 import { 
   Tool, 
   createError, 
   ErrorCode,
   logger,
-  LogCategory 
+  LogCategory,
+  ToolResult,
+  BaseNode
 } from 'agentdock-core';
 
 // Mock dependencies
-jest.mock('ai', () => ({
-  streamText: jest.fn()
-}));
-
 jest.mock('agentdock-core', () => ({
   createError: jest.fn(),
   logger: {
@@ -41,19 +39,44 @@ describe('VercelAIAdapter', () => {
     { id: '1', role: 'user', content: 'Hello' }
   ];
 
-  const mockTool: Tool = {
-    parameters: {
+  class MockTool extends BaseNode implements Tool {
+    readonly type = 'function';
+    readonly name = 'test-tool';
+    readonly description = 'A test tool';
+    readonly parameters = {
       type: 'object',
       properties: {
         input: { type: 'string' }
       }
-    },
-    execute: async () => 'result'
-  };
+    };
+
+    protected getCategory() { return 'custom' as const; }
+    protected getLabel() { return 'Test Tool'; }
+    protected getDescription() { return 'A test tool'; }
+    protected getVersion() { return '1.0.0'; }
+    protected getCompatibility() {
+      return {
+        core: true,
+        pro: true,
+        custom: true
+      };
+    }
+    protected getInputs() { return []; }
+    protected getOutputs() { return []; }
+
+    async execute(): Promise<ToolResult<string>> {
+      return {
+        result: 'result',
+        toolCallId: 'test-call-id'
+      };
+    }
+  }
+
+  const mockTool = new MockTool('test-tool-id', {});
 
   beforeEach(() => {
     jest.clearAllMocks();
-    adapter = new VercelAIAdapter([mockTool]);
+    adapter = new VercelAIAdapter({ apiKey: 'test-key' }, [mockTool]);
   });
 
   describe('generateStream', () => {
@@ -61,45 +84,52 @@ describe('VercelAIAdapter', () => {
       // Mock successful stream
       const mockStream = new ReadableStream({
         start(controller) {
-          controller.enqueue('Test response');
+          controller.enqueue(new Uint8Array(Buffer.from('data: Test response\n\n')));
+          controller.enqueue(new Uint8Array(Buffer.from('data: [DONE]\n\n')));
           controller.close();
         }
       });
 
-      (streamText as jest.Mock).mockResolvedValueOnce({
-        textStream: mockStream
+      const mockAnthropicStream = {
+        [Symbol.asyncIterator]: async function*() {
+          yield { type: 'content_block_delta', delta: { text: 'Test response' } };
+        }
+      };
+
+      // Mock the private anthropic client
+      Object.defineProperty(adapter, 'anthropic', {
+        value: {
+          messages: {
+            create: jest.fn().mockResolvedValue(mockAnthropicStream)
+          }
+        }
       });
 
       const result = await adapter.generateStream(mockConfig, mockMessages);
 
       // Verify stream
-      expect(result).toBe(mockStream);
+      expect(result).toBeInstanceOf(ReadableStream);
 
-      // Verify Vercel AI SDK call
-      expect(streamText).toHaveBeenCalledWith({
+      // Verify Anthropic SDK call
+      const anthropicClient = (adapter as any).anthropic;
+      expect(anthropicClient.messages.create).toHaveBeenCalledWith({
         model: mockConfig.model,
         temperature: mockConfig.temperature,
-        maxTokens: mockConfig.maxTokens,
-        messages: mockMessages,
-        tools: {
-          tool_0: {
-            parameters: mockTool.parameters
-          }
-        }
+        max_tokens: mockConfig.maxTokens,
+        messages: [{ role: 'user', content: 'Hello' }],
+        stream: true
       });
-
-      // Verify logging
-      expect(logger.debug).toHaveBeenCalledWith(
-        LogCategory.LLM,
-        'VercelAIAdapter',
-        'Generating stream',
-        { model: mockConfig.model }
-      );
     });
 
     it('should handle stream generation errors', async () => {
       const mockError = new Error('Stream generation failed');
-      (streamText as jest.Mock).mockRejectedValueOnce(mockError);
+      Object.defineProperty(adapter, 'anthropic', {
+        value: {
+          messages: {
+            create: jest.fn().mockRejectedValue(mockError)
+          }
+        }
+      });
       (createError as jest.Mock).mockReturnValueOnce(mockError);
 
       await expect(adapter.generateStream(mockConfig, mockMessages))
@@ -115,7 +145,13 @@ describe('VercelAIAdapter', () => {
 
     it('should handle rate limit errors', async () => {
       const mockError = new Error('rate limit exceeded');
-      (streamText as jest.Mock).mockRejectedValueOnce(mockError);
+      Object.defineProperty(adapter, 'anthropic', {
+        value: {
+          messages: {
+            create: jest.fn().mockRejectedValue(mockError)
+          }
+        }
+      });
 
       await expect(adapter.generateStream(mockConfig, mockMessages))
         .rejects.toThrow();
@@ -131,7 +167,13 @@ describe('VercelAIAdapter', () => {
     it('should handle abort errors', async () => {
       const mockError = new Error('Request aborted');
       mockError.name = 'AbortError';
-      (streamText as jest.Mock).mockRejectedValueOnce(mockError);
+      Object.defineProperty(adapter, 'anthropic', {
+        value: {
+          messages: {
+            create: jest.fn().mockRejectedValue(mockError)
+          }
+        }
+      });
 
       await expect(adapter.generateStream(mockConfig, mockMessages))
         .rejects.toThrow();

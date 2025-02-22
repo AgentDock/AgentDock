@@ -53,7 +53,7 @@ describe('Chat API Streaming', () => {
         body: JSON.stringify({ messages: mockMessages })
       });
 
-      const response = await POST(request, { params: { agentId: mockAgentId } });
+      const response = await POST(request, { params: Promise.resolve({ agentId: mockAgentId }) });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -71,7 +71,7 @@ describe('Chat API Streaming', () => {
         body: JSON.stringify({ messages: mockMessages })
       });
 
-      const response = await POST(request, { params: { agentId: mockAgentId } });
+      const response = await POST(request, { params: Promise.resolve({ agentId: mockAgentId }) });
 
       expect(response.headers.get('content-type')).toBe('text/plain; charset=utf-8');
       expect(response.headers.get('x-accel-buffering')).toBe('no');
@@ -93,7 +93,7 @@ describe('Chat API Streaming', () => {
         body: JSON.stringify({ messages: largeMessages })
       });
 
-      const response = await POST(request, { params: { agentId: mockAgentId } });
+      const response = await POST(request, { params: Promise.resolve({ agentId: mockAgentId }) });
       expect(response.status).toBe(200);
     });
   });
@@ -111,7 +111,7 @@ describe('Chat API Streaming', () => {
         })
       });
 
-      const response = await POST(request, { params: { agentId: mockAgentId } });
+      const response = await POST(request, { params: Promise.resolve({ agentId: mockAgentId }) });
       const data = await response.json();
 
       expect(response.status).toBe(503);
@@ -128,7 +128,7 @@ describe('Chat API Streaming', () => {
         body: JSON.stringify({ messages: mockMessages })
       });
 
-      const response = await POST(request, { params: { agentId: 'invalid-agent' } });
+      const response = await POST(request, { params: Promise.resolve({ agentId: 'invalid-agent' }) });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -158,7 +158,7 @@ describe('Chat API Streaming', () => {
         body: JSON.stringify({ messages: mockMessages })
       });
 
-      await POST(request, { params: { agentId: mockAgentId } });
+      await POST(request, { params: Promise.resolve({ agentId: mockAgentId }) });
 
       const cache = ConfigCache.getInstance();
       expect(cache.get).toHaveBeenCalledWith(mockAgentId, '1.0');

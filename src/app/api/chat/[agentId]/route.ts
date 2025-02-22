@@ -113,11 +113,11 @@ async function retryStreamText(
 
 export async function POST(
   request: NextRequest,
-  context: { params: Record<string, string | string[]> }
+  context: RouteContext
 ) {
   try {
     // Get agentId from params
-    const agentId = context.params.agentId as string;
+    const { agentId } = context.params;
     if (!agentId) {
       throw new APIError(
         'Agent ID is required',

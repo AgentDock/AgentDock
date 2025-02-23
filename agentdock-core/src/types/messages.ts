@@ -30,6 +30,7 @@ export interface ToolResultContent {
   result: any;
 }
 
+// Union type for all content types
 export type MessageContent = TextContent | ImageContent | ToolCallContent | ToolResultContent;
 
 // Base message interface
@@ -41,22 +42,22 @@ export interface BaseMessage {
 }
 
 // Specific message types
-export interface CoreUserMessage extends BaseMessage {
+export interface UserMessage extends BaseMessage {
   role: 'user';
   content: string | (TextContent | ImageContent)[];
 }
 
-export interface CoreAssistantMessage extends BaseMessage {
+export interface AssistantMessage extends BaseMessage {
   role: 'assistant';
   content: string | (TextContent | ToolCallContent)[];
 }
 
-export interface CoreSystemMessage extends BaseMessage {
+export interface SystemMessage extends BaseMessage {
   role: 'system';
   content: string;
 }
 
-export interface CoreToolMessage extends BaseMessage {
+export interface ToolMessage extends BaseMessage {
   role: 'tool';
   content: ToolResultContent[];
   toolCallId: string;
@@ -64,19 +65,19 @@ export interface CoreToolMessage extends BaseMessage {
 }
 
 // Union type for all message types
-export type CoreMessage = CoreUserMessage | CoreAssistantMessage | CoreSystemMessage | CoreToolMessage;
+export type Message = UserMessage | AssistantMessage | SystemMessage | ToolMessage;
 
 // Type guards
-export const isUserMessage = (message: CoreMessage): message is CoreUserMessage => 
+export const isUserMessage = (message: Message): message is UserMessage => 
   message.role === 'user';
 
-export const isAssistantMessage = (message: CoreMessage): message is CoreAssistantMessage => 
+export const isAssistantMessage = (message: Message): message is AssistantMessage => 
   message.role === 'assistant';
 
-export const isSystemMessage = (message: CoreMessage): message is CoreSystemMessage => 
+export const isSystemMessage = (message: Message): message is SystemMessage => 
   message.role === 'system';
 
-export const isToolMessage = (message: CoreMessage): message is CoreToolMessage => 
+export const isToolMessage = (message: Message): message is ToolMessage => 
   message.role === 'tool';
 
 export const isMultipartContent = (content: string | MessageContent[]): content is MessageContent[] => 

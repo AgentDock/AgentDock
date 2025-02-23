@@ -11,6 +11,7 @@ import { ErrorBoundary } from "@/components/ui/error-boundary"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { useRouter } from "next/navigation"
 import { templates, TemplateId } from '@/generated/templates'
+import type { GlobalSettings, RuntimeConfig } from '@/lib/types/settings'
 
 // ============================================================================
 // TEMPORARY IMPLEMENTATION FOR V1
@@ -22,27 +23,10 @@ import { templates, TemplateId } from '@/generated/templates'
 // Reference: plan_refactor.md Phase 1
 // ============================================================================
 
-interface GlobalSettings {
-  apiKeys: {
-    openai: string;
-    anthropic: string;
-    serpapi: string;
-  };
-  core: {
-    byokOnly: boolean;
-    debugMode?: boolean;
-  };
-}
-
 interface ChatContainerProps {
   className?: string
   agentId?: string
-}
-
-interface RuntimeConfig {
-  personality?: string;
-  temperature?: number;
-  maxTokens?: number;
+  header?: React.ReactNode
 }
 
 function ChatError({ error, onRetry }: { error: Error, onRetry: () => void }) {
@@ -122,7 +106,7 @@ function ChatLoading() {
   );
 }
 
-const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, ChatContainerProps>(({ className, agentId = 'default' }, ref) => {
+const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, ChatContainerProps>(({ className, agentId = 'default', header }, ref) => {
   const { agents } = useAgents()
   const [isInitializing, setIsInitializing] = React.useState(true)
   const [apiKey, setApiKey] = React.useState<string>('')
@@ -282,7 +266,7 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
           LogCategory.API,
           'ChatContainer',
           `Reset progress: ${step}`,
-          { progress, total: 5 }
+          { progress, total: 3 }
         );
       };
 
@@ -296,17 +280,9 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
       localStorage.removeItem(storageKey);
       updateProgress('Cleared localStorage');
 
-      // Clear SecureStorage
-      await storage.set(`chat_messages_${agentId}`, null);
-      updateProgress('Cleared SecureStorage');
-
       // Reset Vercel AI SDK state
       reload();
       updateProgress('Reset AI SDK state');
-
-      // Clear any pending operations
-      await new Promise(resolve => setTimeout(resolve, 100));
-      updateProgress('Cleared pending operations');
 
       await logger.info(
         LogCategory.API,
@@ -326,7 +302,7 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
       );
       toast.error('Failed to reset chat session. Please try reloading the page.');
     }
-  }, [agentId, storage, reload, isLoading, stop, setMessages]);
+  }, [isLoading, stop, setMessages, setSavedMessages, agentId, reload]);
 
   // Expose handleReset through ref
   React.useImperativeHandle(ref, () => ({
@@ -385,27 +361,11 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
           handleInputChange={handleInputChange}
           handleSubmit={handleUserSubmit}
           isGenerating={isLoading}
-          stop={async () => {
-            try {
-              await stop();
-              await logger.info(
-                LogCategory.API,
-                'ChatContainer',
-                'Generation stopped by user'
-              );
-            } catch (error) {
-              await logger.error(
-                LogCategory.API,
-                'ChatContainer',
-                'Failed to stop generation',
-                { error: error instanceof Error ? error.message : 'Unknown error' }
-              );
-              throw error;
-            }
-          }}
+          stop={stop}
           append={append}
           suggestions={suggestions}
-          className="h-full"
+          className="flex-1"
+          header={header}
         />
       </div>
     </ErrorBoundary>

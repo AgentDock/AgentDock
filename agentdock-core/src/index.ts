@@ -5,6 +5,21 @@
 // Core types
 export * from './types/agent-config';  // Agent configuration
 export * from './types/messages';      // Message types
+export type {
+  ToolState,
+  BaseToolInvocation,
+  PartialToolCall,
+  ToolCall,
+  ToolResult,
+  ToolInvocation,
+  JSONSchema,
+  Tool,
+  ToolRegistrationOptions
+} from './types/tools';
+
+// Node system
+export { BaseNode } from './nodes/base-node';
+export type { NodeMetadata, NodePort } from './nodes/base-node';
 
 // Core functionality
 export * from './nodes';              // Node implementations
@@ -18,3 +33,17 @@ export { loadAgentConfig } from './config/agent-config';  // Configuration utili
 
 // Storage
 export { SecureStorage } from './storage/secure-storage';  // Secure storage for settings
+
+// Error handling
+export * from './errors';
+export { createError, wrapError } from './errors';
+
+// Logging system
+export {
+  logger,
+  LogLevel,
+  LogCategory,
+  type LogEntry,
+  type CommonOperation,
+  type BaseMetadata
+} from './logging';

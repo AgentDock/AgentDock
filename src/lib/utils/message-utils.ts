@@ -1,79 +1,84 @@
-import { Message } from 'ai';
+import { Message as AIMessage } from 'ai';
 import { 
-  CoreMessage, 
-  CoreUserMessage, 
-  CoreAssistantMessage, 
-  CoreSystemMessage,
-  CoreToolMessage,
+  Message as AgentMessage, 
+  UserMessage,
+  AssistantMessage,
+  SystemMessage,
+  ToolMessage,
   MessageContent,
   TextContent,
+  ToolCallContent,
   ToolResultContent,
   isMultipartContent
 } from 'agentdock-core';
 import { v4 as uuidv4 } from 'uuid';
 
+// Common base message creation
+function createBaseMessage(id?: string, createdAt?: Date) {
+  return {
+    id: id || uuidv4(),
+    createdAt: createdAt || new Date()
+  };
+}
+
+// Content formatting for display
+function formatContent(content: MessageContent): string {
+  switch (content.type) {
+    case 'text':
+      return content.text;
+    case 'tool_call':
+      return `[Tool Call: ${content.toolName}]`;
+    case 'tool_result':
+      return `[Tool Result: ${content.toolCallId}]`;
+    default:
+      return '';
+  }
+}
+
 /**
- * Convert a CoreMessage to Vercel AI SDK Message
+ * Convert a Message to Vercel AI SDK Message
  */
-export function toAIMessage(message: CoreMessage): Message {
-  // Generate a unique ID if not provided
-  const id = message.id || uuidv4();
-  
-  // Handle multi-part content
+export function toAIMessage(message: AgentMessage): AIMessage {
   const content = isMultipartContent(message.content)
-    ? message.content
-        .map(part => {
-          if (part.type === 'text') return part.text;
-          if (part.type === 'image') return `[Image: ${part.alt || 'No description'}]`;
-          if (part.type === 'tool_call') return `[Tool Call: ${part.toolName}]`;
-          if (part.type === 'tool_result') return `[Tool Result: ${part.toolCallId}]`;
-          return '';
-        })
-        .join('\n')
+    ? message.content.map(formatContent).join('\n')
     : message.content;
 
-  // Convert to Vercel AI SDK Message format
   return {
-    id,
-    role: message.role === 'tool' ? 'assistant' : message.role, // Map tool messages to assistant
-    content,
-    createdAt: message.createdAt || new Date()
+    ...createBaseMessage(message.id, message.createdAt),
+    role: message.role === 'tool' ? 'assistant' : message.role,
+    content
   };
 }
 
 /**
  * Convert a Vercel AI SDK Message to CoreMessage
  */
-export function toCoreMessage(message: Message): CoreMessage {
-  const baseMessage = {
-    id: message.id || uuidv4(),
-    createdAt: message.createdAt || new Date()
-  };
+export function toCoreMessage(message: AIMessage): AgentMessage {
+  const base = createBaseMessage(message.id, message.createdAt);
 
   switch (message.role) {
     case 'system':
       return {
-        ...baseMessage,
+        ...base,
         role: 'system',
         content: message.content
-      } as CoreSystemMessage;
+      } as SystemMessage;
 
     case 'user':
       return {
-        ...baseMessage,
+        ...base,
         role: 'user',
         content: message.content
-      } as CoreUserMessage;
+      } as UserMessage;
 
     case 'assistant':
       return {
-        ...baseMessage,
+        ...base,
         role: 'assistant',
         content: message.content
-      } as CoreAssistantMessage;
+      } as AssistantMessage;
 
     case 'data':
-      // Handle data messages as tool messages with a single result
       const toolResult: ToolResultContent = {
         type: 'tool_result',
         toolCallId: uuidv4(),
@@ -81,88 +86,74 @@ export function toCoreMessage(message: Message): CoreMessage {
       };
       
       return {
-        ...baseMessage,
+        ...base,
         role: 'tool',
         content: [toolResult],
         toolCallId: toolResult.toolCallId,
         toolName: 'data'
-      } as CoreToolMessage;
+      } as ToolMessage;
 
     default:
-      // Default to assistant message for unknown roles
       return {
-        ...baseMessage,
+        ...base,
         role: 'assistant',
         content: message.content
-      } as CoreAssistantMessage;
+      } as AssistantMessage;
   }
 }
 
 /**
  * Convert an array of CoreMessages to Vercel AI SDK Messages
  */
-export function toAIMessages(messages: CoreMessage[]): Message[] {
+export function toAIMessages(messages: AgentMessage[]): AIMessage[] {
   return messages.map(toAIMessage);
 }
 
 /**
  * Convert an array of Vercel AI SDK Messages to CoreMessages
  */
-export function toCoreMessages(messages: Message[]): CoreMessage[] {
+export function toCoreMessages(messages: AIMessage[]): AgentMessage[] {
   return messages.map(toCoreMessage);
-}
-
-/**
- * Create a new text content part
- */
-export function createTextContent(text: string): TextContent {
-  return {
-    type: 'text',
-    text
-  };
 }
 
 /**
  * Create a new message with the given role and content
  */
-export function createMessage(role: CoreMessage['role'], content: string | MessageContent[]): CoreMessage {
-  const baseMessage = {
-    id: uuidv4(),
-    createdAt: new Date()
-  };
+export function createMessage(role: AgentMessage['role'], content: string | MessageContent[]): AgentMessage {
+  const base = createBaseMessage();
 
   switch (role) {
     case 'system':
-      return { 
-        ...baseMessage, 
+      return {
+        ...base,
         role,
         content: typeof content === 'string' ? content : content[0].type === 'text' ? content[0].text : ''
-      } as CoreSystemMessage;
+      } as SystemMessage;
 
     case 'user':
-      return { 
-        ...baseMessage, 
+      return {
+        ...base,
         role,
         content
-      } as CoreUserMessage;
+      } as UserMessage;
 
     case 'assistant':
-      return { 
-        ...baseMessage, 
+      return {
+        ...base,
         role,
         content
-      } as CoreAssistantMessage;
+      } as AssistantMessage;
 
     case 'tool':
       if (typeof content === 'string' || !content.every(part => part.type === 'tool_result')) {
         throw new Error('Tool messages must contain only tool results');
       }
-      return { 
-        ...baseMessage, 
+      return {
+        ...base,
         role,
         content: content as ToolResultContent[],
         toolCallId: content[0].toolCallId,
         toolName: 'unknown'
-      } as CoreToolMessage;
+      } as ToolMessage;
   }
 } 

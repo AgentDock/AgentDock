@@ -5,6 +5,7 @@ import { ThemeProvider } from '@/components/providers/theme-provider';
 import { Toaster } from "sonner";
 import { SiteHeader } from '@/components/layout/site-header';
 import { SiteSidebar } from '@/components/layout/site-sidebar';
+import { CoreInitializer } from '@/components/core/initializer';
 
 export function LayoutContent({ children }: { children: React.ReactNode }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -16,6 +17,7 @@ export function LayoutContent({ children }: { children: React.ReactNode }) {
       enableSystem 
       disableTransitionOnChange
     >
+      <CoreInitializer />
       <div className="h-screen flex bg-background">
         <SiteSidebar isCollapsed={isCollapsed} />
         <div className="flex-1 flex flex-col overflow-hidden">

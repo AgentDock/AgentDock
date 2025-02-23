@@ -1,24 +1,26 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { NodeRegistry } from 'agentdock-core';
+import { useEffect } from 'react';
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ErrorInfo } from "react";
+import { logger, LogCategory } from 'agentdock-core';
+import { useAgents } from '@/lib/store';
 
 function BaseCoreInitializer() {
-  const [isInitialized, setIsInitialized] = useState(false);
+  const { initialize, isInitialized } = useAgents();
 
   useEffect(() => {
     if (!isInitialized) {
-      try {
-        // Initialize core nodes on client side
-        // Core nodes are registered automatically when importing agentdock-core
-        setIsInitialized(true);
-      } catch (error) {
-        console.error('Failed to initialize core nodes:', error);
-      }
+      initialize().catch((error) => {
+        logger.error(
+          LogCategory.SYSTEM,
+          'CoreInitializer',
+          'Failed to initialize store',
+          { error: error instanceof Error ? error.message : 'Unknown error' }
+        );
+      });
     }
-  }, [isInitialized]);
+  }, [isInitialized, initialize]);
 
   return null;
 }
@@ -27,7 +29,12 @@ export function CoreInitializer() {
   return (
     <ErrorBoundary
       onError={(error: Error, errorInfo: ErrorInfo) => {
-        console.error("Error in CoreInitializer:", error, errorInfo);
+        logger.error(
+          LogCategory.SYSTEM,
+          'CoreInitializer',
+          'Error in CoreInitializer',
+          { error: error.message, errorInfo }
+        );
       }}
       resetOnPropsChange
     >

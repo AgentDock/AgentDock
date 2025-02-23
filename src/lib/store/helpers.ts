@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
-import { BaseNode, ChatNode, ChatNodeConfig, SecureStorage } from 'agentdock-core';
+import { BaseNode, SecureStorage } from 'agentdock-core';
 import { Agent, AgentTemplate, AgentRuntimeSettings, AgentState } from './types';
+import { ChatNode } from './chat-node';
 
 export interface CreateAgentParams {
   name: string;
@@ -106,7 +107,8 @@ export async function createAgentStore(params: AgentStoreParams = {}): Promise<A
 
 export function createChatNode(id: string): ChatNode {
   return new ChatNode(id, {
-    maxHistory: 100,
-    includeSystem: true
+    model: 'claude-3-opus',
+    temperature: 0.7,
+    maxTokens: 4096
   });
 } 

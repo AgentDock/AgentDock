@@ -4,6 +4,9 @@ import {
   type Message,
 } from "@/components/ui/chat-message"
 import { TypingIndicator } from "@/components/ui/typing-indicator"
+import { CopyButton } from "@/components/ui/copy-button"
+import { cn } from "@/lib/utils"
+import React from "react"
 
 type AdditionalMessageOptions = Omit<ChatMessageProps, keyof Message>
 
@@ -14,6 +17,7 @@ interface MessageListProps {
   messageOptions?:
     | AdditionalMessageOptions
     | ((message: Message) => AdditionalMessageOptions)
+  className?: string
 }
 
 export function MessageList({
@@ -21,10 +25,22 @@ export function MessageList({
   showTimeStamps = true,
   isTyping = false,
   messageOptions,
+  className,
 }: MessageListProps) {
   return (
-    <div className="space-y-4 overflow-visible">
+    <div className={cn("flex flex-col gap-4", className)}>
       {messages.map((message, index) => {
+        const defaultOptions = {
+          actions: message.role === "assistant" && (
+            <div className="flex items-center gap-1">
+              <CopyButton
+                content={message.content}
+                copyMessage="Copied response to clipboard!"
+              />
+            </div>
+          )
+        }
+
         const additionalOptions =
           typeof messageOptions === "function"
             ? messageOptions(message)
@@ -32,14 +48,26 @@ export function MessageList({
 
         return (
           <ChatMessage
-            key={index}
-            showTimeStamp={showTimeStamps}
+            key={message.id}
             {...message}
+            showTimeStamp={showTimeStamps}
+            {...defaultOptions}
             {...additionalOptions}
           />
         )
       })}
-      {isTyping && <TypingIndicator />}
+      {isTyping && (
+        <div className="flex items-start">
+          <div className={cn(
+            "group/message relative break-words rounded-lg p-3 text-sm sm:max-w-[70%]",
+            "bg-muted text-foreground",
+            "duration-300 animate-in fade-in-0 zoom-in-75",
+            "origin-bottom-left"
+          )}>
+            <TypingIndicator />
+          </div>
+        </div>
+      )}
     </div>
   )
 }

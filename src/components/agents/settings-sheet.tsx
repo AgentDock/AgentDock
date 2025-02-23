@@ -15,29 +15,19 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { SecureStorage } from 'agentdock-core';
+import { SecureStorage, logger, LogCategory } from 'agentdock-core';
 import { ErrorBoundary } from "@/components/error-boundary";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
-
-interface AgentSettings {
-  apiKey: string;
-  useCustomApiKey: boolean;
-  temperature: string;
-  maxTokens: string;
-}
-
-interface GlobalSettings {
-  apiKeys: {
-    openai: string;
-    anthropic: string;
-    serpapi: string;
-  };
-  core: {
-    byokOnly: boolean;
-  };
-}
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { templates, TemplateId } from '@/generated/templates';
+import type { AgentSettings, GlobalSettings } from '@/lib/types/settings';
 
 interface SettingsSheetProps {
   open: boolean;

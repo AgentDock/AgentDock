@@ -168,4 +168,34 @@ export function createError(
     category,
     ...details
   }, httpStatus);
+}
+
+/**
+ * Wrap an error with consistent formatting and logging
+ */
+export function wrapError(
+  category: ErrorCategory | 'node' | 'config' | 'llm' | 'api' | 'storage' | 'generic',
+  operation: string,
+  error: unknown,
+  defaultCode: ErrorCode = ErrorCode.INTERNAL,
+  details: Record<string, unknown> = {}
+): AgentError {
+  // If it's already our error type, just return it
+  if (error instanceof AgentError) {
+    return error;
+  }
+
+  // Create a standardized error message
+  const message = error instanceof Error ? error.message : 'Unknown error occurred';
+  
+  // Create error with consistent format
+  return createError(
+    category,
+    `${operation}: ${message}`,
+    defaultCode,
+    {
+      ...details,
+      originalError: error
+    }
+  );
 } 

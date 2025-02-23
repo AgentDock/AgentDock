@@ -5,49 +5,66 @@
  * @module lib/store/types
  */
 
-export interface NodeMetadata {
-  category?: string;
-  label?: string;
-  description?: string;
-  inputs?: Record<string, any>;
-  outputs?: Record<string, any>;
-  [key: string]: any;
+import type { BaseNode, NodeMetadata } from 'agentdock-core';
+export type { BaseNode };
+
+export interface ChatNodeConfig {
+  personality?: string;
+  temperature?: number;
+  maxTokens?: number;
+  model?: string;
 }
 
-export interface BaseNode {
-  id: string;
-  type: string;
-  metadata: Record<string, any>;
+export interface ChatNodeMetadata {
+  created: number;
+  messages: Array<{
+    id: string;
+    role: 'user' | 'assistant';
+    content: string;
+    timestamp: number;
+  }>;
 }
 
-export interface ChatNode extends BaseNode {
+export interface ChatNode extends BaseNode<ChatNodeConfig> {
   type: 'CHAT';
-  metadata: {
-    created: number;
-    messages: Array<{
-      id: string;
-      role: 'user' | 'assistant';
-      content: string;
-      timestamp: number;
-    }>;
-    [key: string]: any;
-  };
+  metadata: NodeMetadata;
+  chatMetadata: ChatNodeMetadata;
+}
+
+// Base chat settings interface
+interface BaseChatSettings {
+  initialMessages: string[];
+}
+
+// Template-specific chat settings
+export interface TemplateChatSettings extends BaseChatSettings {
+  historyPolicy: 'lastN' | 'all';
+  historyLength?: number; // Optional in template
+}
+
+// Runtime chat settings
+export interface ChatSettings extends BaseChatSettings {
+  historyPolicy: 'none' | 'lastN' | 'all';
+  historyLength: number; // Required at runtime
 }
 
 export interface AgentTemplate {
+  version?: string;
   agentId: string;
   name: string;
   description: string;
   personality: string;
   modules: string[];
   nodeConfigurations: {
-    [key: string]: any;
+    'llm.anthropic'?: {
+      model: string;
+      temperature: number;
+      maxTokens: number;
+      useCustomApiKey?: boolean;
+    };
+    [key: string]: unknown;
   };
-  chatSettings: {
-    initialMessages?: string[];
-    historyPolicy?: 'none' | 'lastN' | 'all';
-    historyLength?: number;
-  };
+  chatSettings: TemplateChatSettings;
   instructions?: string;
 }
 
@@ -57,11 +74,12 @@ export interface AgentRuntimeSettings {
   maxTokens?: number;
 }
 
-export interface Agent extends AgentTemplate {
+export interface Agent extends Omit<AgentTemplate, 'chatSettings'> {
   id: string;
   state: AgentState;
   nodes: BaseNode[];
   runtimeSettings: AgentRuntimeSettings;
+  chatSettings: ChatSettings;
   metadata: {
     created: number;
     lastStateChange: number;
@@ -107,4 +125,6 @@ export interface AppActions {
 export interface Store extends AppState, AppActions {
   initialize: () => Promise<void>;
   updateAgentRuntime: (agentId: string, settings: Partial<AgentRuntimeSettings>) => Promise<void>;
+  templatesValidated: boolean;
+  templatesError: string | null;
 } 

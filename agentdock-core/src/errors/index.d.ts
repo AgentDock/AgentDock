@@ -2,6 +2,8 @@
  * @fileoverview Type declarations for the errors module
  */
 
+export type ErrorCategory = 'node' | 'config' | 'llm' | 'api' | 'storage' | 'generic';
+
 export enum ErrorCode {
   // Node-related errors
   NODE_INITIALIZATION = 'NODE_INITIALIZATION_ERROR',
@@ -75,5 +77,13 @@ export function createError(
   type: 'node' | 'config' | 'llm' | 'api' | 'storage' | 'generic',
   message: string,
   code: ErrorCode,
+  details?: Record<string, unknown>
+): AgentError;
+
+export function wrapError(
+  category: ErrorCategory | 'node' | 'config' | 'llm' | 'api' | 'storage' | 'generic',
+  operation: string,
+  error: unknown,
+  defaultCode?: ErrorCode,
   details?: Record<string, unknown>
 ): AgentError; 

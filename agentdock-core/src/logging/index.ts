@@ -19,6 +19,37 @@ export enum LogCategory {
   SYSTEM = 'system'
 }
 
+export interface LogEntry {
+  level: LogLevel;
+  category: LogCategory;
+  component: string;
+  message: string;
+  metadata?: Record<string, unknown>;
+  timestamp: Date;
+}
+
+// Common operation types for standardized logging
+export type CommonOperation = 
+  | 'initialize'
+  | 'execute'
+  | 'cleanup'
+  | 'validate'
+  | 'process'
+  | 'request'
+  | 'response'
+  | 'stream'
+  | 'load'
+  | 'save'
+  | 'delete';
+
+// Standard metadata fields
+export interface BaseMetadata {
+  operationId?: string;
+  duration?: number;
+  success?: boolean;
+  error?: unknown;
+}
+
 class Logger {
   private static instance: Logger;
   private static levelColors: Record<LogLevel, string> = {
@@ -85,7 +116,87 @@ class Logger {
     console.groupEnd();
   }
 
-  async debug(category: LogCategory, component: string, message: string, metadata?: Record<string, unknown>) {
+  // Standard operation logging
+  async logOperation(
+    level: LogLevel,
+    category: LogCategory,
+    component: string,
+    operation: CommonOperation,
+    metadata: BaseMetadata & Record<string, unknown> = {}
+  ): Promise<void> {
+    const entry: LogEntry = {
+      level,
+      category,
+      component,
+      message: `${operation.charAt(0).toUpperCase() + operation.slice(1)} operation ${metadata.success ? 'completed' : 'failed'}`,
+      metadata: {
+        operation,
+        ...metadata,
+        timestamp: new Date().toISOString()
+      },
+      timestamp: new Date()
+    };
+
+    await this.log(entry);
+  }
+
+  // Standard API logging
+  async logAPI(
+    level: LogLevel,
+    method: string,
+    path: string,
+    metadata: BaseMetadata & {
+      status?: number;
+      requestId?: string;
+      duration?: number;
+    } = {}
+  ): Promise<void> {
+    const entry: LogEntry = {
+      level,
+      category: LogCategory.API,
+      component: 'API',
+      message: `${method} ${path} ${metadata.status || ''}`,
+      metadata: {
+        method,
+        path,
+        ...metadata,
+        timestamp: new Date().toISOString()
+      },
+      timestamp: new Date()
+    };
+
+    await this.log(entry);
+  }
+
+  // Standard error logging
+  async logError(
+    category: LogCategory,
+    component: string,
+    error: unknown,
+    metadata: BaseMetadata & Record<string, unknown> = {}
+  ): Promise<void> {
+    const entry: LogEntry = {
+      level: LogLevel.ERROR,
+      category,
+      component,
+      message: error instanceof Error ? error.message : 'Unknown error occurred',
+      metadata: {
+        error: error instanceof Error ? {
+          name: error.name,
+          message: error.message,
+          stack: error.stack
+        } : error,
+        ...metadata,
+        timestamp: new Date().toISOString()
+      },
+      timestamp: new Date()
+    };
+
+    await this.log(entry);
+  }
+
+  // Base logging methods
+  async debug(category: LogCategory, component: string, message: string, metadata?: Record<string, unknown>): Promise<void> {
     if (!this.shouldLog(LogLevel.DEBUG)) return;
     
     if (typeof window === 'undefined') {
@@ -95,7 +206,7 @@ class Logger {
     }
   }
 
-  async info(category: LogCategory, component: string, message: string, metadata?: Record<string, unknown>) {
+  async info(category: LogCategory, component: string, message: string, metadata?: Record<string, unknown>): Promise<void> {
     if (!this.shouldLog(LogLevel.INFO)) return;
     
     if (typeof window === 'undefined') {
@@ -105,7 +216,7 @@ class Logger {
     }
   }
 
-  async warn(category: LogCategory, component: string, message: string, metadata?: Record<string, unknown>) {
+  async warn(category: LogCategory, component: string, message: string, metadata?: Record<string, unknown>): Promise<void> {
     if (!this.shouldLog(LogLevel.WARN)) return;
     
     if (typeof window === 'undefined') {
@@ -115,7 +226,7 @@ class Logger {
     }
   }
 
-  async error(category: LogCategory, component: string, message: string, metadata?: Record<string, unknown>) {
+  async error(category: LogCategory, component: string, message: string, metadata?: Record<string, unknown>): Promise<void> {
     if (!this.shouldLog(LogLevel.ERROR)) return;
     
     if (typeof window === 'undefined') {
@@ -123,6 +234,17 @@ class Logger {
     } else {
       this.formatBrowser(LogLevel.ERROR, category, component, message, metadata);
     }
+  }
+
+  private async log(entry: LogEntry): Promise<void> {
+    // In development, log to console
+    if (process.env.NODE_ENV === 'development') {
+      const { level, category, component, message, metadata } = entry;
+      console[level](`[${category}] ${component}: ${message}`, metadata);
+    }
+
+    // TODO: Add production logging implementation
+    // This could be extended to support different logging backends
   }
 }
 

@@ -64,10 +64,12 @@ describe('VercelAIAdapter', () => {
     protected getInputs() { return []; }
     protected getOutputs() { return []; }
 
-    async execute(): Promise<ToolResult<string>> {
+    async execute(): Promise<ToolResult> {
       return {
-        result: 'result',
-        toolCallId: 'test-call-id'
+        state: 'result',
+        toolCallId: 'test-call-id',
+        toolName: 'test-tool',
+        result: 'result'
       };
     }
   }

@@ -4,14 +4,14 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Message as CoreMessage } from "@/core/types/chat"
+import { Message as CoreMessage, TextContent, isMultipartContent } from "agentdock-core"
 
 // UI-specific message type that excludes system messages
 interface UIMessage {
   id: string;
   content: string;
   role: "user" | "assistant";
-  createdAt: number;
+  createdAt?: Date;
 }
 
 interface MessageListProps {
@@ -21,6 +21,19 @@ interface MessageListProps {
 
 const BOT_AVATAR = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0xMiAxNXYyIi8+PHJlY3QgeD0iOSIgeT0iNyIgd2lkdGg9IjYiIGhlaWdodD0iNCIgcng9IjEiLz48cGF0aCBkPSJNNSAyMnYtMmE3IDcgMCAwIDEgMTQgMHYySDV6Ii8+PC9zdmc+';
 const USER_AVATAR = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0xOSAyMUg1YTIgMiAwIDAgMS0yLTJWNWEyIDIgMCAwIDEgMi0yaDE0YTIgMiAwIDAgMSAyIDJ2MTRhMiAyIDAgMCAxLTIgMnoiLz48Y2lyY2xlIGN4PSIxMiIgY3k9IjkiIHI9IjMiLz48cGF0aCBkPSJNMTcuNSAxN2EzLjUgMy41IDAgMCAwLTctMCIvPjwvc3ZnPg==';
+
+function getMessageContent(message: CoreMessage): string {
+  if (typeof message.content === 'string') {
+    return message.content;
+  }
+  if (isMultipartContent(message.content)) {
+    return message.content
+      .filter((part): part is TextContent => part.type === 'text')
+      .map(part => part.text)
+      .join('\n');
+  }
+  return '';
+}
 
 export function MessageList({ messages, className }: MessageListProps) {
   const scrollRef = React.useRef<HTMLDivElement>(null)
@@ -58,11 +71,13 @@ export function MessageList({ messages, className }: MessageListProps) {
               )}
             >
               <p className="leading-relaxed whitespace-pre-wrap break-words">
-                {message.content}
+                {getMessageContent(message)}
               </p>
-              <div className="mt-1 select-none text-[10px] opacity-50">
-                {new Date(message.createdAt).toLocaleTimeString()}
-              </div>
+              {message.createdAt && (
+                <div className="mt-1 select-none text-[10px] opacity-50">
+                  {new Date(message.createdAt).toLocaleTimeString()}
+                </div>
+              )}
             </div>
             {message.role === "user" && (
               <Avatar className="h-8 w-8 shrink-0">

@@ -1,6 +1,19 @@
-export interface Message {
-  id: string
-  content: string
-  role: "user" | "assistant" | "system" | "data"
-  createdAt?: Date
-} 
+/**
+ * @fileoverview Chat component types
+ */
+
+import type { Message } from 'agentdock-core';
+export type { Message };
+
+// Re-export specific message types if needed
+export type { 
+  UserMessage,
+  AssistantMessage,
+  SystemMessage,
+  ToolMessage,
+  MessageContent,
+  TextContent,
+  ImageContent,
+  ToolCallContent,
+  ToolResultContent
+} from 'agentdock-core'; 

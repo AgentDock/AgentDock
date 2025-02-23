@@ -11,6 +11,7 @@ import { ErrorBoundary } from "@/components/ui/error-boundary"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { useRouter } from "next/navigation"
 import { templates, TemplateId } from '@/generated/templates'
+import type { GlobalSettings, RuntimeConfig } from '@/lib/types/settings'
 
 // ============================================================================
 // TEMPORARY IMPLEMENTATION FOR V1
@@ -22,27 +23,9 @@ import { templates, TemplateId } from '@/generated/templates'
 // Reference: plan_refactor.md Phase 1
 // ============================================================================
 
-interface GlobalSettings {
-  apiKeys: {
-    openai: string;
-    anthropic: string;
-    serpapi: string;
-  };
-  core: {
-    byokOnly: boolean;
-    debugMode?: boolean;
-  };
-}
-
 interface ChatContainerProps {
   className?: string
   agentId?: string
-}
-
-interface RuntimeConfig {
-  personality?: string;
-  temperature?: number;
-  maxTokens?: number;
 }
 
 function ChatError({ error, onRetry }: { error: Error, onRetry: () => void }) {

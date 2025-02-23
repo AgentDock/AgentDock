@@ -21,7 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { NodeMetadata, NodePort } from "@/core/types/node";
+import { NodeMetadata, NodePort } from "agentdock-core";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ErrorInfo } from "react";
 

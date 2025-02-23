@@ -6,8 +6,8 @@
 
 import * as React from "react";
 import { useState } from "react";
-import { NodeRegistry, NodeRegistryMetadata } from "@/core/registry/node-registry";
-import { NodeMetadata, NodePort } from "@/core/types/node";
+import { NodeRegistry, NodeRegistryMetadata } from "agentdock-core";
+import { NodeMetadata, NodePort } from "agentdock-core";
 import { Button } from "@/components/ui/button";
 import {
   Card,

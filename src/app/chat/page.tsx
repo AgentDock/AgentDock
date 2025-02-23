@@ -16,45 +16,10 @@ import { useChat, Message } from 'ai/react'
 import { templates, TemplateId, Template } from '@/generated/templates'
 import { RefreshCw } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
+import type { AgentSettings, GlobalSettings, RuntimeConfig } from '@/lib/types/settings'
 
 // Create a single instance for the chat page
 const storage = SecureStorage.getInstance('agentdock');
-
-interface AgentSettings {
-  name: string;
-  description: string;
-  model: string;
-  tools: string[];
-  apiKey: string;
-  temperature: string;
-  maxTokens: string;
-  systemPrompt: string;
-  instructions?: string;
-}
-
-interface GlobalSettings {
-  apiKeys: {
-    openai: string;
-    anthropic: string;
-    serpapi: string;
-  };
-  core: {
-    byokOnly: boolean;
-    debugMode?: boolean;
-  };
-}
-
-interface RuntimeConfig {
-  name: string;
-  description: string;
-  model: string;
-  temperature: number;
-  maxTokens: number;
-  personality?: string;
-  chatSettings: {
-    initialMessages?: string[];
-  };
-}
 
 function ChatPageContent() {
   const searchParams = useSearchParams()

@@ -7,6 +7,7 @@ import { Code2, Loader2, Terminal } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { FilePreview } from "@/components/ui/file-preview"
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer"
+import type { ToolInvocation } from 'agentdock-core'
 
 const chatBubbleVariants = cva(
   "group/message relative break-words rounded-lg p-3 text-sm sm:max-w-[70%]",
@@ -55,24 +56,6 @@ interface Attachment {
   contentType?: string
   url: string
 }
-
-interface PartialToolCall {
-  state: "partial-call"
-  toolName: string
-}
-
-interface ToolCall {
-  state: "call"
-  toolName: string
-}
-
-interface ToolResult {
-  state: "result"
-  toolName: string
-  result: any
-}
-
-type ToolInvocation = PartialToolCall | ToolCall | ToolResult
 
 export interface Message {
   id: string

@@ -5,33 +5,30 @@
  * @module lib/store/types
  */
 
-export interface NodeMetadata {
-  category?: string;
-  label?: string;
-  description?: string;
-  inputs?: Record<string, any>;
-  outputs?: Record<string, any>;
-  [key: string]: any;
+import type { BaseNode, NodeMetadata } from 'agentdock-core';
+export type { BaseNode };
+
+export interface ChatNodeConfig {
+  personality?: string;
+  temperature?: number;
+  maxTokens?: number;
+  model?: string;
 }
 
-export interface BaseNode {
-  id: string;
-  type: string;
-  metadata: Record<string, any>;
+export interface ChatNodeMetadata {
+  created: number;
+  messages: Array<{
+    id: string;
+    role: 'user' | 'assistant';
+    content: string;
+    timestamp: number;
+  }>;
 }
 
-export interface ChatNode extends BaseNode {
+export interface ChatNode extends BaseNode<ChatNodeConfig> {
   type: 'CHAT';
-  metadata: {
-    created: number;
-    messages: Array<{
-      id: string;
-      role: 'user' | 'assistant';
-      content: string;
-      timestamp: number;
-    }>;
-    [key: string]: any;
-  };
+  metadata: NodeMetadata;
+  chatMetadata: ChatNodeMetadata;
 }
 
 export interface AgentTemplate {
@@ -40,9 +37,7 @@ export interface AgentTemplate {
   description: string;
   personality: string;
   modules: string[];
-  nodeConfigurations: {
-    [key: string]: any;
-  };
+  nodeConfigurations: Record<string, unknown>;
   chatSettings: {
     initialMessages?: string[];
     historyPolicy?: 'none' | 'lastN' | 'all';

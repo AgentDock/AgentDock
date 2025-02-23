@@ -79,10 +79,17 @@ export abstract class BaseNode<TConfig = any> {
   /**
    * Static method to get node metadata.
    * This is used by the NodeRegistry for type information.
-   * Must be implemented by child classes.
    */
   static getNodeMetadata(): NodeMetadata {
-    throw new Error('getNodeMetadata() must be implemented by child classes');
+    return {
+      category: this.prototype.getCategory(),
+      label: this.prototype.getLabel(),
+      description: this.prototype.getDescription(),
+      inputs: this.prototype.getInputs(),
+      outputs: this.prototype.getOutputs(),
+      version: this.prototype.getVersion(),
+      compatibility: this.prototype.getCompatibility()
+    };
   }
 
   /**

@@ -58,8 +58,9 @@ async function validateBuild(): Promise<boolean> {
     readFileSync(join(process.cwd(), '.next/routes-manifest.json'), 'utf8')
   );
 
-  if (!routesManifest.pages || !routesManifest.dynamicRoutes) {
-    throw new ValidationError('Invalid routes-manifest.json structure');
+  // Next.js 15.1.6 structure
+  if (!routesManifest.staticRoutes && !routesManifest.dynamicRoutes) {
+    throw new ValidationError('Invalid routes-manifest.json structure - missing routes definitions');
   }
 
   return true;

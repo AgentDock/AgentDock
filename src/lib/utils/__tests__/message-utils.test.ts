@@ -15,7 +15,6 @@ import {
   toCoreMessage, 
   toAIMessages, 
   toCoreMessages,
-  createTextContent,
   createMessage
 } from '../message-utils';
 

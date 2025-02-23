@@ -1,44 +1,26 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { NodeRegistry } from 'agentdock-core';
+import { useEffect } from 'react';
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ErrorInfo } from "react";
 import { logger, LogCategory } from 'agentdock-core';
+import { useAgents } from '@/lib/store';
 
 function BaseCoreInitializer() {
-  const [isInitialized, setIsInitialized] = useState(false);
+  const { initialize, isInitialized } = useAgents();
 
   useEffect(() => {
     if (!isInitialized) {
-      try {
-        // Check if core nodes are registered
-        const metadata = NodeRegistry.getNodeMetadata();
-        const registeredNodes = metadata.nodes.map(n => n.type);
-        
-        if (registeredNodes.length === 0) {
-          throw new Error('No core nodes registered');
-        }
-
-        // Log successful initialization
-        logger.info(
-          LogCategory.SYSTEM,
-          'CoreInitializer',
-          'Core nodes registered successfully',
-          { nodes: registeredNodes }
-        );
-
-        setIsInitialized(true);
-      } catch (error) {
+      initialize().catch((error) => {
         logger.error(
           LogCategory.SYSTEM,
           'CoreInitializer',
-          'Failed to initialize core nodes',
+          'Failed to initialize store',
           { error: error instanceof Error ? error.message : 'Unknown error' }
         );
-      }
+      });
     }
-  }, [isInitialized]);
+  }, [isInitialized, initialize]);
 
   return null;
 }

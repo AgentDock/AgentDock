@@ -1,10 +1,10 @@
 import { Message } from 'ai';
 import { 
-  CoreMessage, 
-  CoreUserMessage, 
-  CoreAssistantMessage, 
-  CoreSystemMessage,
-  CoreToolMessage,
+  Message as AgentMessage, 
+  UserMessage, 
+  AssistantMessage, 
+  SystemMessage,
+  ToolMessage,
   MessageContent,
   TextContent,
   ToolResultContent,
@@ -13,9 +13,9 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 
 /**
- * Convert a CoreMessage to Vercel AI SDK Message
+ * Convert a Message to Vercel AI SDK Message
  */
-export function toAIMessage(message: CoreMessage): Message {
+export function toAIMessage(message: AgentMessage): Message {
   // Generate a unique ID if not provided
   const id = message.id || uuidv4();
   
@@ -44,7 +44,7 @@ export function toAIMessage(message: CoreMessage): Message {
 /**
  * Convert a Vercel AI SDK Message to CoreMessage
  */
-export function toCoreMessage(message: Message): CoreMessage {
+export function toCoreMessage(message: Message): AgentMessage {
   const baseMessage = {
     id: message.id || uuidv4(),
     createdAt: message.createdAt || new Date()
@@ -56,21 +56,21 @@ export function toCoreMessage(message: Message): CoreMessage {
         ...baseMessage,
         role: 'system',
         content: message.content
-      } as CoreSystemMessage;
+      } as SystemMessage;
 
     case 'user':
       return {
         ...baseMessage,
         role: 'user',
         content: message.content
-      } as CoreUserMessage;
+      } as UserMessage;
 
     case 'assistant':
       return {
         ...baseMessage,
         role: 'assistant',
         content: message.content
-      } as CoreAssistantMessage;
+      } as AssistantMessage;
 
     case 'data':
       // Handle data messages as tool messages with a single result
@@ -86,7 +86,7 @@ export function toCoreMessage(message: Message): CoreMessage {
         content: [toolResult],
         toolCallId: toolResult.toolCallId,
         toolName: 'data'
-      } as CoreToolMessage;
+      } as ToolMessage;
 
     default:
       // Default to assistant message for unknown roles
@@ -94,21 +94,21 @@ export function toCoreMessage(message: Message): CoreMessage {
         ...baseMessage,
         role: 'assistant',
         content: message.content
-      } as CoreAssistantMessage;
+      } as AssistantMessage;
   }
 }
 
 /**
  * Convert an array of CoreMessages to Vercel AI SDK Messages
  */
-export function toAIMessages(messages: CoreMessage[]): Message[] {
+export function toAIMessages(messages: AgentMessage[]): Message[] {
   return messages.map(toAIMessage);
 }
 
 /**
  * Convert an array of Vercel AI SDK Messages to CoreMessages
  */
-export function toCoreMessages(messages: Message[]): CoreMessage[] {
+export function toCoreMessages(messages: Message[]): AgentMessage[] {
   return messages.map(toCoreMessage);
 }
 
@@ -125,7 +125,7 @@ export function createTextContent(text: string): TextContent {
 /**
  * Create a new message with the given role and content
  */
-export function createMessage(role: CoreMessage['role'], content: string | MessageContent[]): CoreMessage {
+export function createMessage(role: AgentMessage['role'], content: string | MessageContent[]): AgentMessage {
   const baseMessage = {
     id: uuidv4(),
     createdAt: new Date()
@@ -137,21 +137,21 @@ export function createMessage(role: CoreMessage['role'], content: string | Messa
         ...baseMessage, 
         role,
         content: typeof content === 'string' ? content : content[0].type === 'text' ? content[0].text : ''
-      } as CoreSystemMessage;
+      } as SystemMessage;
 
     case 'user':
       return { 
         ...baseMessage, 
         role,
         content
-      } as CoreUserMessage;
+      } as UserMessage;
 
     case 'assistant':
       return { 
         ...baseMessage, 
         role,
         content
-      } as CoreAssistantMessage;
+      } as AssistantMessage;
 
     case 'tool':
       if (typeof content === 'string' || !content.every(part => part.type === 'tool_result')) {
@@ -163,6 +163,6 @@ export function createMessage(role: CoreMessage['role'], content: string | Messa
         content: content as ToolResultContent[],
         toolCallId: content[0].toolCallId,
         toolName: 'unknown'
-      } as CoreToolMessage;
+      } as ToolMessage;
   }
 } 

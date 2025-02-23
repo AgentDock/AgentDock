@@ -26,6 +26,7 @@ import type { GlobalSettings, RuntimeConfig } from '@/lib/types/settings'
 interface ChatContainerProps {
   className?: string
   agentId?: string
+  header?: React.ReactNode
 }
 
 function ChatError({ error, onRetry }: { error: Error, onRetry: () => void }) {
@@ -105,7 +106,7 @@ function ChatLoading() {
   );
 }
 
-const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, ChatContainerProps>(({ className, agentId = 'default' }, ref) => {
+const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, ChatContainerProps>(({ className, agentId = 'default', header }, ref) => {
   const { agents } = useAgents()
   const [isInitializing, setIsInitializing] = React.useState(true)
   const [apiKey, setApiKey] = React.useState<string>('')
@@ -360,27 +361,11 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
           handleInputChange={handleInputChange}
           handleSubmit={handleUserSubmit}
           isGenerating={isLoading}
-          stop={async () => {
-            try {
-              await stop();
-              await logger.info(
-                LogCategory.API,
-                'ChatContainer',
-                'Generation stopped by user'
-              );
-            } catch (error) {
-              await logger.error(
-                LogCategory.API,
-                'ChatContainer',
-                'Failed to stop generation',
-                { error: error instanceof Error ? error.message : 'Unknown error' }
-              );
-              throw error;
-            }
-          }}
+          stop={stop}
           append={append}
           suggestions={suggestions}
-          className="h-full"
+          className="flex-1"
+          header={header}
         />
       </div>
     </ErrorBoundary>

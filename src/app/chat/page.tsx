@@ -126,34 +126,29 @@ function ChatPageContent() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] flex-col">
-      <header className="bg-background px-8 py-3">
-        <div className="mx-auto max-w-4xl flex items-center gap-3">
-          <h1 className="text-xl font-semibold">{settings?.name}</h1>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleReset}
-            className="h-8 w-8"
-            title="Reset Chat"
-          >
-            <RefreshCw className="h-4 w-4" />
-          </Button>
-        </div>
-      </header>
-
-      <main className="relative flex-1 overflow-hidden px-4">
-        <div className="mx-auto max-w-4xl h-full">
-          <ChatContainer
-            ref={chatContainerRef}
-            className="h-full"
-            agentId={agentId}
-          />
-        </div>
-      </main>
+    <div className="flex h-[calc(100vh-4rem)] flex-col -m-8 overflow-hidden">
+      <ChatContainer
+        ref={chatContainerRef}
+        className="flex-1"
+        header={
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl font-semibold">{settings?.name}</h1>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleReset}
+              className="h-8 w-8"
+              title="Reset Chat"
+            >
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+          </div>
+        }
+        agentId={agentId}
+      />
 
       {debugMode && settings && (
-        <footer className="border-t bg-muted/50">
+        <footer className="flex-none border-t bg-muted/50">
           <div className="mx-auto max-w-4xl">
             <ScrollArea className="h-40">
               <div className="space-y-4 p-4">

@@ -10,6 +10,7 @@ import { SecureStorage, logger, LogCategory } from 'agentdock-core';
 import { templates, TemplateId, getTemplate } from '@/generated/templates';
 import { Store, Agent, AgentState, AgentRuntimeSettings } from './types';
 import { registerCoreNodes } from '@/lib/core/register-nodes';
+import { toast } from 'sonner';
 
 // Create a single instance for the store
 const storage = SecureStorage.getInstance('agentdock');
@@ -19,6 +20,8 @@ export const useAgents = create<Store>((set, get) => ({
   agents: [],
   activeAgentId: null,
   isInitialized: false,
+  templatesValidated: false,
+  templatesError: null,
 
   // Actions
   addAgent: (agent) => {
@@ -61,27 +64,44 @@ export const useAgents = create<Store>((set, get) => ({
       // 1. Register core nodes first
       registerCoreNodes();
 
-      // 2. Load runtime settings from storage
+      // 2. Validate templates
+      const templateArray = Object.values(templates);
+      if (templateArray.length === 0) {
+        throw new Error('No templates available');
+      }
+
+      logger.info(
+        LogCategory.SYSTEM,
+        'Store',
+        'Templates validated successfully',
+        { count: templateArray.length }
+      );
+
+      // 3. Load runtime settings from storage
       const storedSettings = await storage.get<Record<string, AgentRuntimeSettings>>('agent_runtime_settings') || {};
 
-      // 3. Create agents from bundled templates
-      const agents = Object.keys(templates).map((templateId) => {
-        // Get template as AgentConfig
-        const template = getTemplate(templateId as TemplateId);
-
+      // 4. Create agents from validated templates
+      const agents = templateArray.map((template) => {
         // Create mutable copies of readonly arrays
         const modules = [...template.modules];
         const nodeConfigurations = { ...template.nodeConfigurations };
 
         // Create mutable chat settings with defaults
-        const chatSettings = {
-          initialMessages: template.chatSettings?.initialMessages ? [...template.chatSettings.initialMessages] : [],
-          historyPolicy: template.chatSettings?.historyPolicy || 'lastN',
-          historyLength: template.chatSettings?.historyLength || 10
+        const defaultChatSettings = {
+          initialMessages: [] as string[],
+          historyPolicy: 'lastN' as const,
+          historyLength: 50
         };
 
+        // Assert the type to match our runtime expectations
+        const chatSettings = template.chatSettings ? {
+          initialMessages: [...template.chatSettings.initialMessages] as string[],
+          historyPolicy: template.chatSettings.historyPolicy as 'lastN' | 'all',
+          historyLength: (template.chatSettings as any).historyLength ?? 50
+        } : defaultChatSettings;
+
         // Create agent from template
-        const agent: Agent = {
+        return {
           agentId: template.agentId,
           name: template.name,
           description: template.description,
@@ -101,11 +121,14 @@ export const useAgents = create<Store>((set, get) => ({
             maxTokens: template.nodeConfigurations?.['llm.anthropic']?.maxTokens || 4096
           }
         };
-
-        return agent;
       });
 
-      set({ agents, isInitialized: true });
+      set({ 
+        agents, 
+        isInitialized: true,
+        templatesValidated: true,
+        templatesError: null
+      });
 
       logger.info(
         LogCategory.SYSTEM,
@@ -114,13 +137,19 @@ export const useAgents = create<Store>((set, get) => ({
         { agentCount: agents.length }
       );
     } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to initialize store';
       logger.error(
         LogCategory.SYSTEM,
         'Store',
         'Failed to initialize store',
-        { error: error instanceof Error ? error.message : 'Unknown error' }
+        { error: message }
       );
-      set({ isInitialized: true }); // Set initialized even on error
+      set({ 
+        isInitialized: true,
+        templatesValidated: false,
+        templatesError: message
+      });
+      toast.error('Failed to load templates');
     }
   },
 
@@ -128,7 +157,9 @@ export const useAgents = create<Store>((set, get) => ({
     set({
       agents: [],
       activeAgentId: null,
-      isInitialized: false
+      isInitialized: false,
+      templatesValidated: false,
+      templatesError: null
     });
   },
 

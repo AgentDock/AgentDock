@@ -20,7 +20,7 @@ function ChatPageContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const rawAgentId = searchParams.get('agent')?.split('?')[0] // Clean agentId
-  const agentId = rawAgentId || null // Convert undefined to null
+  const agentId = rawAgentId || null // Keep as null for type compatibility
   const chatContainerRef = useRef<{ handleReset: () => Promise<void> }>(null)
   
   // Single hook for all chat settings
@@ -30,12 +30,6 @@ function ChatPageContent() {
     error, 
     debugMode 
   } = useChatSettings(agentId);
-
-  // Redirect if no agent or invalid agent
-  if (!agentId || !templates[agentId as TemplateId]) {
-    router.replace('/agents');
-    return null;
-  }
 
   const {
     messages,
@@ -49,8 +43,8 @@ function ChatPageContent() {
     stop,
     append
   } = useChat({
-    api: `/api/chat/${agentId}`,
-    id: agentId,
+    api: `/api/chat/${agentId || ''}`, // Empty string fallback for type safety
+    id: agentId || '', // Empty string fallback for type safety
     headers: {
       'x-api-key': settings?.apiKey || ''
     },
@@ -85,6 +79,12 @@ function ChatPageContent() {
       toast.error(error.message);
     }
   });
+
+  // Redirect if no agent or invalid agent
+  if (!agentId || !templates[agentId as TemplateId]) {
+    router.replace('/agents');
+    return null;
+  }
 
   const handleReset = async () => {
     try {

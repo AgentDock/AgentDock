@@ -33,3 +33,17 @@ export { loadAgentConfig } from './config/agent-config';  // Configuration utili
 
 // Storage
 export { SecureStorage } from './storage/secure-storage';  // Secure storage for settings
+
+// Error handling
+export * from './errors';
+export { createError, wrapError } from './errors';
+
+// Logging system
+export {
+  logger,
+  LogLevel,
+  LogCategory,
+  type LogEntry,
+  type CommonOperation,
+  type BaseMetadata
+} from './logging';

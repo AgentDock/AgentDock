@@ -2,6 +2,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { metadata as sharedMetadata } from '@/lib/config';
 import { LayoutContent } from '@/components/layout/layout-content';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -22,6 +23,7 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <LayoutContent>{children}</LayoutContent>
+        <SpeedInsights />
       </body>
     </html>
   );

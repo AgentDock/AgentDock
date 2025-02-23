@@ -5,7 +5,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAgents } from "@/lib/store";
+import { useAgents } from "@/lib/store/index";
+import type { Agent } from "@/lib/store/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,7 +42,7 @@ export default function HomePage() {
     }
   }, [initialize, isInitialized]);
 
-  const selectedAgentData = agents.find(agent => agent.agentId === selectedAgent);
+  const selectedAgentData = agents.find((agent: Agent) => agent.agentId === selectedAgent);
   const llmConfig = selectedAgentData?.nodeConfigurations?.['llm.anthropic'] as LLMConfig | undefined;
 
   const handleAgentSelect = async (agentId: string) => {
@@ -69,7 +70,7 @@ export default function HomePage() {
           Array(3).fill(0).map((_, i) => (
             <Skeleton key={i} className="h-9 w-32" />
           ))
-        ) : agents.map((agent) => (
+        ) : agents.map((agent: Agent) => (
           <Button
             key={agent.agentId}
             variant={selectedAgent === agent.agentId ? "default" : "outline"}

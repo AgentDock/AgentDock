@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo, memo, ErrorInfo } from "react";
-import { useAgents } from "@/lib/store";
+import { useAgents } from "@/lib/store/index";
+import type { Agent } from "@/lib/store/types";
 import {
   Sheet,
   SheetContent,
@@ -158,7 +159,7 @@ function BaseSettingsSheet({
   children,
 }: SettingsSheetProps) {
   const { agents, updateAgentRuntime } = useAgents.getState();
-  const agent = useMemo(() => agents.find(a => a.agentId === agentId), [agents, agentId]);
+  const agent = useMemo(() => agents.find((a: Agent) => a.agentId === agentId), [agents, agentId]);
   const [settings, setSettings] = useState<AgentSettings>({
     apiKey: agent?.runtimeSettings?.apiKey || "",
     useCustomApiKey: !!agent?.runtimeSettings?.apiKey,

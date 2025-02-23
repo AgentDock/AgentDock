@@ -15,50 +15,14 @@ import { toast } from 'sonner';
 // Create a single instance for the store
 const storage = SecureStorage.getInstance('agentdock');
 
-export const useAgents = create<Store>((set, get) => ({
+export const useAgents = create<Store>((set) => ({
   // State
   agents: [],
-  activeAgentId: null,
   isInitialized: false,
   templatesValidated: false,
   templatesError: null,
 
-  // Actions
-  addAgent: (agent) => {
-    const newAgent: Agent = {
-      ...agent,
-      id: crypto.randomUUID(),
-      state: AgentState.CREATED,
-      nodes: [],
-      metadata: {
-        created: Date.now(),
-        lastStateChange: Date.now()
-      }
-    };
-    set((state) => ({
-      agents: [...state.agents, newAgent]
-    }));
-  },
-
-  removeAgent: (id) => {
-    set((state) => ({
-      agents: state.agents.filter((a) => a.id !== id),
-      activeAgentId: state.activeAgentId === id ? null : state.activeAgentId
-    }));
-  },
-
-  updateAgent: (id, updates) => {
-    set((state) => ({
-      agents: state.agents.map((agent) =>
-        agent.id === id ? { ...agent, ...updates } : agent
-      )
-    }));
-  },
-
-  setActiveAgent: (id) => {
-    set({ activeAgentId: id });
-  },
-
+  // Core Actions
   initialize: async () => {
     try {
       // 1. Register core nodes first
@@ -93,14 +57,12 @@ export const useAgents = create<Store>((set, get) => ({
           historyLength: 50
         };
 
-        // Assert the type to match our runtime expectations
         const chatSettings = template.chatSettings ? {
           initialMessages: [...template.chatSettings.initialMessages] as string[],
           historyPolicy: template.chatSettings.historyPolicy as 'lastN' | 'all',
           historyLength: (template.chatSettings as any).historyLength ?? 50
         } : defaultChatSettings;
 
-        // Create agent from template
         return {
           agentId: template.agentId,
           name: template.name,
@@ -156,7 +118,6 @@ export const useAgents = create<Store>((set, get) => ({
   reset: () => {
     set({
       agents: [],
-      activeAgentId: null,
       isInitialized: false,
       templatesValidated: false,
       templatesError: null
@@ -211,4 +172,6 @@ export const useAgents = create<Store>((set, get) => ({
       throw error;
     }
   }
-})); 
+}));
+
+export type { Store, Agent, AgentState, AgentRuntimeSettings }; 

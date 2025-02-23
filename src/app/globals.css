@@ -81,6 +81,12 @@
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
     --sidebar-background: 0 0% 98%;
+
+    /* Syntax Highlighting */
+    --shiki-light: #24292e;
+    --shiki-light-bg: #ffffff;
+    --shiki-dark: #e1e4e8;
+    --shiki-dark-bg: #24292e;
   }
  
   .dark {
@@ -158,6 +164,12 @@
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
     --sidebar-background: 240 5.9% 10%;
+
+    /* Syntax Highlighting */
+    --shiki-light: #e1e4e8;
+    --shiki-light-bg: #24292e00;
+    --shiki-dark: #e1e4e8;
+    --shiki-dark-bg: #24292e00;
   }
 }
  

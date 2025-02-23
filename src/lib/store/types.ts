@@ -109,8 +109,9 @@ export enum AgentState {
 
 export interface AppState {
   agents: Agent[];
-  activeAgentId: string | null;
   isInitialized: boolean;
+  templatesValidated: boolean;
+  templatesError: string | null;
 }
 
 export interface AppActions {
@@ -122,9 +123,8 @@ export interface AppActions {
   reset: () => void;
 }
 
-export interface Store extends AppState, AppActions {
+export interface Store extends AppState {
   initialize: () => Promise<void>;
   updateAgentRuntime: (agentId: string, settings: Partial<AgentRuntimeSettings>) => Promise<void>;
-  templatesValidated: boolean;
-  templatesError: string | null;
+  reset: () => void;
 } 

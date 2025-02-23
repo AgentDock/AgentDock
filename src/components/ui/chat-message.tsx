@@ -181,6 +181,22 @@ function ToolCall({
               </div>
             )
           case "result":
+            if (invocation.result && typeof invocation.result === 'object' && 'content' in invocation.result) {
+              return (
+                <div
+                  key={index}
+                  className="flex flex-col gap-1.5 rounded-lg border bg-muted px-3 py-2 text-sm"
+                >
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Code2 className="h-4 w-4" />
+                    <span>Result from {invocation.toolName}</span>
+                  </div>
+                  <div className="text-foreground">
+                    <MarkdownRenderer>{invocation.result.content}</MarkdownRenderer>
+                  </div>
+                </div>
+              )
+            }
             return (
               <div
                 key={index}

@@ -6,7 +6,7 @@
  */
 
 import { useAgents as useStore } from './index';
-import type { Store, Agent, AppState, AppActions } from './types';
+import type { Store, Agent, AppState } from './types';
 
 // Type-safe hooks for accessing store slices
 
@@ -15,30 +15,6 @@ import type { Store, Agent, AppState, AppActions } from './types';
  * @returns Array of all agents
  */
 export const useAgents = () => useStore((state: Store) => state.agents);
-
-/**
- * Hook to access the currently active agent.
- * @returns The active agent or undefined if none is active
- */
-export const useActiveAgent = () => {
-  const agents = useStore((state: Store) => state.agents);
-  const activeAgentId = useStore((state: Store) => state.activeAgentId);
-  return agents.find(agent => agent.id === activeAgentId);
-};
-
-/**
- * Hook to access agent management actions.
- * @returns Object containing all agent-related actions
- */
-export const useAgentActions = () => {
-  const store = useStore();
-  return {
-    addAgent: store.addAgent,
-    removeAgent: store.removeAgent,
-    updateAgent: store.updateAgent,
-    setActiveAgent: store.setActiveAgent,
-  } as const;
-};
 
 /**
  * Hook to access application state.

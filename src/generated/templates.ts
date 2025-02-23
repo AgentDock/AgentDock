@@ -38,7 +38,8 @@ export const templates = {
     "modules": [
       "llm.anthropic",
       "tool.serp",
-      "tool.stock.price"
+      "stock_price",
+      "weather"
     ],
     "nodeConfigurations": {
       "llm.anthropic": {
@@ -50,9 +51,10 @@ export const templates = {
       "tool.serp": {
         "apiKey": "YOUR_SERP_API_KEY"
       },
-      "tool.stock.price": {
+      "stock_price": {
         "currency": "USD"
-      }
+      },
+      "weather": {}
     },
     "chatSettings": {
       "historyPolicy": "lastN",

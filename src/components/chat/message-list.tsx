@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Message as CoreMessage, TextContent, isMultipartContent } from "agentdock-core"
+import { MarkdownRenderer } from "@/components/ui/markdown-renderer"
 
 // UI-specific message type that excludes system messages
 interface UIMessage {
@@ -70,9 +71,9 @@ export function MessageList({ messages, className }: MessageListProps) {
                   : "bg-muted"
               )}
             >
-              <p className="leading-relaxed whitespace-pre-wrap break-words">
+              <MarkdownRenderer>
                 {getMessageContent(message)}
-              </p>
+              </MarkdownRenderer>
               {message.createdAt && (
                 <div className="mt-1 select-none text-[10px] opacity-50">
                   {new Date(message.createdAt).toLocaleTimeString()}

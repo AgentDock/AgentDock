@@ -5,6 +5,21 @@
 // Core types
 export * from './types/agent-config';  // Agent configuration
 export * from './types/messages';      // Message types
+export type {
+  ToolState,
+  BaseToolInvocation,
+  PartialToolCall,
+  ToolCall,
+  ToolResult,
+  ToolInvocation,
+  JSONSchema,
+  Tool,
+  ToolRegistrationOptions
+} from './types/tools';
+
+// Node system
+export { BaseNode } from './nodes/base-node';
+export type { NodeMetadata, NodePort } from './nodes/base-node';
 
 // Core functionality
 export * from './nodes';              // Node implementations

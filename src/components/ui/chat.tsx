@@ -2,6 +2,7 @@
 
 import { forwardRef, useCallback, useState, type ReactElement } from "react"
 import { ArrowDown, ThumbsDown, ThumbsUp } from "lucide-react"
+import React from "react"
 
 import { cn } from "@/lib/utils"
 import { useAutoScroll } from "@/hooks/use-auto-scroll"
@@ -27,6 +28,7 @@ interface ChatPropsBase {
     messageId: string,
     rating: "thumbs-up" | "thumbs-down"
   ) => void
+  header?: React.ReactNode
 }
 
 interface ChatPropsWithoutSuggestions extends ChatPropsBase {
@@ -43,97 +45,74 @@ type ChatProps = ChatPropsWithoutSuggestions | ChatPropsWithSuggestions
 
 export function Chat({
   messages,
-  handleSubmit,
   input,
   handleInputChange,
-  stop,
+  handleSubmit,
   isGenerating,
+  stop,
   append,
   suggestions,
   className,
-  onRateResponse,
+  header
 }: ChatProps) {
-  const lastMessage = messages.at(-1)
   const isEmpty = messages.length === 0
+  const lastMessage = messages.at(-1)
   const isTyping = lastMessage?.role === "user"
+  const scrollRef = React.useRef<HTMLDivElement>(null)
 
-  const messageOptions = useCallback(
-    (message: Message) => ({
-      actions: onRateResponse ? (
-        <>
-          <div className="border-r pr-1">
-            <CopyButton
-              content={message.content}
-              copyMessage="Copied response to clipboard!"
-            />
-          </div>
-          <Button
-            size="icon"
-            variant="ghost"
-            className="h-6 w-6"
-            onClick={() => onRateResponse(message.id, "thumbs-up")}
-          >
-            <ThumbsUp className="h-4 w-4" />
-          </Button>
-          <Button
-            size="icon"
-            variant="ghost"
-            className="h-6 w-6"
-            onClick={() => onRateResponse(message.id, "thumbs-down")}
-          >
-            <ThumbsDown className="h-4 w-4" />
-          </Button>
-        </>
-      ) : (
-        <CopyButton
-          content={message.content}
-          copyMessage="Copied response to clipboard!"
-        />
-      ),
-    }),
-    [onRateResponse]
-  )
+  // Auto-scroll when messages change
+  React.useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
 
   return (
     <div className={cn("flex h-full flex-col", className)}>
-      <div className="flex-1 overflow-hidden">
-        {isEmpty && append && suggestions ? (
-          <div className="flex h-full items-center justify-center">
-            <PromptSuggestions
-              label="Try these prompts ✨"
-              append={append}
-              suggestions={suggestions}
-            />
-          </div>
-        ) : (
-          <ChatMessages messages={messages}>
+      <div className="flex-none bg-background">
+        <div className="mx-auto w-full max-w-4xl px-4 py-3">
+          {header}
+        </div>
+      </div>
+      <div className="flex-1 overflow-y-auto">
+        <div className="mx-auto w-full max-w-4xl px-4 py-4">
+          {isEmpty && append && suggestions ? (
+            <div className="flex h-full items-center justify-center py-20">
+              <PromptSuggestions
+                label="Try these prompts ✨"
+                append={append}
+                suggestions={suggestions}
+              />
+            </div>
+          ) : (
             <MessageList
               messages={messages}
               isTyping={isTyping}
-              messageOptions={messageOptions}
-            />
-          </ChatMessages>
-        )}
-      </div>
-
-      <div className="sticky bottom-0 px-0 pb-10 pt-2 bg-gradient-to-t from-background to-background/90">
-        <ChatForm
-          isPending={isGenerating || isTyping}
-          handleSubmit={handleSubmit}
-        >
-          {({ files, setFiles }) => (
-            <MessageInput
-              value={input}
-              onChange={handleInputChange}
-              allowAttachments
-              files={files}
-              setFiles={setFiles}
-              stop={stop}
-              isGenerating={isGenerating}
-              placeholder="Ask AI..."
             />
           )}
-        </ChatForm>
+          <div ref={scrollRef} className="h-px" />
+        </div>
+      </div>
+      <div className="flex-none bg-background">
+        <div className="mx-auto w-full max-w-4xl px-4 py-4">
+          <ChatForm
+            isPending={isGenerating || isTyping}
+            handleSubmit={handleSubmit}
+          >
+            {({ files, setFiles }) => (
+              <MessageInput
+                value={input}
+                onChange={handleInputChange}
+                allowAttachments
+                files={files}
+                setFiles={setFiles}
+                stop={stop}
+                isGenerating={isGenerating}
+                placeholder="Ask AI..."
+              />
+            )}
+          </ChatForm>
+        </div>
       </div>
     </div>
   )

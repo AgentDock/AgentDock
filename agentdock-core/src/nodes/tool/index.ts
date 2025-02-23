@@ -4,11 +4,11 @@
  */
 
 import { z } from 'zod';
-import { BaseNode, NodeMetadata } from '../base-node';
+import { BaseNode, NodeMetadata, NodePort } from '../base-node';
 import { createError, ErrorCode } from '../../errors';
 
 /**
- * Options for registering a tool node
+ * Base tool registration options
  */
 export interface ToolRegistrationOptions {
   /** Whether this node can act as a tool */
@@ -17,6 +17,22 @@ export interface ToolRegistrationOptions {
   parameters?: z.ZodSchema;
   /** Tool description (if isTool is true) */
   description?: string;
+  /** Optional custom metadata */
+  metadata?: Partial<NodeMetadata>;
+}
+
+/**
+ * Tool creation options with required fields
+ */
+export interface ToolCreationOptions {
+  /** Tool name for registration and lookup */
+  name: string;
+  /** Tool description for LLM usage */
+  description: string;
+  /** Tool parameters schema */
+  parameters: z.ZodSchema;
+  /** Optional custom metadata */
+  metadata?: Partial<NodeMetadata>;
 }
 
 /**
@@ -49,51 +65,26 @@ export type ToolResult<T = unknown> = {
  * Tool interface with JSON Schema parameters
  */
 export interface Tool<TParams = unknown, TResult = unknown> extends BaseNode {
-  /**
-   * Tool name for registration and lookup
-   */
   name: string;
-
-  /**
-   * Description of what the tool does
-   * Used by LLMs to determine when to use the tool
-   */
   description: string;
-
-  /**
-   * JSON Schema for tool parameters
-   * Used for validation and LLM parameter generation
-   */
   parameters: JSONSchema;
-
-  /**
-   * Execute the tool with given parameters
-   * @param params Tool parameters
-   * @returns Tool execution result
-   */
   execute(params: TParams): Promise<ToolResult<TResult>>;
 }
 
 /**
- * Base tool implementation
+ * Base tool implementation with unified registration
  */
 export abstract class BaseTool<TParams = unknown, TResult = unknown> extends BaseNode implements Tool<TParams, TResult> {
   public readonly name: string;
   public readonly description: string;
   public readonly parameters: JSONSchema;
-  private readonly _metadata: NodeMetadata;
 
-  constructor(config: {
-    id: string;
-    name: string;
-    description: string;
-    parameters: z.ZodSchema<TParams>;
-  }) {
+  constructor(id: string, options: ToolCreationOptions) {
     const metadata: NodeMetadata = {
       version: '1.0.0',
       category: 'custom',
-      label: config.name,
-      description: config.description,
+      label: options.name,
+      description: options.description,
       inputs: [{
         id: 'params',
         type: 'object',
@@ -109,15 +100,15 @@ export abstract class BaseTool<TParams = unknown, TResult = unknown> extends Bas
         core: false,
         pro: true,
         custom: true
-      }
+      },
+      ...options.metadata
     };
 
-    super(config.id, metadata);
+    super(id, metadata);
     
-    this.name = config.name;
-    this.description = config.description;
-    this.parameters = zodToJsonSchema(config.parameters);
-    this._metadata = metadata;
+    this.name = options.name;
+    this.description = options.description;
+    this.parameters = zodToJsonSchema(options.parameters);
 
     // Register message handlers
     this.addMessageHandler('execute', async (params: unknown) => {
@@ -130,36 +121,45 @@ export abstract class BaseTool<TParams = unknown, TResult = unknown> extends Bas
     return 'node';
   }
 
-  public getCategory(): 'core' | 'custom' {
+  protected getCategory(): 'core' | 'custom' {
     return 'custom';
   }
 
-  public getLabel(): string {
-    return this._metadata.label;
+  protected getLabel(): string {
+    return this.name;
   }
 
-  public getDescription(): string {
-    return this._metadata.description;
+  protected getDescription(): string {
+    return this.description;
   }
 
-  public getMetadata(): NodeMetadata {
-    return this._metadata;
+  protected getInputs(): NodePort[] {
+    return [{
+      id: 'params',
+      type: 'object',
+      label: 'Parameters',
+      required: true
+    }];
   }
 
-  public getInputs(): NodeMetadata['inputs'] {
-    return this._metadata.inputs;
+  protected getOutputs(): NodePort[] {
+    return [{
+      id: 'result',
+      type: 'object',
+      label: 'Result'
+    }];
   }
 
-  public getOutputs(): NodeMetadata['outputs'] {
-    return this._metadata.outputs;
+  protected getVersion(): string {
+    return '1.0.0';
   }
 
-  public getVersion(): string {
-    return this._metadata.version;
-  }
-
-  public getCompatibility(): NodeMetadata['compatibility'] {
-    return this._metadata.compatibility;
+  protected getCompatibility(): NodeMetadata['compatibility'] {
+    return {
+      core: false,
+      pro: true,
+      custom: true
+    };
   }
 
   public abstract execute(params: TParams): Promise<ToolResult<TResult>>;
@@ -168,26 +168,18 @@ export abstract class BaseTool<TParams = unknown, TResult = unknown> extends Bas
 /**
  * Helper function to create a tool with type inference
  */
-export function createTool<TParams, TResult>(config: {
-  name: string;
-  description: string;
-  parameters: z.ZodSchema<TParams>;
+export function createTool<TParams, TResult>(options: ToolCreationOptions & {
   execute: (params: TParams) => Promise<TResult>;
 }): Tool<TParams, TResult> {
   const id = crypto.randomUUID();
   
   return new class extends BaseTool<TParams, TResult> {
     constructor() {
-      super({
-        id,
-        name: config.name,
-        description: config.description,
-        parameters: config.parameters
-      });
+      super(id, options);
     }
 
     async execute(params: TParams): Promise<ToolResult<TResult>> {
-      const result = await config.execute(params);
+      const result = await options.execute(params);
       return {
         toolCallId: crypto.randomUUID(),
         result

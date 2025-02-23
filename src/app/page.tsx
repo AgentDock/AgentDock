@@ -17,6 +17,17 @@ import { cn } from "@/lib/utils";
 
 type Mode = "research" | "reason";
 
+interface LLMConfig {
+  model?: string;
+  temperature?: number;
+  maxTokens?: number;
+}
+
+interface NodeConfigurations {
+  'llm.anthropic'?: LLMConfig;
+  [key: string]: unknown;
+}
+
 export default function HomePage() {
   const { agents, initialize, isInitialized } = useAgents();
   const [mode, setMode] = useState<Mode>("research");
@@ -31,6 +42,7 @@ export default function HomePage() {
   }, [initialize, isInitialized]);
 
   const selectedAgentData = agents.find(agent => agent.agentId === selectedAgent);
+  const llmConfig = selectedAgentData?.nodeConfigurations?.['llm.anthropic'] as LLMConfig | undefined;
 
   const handleAgentSelect = async (agentId: string) => {
     setIsLoading(true);
@@ -96,9 +108,9 @@ export default function HomePage() {
                     </div>
                   )}
 
-                  {selectedAgentData?.nodeConfigurations?.['llm.anthropic']?.model && (
+                  {llmConfig?.model && (
                     <div className="text-xs text-muted-foreground">
-                      Model: {selectedAgentData.nodeConfigurations['llm.anthropic'].model}
+                      Model: {llmConfig.model}
                     </div>
                   )}
 

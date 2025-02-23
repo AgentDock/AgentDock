@@ -6,47 +6,53 @@
  */
 
 import { create } from 'zustand';
-import { SecureStorage, AgentConfig } from 'agentdock-core';
-import { AgentState } from './types';
-import type { Store, AgentRuntimeSettings, Agent } from './types';
-import { templates, getTemplate, TemplateId } from '@/generated/templates';
+import { SecureStorage, logger, LogCategory } from 'agentdock-core';
+import { templates, TemplateId, getTemplate } from '@/generated/templates';
+import { Store, Agent, AgentState, AgentRuntimeSettings } from './types';
+import { registerCoreNodes } from '@/lib/core/register-nodes';
+import { toast } from 'sonner';
 
 // Create a single instance for the store
 const storage = SecureStorage.getInstance('agentdock');
 
-export const useAgents = create<Store>((set, get): Store => ({
+export const useAgents = create<Store>((set, get) => ({
   // State
   agents: [],
   activeAgentId: null,
   isInitialized: false,
+  templatesValidated: false,
+  templatesError: null,
 
   // Actions
   addAgent: (agent) => {
-    const { agents } = get();
-    const newAgent = {
+    const newAgent: Agent = {
       ...agent,
       id: crypto.randomUUID(),
       state: AgentState.CREATED,
+      nodes: [],
       metadata: {
         created: Date.now(),
         lastStateChange: Date.now()
       }
     };
-    set({ agents: [...agents, newAgent] });
+    set((state) => ({
+      agents: [...state.agents, newAgent]
+    }));
   },
 
   removeAgent: (id) => {
-    const { agents } = get();
-    set({ agents: agents.filter(agent => agent.id !== id) });
+    set((state) => ({
+      agents: state.agents.filter((a) => a.id !== id),
+      activeAgentId: state.activeAgentId === id ? null : state.activeAgentId
+    }));
   },
 
   updateAgent: (id, updates) => {
-    const { agents } = get();
-    set({
-      agents: agents.map(agent =>
+    set((state) => ({
+      agents: state.agents.map((agent) =>
         agent.id === id ? { ...agent, ...updates } : agent
       )
-    });
+    }));
   },
 
   setActiveAgent: (id) => {
@@ -55,24 +61,44 @@ export const useAgents = create<Store>((set, get): Store => ({
 
   initialize: async () => {
     try {
-      // 1. Load runtime settings from storage
+      // 1. Register core nodes first
+      registerCoreNodes();
+
+      // 2. Validate templates
+      const templateArray = Object.values(templates);
+      if (templateArray.length === 0) {
+        throw new Error('No templates available');
+      }
+
+      logger.info(
+        LogCategory.SYSTEM,
+        'Store',
+        'Templates validated successfully',
+        { count: templateArray.length }
+      );
+
+      // 3. Load runtime settings from storage
       const storedSettings = await storage.get<Record<string, AgentRuntimeSettings>>('agent_runtime_settings') || {};
 
-      // 2. Create agents from bundled templates
-      const agents = Object.keys(templates).map((templateId) => {
-        // Get template as AgentConfig
-        const template = getTemplate(templateId as TemplateId);
-
+      // 4. Create agents from validated templates
+      const agents = templateArray.map((template) => {
         // Create mutable copies of readonly arrays
         const modules = [...template.modules];
         const nodeConfigurations = { ...template.nodeConfigurations };
 
         // Create mutable chat settings with defaults
-        const chatSettings = {
-          initialMessages: template.chatSettings?.initialMessages ? [...template.chatSettings.initialMessages] : [],
-          historyPolicy: template.chatSettings?.historyPolicy || 'lastN',
-          historyLength: template.chatSettings?.historyLength || 10
+        const defaultChatSettings = {
+          initialMessages: [] as string[],
+          historyPolicy: 'lastN' as const,
+          historyLength: 50
         };
+
+        // Assert the type to match our runtime expectations
+        const chatSettings = template.chatSettings ? {
+          initialMessages: [...template.chatSettings.initialMessages] as string[],
+          historyPolicy: template.chatSettings.historyPolicy as 'lastN' | 'all',
+          historyLength: (template.chatSettings as any).historyLength ?? 50
+        } : defaultChatSettings;
 
         // Create agent from template
         return {
@@ -97,10 +123,33 @@ export const useAgents = create<Store>((set, get): Store => ({
         };
       });
 
-      set({ agents, isInitialized: true });
+      set({ 
+        agents, 
+        isInitialized: true,
+        templatesValidated: true,
+        templatesError: null
+      });
+
+      logger.info(
+        LogCategory.SYSTEM,
+        'Store',
+        'Store initialized successfully',
+        { agentCount: agents.length }
+      );
     } catch (error) {
-      console.error('Failed to initialize agents:', error);
-      set({ isInitialized: true }); // Set initialized even on error
+      const message = error instanceof Error ? error.message : 'Failed to initialize store';
+      logger.error(
+        LogCategory.SYSTEM,
+        'Store',
+        'Failed to initialize store',
+        { error: message }
+      );
+      set({ 
+        isInitialized: true,
+        templatesValidated: false,
+        templatesError: message
+      });
+      toast.error('Failed to load templates');
     }
   },
 
@@ -108,32 +157,57 @@ export const useAgents = create<Store>((set, get): Store => ({
     set({
       agents: [],
       activeAgentId: null,
-      isInitialized: false
+      isInitialized: false,
+      templatesValidated: false,
+      templatesError: null
     });
   },
 
-  updateAgentRuntime: async (agentId: string, settings: Partial<AgentRuntimeSettings>) => {
+  updateAgentRuntime: async (agentId, settings) => {
     try {
-      const { agents } = get();
-      
-      // Update runtime settings in storage
+      // 1. Load current settings
       const storedSettings = await storage.get<Record<string, AgentRuntimeSettings>>('agent_runtime_settings') || {};
-      storedSettings[agentId] = {
-        ...storedSettings[agentId],
-        ...settings
+      
+      // 2. Update settings for this agent
+      const updatedSettings = {
+        ...storedSettings,
+        [agentId]: {
+          ...storedSettings[agentId],
+          ...settings
+        }
       };
-      await storage.set('agent_runtime_settings', storedSettings);
 
-      // Update agents in state
-      const updatedAgents = agents.map(agent =>
-        agent.agentId === agentId
-          ? { ...agent, runtimeSettings: { ...agent.runtimeSettings, ...settings } }
-          : agent
+      // 3. Save to storage
+      await storage.set('agent_runtime_settings', updatedSettings);
+
+      // 4. Update agent in state
+      set((state) => ({
+        agents: state.agents.map((agent) =>
+          agent.agentId === agentId
+            ? {
+                ...agent,
+                runtimeSettings: {
+                  ...agent.runtimeSettings,
+                  ...settings
+                }
+              }
+            : agent
+        )
+      }));
+
+      logger.info(
+        LogCategory.SYSTEM,
+        'Store',
+        'Agent runtime settings updated',
+        { agentId, settings }
       );
-
-      set({ agents: updatedAgents });
     } catch (error) {
-      console.error('Failed to update agent runtime settings:', error);
+      logger.error(
+        LogCategory.SYSTEM,
+        'Store',
+        'Failed to update agent runtime settings',
+        { error: error instanceof Error ? error.message : 'Unknown error' }
+      );
       throw error;
     }
   }

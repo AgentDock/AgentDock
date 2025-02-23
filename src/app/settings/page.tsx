@@ -284,66 +284,52 @@ function SettingsPage() {
                 Configure core application behavior
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label>BYOK Only Mode</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Only use provided API keys (no fallback to service keys)
-                  </p>
-                </div>
-                <Tooltip>
-                  <TooltipTrigger asChild>
+            <CardContent>
+              <div className="grid gap-6">
+                <div className="grid gap-2">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <Label>BYOK Only Mode</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Only use provided API keys (no fallback to service keys)
+                      </p>
+                    </div>
                     <Switch
                       checked={settings.core.byokOnly}
                       onCheckedChange={handleByokOnlyChange}
-                      className="bg-neutral-200 data-[state=checked]:bg-blue-500"
                     />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {settings.core.byokOnly 
-                      ? "Using only provided API keys" 
-                      : "Using fallback service keys when available"}
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-              {settings.core.byokOnly && (
-                <div className="rounded-md bg-yellow-500/15 p-4">
-                  <div className="flex items-center gap-3">
-                    <AlertCircle className="h-5 w-5 text-yellow-500" />
-                    <p className="text-sm text-yellow-500">
-                      Warning: With this enabled, agents will fail if you haven't provided your own API keys.
-                    </p>
                   </div>
+                  {settings.core.byokOnly && (
+                    <div className="rounded-md bg-yellow-500/15 p-4">
+                      <div className="flex items-center gap-3">
+                        <AlertCircle className="h-5 w-5 text-yellow-500" />
+                        <p className="text-sm text-yellow-500">
+                          Warning: With this enabled, agents will fail if you haven't provided your own API keys.
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
-              
-              <Separator />
-              
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label className="flex items-center gap-2">
-                    Debug Mode
-                    <Bug className="h-4 w-4 text-muted-foreground" />
-                  </Label>
-                  <p className="text-sm text-muted-foreground">
-                    Show additional debugging information
-                  </p>
-                </div>
-                <Tooltip>
-                  <TooltipTrigger asChild>
+                
+                <Separator />
+                
+                <div className="grid gap-2">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <Label className="flex items-center gap-2">
+                        Debug Mode
+                        <Bug className="h-4 w-4 text-muted-foreground" />
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        Show additional debugging information
+                      </p>
+                    </div>
                     <Switch
                       checked={settings.core.debugMode}
                       onCheckedChange={handleDebugModeChange}
-                      className="bg-neutral-200 data-[state=checked]:bg-blue-500"
                     />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {settings.core.debugMode 
-                      ? "Debug information visible" 
-                      : "Debug information hidden"}
-                  </TooltipContent>
-                </Tooltip>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>

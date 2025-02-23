@@ -65,8 +65,49 @@ export class NodeRegistry {
   private static customNodes: Map<string, NodeRegistration> = new Map();
 
   /**
+   * Validate node registration
+   */
+  private static validateRegistration(
+    nodeType: string,
+    nodeClass: ConcreteNodeConstructor,
+    expectedCategory: 'core' | 'custom',
+    options: ToolRegistrationOptions = {}
+  ): void {
+    const metadata = nodeClass.getNodeMetadata();
+    
+    // Validate node category
+    if (metadata.category !== expectedCategory) {
+      throw createError(
+        'node', 
+        `Only ${expectedCategory} nodes can be registered with ${expectedCategory === 'core' ? 'register' : 'registerCustomNode'}()`,
+        ErrorCode.NODE_VALIDATION
+      );
+    }
+
+    // Validate tool requirements if isTool is true
+    if (options.isTool) {
+      if (!options.parameters) {
+        throw createError(
+          'node', 
+          'Tool nodes must provide parameters schema',
+          ErrorCode.NODE_VALIDATION
+        );
+      }
+
+      // Validate that the node class has an execute method
+      const prototype = nodeClass.prototype;
+      if (typeof prototype.execute !== 'function') {
+        throw createError(
+          'node', 
+          'Tool nodes must implement execute method',
+          ErrorCode.NODE_VALIDATION
+        );
+      }
+    }
+  }
+
+  /**
    * Register a core node type.
-   * @throws Error if the node's category is not 'core'
    */
   static register(
     nodeType: string, 
@@ -74,41 +115,18 @@ export class NodeRegistry {
     version: string,
     options: ToolRegistrationOptions = {}
   ): void {
-    const metadata = nodeClass.getNodeMetadata();
-    
-    // Validate node category
-    if (metadata.category !== 'core') {
-      throw createError('node', 'Only core nodes can be registered with register()', 
-        ErrorCode.NODE_VALIDATION);
-    }
-
-    // Validate tool requirements if isTool is true
-    if (options.isTool) {
-      if (!options.parameters) {
-        throw createError('node', 'Tool nodes must provide parameters schema',
-          ErrorCode.NODE_VALIDATION);
-      }
-
-      // Validate that the node class has an execute method
-      const prototype = nodeClass.prototype;
-      if (typeof prototype.execute !== 'function') {
-        throw createError('node', 'Tool nodes must implement execute method',
-          ErrorCode.NODE_VALIDATION);
-      }
-    }
-
+    this.validateRegistration(nodeType, nodeClass, 'core', options);
     this.nodes.set(nodeType, {
       nodeClass,
       version,
       isTool: options.isTool,
       parameters: options.parameters,
-      description: options.description || metadata.description
+      description: options.description || nodeClass.getNodeMetadata().description
     });
   }
 
   /**
    * Register a custom node type.
-   * @throws Error if the node's category is not 'custom'
    */
   static registerCustomNode(
     nodeType: string, 
@@ -116,35 +134,13 @@ export class NodeRegistry {
     version: string,
     options: ToolRegistrationOptions = {}
   ): void {
-    const metadata = nodeClass.getNodeMetadata();
-    
-    // Validate node category
-    if (metadata.category !== 'custom') {
-      throw createError('node', 'Only custom nodes can be registered with registerCustomNode()',
-        ErrorCode.NODE_VALIDATION);
-    }
-
-    // Validate tool requirements if isTool is true
-    if (options.isTool) {
-      if (!options.parameters) {
-        throw createError('node', 'Tool nodes must provide parameters schema',
-          ErrorCode.NODE_VALIDATION);
-      }
-
-      // Validate that the node class has an execute method
-      const prototype = nodeClass.prototype;
-      if (typeof prototype.execute !== 'function') {
-        throw createError('node', 'Tool nodes must implement execute method',
-          ErrorCode.NODE_VALIDATION);
-      }
-    }
-
+    this.validateRegistration(nodeType, nodeClass, 'custom', options);
     this.customNodes.set(nodeType, {
       nodeClass,
       version,
       isTool: options.isTool,
       parameters: options.parameters,
-      description: options.description || metadata.description
+      description: options.description || nodeClass.getNodeMetadata().description
     });
   }
 

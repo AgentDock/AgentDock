@@ -4,7 +4,7 @@
  */
 
 import { z } from 'zod';
-import { BaseNode, NodeMetadata } from '../base-node';
+import { BaseNode, NodeMetadata, NodePort } from '../base-node';
 import { createError, ErrorCode } from '../../errors';
 
 /**
@@ -121,62 +121,45 @@ export abstract class BaseTool<TParams = unknown, TResult = unknown> extends Bas
     return 'node';
   }
 
-  public getCategory(): 'core' | 'custom' {
+  protected getCategory(): 'core' | 'custom' {
     return 'custom';
   }
 
-  public getLabel(): string {
+  protected getLabel(): string {
     return this.name;
   }
 
-  public getDescription(): string {
+  protected getDescription(): string {
     return this.description;
   }
 
-  public getMetadata(): NodeMetadata {
-    const baseMetadata: NodeMetadata = {
-      version: '1.0.0',
-      category: 'custom',
-      label: this.name,
-      description: this.description,
-      inputs: [{
-        id: 'params',
-        type: 'object',
-        label: 'Parameters',
-        required: true
-      }],
-      outputs: [{
-        id: 'result',
-        type: 'object',
-        label: 'Result'
-      }],
-      compatibility: {
-        core: false,
-        pro: true,
-        custom: true
-      }
-    };
+  protected getInputs(): NodePort[] {
+    return [{
+      id: 'params',
+      type: 'object',
+      label: 'Parameters',
+      required: true
+    }];
+  }
 
+  protected getOutputs(): NodePort[] {
+    return [{
+      id: 'result',
+      type: 'object',
+      label: 'Result'
+    }];
+  }
+
+  protected getVersion(): string {
+    return '1.0.0';
+  }
+
+  protected getCompatibility(): NodeMetadata['compatibility'] {
     return {
-      ...baseMetadata,
-      ...(this.metadata || {})
+      core: false,
+      pro: true,
+      custom: true
     };
-  }
-
-  public getInputs(): NodeMetadata['inputs'] {
-    return this.getMetadata().inputs;
-  }
-
-  public getOutputs(): NodeMetadata['outputs'] {
-    return this.getMetadata().outputs;
-  }
-
-  public getVersion(): string {
-    return this.getMetadata().version;
-  }
-
-  public getCompatibility(): NodeMetadata['compatibility'] {
-    return this.getMetadata().compatibility;
   }
 
   public abstract execute(params: TParams): Promise<ToolResult<TResult>>;

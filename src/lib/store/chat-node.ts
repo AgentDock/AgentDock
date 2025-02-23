@@ -3,7 +3,7 @@ import type { NodeMetadata, NodePort } from 'agentdock-core';
 import type { ChatNodeConfig, ChatNodeMetadata } from './types';
 
 export class ChatNode extends BaseNode<ChatNodeConfig> {
-  type: 'CHAT' = 'CHAT';
+  readonly type: string = 'CHAT';
   chatMetadata: ChatNodeMetadata;
 
   constructor(id: string, config: ChatNodeConfig) {
@@ -14,23 +14,23 @@ export class ChatNode extends BaseNode<ChatNodeConfig> {
     };
   }
 
-  getCategory(): "core" | "custom" {
+  protected getCategory(): "core" | "custom" {
     return "core";
   }
 
-  getLabel(): string {
+  protected getLabel(): string {
     return 'Chat Node';
   }
 
-  getDescription(): string {
+  protected getDescription(): string {
     return 'A node that handles chat interactions';
   }
 
-  getVersion(): string {
+  protected getVersion(): string {
     return '1.0.0';
   }
 
-  getCompatibility(): { core: boolean; pro: boolean; custom: boolean; } {
+  protected getCompatibility(): { core: boolean; pro: boolean; custom: boolean; } {
     return {
       core: true,
       pro: false,
@@ -38,12 +38,21 @@ export class ChatNode extends BaseNode<ChatNodeConfig> {
     };
   }
 
-  getInputs(): NodePort[] {
-    return [];
+  protected getInputs(): NodePort[] {
+    return [{
+      id: 'message',
+      type: 'string',
+      label: 'Message',
+      required: true
+    }];
   }
 
-  getOutputs(): NodePort[] {
-    return [];
+  protected getOutputs(): NodePort[] {
+    return [{
+      id: 'response',
+      type: 'string',
+      label: 'Response'
+    }];
   }
 
   async initialize(): Promise<void> {
@@ -53,14 +62,4 @@ export class ChatNode extends BaseNode<ChatNodeConfig> {
   async execute(): Promise<void> {
     // Execution handled by chat interface
   }
-
-  override metadata: NodeMetadata = {
-    label: this.getLabel(),
-    description: this.getDescription(),
-    inputs: this.getInputs(),
-    outputs: this.getOutputs(),
-    category: this.getCategory(),
-    version: this.getVersion(),
-    compatibility: this.getCompatibility()
-  };
 } 

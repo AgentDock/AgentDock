@@ -24,7 +24,7 @@
     "generate-favicons": "node scripts/generate-favicons.js"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "1.0.7",
+    "@ai-sdk/anthropic": "1.1.9",
     "@anthropic-ai/sdk": "0.36.3",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "^1.2.3",

@@ -70,7 +70,7 @@
     "embla-carousel-react": "^8.5.2",
     "framer-motion": "^11.18.2",
     "input-otp": "^1.4.2",
-    "lucide-react": "^0.344.0",
+    "lucide-react": "^0.475.0",
     "next": "15.1.6",
     "openai": "^4.83.0",
     "postcss": "^8.5.3",

@@ -1,0 +1,31 @@
+# Dependabot configuration for Agentdock AI
+version: 2
+updates:
+  # JavaScript/TypeScript dependencies manager
+  - package-ecosystem: "npm"  # Handles pnpm since we use package.json
+    directory: "/"           # Root of the project where package.json is located
+    schedule:
+      interval: "weekly"     # Creates update PRs every week
+    
+    groups:
+      # Group all Radix UI component updates together
+      # This prevents separate PRs for @radix-ui/react-dialog, @radix-ui/react-dropdown-menu etc.
+      radix:
+        patterns:
+          - "@radix-ui/*"
+      
+      # Group React ecosystem updates (react, react-dom, types) together
+      # Ensures consistent versions across React packages
+      react:
+        patterns:
+          - "react*"         # Catches react, react-dom, react-hook-form etc.
+          - "@types/react*"  # Catches @types/react, @types/react-dom
+    
+    # Safety limit - prevents too many open PRs from overwhelming code review
+    open-pull-requests-limit: 10
+
+  # Keep GitHub Actions workflows up to date
+  - package-ecosystem: "github-actions"
+    directory: "/"          # Location of .github/workflows
+    schedule:
+      interval: "weekly"    # Check for actions updates weekly

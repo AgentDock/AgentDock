@@ -11,6 +11,7 @@ import { templates, TemplateId, getTemplate } from '@/generated/templates';
 import { Store, Agent, AgentState, AgentRuntimeSettings } from './types';
 import { registerCoreNodes } from '@/lib/core/register-nodes';
 import { toast } from 'sonner';
+import { PersonalitySchema } from 'agentdock-core/types/agent-config';
 
 // Create a single instance for the store
 const storage = SecureStorage.getInstance('agentdock');
@@ -67,7 +68,7 @@ export const useAgents = create<Store>((set) => ({
           agentId: template.agentId,
           name: template.name,
           description: template.description,
-          personality: template.personality,
+          personality: PersonalitySchema.parse(template.personality),
           modules,
           nodeConfigurations,
           chatSettings,

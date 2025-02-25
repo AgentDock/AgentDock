@@ -2,6 +2,8 @@
  * @fileoverview Centralized settings types for AgentDock
  */
 
+import type { ValidatedPersonality } from 'agentdock-core/types/agent-config';
+
 export interface AgentSettings {
   // Core settings
   name?: string;
@@ -36,7 +38,7 @@ export interface RuntimeConfig {
   model?: string;
   temperature?: number;
   maxTokens?: number;
-  personality?: string;
+  personality?: ValidatedPersonality;
   chatSettings?: {
     initialMessages?: string[];
   };

@@ -2,6 +2,14 @@ import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { SecureStorage } from 'agentdock-core';
 import { Agent, AgentState } from '@/lib/store/types';
+import { z } from 'zod';
+import { PersonalitySchema } from 'agentdock-core/types/agent-config';
+
+// Simple schema for agent creation
+const createAgentSchema = z.object({
+  name: z.string().min(1),
+  description: z.string().optional(),
+});
 
 export async function POST(req: Request) {
   try {
@@ -15,7 +23,7 @@ export async function POST(req: Request) {
       agentId: uuidv4(),
       name: data.name,
       description: data.description || '',
-      personality: "helpful",
+      personality: PersonalitySchema.parse("helpful"),
       modules: [],
       nodeConfigurations: {},
       chatSettings: {
@@ -48,9 +56,10 @@ export async function POST(req: Request) {
     
     return NextResponse.json(agent);
   } catch (error) {
+    console.error('Failed to create agent:', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
+      { error: 'Failed to create agent' },
+      { status: 400 }
     );
   }
 }

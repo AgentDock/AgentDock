@@ -1,6 +1,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { logger, LogCategory } from 'agentdock-core';
+import { PersonalitySchema } from 'agentdock-core/types/agent-config';
 
 async function bundleTemplates() {
   const templatesDir = path.join(process.cwd(), 'agents');
@@ -44,6 +45,7 @@ async function bundleTemplates() {
 // This file is auto-generated during build time from the agents/ directory
 
 import { AgentConfig } from 'agentdock-core';
+import { PersonalitySchema } from 'agentdock-core/types/agent-config';
 
 export const templates = ${JSON.stringify(templates, null, 2)} as const;
 
@@ -53,15 +55,18 @@ export type Template = typeof templates[TemplateId];
 export function getTemplate(id: TemplateId): AgentConfig {
   const template = templates[id];
   
-  // Create mutable copy of the template
-  return {
+  // Create mutable copy of the template with validated personality
+  const config = {
     ...template,
+    personality: PersonalitySchema.parse(template.personality),
     modules: [...template.modules],
     chatSettings: {
       ...template.chatSettings,
       initialMessages: template.chatSettings?.initialMessages ? [...template.chatSettings.initialMessages] : []
     }
-  } as AgentConfig;
+  };
+  
+  return config as AgentConfig;
 }
 `;
 

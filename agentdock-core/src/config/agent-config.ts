@@ -2,9 +2,23 @@
  * @fileoverview Core agent configuration loading and validation
  */
 
-import { AgentConfig, AgentConfigSchema } from '../types/agent-config';
+import { AgentConfig, AgentConfigSchema, PersonalitySchema } from '../types/agent-config';
 import { createError, ErrorCode } from '../errors';
 import { logger, LogCategory } from '../logging';
+
+/**
+ * Ensures a value is a string
+ * If it's an array, joins it with newlines
+ */
+function ensureString(value: unknown): string {
+  if (Array.isArray(value)) {
+    return value.join('\n');
+  }
+  if (typeof value === 'string') {
+    return value;
+  }
+  return String(value || '');
+}
 
 /**
  * Load and validate an agent configuration
@@ -37,7 +51,7 @@ export async function loadAgentConfig(
     );
 
     // Create config with API key, converting readonly arrays to mutable
-    const config: AgentConfig = {
+    const config = {
       ...template,
       // Convert readonly arrays to mutable
       modules: [...template.modules],
@@ -51,10 +65,12 @@ export async function loadAgentConfig(
           ...template.nodeConfigurations?.['llm.anthropic'],
           apiKey
         }
-      }
+      },
+      // Ensure personality is validated through the schema
+      personality: PersonalitySchema.parse(template.personality)
     };
 
-    // Validate against schema
+    // Validate the entire config against schema
     return AgentConfigSchema.parse(config);
   } catch (error) {
     if (error && typeof error === 'object' && 'code' in error) {

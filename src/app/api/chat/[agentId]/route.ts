@@ -156,6 +156,23 @@ export async function POST(
       }
     );
 
+    // Use the validated personality from config
+    // The type system guarantees this is a string due to the branded type
+    const systemPrompt = system || config.personality;
+
+    // Add explicit logging and type checking
+    console.log('System prompt type:', typeof systemPrompt);
+    console.log('System prompt value:', systemPrompt);
+    
+    // Ensure system prompt is a string
+    const finalSystemPrompt = typeof systemPrompt === 'string' 
+      ? systemPrompt 
+      : Array.isArray(systemPrompt) 
+        ? systemPrompt.join('\n') 
+        : String(systemPrompt || '');
+    
+    console.log('Final system prompt type:', typeof finalSystemPrompt);
+
     // Stream response using streamText
     const { streamText } = await import('ai');
     const stream = await streamText({
@@ -163,7 +180,7 @@ export async function POST(
       messages,
       temperature: llmConfig.temperature,
       maxTokens: llmConfig.maxTokens,
-      system: system ?? config.personality,
+      system: finalSystemPrompt,
       tools,
       ...(experimental_attachments ? { experimental_attachments } : {}),
       maxSteps: 5,

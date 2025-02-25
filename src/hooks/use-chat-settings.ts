@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { SecureStorage, logger, LogCategory } from 'agentdock-core';
 import { templates, TemplateId } from '@/generated/templates';
 import type { GlobalSettings } from '@/lib/types/settings';
+import type { ValidatedPersonality } from 'agentdock-core/types/agent-config';
+import { PersonalitySchema } from 'agentdock-core/types/agent-config';
 
 // Create a single instance for storage
 const storage = SecureStorage.getInstance('agentdock');
@@ -11,7 +13,7 @@ interface ChatSettings {
   model: string;
   temperature: number;
   maxTokens: number;
-  personality?: string;
+  personality?: ValidatedPersonality;
   apiKey?: string;
   initialMessages?: readonly string[];
 }
@@ -48,7 +50,7 @@ export function useChatSettings(agentId: string | null) {
           model: template.nodeConfigurations?.['llm.anthropic']?.model || 'claude-3-opus',
           temperature: template.nodeConfigurations?.['llm.anthropic']?.temperature || 0.7,
           maxTokens: template.nodeConfigurations?.['llm.anthropic']?.maxTokens || 2048,
-          personality: template.personality,
+          personality: PersonalitySchema.parse(template.personality),
           apiKey: globalSettings.apiKeys.anthropic,
           initialMessages: template.chatSettings?.initialMessages
         });

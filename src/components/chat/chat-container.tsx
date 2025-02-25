@@ -12,6 +12,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { useRouter } from "next/navigation"
 import { templates, TemplateId } from '@/generated/templates'
 import type { GlobalSettings, RuntimeConfig } from '@/lib/types/settings'
+import { PersonalitySchema } from 'agentdock-core/types/agent-config'
 
 // ============================================================================
 // TEMPORARY IMPLEMENTATION FOR V1
@@ -148,7 +149,7 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
 
         // Set runtime config from template
         setRuntimeConfig({
-          personality: template.personality,
+          personality: PersonalitySchema.parse(template.personality),
           temperature: template.nodeConfigurations?.['llm.anthropic']?.temperature,
           maxTokens: template.nodeConfigurations?.['llm.anthropic']?.maxTokens
         });

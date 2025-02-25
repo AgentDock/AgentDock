@@ -7,6 +7,34 @@
 import { z } from 'zod';
 
 /**
+ * Personality schema with validation and transformation
+ * Uses branded types for type safety
+ */
+export const PersonalitySchema = z.union([
+  z.string(),
+  z.array(z.string()).transform(arr => arr.join('\n'))
+]).brand<'validated-personality'>();
+
+/**
+ * Infer the type for use in interfaces
+ */
+export type ValidatedPersonality = z.infer<typeof PersonalitySchema>;
+
+/**
+ * Helper function to ensure a value is a string
+ * If it's an array, joins it with newlines
+ */
+function ensureString(value: unknown): string {
+  if (Array.isArray(value)) {
+    return value.join('\n');
+  }
+  if (typeof value === 'string') {
+    return value;
+  }
+  return String(value || '');
+}
+
+/**
  * Core agent configuration interface
  */
 export interface AgentConfig {
@@ -22,8 +50,8 @@ export interface AgentConfig {
   /** Optional description */
   description: string;
   
-  /** Agent personality/system prompt */
-  personality: string;
+  /** Agent personality/system prompt - validated string */
+  personality: ValidatedPersonality;
   
   /** Enabled modules/capabilities */
   modules: string[];
@@ -58,7 +86,7 @@ export const AgentConfigSchema = z.object({
   agentId: z.string(),
   name: z.string(),
   description: z.string(),
-  personality: z.string(),
+  personality: PersonalitySchema,
   modules: z.array(z.string()),
   nodeConfigurations: z.record(z.any()),
   chatSettings: z.object({
@@ -81,16 +109,25 @@ export function isAgentConfig(obj: unknown): obj is AgentConfig {
  * Helper to create a new agent configuration
  */
 export function createAgentConfig(config: Partial<AgentConfig>): AgentConfig {
-  const defaultConfig: AgentConfig = {
+  const defaultConfig: Partial<AgentConfig> = {
     version: '1.0',
     agentId: '',
     name: '',
     description: '',
-    personality: '',
+    personality: PersonalitySchema.parse(''),
     modules: [],
     nodeConfigurations: {},
     chatSettings: {}
   };
 
-  return { ...defaultConfig, ...config };
-} 
+  // Create a merged config with defaults
+  const mergedConfig = { ...defaultConfig, ...config };
+  
+  // Ensure personality is validated
+  if (config.personality !== undefined) {
+    mergedConfig.personality = PersonalitySchema.parse(config.personality);
+  }
+
+  // Validate the entire config
+  return AgentConfigSchema.parse(mergedConfig);
+}

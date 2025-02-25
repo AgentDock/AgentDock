@@ -2,34 +2,31 @@
   "version": "1.0",
   "agentId": "example-agent",
   "name": "Example Agent",
-  "description": "An agent that can answer questions and search the web.",
-  "personality": "You are a helpful and friendly AI assistant powered by Claude 3 Opus. You can answer questions and use tools to help you. You excel at complex reasoning, analysis, and creative tasks.",
+  "description": "A basic example agent for AgentDock",
+  "personality": [
+    "You are a helpful AI assistant.",
+    "You should respond to user queries in a clear and concise manner.",
+    "When appropriate, use examples to illustrate your points.",
+    "Always be respectful and considerate in your responses."
+  ],
   "modules": [
     "llm.anthropic",
-    "tool.serp",
-    "stock_price",
-    "weather"
+    "weather",
+    "stock_price"
   ],
   "nodeConfigurations": {
     "llm.anthropic": {
-      "model": "claude-3-opus-20240229",
+      "model": "claude-3-7-sonnet-20250219",
       "temperature": 0.7,
       "maxTokens": 4096,
       "useCustomApiKey": false
-    },
-    "tool.serp": {
-      "apiKey": "YOUR_SERP_API_KEY"
-    },
-    "stock_price": {
-      "currency": "USD"
-    },
-    "weather": {}
+    }
   },
   "chatSettings": {
     "historyPolicy": "lastN",
     "historyLength": 10,
     "initialMessages": [
-      "Hello! I'm your AI assistant powered by Claude 3 Opus. I can help you with complex tasks, analysis, and creative work. How can I assist you today?"
+      "Hello! I'm the Example Agent. How can I help you today?"
     ]
   }
 } 

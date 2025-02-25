@@ -6,6 +6,7 @@
  */
 
 import type { BaseNode, NodeMetadata } from 'agentdock-core';
+import type { ValidatedPersonality } from 'agentdock-core/types/agent-config';
 export type { BaseNode };
 
 export interface ChatNodeConfig {
@@ -53,7 +54,7 @@ export interface AgentTemplate {
   agentId: string;
   name: string;
   description: string;
-  personality: string;
+  personality: ValidatedPersonality;
   modules: string[];
   nodeConfigurations: {
     'llm.anthropic'?: {

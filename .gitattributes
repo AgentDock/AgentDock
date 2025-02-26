@@ -1,0 +1,2 @@
+# Force _rfa to appear first in GitHub directory listing
+_rfa/** linguist-detectable=true 

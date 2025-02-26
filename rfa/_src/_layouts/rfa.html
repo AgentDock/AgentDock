@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page.title }} - AgentDock RFAs</title>
+    <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="{{ '/' | relative_url }}">Home</a>
+            <a href="{{ '/agents' | relative_url }}">All RFAs</a>
+        </nav>
+    </header>
+
+    <main>
+        <article class="rfa">
+            <header class="rfa-header">
+                <h1>{{ page.title }}</h1>
+                <div class="rfa-meta">
+                    <span class="rfa-id">RFA-{{ page.id }}</span>
+                    <span class="rfa-status {{ page.status }}">{{ page.status }}</span>
+                    {% if page.bounty %}
+                    <span class="rfa-bounty">Has Bounty</span>
+                    {% endif %}
+                </div>
+                <div class="rfa-tags">
+                    {% for tag in page.tags %}
+                    <span class="tag">{{ tag }}</span>
+                    {% endfor %}
+                </div>
+            </header>
+
+            <div class="rfa-content">
+                {{ content }}
+            </div>
+        </article>
+    </main>
+
+    <script>
+        mermaid.initialize({ startOnLoad: true });
+    </script>
+</body>
+</html> 

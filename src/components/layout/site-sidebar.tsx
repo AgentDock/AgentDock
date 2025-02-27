@@ -4,7 +4,8 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Bot, Settings, Boxes, Home } from "lucide-react"
+import { Bot, Settings, Home } from "lucide-react"
+import { Logo } from "@/components/ui/logo"
 
 const navigationItems = [
   {
@@ -39,12 +40,7 @@ export function SiteSidebar({ isCollapsed }: SiteSidebarProps) {
       )}>
         <div className="flex h-full flex-col">
           <div className="flex h-14 items-center border-b px-4 justify-center">
-            <Link href="/" className="flex items-center gap-2">
-              <Boxes className="h-6 w-6 text-primary" />
-              {!isCollapsed && (
-                <span className="font-bold text-xl">AgentDock.ai</span>
-              )}
-            </Link>
+            <Logo showText={!isCollapsed} />
           </div>
           <ScrollArea className="flex-1 py-2">
             <div className="flex flex-col gap-1 px-2">

@@ -48,7 +48,7 @@ export const useAgents = create<Store>((set) => ({
       // 4. Create agents from validated templates
       const agents = templateArray.map((template) => {
         // Create mutable copies of readonly arrays
-        const modules = [...template.modules];
+        const nodes = [...template.nodes];
         const nodeConfigurations = { ...template.nodeConfigurations };
 
         // Create mutable chat settings with defaults
@@ -69,12 +69,11 @@ export const useAgents = create<Store>((set) => ({
           name: template.name,
           description: template.description,
           personality: PersonalitySchema.parse(template.personality),
-          modules,
+          nodes,
           nodeConfigurations,
           chatSettings,
           id: crypto.randomUUID(),
           state: AgentState.CREATED,
-          nodes: [],
           metadata: {
             created: Date.now(),
             lastStateChange: Date.now()

@@ -24,7 +24,8 @@ async function bundleTemplates() {
       
       try {
         const templateContent = await fs.readFile(templatePath, 'utf-8');
-        templates[agentId] = JSON.parse(templateContent);
+        const template = JSON.parse(templateContent);
+        templates[agentId] = template;
         
         logger.info(
           LogCategory.CONFIG,
@@ -59,7 +60,7 @@ export function getTemplate(id: TemplateId): AgentConfig {
   const config = {
     ...template,
     personality: PersonalitySchema.parse(template.personality),
-    modules: [...template.modules],
+    nodes: [...template.nodes],
     chatSettings: {
       ...template.chatSettings,
       initialMessages: template.chatSettings?.initialMessages ? [...template.chatSettings.initialMessages] : []

@@ -53,8 +53,8 @@ export interface AgentConfig {
   /** Agent personality/system prompt - validated string */
   personality: ValidatedPersonality;
   
-  /** Enabled modules/capabilities */
-  modules: string[];
+  /** Enabled nodes/capabilities */
+  nodes: string[];
   
   /** Node-specific configurations */
   nodeConfigurations: {
@@ -71,10 +71,10 @@ export interface AgentConfig {
     historyLength?: number;
   };
   
-  /** Maximum concurrent node executions (backward compatibility) */
+  /** Maximum concurrent node executions */
   maxConcurrency?: number;
   
-  /** Custom configuration options (backward compatibility) */
+  /** Custom configuration options */
   options?: Record<string, unknown>;
 }
 
@@ -87,7 +87,7 @@ export const AgentConfigSchema = z.object({
   name: z.string(),
   description: z.string(),
   personality: PersonalitySchema,
-  modules: z.array(z.string()),
+  nodes: z.array(z.string()),
   nodeConfigurations: z.record(z.any()),
   chatSettings: z.object({
     initialMessages: z.array(z.string()).optional(),
@@ -115,7 +115,7 @@ export function createAgentConfig(config: Partial<AgentConfig>): AgentConfig {
     name: '',
     description: '',
     personality: PersonalitySchema.parse(''),
-    modules: [],
+    nodes: [],
     nodeConfigurations: {},
     chatSettings: {}
   };

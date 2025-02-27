@@ -125,7 +125,7 @@ export async function POST(
     const anthropicProvider = createAnthropic({ apiKey });
 
     // Get enabled tools
-    const enabledCustomTools = (template.modules || []).filter(
+    const enabledCustomTools = (template.nodes || []).filter(
       module => !module.startsWith('llm.')
     );
     const tools = getToolsForAgent(enabledCustomTools);

@@ -12,7 +12,7 @@ jest.mock('@/generated/templates', () => ({
       name: 'Test Agent',
       description: 'Test agent for streaming',
       personality: 'Helpful test assistant',
-      modules: ['llm.anthropic'],
+      nodes: ['llm.anthropic'],
       nodeConfigurations: {
         'llm.anthropic': {
           model: 'claude-3-opus-20240229',

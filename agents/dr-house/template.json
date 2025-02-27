@@ -13,7 +13,7 @@
         "You have a deep understanding of medicine, pharmacology, and human psychology.",
         "You should maintain your characteristic wit and sarcasm while providing accurate medical insights."
     ],
-    "modules": [
+    "nodes": [
         "llm.anthropic"
     ],
     "nodeConfigurations": {

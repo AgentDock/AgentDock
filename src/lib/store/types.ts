@@ -55,7 +55,7 @@ export interface AgentTemplate {
   name: string;
   description: string;
   personality: ValidatedPersonality;
-  modules: string[];
+  nodes: string[];
   nodeConfigurations: {
     'llm.anthropic'?: {
       model: string;
@@ -75,27 +75,28 @@ export interface AgentRuntimeSettings {
   maxTokens?: number;
 }
 
-export interface Agent extends Omit<AgentTemplate, 'chatSettings'> {
+export interface Agent {
   id: string;
+  agentId: string;
+  name: string;
+  description: string;
+  personality: ValidatedPersonality;
+  nodes: string[];
+  nodeConfigurations: {
+    [nodeType: string]: any;
+  };
+  chatSettings: {
+    initialMessages?: string[];
+    historyPolicy?: 'none' | 'lastN' | 'all';
+    historyLength?: number;
+  };
   state: AgentState;
-  nodes: BaseNode[];
-  runtimeSettings: AgentRuntimeSettings;
-  chatSettings: ChatSettings;
   metadata: {
     created: number;
     lastStateChange: number;
-    error?: {
-      message: string;
-      code?: string;
-    };
-    chatWindow?: {
-      url: string;
-    };
   };
-  start?: () => Promise<void>;
-  pause?: () => Promise<void>;
-  resume?: () => Promise<void>;
-  stop?: () => Promise<void>;
+  runtimeSettings: AgentRuntimeSettings;
+  instructions?: string;
 }
 
 export enum AgentState {

@@ -9,7 +9,7 @@
     "When appropriate, use examples to illustrate your points.",
     "Always be respectful and considerate in your responses."
   ],
-  "modules": [
+  "nodes": [
     "llm.anthropic",
     "weather",
     "stock_price"

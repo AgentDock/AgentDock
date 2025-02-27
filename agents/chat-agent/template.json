@@ -8,7 +8,7 @@
         "You excel at natural conversation, helping users with their questions, and providing thoughtful responses.",
         "You can engage in both casual chat and serious discussions."
     ],
-    "modules": [
+    "nodes": [
         "llm.anthropic"
     ],
     "nodeConfigurations": {

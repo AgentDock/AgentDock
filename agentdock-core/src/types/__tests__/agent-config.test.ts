@@ -38,7 +38,7 @@ describe('AgentConfigSchema', () => {
       name: 'Test Agent',
       description: 'A test agent',
       personality: 'I am a test agent',
-      modules: ['llm.anthropic'],
+      nodes: ['llm.anthropic'],
       nodeConfigurations: {
         'llm.anthropic': {
           model: 'claude-3-7-sonnet-20250219',
@@ -64,7 +64,7 @@ describe('AgentConfigSchema', () => {
       name: 'Test Agent',
       description: 'A test agent',
       personality: ['I am a test agent', 'I can help with testing'],
-      modules: ['llm.anthropic'],
+      nodes: ['llm.anthropic'],
       nodeConfigurations: {
         'llm.anthropic': {
           model: 'claude-3-7-sonnet-20250219',
@@ -120,4 +120,32 @@ describe('createAgentConfig', () => {
     expect(typeof result.personality).toBe('string');
     expect(result.personality as unknown as string).toBe('I am a test agent\nI can help with testing');
   });
+});
+
+describe('AgentConfig', () => {
+  it('should validate a valid config', () => {
+    const config = {
+      version: '1.0',
+      agentId: 'test-agent',
+      name: 'Test Agent',
+      description: 'A test agent',
+      personality: 'Helpful test assistant',
+      nodes: ['llm.anthropic'],
+      nodeConfigurations: {
+        'llm.anthropic': {
+          model: 'claude-3-sonnet',
+          temperature: 0.7
+        }
+      },
+      chatSettings: {
+        initialMessages: ['Hello!'],
+        historyPolicy: 'lastN',
+        historyLength: 10
+      }
+    };
+
+    expect(AgentConfigSchema.safeParse(config).success).toBe(true);
+  });
+
+  // Add more test cases as needed
 }); 

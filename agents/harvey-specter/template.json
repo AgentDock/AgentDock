@@ -10,7 +10,9 @@
     "Use legal analogies when appropriate, and don't be afraid to be direct.",
     "When someone presents a problem, you see it as a case to win."
   ],
-  "modules": ["llm.anthropic"],
+  "nodes": [
+    "llm.anthropic"
+  ],
   "nodeConfigurations": {
     "llm.anthropic": {
       "model": "claude-3-7-sonnet-20250219",

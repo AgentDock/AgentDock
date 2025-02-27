@@ -115,9 +115,9 @@ export default function HomePage() {
                     </div>
                   )}
 
-                  {selectedAgentData?.modules && selectedAgentData.modules.length > 0 && (
+                  {selectedAgentData?.nodes && selectedAgentData.nodes.length > 0 && (
                     <div className="text-xs text-muted-foreground">
-                      Tools: {selectedAgentData.modules.join(", ")}
+                      Tools: {selectedAgentData.nodes.join(", ")}
                     </div>
                   )}
 

@@ -58,14 +58,13 @@ export function Chat({
   const isEmpty = messages.length === 0
   const lastMessage = messages.at(-1)
   const isTyping = lastMessage?.role === "user"
-  const scrollRef = React.useRef<HTMLDivElement>(null)
-
-  // Auto-scroll when messages change
-  React.useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [messages]);
+  const {
+    containerRef,
+    scrollToBottom,
+    handleScroll,
+    shouldAutoScroll,
+    handleTouchStart,
+  } = useAutoScroll([messages])
 
   return (
     <div className={cn("flex h-full flex-col", className)}>
@@ -74,7 +73,12 @@ export function Chat({
           {header}
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto">
+      <div 
+        className="flex-1 overflow-y-auto" 
+        ref={containerRef}
+        onScroll={handleScroll}
+        onTouchStart={handleTouchStart}
+      >
         <div className="mx-auto w-full max-w-4xl px-4 py-4">
           {isEmpty && append && suggestions ? (
             <div className="flex h-full items-center justify-center py-20">
@@ -90,8 +94,20 @@ export function Chat({
               isTyping={isTyping}
             />
           )}
-          <div ref={scrollRef} className="h-px" />
         </div>
+        
+        {!shouldAutoScroll && (
+          <div className="absolute bottom-4 right-4">
+            <Button
+              onClick={scrollToBottom}
+              size="icon"
+              variant="secondary"
+              className="h-8 w-8 rounded-full shadow-lg transition-opacity"
+            >
+              <ArrowDown className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
       </div>
       <div className="flex-none bg-background">
         <div className="mx-auto w-full max-w-4xl px-4 py-4">

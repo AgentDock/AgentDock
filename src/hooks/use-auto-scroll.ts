@@ -5,7 +5,6 @@ const ACTIVATION_THRESHOLD = 50
 
 export function useAutoScroll(dependencies: React.DependencyList) {
   const containerRef = useRef<HTMLDivElement | null>(null)
-  const previousScrollTop = useRef<number | null>(null)
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true)
 
   const scrollToBottom = () => {
@@ -17,33 +16,19 @@ export function useAutoScroll(dependencies: React.DependencyList) {
   const handleScroll = () => {
     if (containerRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = containerRef.current
-
-      const isScrollingUp = previousScrollTop.current
-        ? scrollTop < previousScrollTop.current
-        : false
-
-      if (isScrollingUp) {
-        setShouldAutoScroll(false)
-      } else {
-        const isScrolledToBottom =
-          Math.abs(scrollHeight - scrollTop - clientHeight) <
-          ACTIVATION_THRESHOLD
-        setShouldAutoScroll(isScrolledToBottom)
-      }
-
-      previousScrollTop.current = scrollTop
+      
+      // Check if we're near the bottom of the container
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < ACTIVATION_THRESHOLD
+      
+      // Update auto-scroll state based on scroll position
+      setShouldAutoScroll(isNearBottom)
     }
   }
 
   const handleTouchStart = () => {
+    // On mobile, disable auto-scroll when user touches the screen
     setShouldAutoScroll(false)
   }
-
-  useEffect(() => {
-    if (containerRef.current) {
-      previousScrollTop.current = containerRef.current.scrollTop
-    }
-  }, [])
 
   useEffect(() => {
     if (shouldAutoScroll) {

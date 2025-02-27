@@ -83,6 +83,54 @@ export function MessageInput({
     }
   }
 
+  const onPaste = (event: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    if (props.allowAttachments !== true) return
+    
+    const clipboardData = event.clipboardData
+    
+    // Check if there are files in the clipboard (images)
+    if (clipboardData.files.length > 0) {
+      event.preventDefault()
+      
+      // Get all files from clipboard
+      const pastedFiles = Array.from(clipboardData.files)
+      
+      // Filter for supported file types
+      const supportedFiles = pastedFiles.filter(file => {
+        const fileType = file.type
+        return fileType.startsWith('image/') || 
+               fileType === 'application/pdf' || 
+               fileType === 'text/plain' ||
+               fileType === 'text/markdown' ||
+               fileType === 'text/csv' ||
+               fileType === 'application/json'
+      })
+      
+      if (supportedFiles.length > 0) {
+        addFiles(supportedFiles)
+      }
+    } else {
+      // Handle long text pastes
+      const pastedText = clipboardData.getData('text/plain')
+      const TEXT_LENGTH_THRESHOLD = 1000 // Text longer than 1000 chars becomes a file
+      
+      if (pastedText && pastedText.length > TEXT_LENGTH_THRESHOLD) {
+        // Prevent default paste to avoid text appearing in textarea
+        event.preventDefault()
+        
+        // Create a new file from the pasted text
+        const textFile = new File(
+          [pastedText], 
+          `pasted.txt`, 
+          { type: 'text/plain' }
+        )
+        
+        // Add the text file to the files
+        addFiles([textFile])
+      }
+    }
+  }
+
   const onKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (submitOnEnter && event.key === "Enter" && !event.shiftKey) {
       event.preventDefault()
@@ -103,6 +151,7 @@ export function MessageInput({
         placeholder={placeholder}
         ref={textAreaRef}
         onKeyDown={onKeyDown}
+        onPaste={onPaste}
         className={cn(
           "w-full grow resize-none rounded-lg border border-input bg-transparent p-3 pr-20 text-sm ring-offset-background transition-[border] placeholder:text-muted-foreground focus-visible:border-primary focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50",
           showFileList && "pb-16",

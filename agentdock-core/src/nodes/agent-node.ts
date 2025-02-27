@@ -126,9 +126,9 @@ export class AgentNode extends BaseNode<AgentNodeConfig> {
     try {
       this.state = AgentState.INITIALIZING;
 
-      // Initialize nodes based on enabled modules
-      for (const moduleType of this.config.agentConfig.modules) {
-        await this.initializeModule(moduleType);
+      // Initialize nodes based on enabled nodes
+      for (const nodeType of this.config.agentConfig.nodes) {
+        await this.initializeNode(nodeType);
       }
 
       // Set initial state based on configuration
@@ -148,10 +148,10 @@ export class AgentNode extends BaseNode<AgentNodeConfig> {
     }
 
     try {
-      // Process input through enabled modules
+      // Process input through enabled nodes
       let result = input;
-      for (const moduleType of this.config.agentConfig.modules) {
-        const node = this.nodes.get(moduleType);
+      for (const nodeType of this.config.agentConfig.nodes) {
+        const node = this.nodes.get(nodeType);
         if (node) {
           result = await this.executeWithRetry(node, result);
         }
@@ -186,41 +186,41 @@ export class AgentNode extends BaseNode<AgentNodeConfig> {
   }
 
   /**
-   * Initialize a module/node
+   * Initialize a node
    */
-  private async initializeModule(moduleType: string): Promise<void> {
-    const nodeConfig = this.config.agentConfig.nodeConfigurations[moduleType];
+  private async initializeNode(nodeType: string): Promise<void> {
+    const nodeConfig = this.config.agentConfig.nodeConfigurations[nodeType];
     if (!nodeConfig) {
-      throw new Error(`Missing configuration for module: ${moduleType}`);
+      throw new Error(`Missing configuration for node: ${nodeType}`);
     }
 
-    const NodeClass = await this.loadNodeClass(moduleType);
-    const node = new NodeClass(`${this.id}-${moduleType}`, nodeConfig);
+    const NodeClass = await this.loadNodeClass(nodeType);
+    const node = new NodeClass(`${this.id}-${nodeType}`, nodeConfig);
     await node.initialize();
-    this.nodes.set(moduleType, node);
+    this.nodes.set(nodeType, node);
   }
 
   /**
    * Load a node class dynamically
    */
-  private async loadNodeClass(moduleType: string): Promise<ConcreteNodeConstructor> {
+  private async loadNodeClass(nodeType: string): Promise<ConcreteNodeConstructor> {
     try {
       // Check if the node type exists in the registry
-      if (!NodeRegistry.has(moduleType)) {
-        throw createError('node', `Node type not found: ${moduleType}`, ErrorCode.NODE_NOT_FOUND);
+      if (!NodeRegistry.has(nodeType)) {
+        throw createError('node', `Node type not found: ${nodeType}`, ErrorCode.NODE_NOT_FOUND);
       }
 
       // Create a new instance using the registry
-      const node = NodeRegistry.create(moduleType, `${this.id}-${moduleType}`, {});
+      const node = NodeRegistry.create(nodeType, `${this.id}-${nodeType}`, {});
       
       // Return the constructor of the created node
       return node.constructor as ConcreteNodeConstructor;
     } catch (error) {
       throw createError('node', 
-        `Failed to load node class for module: ${moduleType}`,
+        `Failed to load node class for node: ${nodeType}`,
         ErrorCode.NODE_INITIALIZATION,
         {
-          moduleType,
+          nodeType,
           cause: error instanceof Error ? error.message : 'Unknown error'
         }
       );

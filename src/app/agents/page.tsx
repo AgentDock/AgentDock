@@ -115,13 +115,13 @@ export default function AgentsPage() {
                     {template.nodeConfigurations?.['llm.anthropic']?.model || "Default"}
                   </div>
                 </div>
-                {template.modules && template.modules.length > 0 && (
+                {template.nodes && template.nodes.length > 0 && (
                   <div>
-                    <div className="text-sm font-medium">Modules</div>
+                    <div className="text-sm font-medium">Nodes</div>
                     <div className="flex flex-wrap gap-2 mt-1.5">
-                      {template.modules.map((module) => (
-                        <Badge key={module} variant="outline">
-                          {module}
+                      {template.nodes.map((node) => (
+                        <Badge key={node} variant="outline">
+                          {node}
                         </Badge>
                       ))}
                     </div>

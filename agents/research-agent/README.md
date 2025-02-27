@@ -1,30 +1,26 @@
-# Research Assistant Agent
+# Research Agent
 
-An AI research assistant powered by Claude 3 Sonnet, designed to help users with research tasks, analysis, and information gathering.
+AI research assistant for information gathering and analysis.
+
+## Description
+
+This agent specializes in research tasks, helping users gather and analyze information from various sources.
 
 ## Features
 
-- Powered by Claude 3 Sonnet for efficient research
-- Web search integration via SERP API
-- Structured response format with citations
-- Extended chat history for research context
+- Advanced information gathering
+- Web search capabilities
+- Structured analysis and reporting
+
+## Nodes
+
+The agent uses the following nodes:
+- llm.anthropic: Advanced language model for analysis
+- tool.serp: Web search capabilities
 
 ## Configuration
 
-The agent uses the following modules:
-- `llm.anthropic`: Claude 3 Sonnet model for text generation
-- `core.prompt`: Research-focused prompt template
-- `tool.serp`: Web search capability for information gathering
-
-### Model Settings
-- Model: claude-3-sonnet-20240229
-- Temperature: 0.7 (balanced accuracy and exploration)
-- Max Tokens: 4096 (suitable for detailed research responses)
-
-### Chat Settings
-- History Policy: lastN (maintains research context)
-- History Length: 100 messages (extended for research sessions)
-- Research-focused initial greeting
+See `template.json` for the full configuration.
 
 ## Research Capabilities
 

@@ -24,7 +24,7 @@ export async function POST(req: Request) {
       name: data.name,
       description: data.description || '',
       personality: PersonalitySchema.parse("helpful"),
-      modules: [],
+      nodes: [],
       nodeConfigurations: {},
       chatSettings: {
         initialMessages: [],
@@ -33,7 +33,6 @@ export async function POST(req: Request) {
       },
       instructions: data.systemPrompt,
       state: AgentState.CREATED,
-      nodes: [],
       runtimeSettings: {
         temperature: 0.7,
         maxTokens: 4096

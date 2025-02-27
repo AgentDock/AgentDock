@@ -1,29 +1,25 @@
-# Chat Assistant Agent
+# Chat Agent
 
-A general-purpose chat assistant powered by Claude 3 Opus, designed for natural and engaging conversations across a wide range of topics.
+General purpose chat assistant powered by Claude 3.
+
+## Description
+
+A versatile chat agent designed for natural conversation and helpful responses.
 
 ## Features
 
-- Powered by Claude 3 Opus for high-quality conversations
-- Natural language understanding and generation
-- Balanced between casual chat and serious discussions
-- Configurable conversation history
+- Natural conversation capabilities
+- Helpful and friendly responses
+- Balanced temperature for creativity
+
+## Nodes
+
+The agent uses the following nodes:
+- llm.anthropic: Advanced language model for chat
 
 ## Configuration
 
-The agent uses the following modules:
-- `llm.anthropic`: Claude 3 Opus model for text generation
-- `core.prompt`: Clean prompt template for natural conversations
-
-### Model Settings
-- Model: claude-3-opus-20240229
-- Temperature: 0.8 (favors creative and engaging responses)
-- Max Tokens: 4096 (suitable for detailed conversations)
-
-### Chat Settings
-- History Policy: lastN (maintains conversation context)
-- History Length: 50 messages (balanced history retention)
-- Friendly initial greeting
+See `template.json` for the full configuration.
 
 ## Conversation Capabilities
 

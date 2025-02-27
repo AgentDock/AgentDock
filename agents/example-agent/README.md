@@ -1,42 +1,27 @@
 # Example Agent
 
-This is an example agent that demonstrates the core capabilities of the AgentDock framework. It showcases various tools and configurations that can be used to create powerful AI agents.
+A basic example agent for AgentDock that demonstrates core functionality.
+
+## Description
+
+This agent serves as a reference implementation showing how to create and configure agents in AgentDock.
 
 ## Features
 
-- Powered by Claude 3 Opus for advanced reasoning
-- Web search capability via SERP API
-- Stock price lookup functionality
-- Configurable chat history management
+- Basic chat functionality
+- Example of node configuration
+- Weather and stock price capabilities
+
+## Nodes
+
+The agent uses the following nodes:
+- llm.anthropic: Core language model
+- weather: Weather information lookup
+- stock_price: Stock price queries
 
 ## Configuration
 
-The agent uses the following modules:
-- `llm.anthropic`: Claude 3 Opus model for text generation
-- `core.prompt`: Custom prompt template for consistent responses
-- `tool.serp`: Web search capability
-- `tool.stock.price`: Stock price lookup tool
-
-### Model Settings
-- Model: claude-3-opus-20240229
-- Temperature: 0.7 (balanced creativity and consistency)
-- Max Tokens: 4096 (suitable for most conversations)
-
-### Chat Settings
-- History Policy: lastN (keeps recent messages)
-- History Length: 10 messages
-- Custom initial greeting
-
-## Tools
-
-### SERP Tool
-- Requires API key configuration
-- Used for web searches and information gathering
-
-### Stock Price Tool
-- Currency: USD
-- Provides mock stock price data
-- For demonstration purposes only
+See `template.json` for the full configuration.
 
 ## Usage Example
 

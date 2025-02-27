@@ -104,7 +104,7 @@ Tools are enabled via agent templates:
 
 ```json
 {
-  "modules": [
+  "nodes": [
     "llm.anthropic",    // Core node
     "your_custom_tool"  // Custom tool
   ],

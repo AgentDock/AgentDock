@@ -54,10 +54,10 @@ export async function loadAgentConfig(
     const config = {
       ...template,
       // Convert readonly arrays to mutable
-      modules: [...template.modules],
+      nodes: [...template.nodes],
       chatSettings: {
         ...template.chatSettings,
-        initialMessages: [...(template.chatSettings.initialMessages || [])]
+        initialMessages: template.chatSettings?.initialMessages ? [...template.chatSettings.initialMessages] : []
       },
       nodeConfigurations: {
         ...template.nodeConfigurations,

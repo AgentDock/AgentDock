@@ -5,21 +5,28 @@ An AI research assistant powered by Claude 3 Sonnet, designed to help users with
 ## Features
 
 - Powered by Claude 3 Sonnet for efficient research
-- Web search integration via SERP API
-- Structured response format with citations
+- Advanced research capabilities with DeepResearchNode
+- Web search integration via SERP API with LLM-powered summarization
+- Structured response format with citations and key findings
 - Extended chat history for research context
 
 ## Configuration
 
 The agent uses the following modules:
 - `llm.anthropic`: Claude 3 Sonnet model for text generation
-- `core.prompt`: Research-focused prompt template
-- `tool.serp`: Web search capability for information gathering
+- `core.tool.deep-research`: Advanced research capabilities combining web search with LLM summarization
 
 ### Model Settings
 - Model: claude-3-sonnet-20240229
 - Temperature: 0.7 (balanced accuracy and exploration)
 - Max Tokens: 4096 (suitable for detailed research responses)
+
+### Deep Research Settings
+- SERP Provider: Firecrawl
+- LLM Provider: Anthropic
+- Max Results: 5 (configurable)
+- Max Depth: 1 (configurable)
+- Citations: Enabled by default
 
 ### Chat Settings
 - History Policy: lastN (maintains research context)
@@ -32,16 +39,19 @@ The agent uses the following modules:
    - Web search integration
    - Multiple source synthesis
    - Citation tracking
+   - Automatic summarization
 
 2. Analysis
    - Structured response format
-   - Key point identification
+   - Key finding extraction
    - Pattern recognition
+   - Cross-source analysis
 
 3. Documentation
    - Citation management
    - Source verification
    - Fact-checking
+   - Comprehensive summaries
 
 ## Usage Example
 

@@ -14,7 +14,7 @@ This is an example agent that demonstrates the core capabilities of the AgentDoc
 The agent uses the following modules:
 - `llm.anthropic`: Claude 3 Opus model for text generation
 - `core.prompt`: Custom prompt template for consistent responses
-- `tool.serp`: Web search capability
+- `core.tool.serp`: Web search capability
 - `tool.stock.price`: Stock price lookup tool
 
 ### Model Settings
@@ -30,7 +30,7 @@ The agent uses the following modules:
 ## Tools
 
 ### SERP Tool
-- Requires API key configuration
+- Requires provider and API key configuration
 - Used for web searches and information gathering
 
 ### Stock Price Tool

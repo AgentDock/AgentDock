@@ -22,4 +22,7 @@ export type {
   ToolRegistrationOptions,
   Tool,
   ToolResult 
-} from './tool'; 
+} from './tool';
+
+// Deep Research module
+export * as DeepResearch from './deep-research'; 

@@ -10,7 +10,7 @@
     ],
     "modules": [
         "llm.anthropic",
-        "tool.serp"
+        "core.tool.deep-research"
     ],
     "nodeConfigurations": {
         "llm.anthropic": {
@@ -19,8 +19,23 @@
             "maxTokens": 4096,
             "useCustomApiKey": false
         },
-        "tool.serp": {
-            "apiKey": "YOUR_SERP_API_KEY"
+        "core.tool.deep-research": {
+            "serpProvider": "firecrawl",
+            "serpConfig": {
+                "apiKey": "${env.FIRECRAWL_API_KEY}",
+                "cache": {
+                    "enabled": true,
+                    "ttl": 3600000
+                }
+            },
+            "llmProvider": "anthropic",
+            "llmConfig": {
+                "apiKey": "${env.ANTHROPIC_API_KEY}",
+                "model": "claude-3-7-sonnet-20250219"
+            },
+            "maxResults": 5,
+            "maxDepth": 1,
+            "includeCitations": true
         }
     },
     "chatSettings": {

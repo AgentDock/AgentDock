@@ -3,45 +3,45 @@ import { useEffect, useRef, useState } from "react"
 // How many pixels from the bottom of the container to enable auto-scroll
 const ACTIVATION_THRESHOLD = 50
 
-export function useAutoScroll(dependencies: React.DependencyList) {
+export function useAutoScroll(dependencies: React.DependencyList, options?: { 
+  // If true, will force scroll to bottom (like when sending a new message)
+  forceScroll?: boolean
+}) {
   const containerRef = useRef<HTMLDivElement | null>(null)
-  const [shouldAutoScroll, setShouldAutoScroll] = useState(true)
+  const [isAtBottom, setIsAtBottom] = useState(true)
 
   const scrollToBottom = () => {
     if (containerRef.current) {
-      containerRef.current.scrollTop = containerRef.current.scrollHeight
+      containerRef.current.scrollTo({
+        top: containerRef.current.scrollHeight,
+        behavior: 'smooth'
+      })
     }
   }
 
   const handleScroll = () => {
-    if (containerRef.current) {
-      const { scrollTop, scrollHeight, clientHeight } = containerRef.current
-      
-      // Check if we're near the bottom of the container
-      const isNearBottom = scrollHeight - scrollTop - clientHeight < ACTIVATION_THRESHOLD
-      
-      // Update auto-scroll state based on scroll position
-      setShouldAutoScroll(isNearBottom)
-    }
-  }
-
-  const handleTouchStart = () => {
-    // On mobile, disable auto-scroll when user touches the screen
-    setShouldAutoScroll(false)
+    if (!containerRef.current) return
+    
+    const { scrollTop, scrollHeight, clientHeight } = containerRef.current
+    const distanceFromBottom = scrollHeight - scrollTop - clientHeight
+    
+    // Update if we're at bottom or not
+    setIsAtBottom(distanceFromBottom < ACTIVATION_THRESHOLD)
   }
 
   useEffect(() => {
-    if (shouldAutoScroll) {
+    // Only scroll if:
+    // 1. Force scroll is requested (new message sent) OR
+    // 2. We were already at the bottom
+    if (options?.forceScroll || isAtBottom) {
       scrollToBottom()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, dependencies)
 
   return {
     containerRef,
     scrollToBottom,
     handleScroll,
-    shouldAutoScroll,
-    handleTouchStart,
+    shouldShowScrollButton: !isAtBottom
   }
 }

@@ -62,9 +62,18 @@ export function Chat({
     containerRef,
     scrollToBottom,
     handleScroll,
-    shouldAutoScroll,
-    handleTouchStart,
-  } = useAutoScroll([messages])
+    shouldShowScrollButton
+  } = useAutoScroll(
+    [messages, isGenerating],
+    { forceScroll: isTyping }
+  )
+
+  const handleFormSubmit = (
+    event?: { preventDefault?: () => void },
+    options?: { experimental_attachments?: FileList }
+  ) => {
+    handleSubmit(event, options)
+  }
 
   return (
     <div className={cn("flex h-full flex-col", className)}>
@@ -77,7 +86,6 @@ export function Chat({
         className="flex-1 overflow-y-auto" 
         ref={containerRef}
         onScroll={handleScroll}
-        onTouchStart={handleTouchStart}
       >
         <div className="mx-auto w-full max-w-4xl px-4 py-4">
           {isEmpty && append && suggestions ? (
@@ -96,7 +104,7 @@ export function Chat({
           )}
         </div>
         
-        {!shouldAutoScroll && (
+        {shouldShowScrollButton && (
           <div className="absolute bottom-4 right-4">
             <Button
               onClick={scrollToBottom}
@@ -113,7 +121,7 @@ export function Chat({
         <div className="mx-auto w-full max-w-4xl px-4 py-4">
           <ChatForm
             isPending={isGenerating || isTyping}
-            handleSubmit={handleSubmit}
+            handleSubmit={handleFormSubmit}
           >
             {({ files, setFiles }) => (
               <MessageInput
@@ -134,47 +142,6 @@ export function Chat({
   )
 }
 Chat.displayName = "Chat"
-
-export function ChatMessages({
-  messages,
-  children,
-}: React.PropsWithChildren<{
-  messages: Message[]
-}>) {
-  const {
-    containerRef,
-    scrollToBottom,
-    handleScroll,
-    shouldAutoScroll,
-    handleTouchStart,
-  } = useAutoScroll([messages])
-
-  return (
-    <div
-      className="relative flex h-full flex-col overflow-hidden"
-      ref={containerRef}
-      onScroll={handleScroll}
-      onTouchStart={handleTouchStart}
-    >
-      <div className="flex-1 overflow-y-auto">
-        {children}
-      </div>
-
-      {!shouldAutoScroll && (
-        <div className="absolute bottom-4 right-4">
-          <Button
-            onClick={scrollToBottom}
-            size="icon"
-            variant="secondary"
-            className="h-8 w-8 rounded-full shadow-lg transition-opacity"
-          >
-            <ArrowDown className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
-    </div>
-  )
-}
 
 export const ChatContainer = forwardRef<
   HTMLDivElement,

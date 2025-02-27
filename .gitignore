@@ -61,3 +61,6 @@ next-env.d.ts
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Generated files
+/src/generated/

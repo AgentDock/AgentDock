@@ -27,6 +27,7 @@
 .cursor/
 .agentdock/
 .ignore/
+.swc
 
 # Symlinks
 .agentdock

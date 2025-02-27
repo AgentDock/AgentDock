@@ -7,17 +7,30 @@ import { NextRequest } from 'next/server';
 import { Message } from 'ai';
 import { createAnthropic } from '@ai-sdk/anthropic';
 import type { LanguageModelV1 } from '@ai-sdk/provider';
-import { APIError, ErrorCode, logger, LogCategory, loadAgentConfig } from 'agentdock-core';
+import { APIError, ErrorCode, logger, LogCategory, loadAgentConfig, NodeRegistry } from 'agentdock-core';
 import { templates, TemplateId } from '@/generated/templates';
 import { getToolsForAgent } from '@/nodes/registry';
 
 // Log runtime configuration
-console.log('Route Handler Configuration:', {
-  runtime: 'edge',
-  path: '/api/chat/[agentId]',
-  method: 'POST',
-  timestamp: new Date().toISOString()
-});
+logger.debug(
+  LogCategory.API,
+  'ChatRoute',
+  'Route Handler Configuration:',
+  {
+    runtime: 'edge',
+    path: '/api/chat/[agentId]',
+    method: 'POST',
+    timestamp: new Date().toISOString()
+  }
+);
+
+// Debug: Check core tools
+logger.debug(
+  LogCategory.API,
+  'ChatRoute',
+  'Core tools from NodeRegistry:',
+  NodeRegistry.getToolDefinitions()
+);
 
 // ============================================================================
 // TEMPORARY IMPLEMENTATION FOR V1
@@ -126,24 +139,29 @@ export async function POST(
 
     // Get enabled tools
     const enabledCustomTools = (template.modules || []).filter(
-      module => !module.startsWith('llm.')
+      module => !module.startsWith('llm.') && (module.startsWith('core.tool.') || !module.startsWith('core.'))
     );
     const tools = getToolsForAgent(enabledCustomTools);
 
     // Log available tools
-    console.log('Enabled tools for agent:', {
-      agentId,
-      enabledCustomTools,
-      availableTools: Object.keys(tools),
-      toolDetails: Object.entries(tools).map(([name, tool]) => ({
-        name,
-        description: tool.description,
-        hasExecute: 'execute' in tool
-      }))
-    });
+    logger.debug(
+      LogCategory.API,
+      'ChatRoute',
+      'Enabled tools for agent:',
+      {
+        agentId,
+        enabledCustomTools,
+        availableTools: Object.keys(tools),
+        toolDetails: Object.entries(tools).map(([name, tool]) => ({
+          name,
+          description: tool.description,
+          hasExecute: 'execute' in tool
+        }))
+      }
+    );
 
     // Log request details
-    await logger.debug(
+    logger.debug(
       LogCategory.API,
       'ChatRoute',
       'Processing chat request',
@@ -161,8 +179,15 @@ export async function POST(
     const systemPrompt = system || config.personality;
 
     // Add explicit logging and type checking
-    console.log('System prompt type:', typeof systemPrompt);
-    console.log('System prompt value:', systemPrompt);
+    logger.debug(
+      LogCategory.API,
+      'ChatRoute',
+      'System prompt details:',
+      {
+        type: typeof systemPrompt,
+        value: systemPrompt
+      }
+    );
     
     // Ensure system prompt is a string
     const finalSystemPrompt = typeof systemPrompt === 'string' 
@@ -171,7 +196,14 @@ export async function POST(
         ? systemPrompt.join('\n') 
         : String(systemPrompt || '');
     
-    console.log('Final system prompt type:', typeof finalSystemPrompt);
+    logger.debug(
+      LogCategory.API,
+      'ChatRoute',
+      'Final system prompt details:',
+      {
+        type: typeof finalSystemPrompt
+      }
+    );
 
     // Stream response using streamText
     const { streamText } = await import('ai');
@@ -191,7 +223,7 @@ export async function POST(
     // Return the stream using toDataStreamResponse
     return stream.toDataStreamResponse();
   } catch (error) {
-    await logger.error(
+    logger.error(
       LogCategory.API,
       'ChatAPI',
       'Failed to process chat',

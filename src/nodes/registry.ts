@@ -5,23 +5,26 @@
 
 import { tools as stockTools } from './stock-price';
 import { tools as weatherTools } from './weather';
+import { tools as serpTools } from 'agentdock-core/nodes/serp/index';
 import type { Tool, ToolRegistry } from './types';
+import { NodeRegistry } from 'agentdock-core';
 
 /**
  * Registry of consumer-provided custom nodes
  */
 export const tools: ToolRegistry = {
   ...stockTools,
-  ...weatherTools
+  ...weatherTools,
+  ...serpTools
 };
 
 // Add validation to ensure tools are registered
 for (const [name, tool] of Object.entries(tools)) {
   validateCustomTool(tool);
+  // TODO: Replace with logger.debug once type issues are resolved with the Tool interface
   console.log(`Tool registered: ${name}`, {
-    description: tool.description,
     hasExecute: 'execute' in tool,
-    parameters: tool.parameters
+    hasParameters: !!tool.parameters
   });
 }
 
@@ -43,9 +46,26 @@ export function errorHandler(error: unknown) {
 export function getToolsForAgent(enabledTools: string[]): ToolRegistry {
   const allowedTools: ToolRegistry = {};
   
+  console.log("Available tools:", Object.keys(tools));
+
+  // Get core tools from agentdock-core NodeRegistry
+  const coreTools = NodeRegistry.getToolDefinitions();
+  
   for (const toolName of enabledTools) {
+    // Check if it's a custom tool
     if (toolName in tools) {
       allowedTools[toolName] = tools[toolName];
+    }
+    // Check if it's a core tool
+    else if (toolName in coreTools) {
+      // Convert core tool to our Tool format
+      const coreTool = coreTools[toolName];
+      allowedTools[toolName] = {
+        name: toolName,
+        description: coreTool.description || `Tool: ${toolName}`,
+        parameters: coreTool.parameters,
+        execute: coreTool.execute
+      } as Tool;
     }
   }
   

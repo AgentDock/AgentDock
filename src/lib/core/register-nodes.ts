@@ -3,15 +3,17 @@
  * This file registers all core nodes with the NodeRegistry.
  */
 
-import { NodeRegistry } from 'agentdock-core';
+import { NodeRegistry, logger, LogCategory } from 'agentdock-core';
 import { ChatNode } from '@/lib/store/chat-node';
-import { logger, LogCategory } from 'agentdock-core';
 
 /**
  * Register all core nodes with the registry
  */
 export function registerCoreNodes(): void {
   try {
+    // Note: Core nodes from agentdock-core are automatically registered
+    // when the package is imported, so we don't need to register them again
+    
     // Register core chat node
     // Note: Provider-specific nodes will be handled by ThinVercelAIAdapter later
     NodeRegistry.register('chat', ChatNode, '1.0.0');

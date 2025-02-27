@@ -11,6 +11,11 @@ import { SerpNode } from './serp/serp-node';
 import { serpNodeParametersSchema } from './serp/schema';
 import { DeepResearchNode } from './deep-research/deep-research-node';
 import { deepResearchNodeParametersSchema } from './deep-research/schema';
+import { logger, LogCategory } from '../logging';
+
+import { LogLevel } from '../logging';
+logger.debug(LogCategory.NODE, 'NodeRegistry', 'Current log level:', { level: LogLevel.DEBUG });
+
 
 /**
  * Register all core nodes with the registry
@@ -34,6 +39,8 @@ export function registerCoreNodes(): void {
     parameters: deepResearchNodeParametersSchema,
     description: 'Perform deep research by combining search and LLM summarization'
   });
+
+  logger.debug(LogCategory.NODE, 'NodeRegistry', 'Getting tool definitions', NodeRegistry.getToolDefinitions());
 }
 
 // Register nodes immediately

@@ -11,6 +11,7 @@ import {
   SerpError
 } from '../types';
 import { createError, ErrorCode } from '../../../errors';
+import { logger, LogCategory } from '../../../logging';
 
 /**
  * Rate limiter for Firecrawl API requests
@@ -171,8 +172,15 @@ export class FirecrawlAdapter implements SerpAdapter {
    * @param config The adapter configuration
    */
   constructor(config: FirecrawlConfig) {
+    logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Creating new FirecrawlAdapter instance", {});
+    logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Configuration", {
+      ...config,
+      apiKey: config.apiKey ? '***API_KEY_HIDDEN***' : undefined
+    });
+    
     // Validate required configuration
     if (!config.apiKey || config.apiKey.trim() === '') {
+      logger.error(LogCategory.NODE, 'FirecrawlAdapter', "Missing API key in configuration", {});
       throw createError(
         'service',
         'Firecrawl API key is required',
@@ -182,41 +190,54 @@ export class FirecrawlAdapter implements SerpAdapter {
     
     this.apiKey = config.apiKey;
     this.baseUrl = config.baseUrl || 'https://api.firecrawl.dev/v1';
+    logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Using base URL", { baseUrl: this.baseUrl });
     
     // Initialize rate limiter
     const rateLimit = config.rateLimit || 60; // Default: 60 requests per minute
+    logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Setting up rate limiter", { rateLimit });
     this.rateLimiter = new RateLimiter(rateLimit);
     
     // Initialize cache if enabled
     if (config.cache && config.cache.enabled) {
       const ttl = config.cache.ttl || 3600; // Default: 1 hour cache TTL
+      logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Enabling cache", { ttl });
       this.cache = new SearchCache(ttl);
+    } else {
+      logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Cache is disabled", {});
     }
     
     this.timeout = config.timeout || 10000; // Default: 10 second timeout
+    logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Setting request timeout", { timeout: this.timeout });
+    
+    // Configure retry settings
     this.retryConfig = {
       maxAttempts: config.retry?.maxAttempts || 3,
       backoffFactor: config.retry?.backoffFactor || 2
     };
+    logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Configuring retry settings", { retryConfig: this.retryConfig });
     
-    // Set request headers
+    // Set up headers
     this.headers = {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${this.apiKey}`,
-      'User-Agent': 'AgentDock-SerpNode/1.0',
-      ...config.headers
+      ...(config.headers || {})
     };
+    logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Headers configured", { 
+      headerCount: Object.keys(this.headers).length,
+      hasAuth: !!this.headers['Authorization']
+    });
   }
   
   /**
-   * Perform a search query
-   * @param query Search query
-   * @param options Search options
-   * @returns Promise resolving to search results
+   * Execute a search query
+   * @param query The search query
+   * @param options Optional search parameters
+   * @returns Promise resolving to an array of search results
    */
   async search(query: string, options?: SearchOptions): Promise<SerpResult[]> {
-    // Validate the query
+    // Validate query
     if (!query || query.trim() === '') {
+      logger.error(LogCategory.NODE, 'FirecrawlAdapter', "Empty search query", {});
       throw createError(
         'service',
         'Search query cannot be empty',
@@ -224,19 +245,32 @@ export class FirecrawlAdapter implements SerpAdapter {
       );
     }
     
-    // Generate cache key if caching is enabled
+    logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Generating cache key", {});
     const cacheKey = this.generateCacheKey(query, options);
+    logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Cache key generated", { cacheKey });
     
     // Check cache first if enabled
     if (this.cache) {
+      logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Checking cache for results", {});
       const cachedResults = this.cache.get(cacheKey);
       if (cachedResults) {
+        logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Cache hit, returning cached results", { resultCount: cachedResults.length });
         return cachedResults;
       }
+      logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Cache miss, executing search", {});
     }
     
-    // Execute the search with rate limiting and retries
-    return this.rateLimiter.add(() => this.executeSearch(query, options, 1, cacheKey));
+    // Execute search
+    logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Executing search", { query });
+    const results = await this.executeSearch(query, options, 1, cacheKey);
+    
+    // Cache results if enabled
+    if (this.cache) {
+      logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Caching search results", { resultCount: results.length });
+      this.cache.set(cacheKey, results);
+    }
+    
+    return results;
   }
   
   /**
@@ -252,11 +286,14 @@ export class FirecrawlAdapter implements SerpAdapter {
    * @returns True if the configuration is valid
    */
   validateConfig(): boolean {
-    return Boolean(this.apiKey) && this.apiKey.trim().length > 0;
+    logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Validating configuration", {});
+    const isValid = !!this.apiKey && this.apiKey.trim() !== '';
+    logger.debug(LogCategory.NODE, 'FirecrawlAdapter', isValid ? "Configuration is valid" : "Configuration is invalid", {});
+    return isValid;
   }
   
   /**
-   * Execute a search with retry logic
+   * Execute the search request
    * @param query Search query
    * @param options Search options
    * @param attempt Current attempt number
@@ -269,159 +306,222 @@ export class FirecrawlAdapter implements SerpAdapter {
     attempt: number = 1,
     cacheKey?: string
   ): Promise<SerpResult[]> {
+    logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Executing search", { attempt, maxAttempts: this.retryConfig.maxAttempts });
+    
     try {
-      // Prepare the request URL
-      const url = new URL(`${this.baseUrl}/search`);
+      // Prepare request options
+      logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Preparing request options", {});
+      const requestOptions = this.prepareOptions(options);
+      logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Request options prepared", { requestOptions });
       
-      // Prepare the request body
+      // Prepare request URL and body
+      const url = `${this.baseUrl}/search`;
+      logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Request URL", { url });
+      
       const body = {
         query,
-        ...this.prepareOptions(options)
+        ...requestOptions
       };
+      logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Request body prepared", { body });
       
       // Execute the request with timeout
+      logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Sending API request", {});
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), this.timeout);
       
-      try {
-        const response = await fetch(url.toString(), {
-          method: 'POST',
-          headers: this.headers,
-          body: JSON.stringify(body),
-          signal: controller.signal
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: this.headers,
+        body: JSON.stringify(body),
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
+      // Handle response
+      if (!response.ok) {
+        const errorText = await response.text();
+        logger.error(LogCategory.NODE, 'FirecrawlAdapter', "API request failed", { 
+          status: response.status, 
+          statusText: response.statusText,
+          errorDetails: errorText
         });
         
-        clearTimeout(timeoutId);
-        
-        // Handle error responses
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => null);
-          throw new SerpError(
-            `Firecrawl API error: ${response.status} ${response.statusText}`,
-            'API_ERROR',
-            response.status,
-            errorData
-          );
+        // Handle rate limiting
+        if (response.status === 429 && attempt < this.retryConfig.maxAttempts) {
+          const retryAfter = parseInt(response.headers.get('retry-after') || '1', 10);
+          const delay = retryAfter * 1000 || Math.pow(this.retryConfig.backoffFactor, attempt) * 1000;
+          
+          logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Rate limited, retrying after", { delay });
+          
+          await new Promise(resolve => setTimeout(resolve, delay));
+          return this.executeSearch(query, options, attempt + 1, cacheKey);
         }
         
-        // Parse the response
-        const data = await response.json();
-        
-        // Transform the response to SerpResult[]
-        const results = this.transformResults(data);
-        
-        // Cache the results if caching is enabled
-        if (this.cache && cacheKey) {
-          this.cache.set(cacheKey, results);
-        }
-        
-        return results;
-      } finally {
-        clearTimeout(timeoutId);
-      }
-    } catch (error) {
-      // Handle abort errors (timeout)
-      if (error instanceof DOMException && error.name === 'AbortError') {
+        // Handle other errors
         throw createError(
           'service',
-          `Firecrawl API request timed out after ${this.timeout}ms`,
+          `API error: ${response.status} ${response.statusText}`,
+          ErrorCode.API_RESPONSE,
+          { status: response.status, response: errorText }
+        );
+      }
+      
+      // Parse response
+      logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Parsing API response", {});
+      const data = await response.json();
+      
+      // Transform results
+      logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Transforming API response to SerpResult format", {});
+      const results = this.transformResults(data);
+      logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Transformed", { resultCount: results.length });
+      
+      // Cache results if enabled
+      if (this.cache && cacheKey) {
+        logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Caching search results", { resultCount: results.length });
+        this.cache.set(cacheKey, results);
+        logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Results cached successfully");
+      }
+      
+      logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Search completed successfully", { resultCount: results.length });
+      return results;
+    } catch (error) {
+      logger.error(LogCategory.NODE, 'FirecrawlAdapter', "Error during search execution", { error });
+      
+      // Handle timeout errors
+      if (error instanceof Error && error.name === 'AbortError') {
+        logger.error(LogCategory.NODE, 'FirecrawlAdapter', "Request timed out", { timeout: this.timeout });
+        
+        if (attempt < this.retryConfig.maxAttempts) {
+          const delay = Math.pow(this.retryConfig.backoffFactor, attempt) * 1000;
+          logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Retrying after", { delay });
+          
+          await new Promise(resolve => setTimeout(resolve, delay));
+          return this.executeSearch(query, options, attempt + 1, cacheKey);
+        }
+        
+        throw createError(
+          'service',
+          `Request timed out after ${this.timeout}ms`,
           ErrorCode.SERVICE_UNAVAILABLE
         );
       }
       
-      // Handle SerpError (API errors)
-      if (error instanceof SerpError) {
-        throw createError(
-          'service',
-          `Firecrawl API error: ${error.message}`,
-          ErrorCode.API_RESPONSE,
-          { 
-            status: error.status,
-            response: error.response
-          }
-        );
+      // Handle network errors
+      if (error instanceof Error && error.message.includes('network')) {
+        logger.error(LogCategory.NODE, 'FirecrawlAdapter', "Network error", { error: error.message });
+        
+        if (attempt < this.retryConfig.maxAttempts) {
+          const delay = Math.pow(this.retryConfig.backoffFactor, attempt) * 1000;
+          logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Retrying after", { delay });
+          
+          await new Promise(resolve => setTimeout(resolve, delay));
+          return this.executeSearch(query, options, attempt + 1, cacheKey);
+        }
       }
       
-      // Handle other errors with retry logic
-      if (attempt < this.retryConfig.maxAttempts) {
-        // Calculate backoff delay
-        const delay = Math.pow(this.retryConfig.backoffFactor, attempt - 1) * 1000;
-        
-        // Wait for the backoff delay
-        await new Promise(resolve => setTimeout(resolve, delay));
-        
-        // Retry the request
-        return this.executeSearch(query, options, attempt + 1, cacheKey);
-      }
-      
-      // Rethrow the error if we've exhausted retries
-      throw createError(
-        'service',
-        `Firecrawl search failed after ${attempt} attempts: ${error instanceof Error ? error.message : String(error)}`,
-        ErrorCode.API_REQUEST
-      );
+      // Rethrow other errors
+      throw error;
     }
   }
   
   /**
-   * Transform the Firecrawl API response to SerpResult[]
+   * Transform API response to SerpResult format
    * @param data API response data
-   * @returns Transformed search results
+   * @returns Array of SerpResult objects
    */
   private transformResults(data: any): SerpResult[] {
+    logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Transforming results from API response", {});
+    
     if (!data.results || !Array.isArray(data.results)) {
+      logger.error(LogCategory.NODE, 'FirecrawlAdapter', "Invalid API response format, missing results array");
       return [];
     }
     
-    return data.results.map((result: any, index: number) => ({
-      title: result.title || '',
-      snippet: result.snippet || result.description || '',
-      url: result.url || '',
-      position: index + 1,
-      metadata: {
-        domain: result.domain || new URL(result.url).hostname,
-        lastUpdated: result.lastUpdated || null,
-        ...result.metadata
-      }
-    }));
+    return data.results.map((item: any, index: number) => {
+      logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Transforming result", { index: index + 1, title: item.title || 'Untitled' });
+      
+      return {
+        title: item.title || 'Untitled',
+        snippet: item.snippet || '',
+        url: item.url || '',
+        position: item.position || index + 1,
+        metadata: {
+          domain: item.domain || (item.url ? new URL(item.url).hostname : ''),
+          lastUpdated: item.lastUpdated,
+          ...item.metadata
+        }
+      };
+    });
   }
   
   /**
-   * Prepare search options for the API request
+   * Prepare options for the API request
    * @param options Search options
-   * @returns Prepared options object
+   * @returns Prepared options for the API request
    */
   private prepareOptions(options?: SearchOptions): Record<string, any> {
+    logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Preparing options for API request", {});
+    
+    const requestOptions: Record<string, any> = {};
+    
     if (!options) {
-      return {};
+      logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "No options provided, using defaults");
+      return requestOptions;
     }
     
-    const prepared: Record<string, any> = {};
+    // Map options to API parameters
+    if (options.limit !== undefined) {
+      requestOptions.limit = options.limit;
+      logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Setting limit", { limit: options.limit });
+    }
     
-    // Map standard options
-    if (options.limit !== undefined) prepared.limit = options.limit;
-    if (options.offset !== undefined) prepared.offset = options.offset;
-    if (options.language !== undefined) prepared.language = options.language;
-    if (options.region !== undefined) prepared.region = options.region;
-    if (options.safeSearch !== undefined) prepared.safeSearch = options.safeSearch;
+    if (options.offset !== undefined) {
+      requestOptions.offset = options.offset;
+      logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Setting offset", { offset: options.offset });
+    }
+    
+    if (options.language) {
+      requestOptions.language = options.language;
+      logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Setting language", { language: options.language });
+    }
+    
+    if (options.region) {
+      requestOptions.region = options.region;
+      logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Setting region", { region: options.region });
+    }
+    
+    if (options.safeSearch !== undefined) {
+      requestOptions.safeSearch = options.safeSearch;
+      logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Setting safeSearch", { safeSearch: options.safeSearch });
+    }
     
     // Add any additional options
-    for (const [key, value] of Object.entries(options)) {
+    Object.entries(options).forEach(([key, value]) => {
       if (!['limit', 'offset', 'language', 'region', 'safeSearch'].includes(key)) {
-        prepared[key] = value;
+        requestOptions[key] = value;
+        logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Setting additional option", { key, value });
       }
-    }
+    });
     
-    return prepared;
+    logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Options prepared", { requestOptions });
+    return requestOptions;
   }
   
   /**
-   * Generate a cache key for a query and options
+   * Generate a cache key for the search
    * @param query Search query
    * @param options Search options
    * @returns Cache key
    */
   private generateCacheKey(query: string, options?: SearchOptions): string {
-    return `${query}:${JSON.stringify(options || {})}`;
+    logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Generating cache key for query", { query });
+    
+    const normalizedQuery = query.trim().toLowerCase();
+    const optionsString = options ? JSON.stringify(options) : '';
+    const key = `${normalizedQuery}:${optionsString}`;
+    
+    logger.debug(LogCategory.NODE, 'FirecrawlAdapter', "Generated cache key", { key });
+    return key;
   }
 } 

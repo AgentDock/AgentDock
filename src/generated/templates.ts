@@ -211,6 +211,53 @@ export const templates = {
         "Hello! I'm your AI research assistant. I can help you with research tasks, analysis, and information gathering. What would you like to research today?"
       ]
     }
+  },
+  "search-agent": {
+    "version": "1.0",
+    "agentId": "search-agent",
+    "name": "Search Agent",
+    "description": "Simple search agent using Firecrawl for web searches",
+    "personality": [
+      "You are a helpful search assistant.",
+      "You provide concise and accurate information from web searches.",
+      "Always cite your sources when providing information.",
+      "When you don't know something, use search to find the answer."
+    ],
+    "modules": [
+      "llm.anthropic",
+      "core.tool.serp"
+    ],
+    "nodeConfigurations": {
+      "llm.anthropic": {
+        "model": "claude-3-7-sonnet-20250219",
+        "temperature": 0.7,
+        "maxTokens": 4096,
+        "useCustomApiKey": false,
+        "systemPrompt": "${file:system-prompt.md}"
+      },
+      "core.tool.serp": {
+        "provider": "firecrawl",
+        "config": {
+          "apiKey": "${env.FIRECRAWL_API_KEY}",
+          "cache": {
+            "enabled": true,
+            "ttl": 3600
+          },
+          "retry": {
+            "maxAttempts": 3,
+            "backoffFactor": 2
+          },
+          "timeout": 10000
+        }
+      }
+    },
+    "chatSettings": {
+      "historyPolicy": "lastN",
+      "historyLength": 50,
+      "initialMessages": [
+        "Hello! I'm your search assistant. I can help you find information on the web. What would you like to search for today?"
+      ]
+    }
   }
 } as const;
 

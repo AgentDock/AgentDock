@@ -16,6 +16,8 @@ import { createError, ErrorCode } from '../../errors';
 import { logger, LogCategory } from '../../logging';
 import { serpNodeParametersSchema } from './schema';
 
+import { LogLevel } from '../../logging';
+
 /**
  * SerpNode provides search engine results page functionality
  */
@@ -30,128 +32,144 @@ export class SerpNode extends BaseNode<SerpNodeConfig> {
    * Initialize the node
    */
   async initialize(): Promise<void> {
+    logger.debug(LogCategory.NODE, this.id, "Initializing SerpNode...", {});
+    logger.debug(LogCategory.NODE, this.id, "Configuration:", { config: this.config });
+    
     try {
+      logger.debug(LogCategory.NODE, this.id, "Creating adapter for provider", { provider: this.config.provider });
       // Create the adapter based on the provider
       this.adapter = createAdapter(this.config.provider, this.config.config);
+      logger.debug(LogCategory.NODE, this.id, "Adapter created successfully", {});
       
       // Validate the adapter configuration
+      logger.debug(LogCategory.NODE, this.id, "Validating adapter configuration...", {});
       if (!this.adapter.validateConfig()) {
+        logger.error(LogCategory.NODE, this.id, "Invalid configuration for SERP provider", { provider: this.config.provider });
         throw createError(
           'node',
           `Invalid configuration for SERP provider: ${this.config.provider}`,
           ErrorCode.NODE_VALIDATION
         );
       }
+      logger.debug(LogCategory.NODE, this.id, "Adapter configuration validated successfully", {});
       
-      logger.debug(LogCategory.NODE, this.id, `Initialized SerpNode with provider: ${this.config.provider}`);
     } catch (error) {
+      logger.error(LogCategory.NODE, this.id, "Error initializing SerpNode", { error });
       throw createError(
         'node',
         `Failed to initialize SerpNode: ${error instanceof Error ? error.message : String(error)}`,
-        ErrorCode.NODE_INITIALIZATION,
-        { cause: error }
+        ErrorCode.NODE_INITIALIZATION
       );
     }
+    
+    logger.debug(LogCategory.NODE, this.id, "SerpNode initialized successfully", {});
   }
   
   /**
-   * Execute a search query
-   * @param input Search query or options object
-   * @returns Promise resolving to formatted search results
+   * Execute the node with the given inputs
+   * @param inputs The node inputs
+   * @returns The node outputs
    */
-  async execute(input: string | { query: string; options?: SearchOptions }): Promise<FormattedSearchResponse> {
-    try {
-      // Ensure the adapter is initialized
-      if (!this.adapter) {
-        await this.initialize();
-      }
-      
-      // Extract query and options from input
-      const { query, options } = this.parseInput(input);
-      
-      // Log the search request
-      logger.debug(LogCategory.NODE, this.id, `Executing search: ${query}`, { options });
-      
-      // Start timing the search
-      const startTime = Date.now();
-      
-      // Execute the search
-      const results = await this.adapter!.search(query, options);
-      
-      // Calculate search time
-      const searchTime = Date.now() - startTime;
-      
-      // Create the search response
-      const response: SearchResponse = {
-        results,
-        metadata: {
-          provider: this.adapter!.getProvider(),
-          query,
-          totalResults: results.length,
-          searchTime
-        }
-      };
-      
-      // Format the response
-      const formattedResponse = this.formatResponse(response);
-      
-      // Log the search results
-      logger.debug(LogCategory.NODE, this.id, `Search completed: ${query}`, { 
-        resultCount: results.length,
-        searchTime
-      });
-      
-      return formattedResponse;
-    } catch (error) {
+  async execute(inputs: Record<string, any>): Promise<Record<string, any>> {
+    logger.debug(LogCategory.NODE, this.id, "Executing SerpNode...", {});
+    
+    // Ensure the node is initialized
+    if (!this.adapter) {
+      logger.error(LogCategory.NODE, this.id, "SerpNode not initialized", {});
       throw createError(
         'node',
-        `Search failed: ${error instanceof Error ? error.message : String(error)}`,
-        ErrorCode.NODE_EXECUTION,
-        { cause: error }
+        'SerpNode not initialized',
+        ErrorCode.NODE_INITIALIZATION
       );
     }
-  }
-  
-  /**
-   * Clean up resources
-   */
-  async cleanup(): Promise<void> {
-    this.adapter = null;
-    return Promise.resolve();
+    
+    // Get the query from the inputs
+    const query = inputs.query as string;
+    logger.debug(LogCategory.NODE, this.id, "Search query", { query });
+    
+    if (!query || typeof query !== 'string') {
+      logger.error(LogCategory.NODE, this.id, "Invalid query input", { query });
+      throw createError(
+        'node',
+        'Query input must be a non-empty string',
+        ErrorCode.VALIDATION_ERROR
+      );
+    }
+    
+    // Get the options from the inputs
+    const options: SearchOptions = {};
+    
+    // Add limit if provided
+    if (inputs.limit !== undefined) {
+      options.limit = Number(inputs.limit);
+      logger.debug(LogCategory.NODE, this.id, "Search limit", { limit: options.limit });
+    }
+    
+    try {
+      // Execute the search
+      logger.debug(LogCategory.NODE, this.id, "Executing search...", {});
+      const results = await this.adapter.search(query, options);
+      logger.debug(LogCategory.NODE, this.id, "Search completed", { resultCount: results.length });
+      
+      // Format the results
+      const formatted = this.formatResults(results);
+      logger.debug(LogCategory.NODE, this.id, "Results formatted", {});
+      
+      return {
+        results: formatted
+      };
+    } catch (error) {
+      logger.error(LogCategory.NODE, this.id, "Error executing search", { error });
+      throw createError(
+        'node',
+        `Failed to execute search: ${error instanceof Error ? error.message : String(error)}`,
+        ErrorCode.NODE_EXECUTION
+      );
+    }
   }
   
   /**
    * Get the node category
+   * @returns The node category
    */
   protected getCategory(): 'core' | 'custom' {
+    logger.debug(LogCategory.NODE, this.id, "Getting node category", {});
     return 'core';
   }
   
   /**
    * Get the node label
+   * @returns The node label
    */
   protected getLabel(): string {
-    return 'Search Engine Results';
+    logger.debug(LogCategory.NODE, this.id, "Getting node label", {});
+    return 'Search Engine';
   }
   
   /**
    * Get the node description
+   * @returns The node description
    */
   protected getDescription(): string {
-    return 'Provides search engine results page functionality';
+    logger.debug(LogCategory.NODE, this.id, "Getting node description", {});
+    return 'Provides search engine results for a given query';
   }
   
   /**
    * Get the node version
+   * @returns The node version
    */
   protected getVersion(): string {
+    logger.debug(LogCategory.NODE, this.id, "Getting node version", {});
     return '1.0.0';
   }
   
   /**
-   * Get compatibility information
+   * Get the node compatibility
+   * @returns The node compatibility
    */
-  protected getCompatibility() {
+  protected getCompatibility(): { core: boolean; pro: boolean; custom: boolean } {
+    logger.debug(LogCategory.NODE, this.id, "Getting node compatibility", {});
     return {
       core: true,
       pro: true,
@@ -160,91 +178,77 @@ export class SerpNode extends BaseNode<SerpNodeConfig> {
   }
   
   /**
-   * Get input ports
+   * Get the node inputs
+   * @returns The node inputs
    */
   protected getInputs(): readonly NodePort[] {
+    logger.debug(LogCategory.NODE, this.id, "Getting node inputs", {});
     return [
       {
         id: 'query',
         type: 'string',
-        label: 'Query',
-        required: true
+        required: true,
+        label: 'Query'
+      },
+      {
+        id: 'limit',
+        type: 'number',
+        required: false,
+        label: 'Result Limit'
       }
     ];
   }
   
   /**
-   * Get output ports
+   * Get the node outputs
+   * @returns The node outputs
    */
   protected getOutputs(): readonly NodePort[] {
+    logger.debug(LogCategory.NODE, this.id, "Getting node outputs", {});
     return [
       {
         id: 'results',
         type: 'object',
-        label: 'Results'
+        label: 'Search Results'
       }
     ];
   }
   
   /**
-   * Parse the input to extract query and options
-   * @param input Search query or options object
-   * @returns Object containing query and options
+   * Format the search results
+   * @param results The search results
+   * @returns The formatted search results
    */
-  private parseInput(input: string | { query: string; options?: SearchOptions }): {
-    query: string;
-    options?: SearchOptions;
-  } {
-    if (typeof input === 'string') {
-      return { query: input };
-    }
-    
-    if (!input.query || typeof input.query !== 'string') {
-      throw createError(
-        'node',
-        'Search query is required and must be a string',
-        ErrorCode.NODE_VALIDATION
-      );
-    }
-    
-    return {
-      query: input.query,
-      options: input.options
-    };
-  }
-  
-  /**
-   * Format the search response
-   * @param response Search response
-   * @returns Formatted search response
-   */
-  private formatResponse(response: SearchResponse): FormattedSearchResponse {
-    // Generate markdown representation of the results
-    const markdown = this.generateMarkdown(response);
+  private formatResults(results: SerpResult[]): FormattedSearchResponse {
+    // Create a formatted response with markdown and raw results
+    const markdown = this.generateMarkdown(results);
     
     return {
       markdown,
-      raw: response
+      raw: {
+        results,
+        metadata: {
+          provider: this.adapter?.getProvider() || 'unknown',
+          query: '',
+          totalResults: results.length,
+          searchTime: 0
+        }
+      }
     };
   }
   
   /**
    * Generate markdown representation of search results
-   * @param response Search response
+   * @param results Search results
    * @returns Markdown string
    */
-  private generateMarkdown(response: SearchResponse): string {
-    const { results, metadata } = response;
-    
+  private generateMarkdown(results: SerpResult[]): string {
     if (results.length === 0) {
-      return `No results found for query: "${metadata.query}"`;
+      return 'No results found';
     }
     
     // Generate header
-    let markdown = `## Search Results for "${metadata.query}"\n\n`;
-    
-    // Add metadata
-    markdown += `*Found ${results.length} results from ${metadata.provider} in ${metadata.searchTime}ms*\n\n`;
+    let markdown = `## Search Results\n\n`;
     
     // Add results
     results.forEach((result, index) => {

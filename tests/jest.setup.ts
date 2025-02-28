@@ -1,5 +1,6 @@
 import '@testing-library/jest-dom';
 import { ReadableStream } from 'stream/web';
+import { TextEncoder, TextDecoder } from 'util';
 
 // Polyfill globals needed for edge runtime testing
 global.TextEncoder = TextEncoder;

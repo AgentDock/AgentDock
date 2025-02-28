@@ -16,6 +16,7 @@ const customJestConfig: Config = {
   testMatch: [
     '<rootDir>/tests/**/*.test.ts',
     '<rootDir>/tests/**/*.test.tsx',
+    '<rootDir>/agentdock-core/src/nodes/**/*.test.ts',
   ],
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}',

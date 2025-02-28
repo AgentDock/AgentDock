@@ -107,16 +107,18 @@ export class NodeRegistry {
   }
 
   /**
-   * Register a core node type.
+   * Common logic for registering a node type.
    */
-  static register(
-    nodeType: string, 
-    nodeClass: ConcreteNodeConstructor, 
+  private static registerNode(
+    nodeType: string,
+    nodeClass: ConcreteNodeConstructor,
     version: string,
+    expectedCategory: 'core' | 'custom',
     options: ToolRegistrationOptions = {}
   ): void {
-    this.validateRegistration(nodeType, nodeClass, 'core', options);
-    this.nodes.set(nodeType, {
+    this.validateRegistration(nodeType, nodeClass, expectedCategory, options);
+    const targetMap = expectedCategory === 'core' ? this.nodes : this.customNodes;
+    targetMap.set(nodeType, {
       nodeClass,
       version,
       isTool: options.isTool,
@@ -126,22 +128,27 @@ export class NodeRegistry {
   }
 
   /**
-   * Register a custom node type.
+   * Register a core node type.
    */
-  static registerCustomNode(
-    nodeType: string, 
-    nodeClass: ConcreteNodeConstructor, 
+  static register(
+    nodeType: string,
+    nodeClass: ConcreteNodeConstructor,
     version: string,
     options: ToolRegistrationOptions = {}
   ): void {
-    this.validateRegistration(nodeType, nodeClass, 'custom', options);
-    this.customNodes.set(nodeType, {
-      nodeClass,
-      version,
-      isTool: options.isTool,
-      parameters: options.parameters,
-      description: options.description || nodeClass.getNodeMetadata().description
-    });
+    this.registerNode(nodeType, nodeClass, version, 'core', options);
+  }
+
+  /**
+   * Register a custom node type.
+   */
+  static registerCustomNode(
+    nodeType: string,
+    nodeClass: ConcreteNodeConstructor,
+    version: string,
+    options: ToolRegistrationOptions = {}
+  ): void {
+    this.registerNode(nodeType, nodeClass, version, 'custom', options);
   }
 
   /**

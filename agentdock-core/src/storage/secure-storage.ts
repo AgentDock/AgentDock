@@ -46,23 +46,31 @@ export class SecureStorage {
    * Reset all storage and keys
    * Use this when storage becomes corrupted
    */
-  async reset(): Promise<void> {
+  async reset(key?: string): Promise<void> {
     try {
-      // Clear all keys and data for this namespace
-      const prefix = `${this.namespace}:`;
-      for (let i = localStorage.length - 1; i >= 0; i--) {
-        const key = localStorage.key(i);
-        if (key?.startsWith(prefix)) {
-          localStorage.removeItem(key);
+      if (key) {
+        // Clear specific key
+        this.keys.delete(key);
+        this.retryCount.delete(key);
+        localStorage.removeItem(this.getStorageKey(key));
+        localStorage.removeItem(`${this.namespace}:keys:${key}`);
+      } else {
+        // Clear all keys and data for this namespace
+        const prefix = `${this.namespace}:`;
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+          const key = localStorage.key(i);
+          if (key?.startsWith(prefix)) {
+            localStorage.removeItem(key);
+          }
         }
+
+        // Clear in-memory state
+        this.keys.clear();
+        this.retryCount.clear();
+
+        // Reset the instance to force new key generation
+        SecureStorage.instance = new SecureStorage(this.namespace);
       }
-
-      // Clear in-memory state
-      this.keys.clear();
-      this.retryCount.clear();
-
-      // Reset the instance to force new key generation
-      SecureStorage.instance = new SecureStorage(this.namespace);
     } catch (error) {
       throw createError('storage', 'Failed to reset storage', ErrorCode.STORAGE_DELETE, {
         operation: 'reset',
@@ -130,25 +138,27 @@ export class SecureStorage {
    */
   async get<T>(key: string): Promise<T | null> {
     try {
-      // Check retry count
-      const retries = this.retryCount.get(key) || 0;
-      if (retries >= SecureStorage.MAX_RETRIES) {
-        throw createError('storage', 'Maximum retry attempts exceeded', ErrorCode.MAX_RETRIES_EXCEEDED, {
-          key,
-          maxRetries: SecureStorage.MAX_RETRIES
-        });
-      }
-
       // Get stored data
       const stored = localStorage.getItem(this.getStorageKey(key));
       if (!stored) return null;
 
       // Parse stored data
       const { data, hmac, iv, version } = JSON.parse(stored);
+      
+      // Version check
       if (version !== SecureStorage.STORAGE_VERSION) {
         throw createError('storage', 'Incompatible storage version', ErrorCode.STORAGE_READ, {
           key,
           version
+        });
+      }
+
+      // Retry check
+      const retries = this.retryCount.get(key) || 0;
+      if (retries >= SecureStorage.MAX_RETRIES) {
+        throw createError('storage', 'Maximum retry attempts exceeded', ErrorCode.MAX_RETRIES_EXCEEDED, {
+          key,
+          maxRetries: SecureStorage.MAX_RETRIES
         });
       }
 
@@ -166,7 +176,8 @@ export class SecureStorage {
         calculatedHmac,
         this.base64ToArrayBuffer(hmac)
       )) {
-        this.clearKeys(key);
+        // Force complete key regeneration
+        await this.reset(key);
         throw createError('storage', 'Data tampering detected', ErrorCode.TAMPERING_DETECTED, {
           key
         });
@@ -262,69 +273,40 @@ export class SecureStorage {
    * Get or create encryption and HMAC keys for a storage key
    */
   private async getOrCreateKeys(key: string): Promise<StorageKey> {
-    const existingKeys = this.keys.get(key);
-    if (existingKeys) return existingKeys;
+    // Always generate new keys if they were cleared
+    if (!this.keys.has(key)) {
+      const encryptionKey = await crypto.subtle.generateKey(
+        SecureStorage.KEY_ALGORITHM,
+        true,
+        ['encrypt', 'decrypt']
+      ) as CryptoKey;
 
-    // Try to get persisted keys from localStorage
-    const persistedKeysKey = `${this.namespace}:keys:${key}`;
-    const persistedKeys = localStorage.getItem(persistedKeysKey);
-    
-    if (persistedKeys) {
-      try {
-        const { encKey, hmacKey } = JSON.parse(persistedKeys);
-        const storageKey: StorageKey = {
-          key: await crypto.subtle.importKey(
-            'jwk',
-            JSON.parse(encKey),
-            SecureStorage.KEY_ALGORITHM,
-            true,
-            ['encrypt', 'decrypt']
-          ),
-          hmacKey: await crypto.subtle.importKey(
-            'jwk',
-            JSON.parse(hmacKey),
-            SecureStorage.HMAC_ALGORITHM,
-            true,
-            ['sign', 'verify']
-          )
-        };
-        this.keys.set(key, storageKey);
-        return storageKey;
-      } catch (error) {
-        // If key import fails, generate new keys
-        localStorage.removeItem(persistedKeysKey);
-      }
-    }
+      const hmacKey = await crypto.subtle.generateKey(
+        SecureStorage.HMAC_ALGORITHM,
+        true,
+        ['sign', 'verify']
+      ) as CryptoKey;
 
-    // Generate new keys if none exist
-    const encryptionKey = await crypto.subtle.generateKey(
-      SecureStorage.KEY_ALGORITHM,
-      true,
-      ['encrypt', 'decrypt']
-    ) as CryptoKey;
-
-    const hmacKey = await crypto.subtle.generateKey(
-      SecureStorage.HMAC_ALGORITHM,
-      true,
-      ['sign', 'verify']
-    ) as CryptoKey;
-
-    // Export and persist the keys
-    try {
-      const exportedEncKey = await crypto.subtle.exportKey('jwk', encryptionKey);
-      const exportedHmacKey = await crypto.subtle.exportKey('jwk', hmacKey);
+      const storageKey: StorageKey = { key: encryptionKey, hmacKey };
+      this.keys.set(key, storageKey);
       
-      localStorage.setItem(persistedKeysKey, JSON.stringify({
-        encKey: JSON.stringify(exportedEncKey),
-        hmacKey: JSON.stringify(exportedHmacKey)
-      }));
-    } catch (error) {
-      console.warn('Failed to persist encryption keys:', error);
+      // Export and persist the new keys
+      try {
+        const exportedEncKey = await crypto.subtle.exportKey('jwk', encryptionKey);
+        const exportedHmacKey = await crypto.subtle.exportKey('jwk', hmacKey);
+        
+        localStorage.setItem(`${this.namespace}:keys:${key}`, JSON.stringify({
+          encKey: JSON.stringify(exportedEncKey),
+          hmacKey: JSON.stringify(exportedHmacKey)
+        }));
+      } catch (error) {
+        console.warn('Failed to persist encryption keys:', error);
+      }
+
+      return storageKey;
     }
 
-    const storageKey: StorageKey = { key: encryptionKey, hmacKey };
-    this.keys.set(key, storageKey);
-    return storageKey;
+    return this.keys.get(key)!;
   }
 
   /**

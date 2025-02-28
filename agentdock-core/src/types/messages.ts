@@ -2,8 +2,16 @@
  * @fileoverview Core message type definitions for AgentDock
  */
 
-// Base message roles
-export type MessageRole = 'user' | 'assistant' | 'system' | 'tool';
+// Convert from type to const object
+export const MessageRole = Object.freeze({
+  USER: 'user',
+  ASSISTANT: 'assistant',
+  SYSTEM: 'system',
+  TOOL: 'tool'
+} as const);
+
+// Type derived from the const object
+export type MessageRole = typeof MessageRole[keyof typeof MessageRole];
 
 // Message content types
 export interface TextContent {

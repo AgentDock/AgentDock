@@ -6,6 +6,7 @@ import { BaseNode } from './base-node';
 import { NodeMessage } from '../messaging/types';
 import { createError, ErrorCode } from '../errors';
 import { logger, LogCategory } from '../logging';
+import { NodeCategory } from '../types/node-category';
 
 /**
  * Configuration for the chat node
@@ -39,7 +40,7 @@ export class ChatNode extends BaseNode<ChatNodeConfig> {
    */
   static getNodeMetadata() {
     return {
-      category: 'core' as 'core' | 'custom',
+      category: NodeCategory.CORE,
       label: 'Chat',
       description: 'Handles chat message processing and history management',
       inputs: [{
@@ -62,8 +63,8 @@ export class ChatNode extends BaseNode<ChatNodeConfig> {
     };
   }
 
-  protected getCategory(): 'core' | 'custom' {
-    return 'core';
+  protected getCategory(): NodeCategory {
+    return NodeCategory.CORE;
   }
 
   protected getLabel(): string {

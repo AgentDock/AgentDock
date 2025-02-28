@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+node_modules
 /.pnp
 .pnp.*
 .yarn/*
@@ -64,3 +65,4 @@ Thumbs.db
 
 # Generated files
 /src/generated/
+agentdock-core/src/nodes/node-registry.ts

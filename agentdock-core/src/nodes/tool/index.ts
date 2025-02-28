@@ -6,6 +6,7 @@
 import { z } from 'zod';
 import { BaseNode, NodeMetadata, NodePort } from '../base-node';
 import { createError, ErrorCode } from '../../errors';
+import { NodeCategory } from '../../types/node-category';
 
 /**
  * Base tool registration options
@@ -121,8 +122,8 @@ export abstract class BaseTool<TParams = unknown, TResult = unknown> extends Bas
     return 'node';
   }
 
-  protected getCategory(): 'core' | 'custom' {
-    return 'custom';
+  protected getCategory(): NodeCategory {
+    return NodeCategory.CUSTOM;
   }
 
   protected getLabel(): string {

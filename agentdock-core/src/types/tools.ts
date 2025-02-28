@@ -56,6 +56,10 @@ export type JSONSchema = {
   default?: unknown;
 };
 
+/**
+ * Tool interface with JSON Schema parameters for type-safe tool execution
+ * Extends BaseNode to provide core node functionality while adding tool-specific features
+ */
 export interface Tool<TParams = unknown, TResult = unknown> extends BaseNode {
   name: string;
   description: string;

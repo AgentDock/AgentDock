@@ -1,10 +1,11 @@
 import { NodeRegistry } from '../node-registry';
 import { BaseNode, NodeMetadata, NodePort } from '../base-node';
 import { createError, ErrorCode } from '../../errors';
+import { NodeCategory } from '../../types/node-category';
 
 abstract class MockNode extends BaseNode {
-  protected getCategory(): 'core' | 'custom' {
-    return 'core';
+  protected getCategory(): NodeCategory {
+    return NodeCategory.CORE;
   }
 
   protected getLabel(): string {
@@ -65,13 +66,13 @@ class MockCoreNode extends MockNode {
 class MockCustomNode extends MockNode {
   readonly type = 'mockCustom';
 
-  protected getCategory(): 'core' | 'custom' {
-    return 'custom';
+  protected getCategory(): NodeCategory {
+    return NodeCategory.CUSTOM;
   }
 
   static getNodeMetadata(): NodeMetadata {
     return {
-      category: 'custom',
+      category: NodeCategory.CUSTOM,
       label: 'Mock Custom Node',
       description: 'Mock custom node for testing',
       inputs: [],

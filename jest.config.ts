@@ -13,10 +13,17 @@ const customJestConfig: Config = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
+  transform: {
+    '^.+\\.(ts|tsx)$': 'ts-jest', // For TypeScript
+    '^.+\\.(js|jsx)$': 'ts-jest', // Transform JavaScript files with ts-jest
+  },
+  transformIgnorePatterns: [
+    '/node_modules/(?!node-fetch)', // Allow node-fetch to be transformed
+  ],
   testMatch: [
     '<rootDir>/tests/**/*.test.ts',
     '<rootDir>/tests/**/*.test.tsx',
-    '<rootDir>/agentdock-core/src/nodes/**/*.test.ts',
+    '<rootDir>/agentdock-core/src/**/*.test.ts'
   ],
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}',

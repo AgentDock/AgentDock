@@ -1,6 +1,7 @@
 import '@testing-library/jest-dom';
-import { ReadableStream } from 'stream/web';
+import { ReadableStream, TransformStream, WritableStream } from 'node:stream/web';
 import { TextEncoder, TextDecoder } from 'util';
+import fetch, { Request, Response } from 'node-fetch';
 
 // Polyfill globals needed for edge runtime testing
 global.TextEncoder = TextEncoder;
@@ -28,10 +29,18 @@ afterAll(() => {
   console.log = originalConsoleLog;
 });
 
-// Mock fetch for tests
-global.fetch = jest.fn(() =>
-  Promise.resolve({
-    ok: true,
-    json: () => Promise.resolve({}),
-  } as Response)
-); 
+// Assign fetch to the global object
+(global as any).fetch = fetch;
+
+// Mock the Request and Response classes
+(global as any).Request = Request;
+(global as any).Response = Response;
+
+// Polyfill other globals if needed
+global.TextEncoder = require('util').TextEncoder;
+global.TextDecoder = require('util').TextDecoder;
+
+// Add Web Streams API polyfill for Node.js environment
+global.TransformStream = TransformStream as any;
+global.ReadableStream = ReadableStream as any;
+global.WritableStream = WritableStream as any;

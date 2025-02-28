@@ -1,8 +1,9 @@
 declare module 'agentdock-core/src/nodes/base-node' {
   import { MessageBus } from '../messaging/types';
+  import { NodeCategory } from '../types/node-category';
 
   export interface NodeMetadata {
-    readonly category: 'core' | 'custom';
+    readonly category: NodeCategory;
     readonly label: string;
     readonly description: string;
     readonly inputs: readonly NodePort[];

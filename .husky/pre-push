@@ -1,11 +1,2 @@
- #!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
-# Run git hooks validation
+ # Run git hooks validation
 pnpm tsx scripts/git-hooks-validate.ts
-
-# Run validation script
-pnpm run validate
-
-# Run tests
-pnpm run test

@@ -173,23 +173,21 @@ export async function POST(
     
     console.log('Final system prompt type:', typeof finalSystemPrompt);
 
-    // Stream response using streamText
-    const { streamText } = await import('ai');
-    const stream = await streamText({
-      model: anthropicProvider(llmConfig.model) as LanguageModelV1,
-      messages,
-      temperature: llmConfig.temperature,
-      maxTokens: llmConfig.maxTokens,
-      system: finalSystemPrompt,
-      tools,
-      ...(experimental_attachments ? { experimental_attachments } : {}),
-      maxSteps: 5,
-      toolCallStreaming: true,
-      onError: handleError
-    });
+    const { ThinVercelAIAdapter } = await import('agentdock-core/llm/thin-vercel-ai-adapter');
 
-    // Return the stream using toDataStreamResponse
+    const stream = (new ThinVercelAIAdapter()).getStream(
+      anthropicProvider(llmConfig.model) as LanguageModelV1,
+      messages,
+      llmConfig,
+      finalSystemPrompt,
+      tools,
+      experimental_attachments || {},
+      5,
+      true,
+      handleError
+    );
     return stream.toDataStreamResponse();
+    
   } catch (error) {
     await logger.error(
       LogCategory.API,

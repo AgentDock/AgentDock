@@ -85,7 +85,7 @@
     "react-server-dom-webpack": "^19.0.0",
     "recharts": "^2.15.1",
     "remark-gfm": "^4.0.1",
-    "remeda": "^2.20.1",
+    "remeda": "^2.21.0",
     "semver": "^7.5.4",
     "server-only": "^0.0.1",
     "shiki": "^2.5.0",

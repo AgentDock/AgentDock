@@ -5,11 +5,10 @@
 
 import { NextRequest } from 'next/server';
 import { Message } from 'ai';
-import { createAnthropic } from '@ai-sdk/anthropic';
-import type { LanguageModelV1 } from '@ai-sdk/provider';
 import { APIError, ErrorCode, logger, LogCategory, loadAgentConfig } from 'agentdock-core';
 import { templates, TemplateId } from '@/generated/templates';
 import { getToolsForAgent } from '@/nodes/registry';
+import { AnthropicProvider } from 'agentdock-core/providers/anthropic/anthropic-provider';
 
 // Log runtime configuration
 console.log('Route Handler Configuration:', {
@@ -121,9 +120,6 @@ export async function POST(
     // Parse request body
     const { messages, experimental_attachments, system } = await request.json();
 
-    // Create Anthropic provider
-    const anthropicProvider = createAnthropic({ apiKey });
-
     // Get enabled tools
     const enabledCustomTools = (template.nodes || []).filter(
       module => !module.startsWith('llm.')
@@ -174,20 +170,24 @@ export async function POST(
     console.log('Final system prompt type:', typeof finalSystemPrompt);
 
     const { ThinVercelAIAdapter } = await import('agentdock-core/llm/thin-vercel-ai-adapter');
-
-    const stream = (new ThinVercelAIAdapter()).getStream(
-      anthropicProvider(llmConfig.model) as LanguageModelV1,
-      messages,
-      llmConfig,
-      finalSystemPrompt,
-      tools,
-      experimental_attachments || {},
-      5,
-      true,
-      handleError
-    );
-    return stream.toDataStreamResponse();
     
+    const anthropicProvider = new AnthropicProvider(apiKey);
+
+    const adapter = new ThinVercelAIAdapter(anthropicProvider, llmConfig);
+
+    const stream = await adapter.generateStream(messages);
+    
+    // Convert the stream to proper Response format with correct encoding
+    return new Response(
+      stream, 
+      {
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+        }
+      }
+    );
   } catch (error) {
     await logger.error(
       LogCategory.API,

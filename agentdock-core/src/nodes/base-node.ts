@@ -4,13 +4,14 @@
  */
 
 import { MessageBus, NodeMessage, MessageHandler } from '../messaging/types';
+import { NodeCategory } from '../types/node-category';
 
 /**
  * Node metadata containing immutable information about a node.
  */
 export interface NodeMetadata {
   /** Category of the node (core or custom) */
-  readonly category: 'core' | 'custom';
+  readonly category: NodeCategory;
   /** Display name of the node */
   readonly label: string;
   /** Description of the node's purpose and functionality */
@@ -170,7 +171,7 @@ export abstract class BaseNode<TConfig = any> {
   }
 
   /** Get the node category (core or custom) */
-  protected abstract getCategory(): 'core' | 'custom';
+  protected abstract getCategory(): NodeCategory;
   
   /** Get the display name of the node */
   protected abstract getLabel(): string;

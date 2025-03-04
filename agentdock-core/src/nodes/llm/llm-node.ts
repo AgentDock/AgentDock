@@ -7,6 +7,7 @@ import { BaseNode } from '../base-node';
 import { createError, ErrorCode } from '../../errors';
 import { AgentDockConfig } from '../../types';
 import { LLMMessage, LLMConfig as LLMConfigBase } from '../../types/llm';
+import { NodeCategory } from '../../types/node-category';
 
 /**
  * Configuration for LLM nodes
@@ -28,7 +29,7 @@ export abstract class LLMNode extends BaseNode<LLMConfig> {
    */
   static getNodeMetadata() {
     return {
-      category: 'core' as 'core' | 'custom',
+      category: NodeCategory.CORE,
       label: 'LLM Base',
       description: 'Base class for language model integration',
       inputs: [{
@@ -52,7 +53,7 @@ export abstract class LLMNode extends BaseNode<LLMConfig> {
   }
 
   protected getCategory() {
-    return 'core' as const;
+    return NodeCategory.CORE;
   }
 
   protected getInputs() {

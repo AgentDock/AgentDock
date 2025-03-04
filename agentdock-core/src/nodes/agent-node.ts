@@ -9,6 +9,7 @@ import { MessageBus, NodeMessage } from '../messaging/types';
 import { NodeRegistry, ConcreteNodeConstructor } from './node-registry';
 import { createError, ErrorCode } from '../errors';
 import { logger, LogCategory } from '../logging';
+import { NodeCategory } from '../types/node-category';
 
 /**
  * Configuration for the agent node
@@ -51,7 +52,7 @@ export class AgentNode extends BaseNode<AgentNodeConfig> {
    */
   static getNodeMetadata() {
     return {
-      category: 'core' as 'core' | 'custom',
+      category: NodeCategory.CORE,
       label: 'Agent',
       description: 'Core agent node that manages agent lifecycle and message handling',
       inputs: [{
@@ -74,8 +75,8 @@ export class AgentNode extends BaseNode<AgentNodeConfig> {
     };
   }
 
-  protected getCategory(): 'core' | 'custom' {
-    return 'core';
+  protected getCategory(): NodeCategory {
+    return NodeCategory.CORE;
   }
 
   protected getLabel(): string {

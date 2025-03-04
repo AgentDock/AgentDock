@@ -17,11 +17,30 @@ export class AnthropicProvider implements LLMProvider {
 
   async generateStream(messages: LLMMessage[], config: LLMConfig): Promise<ReadableStream> {
     try {
+      // Extract system message if present (first message with role 'system')
+      let systemMessage: string | undefined;
+      const chatMessages = [...messages];
+      
+      // Look for a system message and extract it
+      const systemIndex = chatMessages.findIndex(msg => msg.role === 'system');
+      if (systemIndex >= 0) {
+        systemMessage = chatMessages[systemIndex].content;
+        chatMessages.splice(systemIndex, 1); // Remove system message from array
+      }
+
+      // Log what we're sending to Anthropic
+      console.log('Anthropic API call:', {
+        model: config.model,
+        hasSystemMessage: !!systemMessage,
+        messageCount: chatMessages.length
+      });
+
       const stream = await this.anthropic.messages.create({
         model: config.model,
         temperature: config.temperature ?? 0.7,
         max_tokens: config.maxTokens ?? 1000,
-        messages: messages.map(msg => ({
+        system: systemMessage, // Add system message here
+        messages: chatMessages.map(msg => ({
           role: msg.role === 'user' ? 'user' : 'assistant',
           content: msg.content
         })),
@@ -56,11 +75,23 @@ export class AnthropicProvider implements LLMProvider {
 
   async generateText(messages: LLMMessage[], config: LLMConfig): Promise<string> {
     try {
+      // Extract system message if present (first message with role 'system')
+      let systemMessage: string | undefined;
+      const chatMessages = [...messages];
+      
+      // Look for a system message and extract it
+      const systemIndex = chatMessages.findIndex(msg => msg.role === 'system');
+      if (systemIndex >= 0) {
+        systemMessage = chatMessages[systemIndex].content;
+        chatMessages.splice(systemIndex, 1); // Remove system message from array
+      }
+
       const response = await this.anthropic.messages.create({
         model: config.model,
         temperature: config.temperature ?? 0.7,
         max_tokens: config.maxTokens ?? 1000,
-        messages: messages.map(msg => ({
+        system: systemMessage, // Add system message here
+        messages: chatMessages.map(msg => ({
           role: msg.role === 'user' ? 'user' : 'assistant',
           content: msg.content
         }))

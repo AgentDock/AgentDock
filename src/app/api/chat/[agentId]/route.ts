@@ -175,7 +175,19 @@ export async function POST(
 
     const adapter = new ThinVercelAIAdapter(anthropicProvider, llmConfig);
 
-    const stream = await adapter.generateStream(messages);
+    // Add system message to the beginning of the messages array
+    const messagesWithSystem = [
+      { role: 'system', content: finalSystemPrompt },
+      ...messages
+    ];
+
+    console.log('Sending messages with system prompt:', {
+      messageCount: messagesWithSystem.length,
+      hasSystemPrompt: !!finalSystemPrompt,
+      firstMessageRole: messagesWithSystem[0].role
+    });
+
+    const stream = await adapter.generateStream(messagesWithSystem);
     
     // Convert the stream to proper Response format with correct encoding
     return new Response(

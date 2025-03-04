@@ -169,11 +169,14 @@ export async function POST(
     
     console.log('Final system prompt type:', typeof finalSystemPrompt);
 
-    const { ThinVercelAIAdapter } = await import('agentdock-core/llm/thin-vercel-ai-adapter');
+    console.log('🔄 Chat API: Importing AISDKAdapter');
+    const { AISDKAdapter } = await import('agentdock-core/llm');
     
     const anthropicProvider = new AnthropicProvider(apiKey);
+    console.log('🔄 Chat API: Created AnthropicProvider');
 
-    const adapter = new ThinVercelAIAdapter(anthropicProvider, llmConfig);
+    const adapter = new AISDKAdapter(anthropicProvider, llmConfig);
+    console.log('🔄 Chat API: Created AISDKAdapter instance');
 
     // Add system message to the beginning of the messages array
     const messagesWithSystem = [
@@ -187,7 +190,9 @@ export async function POST(
       firstMessageRole: messagesWithSystem[0].role
     });
 
+    console.log('🔄 Chat API: Calling adapter.generateStream()');
     const stream = await adapter.generateStream(messagesWithSystem);
+    console.log('🔄 Chat API: Stream generated successfully');
     
     // Convert the stream to proper Response format with correct encoding
     return new Response(

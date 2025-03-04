@@ -6,7 +6,7 @@ AgentDock Core is an open-source TypeScript framework for building, managing, an
 
 *   **Node-Based Architecture:**  Build agents using modular, reusable nodes.  Nodes represent individual units of functionality, such as interacting with LLMs, accessing data sources, or executing custom logic.
 *   **Extensible Design:** Easily add new capabilities by creating custom nodes.  AgentDock's architecture promotes clean separation of concerns and encourages community contributions.
-*   **LLM Integration (via Vercel AI SDK):**  Leverage the power of leading language models through a thin, well-defined adapter (`ThinVercelAIAdapter`).  This provides access to streaming, provider configuration, and other benefits of the Vercel AI SDK, without tightly coupling AgentDock to it.
+*   **LLM Integration (via Vercel AI SDK):**  Leverage the power of leading language models through a thin, well-defined adapter (`AISDKAdapter`).  This provides access to streaming, provider configuration, and other benefits of the Vercel AI SDK, without tightly coupling AgentDock to it.
 *   **Provider Registry:**  Manage configurations for multiple LLM providers (Anthropic, OpenAI, Google, and OpenRouter are supported out of the box).  AgentDock prioritizes Bring Your Own Key (BYOK) for enhanced control and security.
 *   **`orchestrateAgent` Function:**  The core of AgentDock, this function manages the agent's workflow, handling message processing, node execution, and error handling.
 *   **Robust Error Handling:**  A comprehensive error handling system with specific error codes (`ErrorCode`), `AgentError`, and `APIError` ensures predictable behavior and simplifies debugging.
@@ -47,7 +47,7 @@ AgentDock's modular architecture is built upon these key components:
 
 *   **Nodes:** The fundamental building blocks of agents. Each node performs a specific task.
 *   **Tools:** A specialized type of Node representing a function callable by an LLM.
-*   **LLM Adapter (`ThinVercelAIAdapter`):**  A thin abstraction layer for interacting with LLMs via the Vercel AI SDK.
+*   **LLM Adapter (`AISDKAdapter`):**  A thin abstraction layer for interacting with LLMs via the Vercel AI SDK.
 *   **Provider Registry:** Manages LLM provider configurations and API key resolution.
 *   **Node Registry:** Registers and retrieves Node instances, enabling extensibility.
 *   **`orchestrateAgent`:** The core function that orchestrates the agent's workflow.

@@ -1,65 +1,30 @@
 /**
- * @fileoverview Core types for the AgentDock tool system.
- * Based on Vercel AI SDK patterns for tool handling.
+ * @fileoverview Tool types that match both Core and Vercel AI SDK requirements
+ * 
+ * In AgentDock, tools are a specialized type of node that can be used by AI agents.
+ * This file defines the types for these custom tools, ensuring compatibility with
+ * both the AgentDock Core framework and the Vercel AI SDK.
  */
 
 import { z } from 'zod';
 import type { Tool as VercelTool } from 'ai';
 
 /**
- * Required properties for our tools
- */
-interface ToolMetadata {
-  name: string;
-  description: string;
-}
-
-/**
- * Tool type combining Vercel AI SDK Tool
- */
-export type Tool<
-  TParams extends z.ZodType = z.ZodType,
-  TResult = any
-> = VercelTool<TParams, TResult> & ToolMetadata;
-
-/**
- * Tool execution options from Vercel AI SDK
+ * Tool execution options as required by Vercel AI SDK
  */
 export interface ToolExecutionOptions {
-  signal?: AbortSignal;
-  // Add other options as needed
-}
-
-/**
- * Base interface for all tool results
- */
-export interface BaseToolResult {
-  timestamp: string;
-}
-
-/**
- * States a tool can be in during execution
- */
-export type ToolState = 'partial-call' | 'call' | 'result';
-
-/**
- * Base interface for tool invocations
- */
-export interface ToolInvocation<TName extends string = string, TArgs = unknown> {
   toolCallId: string;
-  toolName: TName;
-  args: TArgs;
-  state: ToolState;
-  result?: unknown;
+  messages?: any[];
 }
 
 /**
- * Configuration for tool execution
+ * Core tool interface that matches both Core and Vercel AI requirements
  */
-export interface ToolConfig {
-  maxSteps?: number;
-  toolCallStreaming?: boolean;
-  getErrorMessage?: (error: unknown) => string;
+export interface Tool<TParams = any, TResult = any> {
+  name: string;
+  description: string;
+  parameters: z.ZodSchema;
+  execute(params: TParams, options: ToolExecutionOptions): Promise<TResult>;
 }
 
 /**

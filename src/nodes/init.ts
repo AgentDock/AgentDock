@@ -1,6 +1,9 @@
 /**
  * @fileoverview Handles initialization for custom tools.
  * Serves as the single entry point for all tool registration in the system.
+ * 
+ * In AgentDock, tools are a specialized type of node that can be used by AI agents.
+ * This file initializes the registry for these custom tools.
  */
 
 // Global flag to persist across hot reloads

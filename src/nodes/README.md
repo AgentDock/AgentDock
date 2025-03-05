@@ -4,9 +4,11 @@ This directory contains custom tool implementations for AgentDock. These tools f
 
 ## Architecture
 
+In AgentDock, **nodes** are the foundational building blocks of the system architecture, while **tools** are a specialized type of node that can be used by AI agents. The custom tools in this directory are implemented as nodes that follow the Vercel AI SDK pattern.
+
 The custom tools system follows these principles:
 
-1. **Simplified Architecture**: Tools are implemented directly within the `src/nodes/` directory.
+1. **Simplified Architecture**: Tools are implemented as nodes within the `src/nodes/` directory.
 2. **Component-Based Output**: Each tool has components that format its output.
 3. **Auto-Registration**: Tools are automatically registered with the NodeRegistry.
 4. **Server-Side Execution**: All tool logic runs on the server, including API calls.
@@ -55,7 +57,7 @@ export const tools = {
 
 ## Contributing
 
-For detailed information on how to contribute custom tools, please refer to the [Custom Node Contributions Guide](./custom-node-contributions.md).
+For detailed information on how to contribute custom tools, please refer to the [Custom Tool Contributions Guide](./custom-tool-contributions.md).
 
 The guide covers:
 - Core principles

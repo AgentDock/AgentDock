@@ -20,6 +20,13 @@ export interface LLMConfig {
   model: string;
   temperature?: number;
   maxTokens?: number;
+  /**
+   * Maximum number of steps for multi-step tool calls.
+   * When > 1, enables the LLM to make multiple tool calls in sequence
+   * before returning a final response.
+   * @default 1
+   */
+  maxSteps?: number;
 }
 
 // Provider-specific configurations

@@ -1,87 +1,44 @@
 /**
- * @fileoverview Chat route handler with Vercel AI SDK tool integration.
- * Implements streaming responses, tool execution, and error handling.
+ * @fileoverview Chat route handler using the latest Vercel AI SDK patterns.
  */
 
 import { NextRequest } from 'next/server';
-import { Message } from 'ai';
-import { APIError, ErrorCode, logger, LogCategory, loadAgentConfig } from 'agentdock-core';
+import { 
+  APIError, 
+  ErrorCode, 
+  logger, 
+  LogCategory, 
+  loadAgentConfig,
+  AnthropicLLM
+} from 'agentdock-core';
 import { templates, TemplateId } from '@/generated/templates';
 import { getToolsForAgent } from '@/nodes/registry';
-import { AnthropicProvider } from 'agentdock-core/providers/anthropic/anthropic-provider';
+
+// Import the initialization module to ensure nodes are registered
+import '@/nodes/init';
 
 // Log runtime configuration
-console.log('Route Handler Configuration:', {
+console.log('Route Handler Initialized:', {
   runtime: 'edge',
   path: '/api/chat/[agentId]',
-  method: 'POST',
   timestamp: new Date().toISOString()
 });
 
-// ============================================================================
-// TEMPORARY IMPLEMENTATION FOR V1
-// This is a simplified implementation using direct message handling.
-// TODO: MIGRATION - This will be replaced with:
-// 1. Full CoreMessage type support
-// 2. Multi-part message handling
-// 3. Provider abstraction
-// Reference: plan_refactor.md Phase 1
-// ============================================================================
-
 export const runtime = 'edge';
-export const preferredRegion = 'auto';
-export const dynamic = 'force-dynamic';
-
-// Add type for message formatting
-interface FormattedMessage extends Message {
-  content: string;
-}
-
-interface FunctionCall {
-  name: string;
-  arguments: Record<string, unknown>;
-}
-
-// Enhanced error type checking
-const isConnectionError = (error: unknown): boolean => {
-  if (!(error instanceof Error)) return false;
-  
-  const connectionErrors = [
-    'ECONNRESET',
-    'Failed to fetch',
-    'Network error',
-    'connection closed',
-    'aborted',
-    'timeout',
-    'network request failed'
-  ];
-  
-  return connectionErrors.some(errMsg => 
-    error.message.toLowerCase().includes(errMsg.toLowerCase())
-  );
-};
-
-// Error handler that logs errors and returns void
-function handleError(error: unknown) {
-  console.error('Error in chat route:', error);
-  return;
-}
-
-interface RouteContext {
-  params: Promise<{ agentId: string }>;
-}
 
 /**
  * POST handler for chat requests
- * Implements Vercel AI SDK streaming with tool support
  */
 export async function POST(
   request: NextRequest,
-  { params }: RouteContext
+  { params }: { params: Promise<{ agentId: string }> }
 ) {
   try {
-    // Get agentId from params and validate
+    // Get agentId from params
     const { agentId } = await params;
+    console.log(`Processing request for agent: ${agentId}`);
+    
+    // Validate template
     const template = templates[agentId as TemplateId];
     if (!template) {
       throw new APIError(
@@ -118,26 +75,13 @@ export async function POST(
     }
 
     // Parse request body
-    const { messages, experimental_attachments, system } = await request.json();
+    const { messages, system } = await request.json();
+    console.log(`Received ${messages.length} messages`);
 
-    // Get enabled tools
-    const enabledCustomTools = (template.nodes || []).filter(
-      module => !module.startsWith('llm.')
-    );
-    const tools = getToolsForAgent(enabledCustomTools);
-
-    // Log available tools
-    console.log('Enabled tools for agent:', {
-      agentId,
-      enabledCustomTools,
-      availableTools: Object.keys(tools),
-      toolDetails: Object.entries(tools).map(([name, tool]) => ({
-        name,
-        description: tool.description,
-        hasExecute: 'execute' in tool
-      }))
-    });
-
+    // Get tools for this agent
+    const tools = getToolsForAgent([...(template.nodes || [])]);
+    console.log(`Available tools for agent ${agentId}:`, Object.keys(tools));
+    
     // Log request details
     await logger.debug(
       LogCategory.API,
@@ -146,37 +90,17 @@ export async function POST(
       {
         agentId,
         messageCount: messages.length,
-        model: llmConfig.model,
-        temperature: llmConfig.temperature,
-        maxTokens: llmConfig.maxTokens
+        model: llmConfig.model
       }
     );
 
     // Use the validated personality from config
-    // The type system guarantees this is a string due to the branded type
     const systemPrompt = system || config.personality;
-
-    // Add explicit logging and type checking
-    console.log('System prompt type:', typeof systemPrompt);
-    console.log('System prompt value:', systemPrompt);
-    
-    // Ensure system prompt is a string
     const finalSystemPrompt = typeof systemPrompt === 'string' 
       ? systemPrompt 
       : Array.isArray(systemPrompt) 
         ? systemPrompt.join('\n') 
         : String(systemPrompt || '');
-    
-    console.log('Final system prompt type:', typeof finalSystemPrompt);
-
-    console.log('🔄 Chat API: Importing AISDKAdapter');
-    const { AISDKAdapter } = await import('agentdock-core/llm');
-    
-    const anthropicProvider = new AnthropicProvider(apiKey);
-    console.log('🔄 Chat API: Created AnthropicProvider');
-
-    const adapter = new AISDKAdapter(anthropicProvider, llmConfig);
-    console.log('🔄 Chat API: Created AISDKAdapter instance');
 
     // Add system message to the beginning of the messages array
     const messagesWithSystem = [
@@ -184,28 +108,31 @@ export async function POST(
       ...messages
     ];
 
-    console.log('Sending messages with system prompt:', {
-      messageCount: messagesWithSystem.length,
-      hasSystemPrompt: !!finalSystemPrompt,
-      firstMessageRole: messagesWithSystem[0].role
+    // Create the Anthropic LLM instance
+    const llm = new AnthropicLLM({
+      apiKey,
+      model: llmConfig.model,
+      temperature: llmConfig.temperature,
+      maxTokens: llmConfig.maxTokens,
+      // Add maxSteps parameter for multi-step tool calls
+      // Default to 5 steps to enable multi-step tool calls
+      maxSteps: config.options?.maxSteps as number || 5
     });
 
-    console.log('🔄 Chat API: Calling adapter.generateStream()');
-    const stream = await adapter.generateStream(messagesWithSystem);
-    console.log('🔄 Chat API: Stream generated successfully');
+    // Stream the response
+    console.log('Streaming response with tools:', Object.keys(tools).length);
+    const result = await llm.streamText({
+      messages: messagesWithSystem,
+      tools: tools
+    });
     
-    // Convert the stream to proper Response format with correct encoding
-    return new Response(
-      stream, 
-      {
-        headers: {
-          'Content-Type': 'text/event-stream',
-          'Cache-Control': 'no-cache',
-          'Connection': 'keep-alive',
-        }
-      }
-    );
+    // Use the toDataStreamResponse method from the latest Vercel AI SDK
+    // This properly formats the response for the client
+    return result.toDataStreamResponse();
+
   } catch (error) {
+    console.error('Error in chat route:', error);
+    
     await logger.error(
       LogCategory.API,
       'ChatAPI',
@@ -213,24 +140,18 @@ export async function POST(
       { error: error instanceof Error ? error.message : 'Unknown error' }
     );
 
-    if (error instanceof APIError) {
-      return new Response(
-        JSON.stringify({ 
-          error: error.message,
-          code: error.code,
-          retryable: false
-        }), 
-        { status: error.code === ErrorCode.CONFIG_NOT_FOUND ? 400 : 500 }
-      );
-    }
-
+    // Return error response
     return new Response(
-      JSON.stringify({ 
-        error: 'An error occurred while processing your request',
-        code: 'INTERNAL_ERROR',
-        retryable: false
-      }), 
-      { status: 500 }
+      JSON.stringify({
+        error: error instanceof Error ? error.message : 'An unknown error occurred',
+        code: error instanceof APIError ? error.code : 'INTERNAL_ERROR'
+      }),
+      {
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
     );
   }
 } 

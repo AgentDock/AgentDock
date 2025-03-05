@@ -16,6 +16,7 @@ export interface AnthropicConfig {
   temperature?: number;
   maxTokens?: number;
   topP?: number;
+  maxSteps?: number;
   [key: string]: any;
 }
 
@@ -87,7 +88,8 @@ export class AnthropicLLM {
     logger.debug(LogCategory.LLM, 'Streaming text with Anthropic', JSON.stringify({
       model: this.config.model,
       messageCount: messages.length,
-      hasTools: !!tools
+      hasTools: !!tools,
+      maxSteps: this.config.maxSteps
     }));
 
     const { streamText } = await import('ai');
@@ -97,7 +99,8 @@ export class AnthropicLLM {
       messages,
       temperature: this.config.temperature,
       maxTokens: this.config.maxTokens,
-      tools
+      tools,
+      maxSteps: this.config.maxSteps
     });
   }
 

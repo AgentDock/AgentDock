@@ -32,6 +32,7 @@ export interface LLMTextOptions {
 export interface LLMStreamOptions {
   messages: CoreMessage[];
   tools?: Record<string, any>;
+  maxSteps?: number;
   onToken?: (token: string) => void;
   onFinish?: (result: string) => void;
 }
@@ -120,7 +121,8 @@ export class LLMBase {
       provider: this.provider,
       modelId: this.modelId,
       messageCount: options.messages.length,
-      hasTools: !!options.tools
+      hasTools: !!options.tools,
+      maxSteps: options.maxSteps
     }));
 
     // @ts-ignore - AI SDK types are not fully compatible with our usage
@@ -128,6 +130,8 @@ export class LLMBase {
       model: this.model,
       messages: options.messages,
       tools: options.tools,
+      // Add maxSteps parameter for multi-step tool calls
+      maxSteps: options.maxSteps,
       // @ts-ignore - AI SDK types are not fully compatible with our usage
       onToken: options.onToken
     });

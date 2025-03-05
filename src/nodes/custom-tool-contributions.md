@@ -206,6 +206,36 @@ export async function getWeatherForecast(lat: number, lon: number): Promise<Fore
 }
 ```
 
+### 4. Multi-Step Tool Calls
+
+AgentDock supports multi-step tool calls, allowing the AI to make multiple tool calls in sequence before returning a final response. This is particularly useful for complex tasks that require multiple steps to complete.
+
+For example, the `deep_research` tool simulates a multi-step research process:
+
+```typescript
+// Example of a tool that would benefit from multi-step calls
+export const deepResearchTool: Tool = {
+  name: 'deep_research',
+  description: 'Perform in-depth research on a topic with multiple search iterations and summarization',
+  parameters: deepResearchSchema,
+  async execute({ query, depth = 1, breadth = 3 }) {
+    // Step 1: Initial search
+    // Step 2: Follow-up searches based on initial results
+    // Step 3: Summarize findings
+    // ...
+  }
+};
+```
+
+When creating tools that might be used in multi-step sequences:
+
+1. Design your tools to be composable - each tool should do one thing well
+2. Consider how your tool might be used in a sequence with other tools
+3. Return clear, structured data that can be easily used by subsequent tool calls
+4. Test your tools in multi-step scenarios to ensure they work as expected
+
+The AgentDock framework automatically handles the multi-step tool call flow, allowing the AI to make up to 5 sequential tool calls by default. This can be configured through the agent configuration.
+
 ## Best Practices
 
 ### 1. Keep It Simple

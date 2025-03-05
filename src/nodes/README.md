@@ -12,6 +12,35 @@ The custom tools system follows these principles:
 2. **Component-Based Output**: Each tool has components that format its output.
 3. **Auto-Registration**: Tools are automatically registered with the NodeRegistry.
 4. **Server-Side Execution**: All tool logic runs on the server, including API calls.
+5. **Multi-Step Tool Calls**: Tools can be called in sequence by the AI.
+
+## Architecture Principles
+
+### 1. Simplified Architecture
+- Custom tools follow the Vercel AI SDK pattern
+- Each tool is self-contained in its own directory
+- Tools are automatically registered at runtime
+
+### 2. Component-Based Output
+- Each tool provides its own UI components for rendering results
+- Components are exported from the tool's directory
+- This ensures consistent rendering across the application
+
+### 3. Auto-Registration
+- Tools are automatically registered when imported
+- No manual registration is required
+- This simplifies the development process
+
+### 4. Server-Side Execution
+- Tools are executed on the server side
+- Results are streamed to the client
+- This ensures security and performance
+
+### 5. Multi-Step Tool Calls
+- Tools can be called in sequence by the AI
+- The framework supports up to 5 sequential tool calls by default
+- This enables complex workflows and reasoning chains
+- Particularly useful for research, analysis, and multi-stage tasks
 
 ## Implementation Pattern
 

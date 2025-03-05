@@ -198,7 +198,7 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
     api: `/api/chat/${agentId}`,
     id: agentId,
     initialMessages: savedMessages,
-    streamProtocol: 'text',
+    streamProtocol: 'data',
     headers: {
       'x-api-key': apiKey
     },

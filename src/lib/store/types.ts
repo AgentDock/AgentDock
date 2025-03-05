@@ -65,6 +65,7 @@ export interface AgentTemplate {
     };
     [key: string]: unknown;
   };
+  tools?: string[];
   chatSettings: TemplateChatSettings;
   instructions?: string;
 }
@@ -85,6 +86,7 @@ export interface Agent {
   nodeConfigurations: {
     [nodeType: string]: any;
   };
+  tools?: string[];
   chatSettings: {
     initialMessages?: string[];
     historyPolicy?: 'none' | 'lastN' | 'all';

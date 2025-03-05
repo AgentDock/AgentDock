@@ -60,6 +60,7 @@ function ChatPageContent() {
       })) : 
       [],
     sendExtraMessageFields: true,
+    streamProtocol: 'data',
     onResponse: (response) => {
       if (!response.ok) {
         toast.error('Failed to send message');

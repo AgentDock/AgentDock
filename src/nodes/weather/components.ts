@@ -206,4 +206,104 @@ ${icon} **${getWeatherDescription(day.weatherCode)}**
   }).join('\n\n');
 
   return forecastHeader + '\n' + forecastDays;
+}
+
+/**
+ * React component types for Vercel AI SDK
+ */
+interface WeatherLocation {
+  name: string;
+  country: string;
+  region?: string;
+  coordinates: {
+    lat: number;
+    lon: number;
+  };
+}
+
+interface WeatherConditions {
+  temperature: number;
+  windSpeed: number;
+  windDirection: number;
+  weatherCode: number;
+  isDay: boolean;
+}
+
+interface ForecastDay {
+  date: string;
+  temperature: {
+    min: number;
+    max: number;
+  };
+  conditions: {
+    weatherCode: number;
+    windSpeed: number;
+    windDirection: number;
+    precipitationProbability: number;
+  };
+}
+
+interface WeatherProps {
+  current: {
+    location: WeatherLocation;
+    conditions: WeatherConditions;
+  };
+  forecast: ForecastDay[];
+  timestamp: string;
+}
+
+/**
+ * Current weather React component
+ */
+export function CurrentWeather({ location, conditions }: WeatherProps['current']) {
+  const icon = weatherIcons[conditions.weatherCode] || '❓';
+  const description = getWeatherDescription(conditions.weatherCode);
+  const wind = formatWind(conditions.windSpeed, conditions.windDirection);
+  const temp = formatTemperature(conditions.temperature);
+  
+  return {
+    type: 'weather_current',
+    content: `${icon} **${description}** in ${location.name}, ${location.country}${location.region ? `, ${location.region}` : ''}
+Temperature: ${temp}
+Wind: ${wind}
+Time: ${conditions.isDay ? 'Day' : 'Night'}`
+  };
+}
+
+/**
+ * Weather forecast React component
+ */
+export function WeatherForecast({ forecast }: Pick<WeatherProps, 'forecast'>) {
+  const forecastContent = forecast.map(day => {
+    const icon = weatherIcons[day.conditions.weatherCode] || '❓';
+    const date = formatDate(day.date);
+    const tempMin = formatTemperature(day.temperature.min);
+    const tempMax = formatTemperature(day.temperature.max);
+    const wind = formatWind(day.conditions.windSpeed, day.conditions.windDirection);
+    const precip = Math.round(day.conditions.precipitationProbability);
+    
+    return `### ${date}
+${icon} **${getWeatherDescription(day.conditions.weatherCode)}**
+- Temperature Range: ${tempMin} to ${tempMax}
+- Wind: ${wind}
+- Precipitation: ${precip}%`;
+  }).join('\n\n');
+
+  return {
+    type: 'weather_forecast',
+    content: `## 7-Day Forecast\n\n${forecastContent}`
+  };
+}
+
+/**
+ * Main weather component that combines current weather and forecast
+ */
+export function Weather(props: WeatherProps) {
+  const current = CurrentWeather(props.current);
+  const forecast = WeatherForecast({ forecast: props.forecast });
+  
+  return {
+    type: 'weather_complete',
+    content: `${current.content}\n\n${forecast.content}\n\nLast updated: ${new Date(props.timestamp).toLocaleString()}`
+  };
 } 

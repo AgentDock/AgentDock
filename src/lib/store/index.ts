@@ -26,8 +26,9 @@ export const useAgents = create<Store>((set) => ({
   // Core Actions
   initialize: async () => {
     try {
-      // 1. Register core nodes first
-      registerCoreNodes();
+      // 1. Register core nodes first - Removed to prevent duplicate registrations
+      // Node registration is now centralized in src/nodes/init.ts
+      // registerCoreNodes();
 
       // 2. Validate templates
       const templateArray = Object.values(templates);

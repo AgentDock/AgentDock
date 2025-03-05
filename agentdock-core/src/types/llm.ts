@@ -2,6 +2,12 @@
  * @fileoverview Edge-compatible LLM type definitions
  */
 
+// Import tool types
+import { Tool } from './tools';
+
+// Define ToolRegistry type for core
+export type ToolRegistry = Record<string, Tool>;
+
 export interface LLMMessage {
   role: 'user' | 'assistant' | 'system';
   content: string;
@@ -30,13 +36,13 @@ export interface OpenAIConfig extends LLMConfig {
 export type ProviderConfig = AnthropicConfig | OpenAIConfig;
 
 export interface LLMProvider {
-  generateStream(messages: LLMMessage[], config: LLMConfig): Promise<ReadableStream>;
-  generateText(messages: LLMMessage[], config: LLMConfig): Promise<string>;
+  generateStream(messages: LLMMessage[], config: LLMConfig, tools?: any): Promise<ReadableStream>;
+  generateText(messages: LLMMessage[], config: LLMConfig, tools?: any): Promise<string>;
 }
 
 export interface LLMAdapter {
   provider: LLMProvider;
   config: LLMConfig;
-  generateStream(messages: LLMMessage[]): Promise<ReadableStream>;
-  generateText(messages: LLMMessage[]): Promise<string>;
+  generateStream(messages: LLMMessage[], tools?: any): Promise<ReadableStream>;
+  generateText(messages: LLMMessage[], tools?: any): Promise<string>;
 } 

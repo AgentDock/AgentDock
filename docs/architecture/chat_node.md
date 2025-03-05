@@ -15,7 +15,7 @@ The `ChatNode` acts as both an input and output point in a flow. It can:
 
 In AgentDock Core, the `ChatNode` provides basic chat functionality:
 
-*   **Integration with `ThinVercelAIAdapter`:**  Uses the Vercel AI SDK for streaming responses from LLMs.
+*   **Integration with `AISDKAdapter`:**  Uses the Vercel AI SDK for streaming responses from LLMs.
 *   **Message Handling:**  Manages the conversation history (short-term memory).
 *   **Configuration:**
     *   `provider`:  Specifies the LLM provider (e.g., "openai", "anthropic").
@@ -70,4 +70,3 @@ graph LR
 
 *   **Long-Term Memory:**  Integration with vector databases for persistent conversation history.
 *   **Adding custom tool calling capabilities:**  Integration with agentic tool calling.
-```

@@ -273,8 +273,48 @@ export class SecureStorage {
    * Get or create encryption and HMAC keys for a storage key
    */
   private async getOrCreateKeys(key: string): Promise<StorageKey> {
-    // Always generate new keys if they were cleared
+    // First check if keys exist in memory
     if (!this.keys.has(key)) {
+      // Try to load persisted keys from localStorage
+      try {
+        const persistedKeysKey = `${this.namespace}:keys:${key}`;
+        const persistedKeys = localStorage.getItem(persistedKeysKey);
+        
+        if (persistedKeys) {
+          const { encKey, hmacKey } = JSON.parse(persistedKeys);
+          
+          // Import the persisted keys
+          const importedEncKey = await crypto.subtle.importKey(
+            'jwk',
+            JSON.parse(encKey),
+            SecureStorage.KEY_ALGORITHM,
+            true,
+            ['encrypt', 'decrypt']
+          );
+          
+          const importedHmacKey = await crypto.subtle.importKey(
+            'jwk',
+            JSON.parse(hmacKey),
+            SecureStorage.HMAC_ALGORITHM,
+            true,
+            ['sign', 'verify']
+          );
+          
+          // Store the imported keys in memory
+          const storageKey: StorageKey = { 
+            key: importedEncKey, 
+            hmacKey: importedHmacKey 
+          };
+          this.keys.set(key, storageKey);
+          
+          console.log(`Successfully loaded persisted keys for ${key}`);
+          return storageKey;
+        }
+      } catch (error) {
+        console.warn('Failed to load persisted keys, generating new ones:', error);
+      }
+      
+      // If no persisted keys or loading failed, generate new keys
       const encryptionKey = await crypto.subtle.generateKey(
         SecureStorage.KEY_ALGORITHM,
         true,

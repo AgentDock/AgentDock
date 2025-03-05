@@ -109,7 +109,13 @@ export abstract class BaseTool<TParams = unknown, TResult = unknown> extends Bas
     
     this.name = options.name;
     this.description = options.description;
-    this.parameters = zodToJsonSchema(options.parameters);
+    
+    // Instead of conversion, we'll need to provide JSONSchema directly
+    this.parameters = {
+      type: 'object',
+      properties: {},
+      required: []
+    };
 
     // Register message handlers
     this.addMessageHandler('execute', async (params: unknown) => {
@@ -187,84 +193,6 @@ export function createTool<TParams, TResult>(options: ToolCreationOptions & {
       };
     }
   }();
-}
-
-/**
- * Convert Zod schema to JSON Schema
- * This is a simplified version - extend as needed
- */
-function zodToJsonSchema(schema: z.ZodType<any>): JSONSchema {
-  if (!(schema instanceof z.ZodType)) {
-    throw createError(
-      'node',
-      'Invalid Zod schema',
-      ErrorCode.NODE_VALIDATION
-    );
-  }
-
-  if (schema instanceof z.ZodObject) {
-    const shape = schema._def.shape();
-    const properties: Record<string, JSONSchema> = {};
-    const required: string[] = [];
-
-    for (const [key, value] of Object.entries(shape)) {
-      if (value instanceof z.ZodType) {
-        properties[key] = zodToJsonSchema(value);
-        if (!(value instanceof z.ZodOptional)) {
-          required.push(key);
-        }
-      }
-    }
-
-    return {
-      type: 'object',
-      properties,
-      required: required.length > 0 ? required : undefined
-    };
-  }
-
-  if (schema instanceof z.ZodString) {
-    return {
-      type: 'string',
-      description: schema.description
-    };
-  }
-
-  if (schema instanceof z.ZodNumber) {
-    return {
-      type: 'number',
-      description: schema.description
-    };
-  }
-
-  if (schema instanceof z.ZodBoolean) {
-    return {
-      type: 'boolean',
-      description: schema.description
-    };
-  }
-
-  if (schema instanceof z.ZodArray) {
-    return {
-      type: 'array',
-      items: zodToJsonSchema(schema.element),
-      description: schema.description
-    };
-  }
-
-  if (schema instanceof z.ZodEnum) {
-    return {
-      type: 'string',
-      enum: schema._def.values,
-      description: schema.description
-    };
-  }
-
-  throw createError(
-    'node',
-    'Unsupported Zod schema type',
-    ErrorCode.NODE_VALIDATION
-  );
 }
 
 /**

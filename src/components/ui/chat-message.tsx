@@ -110,8 +110,37 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     }
   }, [createdAt]);
 
-  if (toolInvocations && toolInvocations.length > 0) {
-    return <ToolCall toolInvocations={toolInvocations} />
+  if (role === "assistant" && toolInvocations && toolInvocations.length > 0) {
+    return (
+      <div className="flex flex-col gap-3">
+        {content && (
+          <div className={cn("flex flex-col", "items-start")}>
+            <div className={cn(chatBubbleVariants({ isUser: false, animation }), className)}>
+              <div>
+                <MarkdownRenderer>{content}</MarkdownRenderer>
+              </div>
+              {actions ? (
+                <div className="absolute -bottom-4 right-2 flex space-x-1 rounded-lg border bg-background p-1 text-foreground opacity-0 transition-opacity group-hover/message:opacity-100">
+                  {actions}
+                </div>
+              ) : null}
+            </div>
+            {showTimeStamp && formattedTime ? (
+              <time
+                dateTime={formattedTime.iso}
+                className={cn(
+                  "mt-1 block px-1 text-xs opacity-50",
+                  animation !== "none" && "duration-500 animate-in fade-in-0"
+                )}
+              >
+                {formattedTime.formatted}
+              </time>
+            ) : null}
+          </div>
+        )}
+        <ToolCall toolInvocations={toolInvocations} />
+      </div>
+    )
   }
 
   const isUser = role === "user"

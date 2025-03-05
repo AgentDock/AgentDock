@@ -15,14 +15,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Bot, Search, Brain, Globe, Send } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
+import type { LLMConfig } from "agentdock-core/types/llm";
 
 type Mode = "research" | "reason";
-
-interface LLMConfig {
-  model?: string;
-  temperature?: number;
-  maxTokens?: number;
-}
 
 interface NodeConfigurations {
   'llm.anthropic'?: LLMConfig;

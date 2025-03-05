@@ -13,7 +13,7 @@ import { logger, LogCategory } from 'agentdock-core';
 export function registerCoreNodes(): void {
   try {
     // Register core chat node
-    // Note: Provider-specific nodes will be handled by ThinVercelAIAdapter later
+    // Note: Provider-specific nodes will be handled by AISDKAdapter later
     NodeRegistry.register('chat', ChatNode, '1.0.0');
 
     logger.info(

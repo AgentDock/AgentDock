@@ -5,6 +5,7 @@
 
 import { z } from 'zod';
 import { Tool } from '../types';
+import { StockPrice } from './components';
 
 /**
  * Stock price tool result interface
@@ -37,13 +38,16 @@ export const stockPriceTool: Tool = {
   description: 'Get the current stock price for a given symbol',
   parameters: stockPriceSchema,
   async execute({ symbol, currency = 'USD' }) {
-    // Just return mock data immediately
-    return {
+    // Get mock data
+    const data = {
       symbol: symbol.toUpperCase(),
       price: 150.42,
       currency,
       timestamp: new Date().toISOString()
     };
+
+    // Use our StockPrice component to format the output
+    return StockPrice(data);
   }
 };
 

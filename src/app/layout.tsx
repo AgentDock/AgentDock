@@ -4,6 +4,9 @@ import { metadata as sharedMetadata } from '@/lib/config';
 import { LayoutContent } from '@/components/layout/layout-content';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
+// Import system initialization
+import '@/lib/core/init';
+
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = sharedMetadata;

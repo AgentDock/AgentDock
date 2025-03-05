@@ -1,18 +1,13 @@
 /**
  * @fileoverview Weather tool implementation using Open-Meteo APIs.
- * Provides weather forecast functionality for any location worldwide.
+ * Follows Vercel AI SDK patterns for generative UI.
  */
 
 import { z } from 'zod';
 import { Tool } from '../types';
-import { 
-  weatherCardSchema, 
-  weatherForecastSchema, 
-  WeatherCard, 
-  createWeatherCard,
-  createWeatherForecast
-} from './components';
-import type { WeatherForecast } from './types';
+import type { WeatherForecast, WeatherApiResponse } from './types';
+import { Weather } from './components';
+import { fetchWithCors, getCoordinates, parseCoordinates, getWeatherForecast } from './utils';
 
 /**
  * Schema for weather tool parameters
@@ -21,9 +16,6 @@ const weatherSchema = z.object({
   location: z.string().describe('City name or coordinates (e.g. "New York" or "40.7128,-74.0060")')
 });
 
-/**
- * Type inference from schema
- */
 type WeatherParams = z.infer<typeof weatherSchema>;
 
 /**
@@ -33,59 +25,100 @@ export const weatherTool: Tool = {
   name: 'weather',
   description: 'Get weather forecast for any location worldwide. You can provide either a city name (e.g. "New York") or coordinates (e.g. "40.7128,-74.0060")',
   parameters: weatherSchema,
-  async execute({ location }) {
+  async execute({ location }, { toolCallId }) {
+    console.log(`Executing weather tool with location: ${location}`);
     try {
-      // Get the absolute URL for the API endpoint
-      const url = new URL('/api/tools/weather', process.env.NODE_ENV === 'development'
-        ? 'http://localhost:3000'
-        : 'https://agent-dock.vercel.app');
+      // Parse coordinates or geocode the location
+      const coords = parseCoordinates(location);
+      let latitude: number, longitude: number, name: string, country: string, region: string;
 
-      // Add the location parameter
-      url.searchParams.set('location', location);
-      
-      const response = await fetch(url, {
-        headers: {
-          'Accept': 'application/json'
-        }
-      });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to fetch weather data');
+      if (coords) {
+        [latitude, longitude] = coords;
+        name = `${latitude},${longitude}`;
+        country = 'Coordinates';
+        region = '';
+        console.log(`Using provided coordinates: ${latitude},${longitude}`);
+      } else {
+        console.log(`Geocoding location: ${location}`);
+        [latitude, longitude, name, country, region] = await getCoordinates(location);
+        console.log(`Geocoded to: ${name}, ${country} (${latitude},${longitude})`);
       }
 
-      const weatherInfo = await response.json() as WeatherForecast;
+      // Get weather forecast from Open-Meteo
+      const apiResponse = await getWeatherForecast(latitude, longitude);
 
-      // Create markdown content
-      const currentWeather = createWeatherCard({
+      // Format the response into our WeatherForecast structure
+      const weatherInfo: WeatherForecast = {
         location: {
-          name: weatherInfo.location.name || 'Unknown Location',
-          country: weatherInfo.location.country || 'Unknown Country',
-          region: weatherInfo.location.region
+          name,
+          country,
+          region,
+          lat: latitude,
+          lon: longitude
         },
-        current: weatherInfo.current
-      });
-
-      const forecast = createWeatherForecast({
-        daily: weatherInfo.daily
-      });
-
-      // Return formatted response matching ToolResult type
-      return {
-        type: 'tool_result',
-        content: `${currentWeather}\n\n${forecast}`,
-        metadata: {
-          data: weatherInfo,
-          timestamp: new Date().toISOString()
-        }
+        current: {
+          temperature: apiResponse.current.temperature_2m,
+          windSpeed: apiResponse.current.wind_speed_10m,
+          windDirection: apiResponse.current.wind_direction_10m,
+          weatherCode: apiResponse.current.weather_code,
+          isDay: apiResponse.current.is_day
+        },
+        daily: apiResponse.daily.time.map((date: string, i: number) => ({
+          date,
+          temperatureMin: apiResponse.daily.temperature_2m_min[i],
+          temperatureMax: apiResponse.daily.temperature_2m_max[i],
+          weatherCode: apiResponse.daily.weather_code[i],
+          windSpeed: apiResponse.daily.wind_speed_10m_max[i],
+          windDirection: apiResponse.daily.wind_direction_10m_dominant[i],
+          precipitationProbability: apiResponse.daily.precipitation_probability_max[i]
+        }))
       };
+
+      // Format data for our Weather component
+      const weatherData = {
+        current: {
+          location: {
+            name: weatherInfo.location.name,
+            country: weatherInfo.location.country,
+            region: weatherInfo.location.region || '',
+            coordinates: {
+              lat: weatherInfo.location.lat,
+              lon: weatherInfo.location.lon
+            }
+          },
+          conditions: {
+            temperature: weatherInfo.current.temperature,
+            windSpeed: weatherInfo.current.windSpeed,
+            windDirection: weatherInfo.current.windDirection,
+            weatherCode: weatherInfo.current.weatherCode,
+            isDay: weatherInfo.current.isDay === 1
+          }
+        },
+        forecast: weatherInfo.daily.map((day, index) => ({
+          date: day.date,
+          temperature: {
+            min: day.temperatureMin,
+            max: day.temperatureMax
+          },
+          conditions: {
+            weatherCode: day.weatherCode,
+            windSpeed: day.windSpeed,
+            windDirection: day.windDirection,
+            precipitationProbability: day.precipitationProbability
+          }
+        })),
+        timestamp: new Date().toISOString()
+      };
+
+      // Use our Weather component to format the output
+      return Weather(weatherData);
     } catch (error) {
       console.error('Weather tool error:', {
         location,
         error: error instanceof Error ? error.message : 'Unknown error',
         stack: error instanceof Error ? error.stack : undefined
       });
-      throw new Error(`Weather tool error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw error;
     }
   }
 };

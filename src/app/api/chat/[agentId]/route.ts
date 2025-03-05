@@ -1,88 +1,44 @@
 /**
- * @fileoverview Chat route handler with Vercel AI SDK tool integration.
- * Implements streaming responses, tool execution, and error handling.
+ * @fileoverview Chat route handler using the latest Vercel AI SDK patterns.
  */
 
 import { NextRequest } from 'next/server';
-import { Message } from 'ai';
-import { createAnthropic } from '@ai-sdk/anthropic';
-import type { LanguageModelV1 } from '@ai-sdk/provider';
-import { APIError, ErrorCode, logger, LogCategory, loadAgentConfig } from 'agentdock-core';
+import { 
+  APIError, 
+  ErrorCode, 
+  logger, 
+  LogCategory, 
+  loadAgentConfig,
+  AnthropicLLM
+} from 'agentdock-core';
 import { templates, TemplateId } from '@/generated/templates';
 import { getToolsForAgent } from '@/nodes/registry';
 
+// Import the initialization module to ensure nodes are registered
+import '@/nodes/init';
+
 // Log runtime configuration
-console.log('Route Handler Configuration:', {
+console.log('Route Handler Initialized:', {
   runtime: 'edge',
   path: '/api/chat/[agentId]',
-  method: 'POST',
   timestamp: new Date().toISOString()
 });
 
-// ============================================================================
-// TEMPORARY IMPLEMENTATION FOR V1
-// This is a simplified implementation using direct message handling.
-// TODO: MIGRATION - This will be replaced with:
-// 1. Full CoreMessage type support
-// 2. Multi-part message handling
-// 3. Provider abstraction
-// Reference: plan_refactor.md Phase 1
-// ============================================================================
-
 export const runtime = 'edge';
-export const preferredRegion = 'auto';
-export const dynamic = 'force-dynamic';
-
-// Add type for message formatting
-interface FormattedMessage extends Message {
-  content: string;
-}
-
-interface FunctionCall {
-  name: string;
-  arguments: Record<string, unknown>;
-}
-
-// Enhanced error type checking
-const isConnectionError = (error: unknown): boolean => {
-  if (!(error instanceof Error)) return false;
-  
-  const connectionErrors = [
-    'ECONNRESET',
-    'Failed to fetch',
-    'Network error',
-    'connection closed',
-    'aborted',
-    'timeout',
-    'network request failed'
-  ];
-  
-  return connectionErrors.some(errMsg => 
-    error.message.toLowerCase().includes(errMsg.toLowerCase())
-  );
-};
-
-// Error handler that logs errors and returns void
-function handleError(error: unknown) {
-  console.error('Error in chat route:', error);
-  return;
-}
-
-interface RouteContext {
-  params: Promise<{ agentId: string }>;
-}
 
 /**
  * POST handler for chat requests
- * Implements Vercel AI SDK streaming with tool support
  */
 export async function POST(
   request: NextRequest,
-  { params }: RouteContext
+  { params }: { params: Promise<{ agentId: string }> }
 ) {
   try {
-    // Get agentId from params and validate
+    // Get agentId from params
     const { agentId } = await params;
+    console.log(`Processing request for agent: ${agentId}`);
+    
+    // Validate template
     const template = templates[agentId as TemplateId];
     if (!template) {
       throw new APIError(
@@ -119,29 +75,13 @@ export async function POST(
     }
 
     // Parse request body
-    const { messages, experimental_attachments, system } = await request.json();
+    const { messages, system } = await request.json();
+    console.log(`Received ${messages.length} messages`);
 
-    // Create Anthropic provider
-    const anthropicProvider = createAnthropic({ apiKey });
-
-    // Get enabled tools
-    const enabledCustomTools = (template.nodes || []).filter(
-      module => !module.startsWith('llm.')
-    );
-    const tools = getToolsForAgent(enabledCustomTools);
-
-    // Log available tools
-    console.log('Enabled tools for agent:', {
-      agentId,
-      enabledCustomTools,
-      availableTools: Object.keys(tools),
-      toolDetails: Object.entries(tools).map(([name, tool]) => ({
-        name,
-        description: tool.description,
-        hasExecute: 'execute' in tool
-      }))
-    });
-
+    // Get tools for this agent
+    const tools = getToolsForAgent([...(template.nodes || [])]);
+    console.log(`Available tools for agent ${agentId}:`, Object.keys(tools));
+    
     // Log request details
     await logger.debug(
       LogCategory.API,
@@ -150,47 +90,49 @@ export async function POST(
       {
         agentId,
         messageCount: messages.length,
-        model: llmConfig.model,
-        temperature: llmConfig.temperature,
-        maxTokens: llmConfig.maxTokens
+        model: llmConfig.model
       }
     );
 
     // Use the validated personality from config
-    // The type system guarantees this is a string due to the branded type
     const systemPrompt = system || config.personality;
-
-    // Add explicit logging and type checking
-    console.log('System prompt type:', typeof systemPrompt);
-    console.log('System prompt value:', systemPrompt);
-    
-    // Ensure system prompt is a string
     const finalSystemPrompt = typeof systemPrompt === 'string' 
       ? systemPrompt 
       : Array.isArray(systemPrompt) 
         ? systemPrompt.join('\n') 
         : String(systemPrompt || '');
-    
-    console.log('Final system prompt type:', typeof finalSystemPrompt);
 
-    // Stream response using streamText
-    const { streamText } = await import('ai');
-    const stream = await streamText({
-      model: anthropicProvider(llmConfig.model) as LanguageModelV1,
-      messages,
+    // Add system message to the beginning of the messages array
+    const messagesWithSystem = [
+      { role: 'system', content: finalSystemPrompt },
+      ...messages
+    ];
+
+    // Create the Anthropic LLM instance
+    const llm = new AnthropicLLM({
+      apiKey,
+      model: llmConfig.model,
       temperature: llmConfig.temperature,
       maxTokens: llmConfig.maxTokens,
-      system: finalSystemPrompt,
-      tools,
-      ...(experimental_attachments ? { experimental_attachments } : {}),
-      maxSteps: 5,
-      toolCallStreaming: true,
-      onError: handleError
+      // Add maxSteps parameter for multi-step tool calls
+      // Default to 5 steps to enable multi-step tool calls
+      maxSteps: config.options?.maxSteps as number || 5
     });
 
-    // Return the stream using toDataStreamResponse
-    return stream.toDataStreamResponse();
+    // Stream the response
+    console.log('Streaming response with tools:', Object.keys(tools).length);
+    const result = await llm.streamText({
+      messages: messagesWithSystem,
+      tools: tools
+    });
+    
+    // Use the toDataStreamResponse method from the latest Vercel AI SDK
+    // This properly formats the response for the client
+    return result.toDataStreamResponse();
+
   } catch (error) {
+    console.error('Error in chat route:', error);
+    
     await logger.error(
       LogCategory.API,
       'ChatAPI',
@@ -198,24 +140,18 @@ export async function POST(
       { error: error instanceof Error ? error.message : 'Unknown error' }
     );
 
-    if (error instanceof APIError) {
-      return new Response(
-        JSON.stringify({ 
-          error: error.message,
-          code: error.code,
-          retryable: false
-        }), 
-        { status: error.code === ErrorCode.CONFIG_NOT_FOUND ? 400 : 500 }
-      );
-    }
-
+    // Return error response
     return new Response(
-      JSON.stringify({ 
-        error: 'An error occurred while processing your request',
-        code: 'INTERNAL_ERROR',
-        retryable: false
-      }), 
-      { status: 500 }
+      JSON.stringify({
+        error: error instanceof Error ? error.message : 'An unknown error occurred',
+        code: error instanceof APIError ? error.code : 'INTERNAL_ERROR'
+      }),
+      {
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
     );
   }
 } 

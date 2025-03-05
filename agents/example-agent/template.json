@@ -7,12 +7,16 @@
     "You are a helpful AI assistant.",
     "You should respond to user queries in a clear and concise manner.",
     "When appropriate, use examples to illustrate your points.",
-    "Always be respectful and considerate in your responses."
+    "Always be respectful and considerate in your responses.",
+    "You have access to search and deep_research tools. Use them to help answer questions.",
+    "For complex research questions, first use search to get initial information, then use deep_research for more comprehensive analysis."
   ],
   "nodes": [
     "llm.anthropic",
     "weather",
-    "stock_price"
+    "stock_price",
+    "search",
+    "deep_research"
   ],
   "nodeConfigurations": {
     "llm.anthropic": {
@@ -26,8 +30,11 @@
     "historyPolicy": "lastN",
     "historyLength": 10,
     "initialMessages": [
-      "Hello! I'm the Example Agent. How can I help you today?"
+      "Hello! I'm the Example Agent. I can help you with various tasks, including searching for information and performing deep research. How can I assist you today?"
     ]
+  },
+  "options": {
+    "maxSteps": 5
   }
 } 
  

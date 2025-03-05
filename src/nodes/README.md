@@ -1,130 +1,67 @@
-# AgentDock Node System
+# Custom Tools for AgentDock
 
-The AgentDock framework uses a hybrid node system that combines robust core nodes with simple custom tools. This design provides the best of both worlds: powerful framework features and easy extensibility.
+This directory contains custom tool implementations for AgentDock. These tools follow the Vercel AI SDK pattern and are automatically registered with the NodeRegistry.
 
-## Architecture Overview
+## Architecture
 
-### Core Nodes (agentdock-core)
-Core nodes handle complex framework features and are implemented in `agentdock-core`:
-- Full lifecycle management
-- State handling
-- Message routing
-- Complex orchestration
+The custom tools system follows these principles:
 
-```typescript
-// Example core node (in agentdock-core)
-export class ChatNode extends BaseNode<ChatConfig> {
-  private messages: Message[] = [];
-  
-  async execute(input: Message): Promise<Message> {
-    // Complex chat handling with state
-  }
-}
-```
+1. **Simplified Architecture**: Tools are implemented directly within the `src/nodes/` directory.
+2. **Component-Based Output**: Each tool has components that format its output.
+3. **Auto-Registration**: Tools are automatically registered with the NodeRegistry.
+4. **Server-Side Execution**: All tool logic runs on the server, including API calls.
 
-### Custom Tools (src/nodes)
-Custom tools are simple, function-based implementations following Vercel AI SDK patterns:
-- Stateless operations
-- Direct execution
-- Simple schema validation
-- Easy to create and test
+## Implementation Pattern
+
+Each tool follows a consistent pattern:
 
 ```typescript
-// Example custom tool (in src/nodes)
-export const myTool: Tool = {
-  name: 'my_tool',
-  description: 'Does something useful',
-  parameters: z.object({
-    input: z.string()
-  }),
-  async execute({ input }) {
-    return { result: input.toUpperCase() };
-  }
-};
-```
-
-## Creating Custom Tools
-
-1. Create a new directory in `src/nodes/your-tool-name/`
-2. Define your tool interface and schema:
-```typescript
+// index.ts
 import { z } from 'zod';
 import { Tool } from '../types';
+import { MyComponent } from './components';
 
-const toolSchema = z.object({
-  // Your parameters here
+// 1. Define parameters schema
+const myToolSchema = z.object({
+  input: z.string().describe('What this input does')
 });
 
+// 2. Create and export your tool
 export const myTool: Tool = {
-  name: 'tool_name',
-  description: 'Tool description',
-  parameters: toolSchema,
-  async execute(params) {
-    // Your implementation here
+  name: 'my_tool',
+  description: 'What this tool does',
+  parameters: myToolSchema,
+  async execute({ input }) {
+    // 3. Get your data
+    const data = await fetchData(input);
+    
+    // 4. Use your component to format output
+    return MyComponent(data);
   }
 };
 
+// 5. Export for auto-registration
 export const tools = {
-  'tool_name': myTool
+  my_tool: myTool
 };
 ```
 
-3. The tool will be automatically registered and available to agents that include it in their template.
+## Available Tools
 
-## Example Implementation
+- **Search**: Search the web for information
+- **Deep Research**: Perform in-depth research with multiple search iterations
+- **Stock Price**: Get current stock price information
+- **Weather**: Get weather forecast for any location
 
-See `src/nodes/stock-price/` for a complete example of a custom tool implementation:
-- Clean interface definition
-- Parameter validation
-- Error handling
-- Testing approach
+## Contributing
 
-## Best Practices
+For detailed information on how to contribute custom tools, please refer to the [Custom Node Contributions Guide](./custom-node-contributions.md).
 
-1. Core vs Custom:
-   - Use core nodes for framework features
-   - Use custom tools for specific functionalities
-   - Don't mix concerns between the two
-
-2. Tool Design:
-   - Keep tools simple and focused
-   - Use clear parameter schemas
-   - Handle errors gracefully
-   - Return structured results
-
-3. Testing:
-   - Write unit tests for your tools
-   - Test parameter validation
-   - Test error cases
-   - Test expected outputs
-
-## Integration with Templates
-
-Tools are enabled via agent templates:
-
-```json
-{
-  "nodes": [
-    "llm.anthropic",    // Core node
-    "your_custom_tool"  // Custom tool
-  ],
-  "nodeConfigurations": {
-    "your_custom_tool": {
-      // Tool-specific config
-    }
-  }
-}
-```
-
-## Type Safety
-
-The system provides full TypeScript support:
-- Parameter validation with Zod
-- Result type inference
-- Tool registry typing
-- Template validation
-
-## See Also
-- [Stock Price Example](./examples/stock-price/README.md)
-- [Core Node Documentation](../agentdock-core/src/nodes/README.md)
-- [Template System](../templates/README.md) 
+The guide covers:
+- Core principles
+- Contribution process
+- Tool implementation pattern
+- Component-based architecture
+- API access and security
+- Best practices
+- Real examples 

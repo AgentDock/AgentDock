@@ -87,11 +87,13 @@ The framework is built around a powerful node-based system:
 
 AgentDock's modular architecture is built upon these key components:
 
-* **Nodes:** The fundamental building blocks of agents. Each node performs a specific task.
-* **Tools:** A specialized type of Node representing a function callable by an LLM.
+* **BaseNode:** The foundation for all nodes in the system, providing core functionality and a consistent interface.
+* **AgentNode:** The primary abstraction for agent functionality, encapsulating LLM interaction and tool integration.
+* **Tools:** Functions callable by an LLM through the AgentNode. Tools are specialized nodes that perform specific tasks.
+* **Node Registry:** Manages the registration and retrieval of all node types in the system, including both regular nodes and tool nodes. It handles node creation, versioning, and metadata.
+* **Tool Registry:** A focused abstraction that manages tool availability for agents. It works with the Node Registry to provide tools to agents based on their configuration.
 * **LLM Adapter:** A thin abstraction layer for interacting with LLMs via the Vercel AI SDK.
 * **Provider Registry:** Manages LLM provider configurations and API key resolution.
-* **Node Registry:** Registers and retrieves Node instances, enabling extensibility.
 * **Error Handling:** A robust system for handling errors and ensuring predictable behavior.
 * **Logging:** A structured logging system for monitoring and debugging.
 

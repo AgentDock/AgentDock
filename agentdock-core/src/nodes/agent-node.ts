@@ -1,51 +1,42 @@
 /**
- * @fileoverview Core agent node implementation for the AgentDock framework.
- * This node manages the agent's lifecycle and message handling.
+ * @fileoverview Agent node implementation for the AgentDock framework.
+ * This node provides a clean abstraction for agent functionality with tool calling support.
  */
 
 import { BaseNode } from './base-node';
-import { AgentConfig } from '../types/agent-config';
-import { MessageBus, NodeMessage } from '../messaging/types';
-import { NodeRegistry, ConcreteNodeConstructor } from './node-registry';
+import { AnthropicLLM } from '../llm/anthropic-llm';
 import { createError, ErrorCode } from '../errors';
 import { logger, LogCategory } from '../logging';
 import { NodeCategory } from '../types/node-category';
+import { getToolRegistry } from './tool-registry';
+import { CoreMessage } from 'ai';
 
 /**
  * Configuration for the agent node
  */
 export interface AgentNodeConfig {
   /** Agent configuration */
-  agentConfig: AgentConfig;
-  /** Whether to auto-start the agent */
-  autoStart?: boolean;
-  /** Maximum number of retries for failed operations */
-  maxRetries?: number;
-  /** Retry delay in milliseconds */
-  retryDelay?: number;
+  agentConfig: any;
+  /** API key for LLM provider */
+  apiKey: string;
 }
 
 /**
- * Agent state enum
+ * Options for handling a message
  */
-export enum AgentState {
-  CREATED = 'created',
-  INITIALIZING = 'initializing',
-  READY = 'ready',
-  RUNNING = 'running',
-  PAUSED = 'paused',
-  ERROR = 'error',
-  STOPPED = 'stopped'
+export interface AgentNodeOptions {
+  /** Array of messages in the conversation */
+  messages: CoreMessage[];
+  /** Optional system message to override the one in agent configuration */
+  system?: string;
 }
 
 /**
- * Core agent node that manages agent lifecycle and message handling
+ * Agent node that provides a clean abstraction for agent functionality
  */
 export class AgentNode extends BaseNode<AgentNodeConfig> {
   readonly type = 'core.agent';
-  private state: AgentState = AgentState.CREATED;
-  private nodes: Map<string, BaseNode> = new Map();
-  private memory: Map<string, unknown> = new Map();
+  private llm: AnthropicLLM;
 
   /**
    * Get static node metadata
@@ -54,16 +45,16 @@ export class AgentNode extends BaseNode<AgentNodeConfig> {
     return {
       category: NodeCategory.CORE,
       label: 'Agent',
-      description: 'Core agent node that manages agent lifecycle and message handling',
+      description: 'Handles agent functionality with tool calling support',
       inputs: [{
         id: 'message',
-        type: 'any',
+        type: 'string',
         label: 'Input Message',
         required: true
       }],
       outputs: [{
         id: 'response',
-        type: 'any',
+        type: 'string',
         label: 'Agent Response'
       }],
       version: '1.0.0',
@@ -75,23 +66,61 @@ export class AgentNode extends BaseNode<AgentNodeConfig> {
     };
   }
 
-  protected getCategory(): NodeCategory {
+  /**
+   * Constructor
+   */
+  constructor(id: string, config: AgentNodeConfig) {
+    super(id, config);
+    
+    // Create LLM instance
+    this.llm = new AnthropicLLM({
+      apiKey: config.apiKey,
+      model: config.agentConfig.llm?.model || 'claude-3-sonnet-20240229',
+      temperature: config.agentConfig.llm?.temperature,
+      maxTokens: config.agentConfig.llm?.maxTokens,
+      maxSteps: config.agentConfig.options?.maxSteps || 5
+    });
+    
+    logger.debug(
+      LogCategory.NODE,
+      'AgentNode',
+      'Created agent node',
+      { nodeId: this.id }
+    );
+  }
+
+  /**
+   * Get node category
+   */
+  protected getCategory() {
     return NodeCategory.CORE;
   }
 
-  protected getLabel(): string {
+  /**
+   * Get node label
+   */
+  protected getLabel() {
     return 'Agent';
   }
 
-  protected getDescription(): string {
-    return 'Core agent node that manages agent lifecycle and message handling';
+  /**
+   * Get node description
+   */
+  protected getDescription() {
+    return 'Handles agent functionality with tool calling support';
   }
 
-  protected getVersion(): string {
+  /**
+   * Get node version
+   */
+  protected getVersion() {
     return '1.0.0';
   }
 
-  protected getCompatibility(): { core: boolean; pro: boolean; custom: boolean } {
+  /**
+   * Get node compatibility
+   */
+  protected getCompatibility() {
     return {
       core: true,
       pro: true,
@@ -99,220 +128,131 @@ export class AgentNode extends BaseNode<AgentNodeConfig> {
     };
   }
 
+  /**
+   * Get node inputs
+   */
   protected getInputs() {
-    return [
-      {
-        id: 'message',
-        type: 'any',
-        label: 'Input Message',
-        required: true
-      }
-    ];
-  }
-
-  protected getOutputs() {
-    return [
-      {
-        id: 'response',
-        type: 'any',
-        label: 'Agent Response'
-      }
-    ];
+    return [{
+      id: 'message',
+      type: 'string',
+      label: 'Input Message',
+      required: true
+    }];
   }
 
   /**
-   * Initialize the agent node
+   * Get node outputs
    */
-  async initialize(): Promise<void> {
+  protected getOutputs() {
+    return [{
+      id: 'response',
+      type: 'string',
+      label: 'Agent Response'
+    }];
+  }
+
+  /**
+   * Handle a message and return a response
+   */
+  async handleMessage(options: AgentNodeOptions): Promise<any> {
     try {
-      this.state = AgentState.INITIALIZING;
-
-      // Initialize nodes based on enabled nodes
-      for (const nodeType of this.config.agentConfig.nodes) {
-        await this.initializeNode(nodeType);
-      }
-
-      // Set initial state based on configuration
-      this.state = this.config.autoStart ? AgentState.RUNNING : AgentState.READY;
+      logger.debug(
+        LogCategory.NODE,
+        'AgentNode',
+        'Handling message',
+        { 
+          nodeId: this.id,
+          messageCount: options.messages.length
+        }
+      );
+      
+      // Get tools for this agent
+      const tools = this.getTools();
+      
+      // Prepare system message
+      const systemPrompt = options.system || this.config.agentConfig.personality;
+      const finalSystemPrompt = typeof systemPrompt === 'string' 
+        ? systemPrompt 
+        : Array.isArray(systemPrompt) 
+          ? systemPrompt.join('\n') 
+          : String(systemPrompt || '');
+      
+      // Prepare messages
+      const messagesWithSystem: CoreMessage[] = [
+        { role: 'system', content: finalSystemPrompt },
+        ...options.messages
+      ];
+      
+      // Call LLM
+      return await this.llm.streamText({
+        messages: messagesWithSystem,
+        tools: tools
+      });
     } catch (error) {
-      this.state = AgentState.ERROR;
-      throw error;
+      logger.error(
+        LogCategory.NODE,
+        'AgentNode',
+        'Failed to handle message',
+        { error: error instanceof Error ? error.message : 'Unknown error' }
+      );
+      
+      throw createError(
+        'node',
+        'Failed to handle message',
+        ErrorCode.NODE_EXECUTION,
+        { error }
+      );
     }
+  }
+  
+  /**
+   * Get tools for this agent
+   */
+  private getTools(): Record<string, any> {
+    // Get the tool registry
+    const registry = getToolRegistry();
+    
+    // Get tools for this agent
+    return registry.getToolsForAgent(this.config.agentConfig.nodes || []);
   }
 
   /**
    * Execute the agent node
+   * This is required by the BaseNode interface but delegates to handleMessage
    */
-  async execute(input: unknown): Promise<unknown> {
-    if (this.state !== AgentState.RUNNING) {
-      throw new Error(`Agent must be in RUNNING state (current: ${this.state})`);
-    }
-
+  async execute(input: string | { message: string }): Promise<string> {
     try {
-      // Process input through enabled nodes
-      let result = input;
-      for (const nodeType of this.config.agentConfig.nodes) {
-        const node = this.nodes.get(nodeType);
-        if (node) {
-          result = await this.executeWithRetry(node, result);
-        }
-      }
-
-      return result;
-    } catch (error) {
-      this.state = AgentState.ERROR;
-      throw error;
-    }
-  }
-
-  /**
-   * Execute a node with retry logic
-   */
-  private async executeWithRetry(
-    node: BaseNode,
-    input: unknown,
-    attempt: number = 1
-  ): Promise<unknown> {
-    try {
-      return await node.execute(input);
-    } catch (error) {
-      if (attempt < (this.config.maxRetries || 3)) {
-        await new Promise(resolve => 
-          setTimeout(resolve, (this.config.retryDelay || 1000) * attempt)
-        );
-        return this.executeWithRetry(node, input, attempt + 1);
-      }
-      throw error;
-    }
-  }
-
-  /**
-   * Initialize a node
-   */
-  private async initializeNode(nodeType: string): Promise<void> {
-    const nodeConfig = this.config.agentConfig.nodeConfigurations[nodeType];
-    if (!nodeConfig) {
-      throw new Error(`Missing configuration for node: ${nodeType}`);
-    }
-
-    const NodeClass = await this.loadNodeClass(nodeType);
-    const node = new NodeClass(`${this.id}-${nodeType}`, nodeConfig);
-    await node.initialize();
-    this.nodes.set(nodeType, node);
-  }
-
-  /**
-   * Load a node class dynamically
-   */
-  private async loadNodeClass(nodeType: string): Promise<ConcreteNodeConstructor> {
-    try {
-      // Check if the node type exists in the registry
-      if (!NodeRegistry.has(nodeType)) {
-        throw createError('node', `Node type not found: ${nodeType}`, ErrorCode.NODE_NOT_FOUND);
-      }
-
-      // Create a new instance using the registry
-      const node = NodeRegistry.create(nodeType, `${this.id}-${nodeType}`, {});
+      // Extract message from input
+      const message = typeof input === 'string' ? input : input.message;
       
-      // Return the constructor of the created node
-      return node.constructor as ConcreteNodeConstructor;
+      // Create message object
+      const messageObj: CoreMessage = {
+        role: 'user',
+        content: message
+      };
+      
+      // Handle message
+      const result = await this.handleMessage({
+        messages: [messageObj]
+      });
+      
+      // For now, just return a placeholder response
+      // In a real implementation, we would process the result
+      return `Response to: ${message}`;
     } catch (error) {
-      throw createError('node', 
-        `Failed to load node class for node: ${nodeType}`,
-        ErrorCode.NODE_INITIALIZATION,
-        {
-          nodeType,
-          cause: error instanceof Error ? error.message : 'Unknown error'
-        }
+      logger.error(
+        LogCategory.NODE,
+        'AgentNode',
+        'Failed to execute agent node',
+        { error: error instanceof Error ? error.message : 'Unknown error' }
       );
-    }
-  }
-
-  /**
-   * Get value from memory
-   */
-  protected getMemory<T>(key: string): T | undefined {
-    logger.debug(
-      LogCategory.NODE,
-      'AgentNode',
-      'Memory read operation',
-      { key, hasValue: this.memory.has(key) }
-    );
-    return this.memory.get(key) as T;
-  }
-
-  /**
-   * Set value in memory
-   */
-  protected setMemory(key: string, value: unknown): void {
-    logger.debug(
-      LogCategory.NODE,
-      'AgentNode',
-      'Memory write operation',
-      { key }
-    );
-    this.memory.set(key, value);
-  }
-
-  /**
-   * Clear memory
-   */
-  protected clearMemory(): void {
-    logger.debug(
-      LogCategory.NODE,
-      'AgentNode',
-      'Memory clear operation'
-    );
-    this.memory.clear();
-  }
-
-  /**
-   * Clean up resources
-   */
-  async cleanup(): Promise<void> {
-    logger.debug(
-      LogCategory.NODE,
-      'AgentNode',
-      'Cleaning up memory',
-      { memorySize: this.memory.size }
-    );
-    this.state = AgentState.STOPPED;
-    await Promise.all(Array.from(this.nodes.values()).map(node => node.cleanup()));
-    this.nodes.clear();
-    this.memory.clear();
-  }
-
-  /**
-   * Get current agent state
-   */
-  getState(): AgentState {
-    return this.state;
-  }
-
-  /**
-   * Pause agent execution
-   */
-  async pause(): Promise<void> {
-    if (this.state === AgentState.RUNNING) {
-      this.state = AgentState.PAUSED;
-    }
-  }
-
-  /**
-   * Resume agent execution
-   */
-  async resume(): Promise<void> {
-    if (this.state === AgentState.PAUSED) {
-      this.state = AgentState.RUNNING;
-    }
-  }
-
-  /**
-   * Stop agent execution
-   */
-  async stop(): Promise<void> {
-    if (this.state !== AgentState.STOPPED) {
-      await this.cleanup();
+      
+      throw createError(
+        'node',
+        'Failed to execute agent node',
+        ErrorCode.NODE_EXECUTION,
+        { error }
+      );
     }
   }
 } 

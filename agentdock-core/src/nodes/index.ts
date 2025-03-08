@@ -25,4 +25,13 @@ export type {
 } from './tool';
 
 // Core nodes
-// No core node exports 
+export { AgentNode } from './agent-node';
+export type { AgentNodeConfig, AgentNodeOptions } from './agent-node';
+
+// Tool registry
+export { 
+  getToolRegistry, 
+  setToolRegistry, 
+  DefaultToolRegistry 
+} from './tool-registry';
+export type { ToolRegistry } from './tool-registry'; 

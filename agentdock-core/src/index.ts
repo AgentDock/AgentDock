@@ -23,6 +23,16 @@ export type { NodeMetadata, NodePort } from './nodes/base-node';
 
 // Core nodes
 export { registerCoreNodes } from './nodes/register-core-nodes'; // Core node registration
+export { AgentNode } from './nodes/agent-node';
+export type { AgentNodeConfig, AgentNodeOptions } from './nodes/agent-node';
+
+// Tool registry
+export { 
+  getToolRegistry, 
+  setToolRegistry, 
+  DefaultToolRegistry 
+} from './nodes/tool-registry';
+export type { ToolRegistry } from './nodes/tool-registry';
 
 // Core functionality
 export * from './nodes';              // Node implementations

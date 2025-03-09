@@ -9,10 +9,12 @@ import {
   logger, 
   LogCategory, 
   loadAgentConfig,
-  AnthropicLLM
+  AgentNode
 } from 'agentdock-core';
 import { templates, TemplateId } from '@/generated/templates';
-import { getToolsForAgent } from '@/nodes/registry';
+
+// Import the agent adapter to ensure the tool registry is set
+import '@/lib/agent-adapter';
 
 // Import the initialization module to ensure nodes are registered
 import '@/nodes/init';
@@ -77,10 +79,6 @@ export async function POST(
     // Parse request body
     const { messages, system } = await request.json();
     console.log(`Received ${messages.length} messages`);
-
-    // Get tools for this agent
-    const tools = getToolsForAgent([...(template.nodes || [])]);
-    console.log(`Available tools for agent ${agentId}:`, Object.keys(tools));
     
     // Log request details
     await logger.debug(
@@ -94,40 +92,19 @@ export async function POST(
       }
     );
 
-    // Use the validated personality from config
-    const systemPrompt = system || config.personality;
-    const finalSystemPrompt = typeof systemPrompt === 'string' 
-      ? systemPrompt 
-      : Array.isArray(systemPrompt) 
-        ? systemPrompt.join('\n') 
-        : String(systemPrompt || '');
-
-    // Add system message to the beginning of the messages array
-    const messagesWithSystem = [
-      { role: 'system', content: finalSystemPrompt },
-      ...messages
-    ];
-
-    // Create the Anthropic LLM instance
-    const llm = new AnthropicLLM({
-      apiKey,
-      model: llmConfig.model,
-      temperature: llmConfig.temperature,
-      maxTokens: llmConfig.maxTokens,
-      // Add maxSteps parameter for multi-step tool calls
-      // Default to 5 steps to enable multi-step tool calls
-      maxSteps: config.options?.maxSteps as number || 5
+    // Create the AgentNode instance
+    const agent = new AgentNode(`agent-${agentId}`, {
+      agentConfig: template,
+      apiKey
     });
 
-    // Stream the response
-    console.log('Streaming response with tools:', Object.keys(tools).length);
-    const result = await llm.streamText({
-      messages: messagesWithSystem,
-      tools: tools
+    // Handle the message
+    const result = await agent.handleMessage({
+      messages,
+      system
     });
     
-    // Use the toDataStreamResponse method from the latest Vercel AI SDK
-    // This properly formats the response for the client
+    // Return the response
     return result.toDataStreamResponse();
 
   } catch (error) {

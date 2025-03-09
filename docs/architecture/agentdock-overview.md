@@ -6,10 +6,21 @@ AgentDock is an open-source, backend-first framework for building and deploying 
 
 The framework is built around a powerful node-based system:
 
-- **Core Nodes**: Handle fundamental operations like conversation management and service interactions
-- **Custom Nodes**: Extend functionality by creating your own nodes for any specific task
-- **Node Registry**: Central system for managing and connecting nodes
+- **AgentNode**: The primary abstraction for agent functionality, encapsulating LLM interaction and tool integration
+- **BaseNode**: The foundation for all nodes, providing core functionality and a consistent interface
+- **Node Registry**: Central system for registering and retrieving all node types, including both regular nodes and tools
+- **Tool Registry**: Focused abstraction for managing tool availability for agents, working with the Node Registry
+- **Custom Tools**: Specialized nodes that can be called by LLMs to perform specific tasks
 - **Configuration**: Simple JSON-based agent definitions
+
+### Registry Relationship
+
+The Node Registry and Tool Registry work together to provide a comprehensive system for managing nodes and tools:
+
+- **Node Registry**: Handles the broader node ecosystem, including registration, creation, metadata, and versioning
+- **Tool Registry**: Provides a focused interface specifically for making tools available to agents
+- **Tools as Nodes**: Tools are registered in the Node Registry with the `isTool` flag set to `true`
+- **Dual Purpose**: This architecture supports both the current OSS implementation and the future Pro implementation
 
 ## What You Can Build
 

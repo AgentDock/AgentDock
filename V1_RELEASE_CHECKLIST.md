@@ -5,6 +5,10 @@ This document outlines the checklist for the V1 release of AgentDock.
 ## 1. Core Functionality:
 
 - [ ] Base node system complete and tested
+- [ ] AgentNode implementation verified and tested
+- [ ] Node registry system implemented and tested
+- [ ] Tool registry system implemented and tested
+- [ ] Registry integration verified (Node Registry and Tool Registry working together)
 - [ ] LLM adapter interface implemented
 - [ ] Tool system working
 - [ ] Error handling comprehensive

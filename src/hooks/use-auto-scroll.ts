@@ -29,6 +29,10 @@ export function useAutoScroll(dependencies: React.DependencyList, options?: {
     setIsAtBottom(distanceFromBottom < ACTIVATION_THRESHOLD)
   }
 
+  // Extract the first dependency for the primary effect trigger
+  // This is typically the messages array or other content that changes
+  const primaryDependency = dependencies[0]
+
   useEffect(() => {
     // Only scroll if:
     // 1. Force scroll is requested (new message sent) OR
@@ -36,7 +40,7 @@ export function useAutoScroll(dependencies: React.DependencyList, options?: {
     if (options?.forceScroll || isAtBottom) {
       scrollToBottom()
     }
-  }, dependencies)
+  }, [primaryDependency, isAtBottom, options?.forceScroll])
 
   return {
     containerRef,

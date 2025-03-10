@@ -1,8 +1,8 @@
 /**
- * @fileoverview Anthropic LLM implementation using Vercel AI SDK.
+ * @fileoverview OpenAI LLM implementation using Vercel AI SDK.
  */
 
-import { createAnthropic } from '@ai-sdk/anthropic';
+import { createOpenAI } from '@ai-sdk/openai';
 import { 
   CoreMessage, 
   GenerateObjectResult, 
@@ -13,51 +13,51 @@ import { logger, LogCategory } from '../logging';
 import { ZodType, ZodTypeDef } from 'zod';
 import { createError, ErrorCode } from '../errors';
 import { LLMBase, LLMStreamOptions, LLMObjectOptions } from './llm-base';
-import { AnthropicConfig } from './types';
+import { OpenAIConfig } from './types';
 import { maskSensitiveData } from '../utils/security-utils';
 
 /**
- * Anthropic LLM implementation
+ * OpenAI LLM implementation
  */
-export class AnthropicLLM extends LLMBase {
-  protected config: AnthropicConfig;
+export class OpenAI extends LLMBase {
+  protected config: OpenAIConfig;
 
   /**
-   * Create a new AnthropicLLM instance
+   * Create a new OpenAI instance
    */
-  constructor(config: AnthropicConfig) {
+  constructor(config: OpenAIConfig) {
     // Validate API key
     if (!config.apiKey) {
-      const error = 'Missing API key in Anthropic configuration';
-      logger.error(LogCategory.LLM, 'AnthropicLLM', error);
+      const error = 'Missing API key in OpenAI configuration';
+      logger.error(LogCategory.LLM, 'OpenAI', error);
       throw createError('llm', error, ErrorCode.LLM_API_KEY);
     }
     
     // Validate API key format
-    if (!config.apiKey.startsWith('sk-ant-')) {
-      const error = 'Invalid API key format. Anthropic API keys should start with "sk-ant-"';
-      logger.error(LogCategory.LLM, 'AnthropicLLM', error);
+    if (!config.apiKey.startsWith('sk-')) {
+      const error = 'Invalid API key format. OpenAI API keys should start with "sk-"';
+      logger.error(LogCategory.LLM, 'OpenAI', error);
       throw createError('llm', error, ErrorCode.LLM_API_KEY);
     }
     
     // Validate model
     if (!config.model) {
-      const error = 'Missing model in Anthropic configuration';
-      logger.error(LogCategory.LLM, 'AnthropicLLM', error);
+      const error = 'Missing model in OpenAI configuration';
+      logger.error(LogCategory.LLM, 'OpenAI', error);
       throw createError('llm', error, ErrorCode.LLM_API_KEY);
     }
     
     try {
-      // Create Anthropic provider
-      const anthropicProvider = createAnthropic({
+      // Create OpenAI provider
+      const openaiProvider = createOpenAI({
         apiKey: config.apiKey
       });
       
       // Create the model with the provider
-      const model = anthropicProvider(config.model);
+      const model = openaiProvider(config.model);
       
       // Call parent constructor
-      super(model, config, 'AnthropicLLM');
+      super(model, config, 'OpenAI');
       
       // Store config
       this.config = config;
@@ -65,12 +65,12 @@ export class AnthropicLLM extends LLMBase {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       logger.error(
         LogCategory.LLM, 
-        'AnthropicLLM', 
-        `Failed to create Anthropic LLM: ${errorMessage}`
+        'OpenAI', 
+        `Failed to create OpenAI LLM: ${errorMessage}`
       );
       throw createError(
         'llm',
-        `Failed to create Anthropic LLM: ${errorMessage}`,
+        `Failed to create OpenAI LLM: ${errorMessage}`,
         ErrorCode.LLM_EXECUTION
       );
     }
@@ -92,8 +92,8 @@ export class AnthropicLLM extends LLMBase {
       onFinish: (_result) => {
         logger.debug(
           LogCategory.LLM, 
-          'AnthropicLLM', 
-          'Successfully generated text from Anthropic', 
+          'OpenAI', 
+          'Successfully generated text from OpenAI', 
           {
             model: this.config.model,
             apiKeyPrefix: maskSensitiveData(this.config.apiKey, 8)
@@ -114,8 +114,8 @@ export class AnthropicLLM extends LLMBase {
       // Log successful streaming without duplicating token usage information
       logger.debug(
         LogCategory.LLM,
-        'AnthropicLLM',
-        'Successfully streamed text from Anthropic',
+        'OpenAI',
+        'Successfully streamed text from OpenAI',
         { 
           model: this.config.model,
           apiKeyPrefix: maskSensitiveData(this.config.apiKey, 8)
@@ -128,8 +128,8 @@ export class AnthropicLLM extends LLMBase {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       logger.error(
         LogCategory.LLM, 
-        'AnthropicLLM', 
-        `Failed to stream text from Anthropic: ${errorMessage}`,
+        'OpenAI', 
+        `Failed to stream text from OpenAI: ${errorMessage}`,
         { error }
       );
       throw error;
@@ -137,71 +137,10 @@ export class AnthropicLLM extends LLMBase {
   }
 
   /**
-   * Determine if an error is retryable
-   */
-  private isRetryableError(error: unknown): boolean {
-    // Network errors are generally retryable
-    if (error instanceof Error) {
-      // Check for common network error messages
-      if (
-        error.message.includes('ECONNRESET') ||
-        error.message.includes('ETIMEDOUT') ||
-        error.message.includes('ECONNREFUSED') ||
-        error.message.includes('network error') ||
-        error.message.includes('Failed to fetch') ||
-        error.message.includes('socket hang up')
-      ) {
-        return true;
-      }
-      
-      // Check for rate limiting or overloaded errors
-      if (
-        error.message.includes('rate limit') ||
-        error.message.includes('too many requests') ||
-        error.message.includes('overloaded') ||
-        error.message.includes('capacity') ||
-        error.message.includes('try again')
-      ) {
-        return true;
-      }
-      
-      // Check for 5xx errors
-      if (
-        error.message.includes('500') ||
-        error.message.includes('502') ||
-        error.message.includes('503') ||
-        error.message.includes('504')
-      ) {
-        return true;
-      }
-    }
-    
-    // Check for Anthropic-specific error types
-    if (error && typeof error === 'object') {
-      const errorObj = error as any;
-      
-      // Check for rate limit or overloaded errors
-      if (
-        errorObj.type === 'rate_limit_error' ||
-        errorObj.type === 'overloaded_error' ||
-        errorObj.status === 429 ||
-        errorObj.status === 500 ||
-        errorObj.status === 502 ||
-        errorObj.status === 503 ||
-        errorObj.status === 504
-      ) {
-        return true;
-      }
-    }
-    
-    return false;
-  }
-
-  /**
    * Generate structured output from messages
    */
   async generateObject<T extends ZodType<any, ZodTypeDef, any>>(options: LLMObjectOptions<T>): Promise<GenerateObjectResult<any>> {
-    logger.debug(LogCategory.LLM, 'Generating object with Anthropic', JSON.stringify({
+    logger.debug(LogCategory.LLM, 'Generating object with OpenAI', JSON.stringify({
       model: this.config.model,
       messageCount: options.messages.length,
       hasTools: !!options.tools
@@ -228,7 +167,7 @@ export class AnthropicLLM extends LLMBase {
    * Stream structured output from messages
    */
   async streamObject<T extends ZodType<any, ZodTypeDef, any>>(options: LLMObjectOptions<T>): Promise<StreamObjectResult<any, any, any>> {
-    logger.debug(LogCategory.LLM, 'Streaming object with Anthropic', JSON.stringify({
+    logger.debug(LogCategory.LLM, 'Streaming object with OpenAI', JSON.stringify({
       model: this.config.model,
       messageCount: options.messages.length,
       hasTools: !!options.tools

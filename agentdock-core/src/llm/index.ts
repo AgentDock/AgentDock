@@ -16,9 +16,12 @@ import {
   StreamObjectResult
 } from 'ai';
 import { AnthropicLLM } from './anthropic-llm';
+import { OpenAI } from './openai-llm';
 import { LLMBase } from './llm-base';
 import { logger, LogCategory } from '../logging';
 import { createError, ErrorCode } from '../errors';
+import { LLMConfig, AnthropicConfig, OpenAIConfig } from './types';
+import { maskSensitiveData } from '../utils/security-utils';
 
 // Export all types from types.ts
 export * from './types';
@@ -41,17 +44,21 @@ export function createLLM(config: any): LLMBase {
     {
       provider: config.provider,
       model: config.model,
-      apiKeyPrefix: config.apiKey.substring(0, 5) + '...'
+      apiKeyPrefix: maskSensitiveData(config.apiKey, 5)
     }
   );
   
+  const llmConfig: LLMConfig = {
+    apiKey: config.apiKey,
+    model: config.model,
+    ...config.options
+  };
+
   // Create the appropriate LLM instance based on the provider
   if (config.provider === 'anthropic') {
-    return new AnthropicLLM({
-      apiKey: config.apiKey,
-      model: config.model,
-      ...config.options
-    });
+    return new AnthropicLLM(llmConfig as AnthropicConfig);
+  } else if (config.provider === 'openai') {
+    return new OpenAI(llmConfig as OpenAIConfig);
   }
   
   // Log error and throw for unsupported providers

@@ -11,6 +11,7 @@ import {
   loadAgentConfig,
   AgentNode
 } from 'agentdock-core';
+import { maskSensitiveData } from 'agentdock-core/utils/security-utils';
 import { templates, TemplateId } from '@/generated/templates';
 
 // Import the agent adapter to ensure the tool registry is set
@@ -66,31 +67,54 @@ export async function POST(
       );
     }
     
-    // Validate API key format
-    if (!apiKey.startsWith('sk-ant-')) {
-      throw new APIError(
-        'Invalid API key format. Anthropic API keys should start with "sk-ant-"',
-        ErrorCode.LLM_API_KEY,
-        request.url,
-        'POST'
-      );
+    // Get provider from template
+    const isOpenAI = template.nodes?.includes('llm.openai');
+    
+    // add debug log here
+    logger.debug(LogCategory.API, 'ChatRoute', 'Processing chat request x ', {
+      agentId,
+      isOpenAI
+    });
+
+    // Validate API key format based on provider
+    if (isOpenAI) {
+      // OpenAI API keys must start with 'sk-' and can have various formats
+      if (!apiKey.startsWith('sk-')) {
+        throw new APIError(
+          'Invalid API key format. OpenAI API keys must start with "sk-"',
+          ErrorCode.LLM_API_KEY,
+          request.url,
+          'POST'
+        );
+      }
+    } else {
+      // Anthropic API keys must start with 'sk-ant-'
+      if (!apiKey.startsWith('sk-ant-')) {
+        throw new APIError(
+          'Invalid API key format. Anthropic API keys must start with "sk-ant-"',
+          ErrorCode.LLM_API_KEY,
+          request.url,
+          'POST'
+        );
+      }
     }
     
     // Get fallback API key from request headers or use default
     const fallbackApiKey = request.headers.get('x-fallback-api-key') || FALLBACK_API_KEY;
     
     // Log API key prefix for debugging (safely)
-    const apiKeyPrefix = apiKey.substring(0, 8) + '...';
+    const apiKeyPrefix = maskSensitiveData(apiKey, 8);
     console.log(`Using API key: ${apiKeyPrefix}... (length: ${apiKey.length})`);
     
     if (fallbackApiKey) {
-      const fallbackApiKeyPrefix = fallbackApiKey.substring(0, 8) + '...';
+      const fallbackApiKeyPrefix = maskSensitiveData(fallbackApiKey, 8);
       console.log(`Fallback API key available: ${fallbackApiKeyPrefix}... (length: ${fallbackApiKey.length})`);
     }
 
     // Load and validate config
     const config = await loadAgentConfig(template, apiKey);
-    const llmConfig = config.nodeConfigurations?.['llm.anthropic'];
+    const llmNode = isOpenAI ? 'llm.openai' : 'llm.anthropic';
+    const llmConfig = config.nodeConfigurations?.[llmNode];
     if (!llmConfig) {
       throw new APIError(
         'LLM configuration not found',
@@ -125,7 +149,8 @@ export async function POST(
     const agent = new AgentNode(`agent-${agentId}`, {
       agentConfig: template,
       apiKey,
-      fallbackApiKey
+      fallbackApiKey,
+      provider: isOpenAI ? 'openai' : 'anthropic'
     });
     
     // Handle the message
@@ -148,7 +173,7 @@ export async function POST(
         
         // If this is a step with text, we want to create a separate message for it
         if (stepData.text && stepData.text.trim()) {
-          console.log('Step has text:', stepData.text.substring(0, 50) + '...');
+          console.log('Step has text:', maskSensitiveData(stepData.text, 50));
           
           // We can't directly modify the response here, but we can log the text
           // The client will handle creating separate messages

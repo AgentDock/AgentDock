@@ -6,16 +6,24 @@
 import {
   CoreMessage,
   LanguageModel,
-  generateText,
-  streamText,
-  generateObject,
-  streamObject,
+  generateText as aiGenerateText,
+  streamText as aiStreamText,
+  generateObject as aiGenerateObject,
+  streamObject as aiStreamObject,
   GenerateTextResult,
   StreamTextResult,
   GenerateObjectResult,
   StreamObjectResult
 } from 'ai';
 import { logger, LogCategory } from '../logging';
+import { ZodType, ZodTypeDef } from 'zod';
+import { 
+  LLMConfig, 
+  LLMMessage, 
+  ProviderConfig,
+  StepData,
+  TokenUsage
+} from './types';
 
 /**
  * Options for text generation
@@ -30,11 +38,12 @@ export interface LLMTextOptions {
  * Options for streaming text
  */
 export interface LLMStreamOptions {
-  messages: CoreMessage[];
+  messages: LLMMessage[];
   tools?: Record<string, any>;
   maxSteps?: number;
   onToken?: (token: string) => void;
   onFinish?: (result: string) => void;
+  onStepFinish?: (stepData: StepData) => void;
 }
 
 /**
@@ -54,17 +63,23 @@ export class LLMBase {
   protected model: LanguageModel;
   protected config: Record<string, any>;
   protected name: string;
+  protected lastTokenUsage: TokenUsage | null = null;
 
   constructor(model: LanguageModel, config: Record<string, any>, name: string = 'default') {
     this.model = model;
     this.config = config;
     this.name = name;
-
-    logger.debug(LogCategory.LLM, 'Created LLM instance', JSON.stringify({
+    
+    // Log creation once with comprehensive information
+    logger.debug(
+      LogCategory.LLM,
       name,
-      provider: model.provider,
-      modelId: model.modelId
-    }));
+      'Created LLM instance',
+      {
+        provider: this.provider,
+        modelId: this.modelId
+      }
+    );
   }
 
   /**
@@ -89,6 +104,13 @@ export class LLMBase {
   }
 
   /**
+   * Get the last token usage information
+   */
+  getLastTokenUsage(): TokenUsage | null {
+    return this.lastTokenUsage;
+  }
+
+  /**
    * Generate text from messages
    */
   async generateText(options: LLMTextOptions): Promise<GenerateTextResult<any, any>> {
@@ -99,15 +121,39 @@ export class LLMBase {
       hasTools: !!options.tools
     }));
 
+    // Reset token usage
+    this.lastTokenUsage = null;
+
+    // Create a wrapper for the onFinish callback
+    const originalOnFinish = options.onFinish;
+    
     // @ts-ignore - AI SDK types are not fully compatible with our usage
-    const result = await generateText({
+    const result = await aiGenerateText({
       model: this.model,
       messages: options.messages,
       tools: options.tools
     });
-
-    if (options.onFinish) {
-      options.onFinish(result.text);
+    
+    // Capture token usage if available
+    if (result.usage) {
+      this.lastTokenUsage = {
+        promptTokens: result.usage.promptTokens,
+        completionTokens: result.usage.completionTokens,
+        totalTokens: result.usage.promptTokens + result.usage.completionTokens,
+        provider: this.provider
+      };
+      
+      logger.debug(
+        LogCategory.LLM,
+        this.name,
+        'Token usage information',
+        { ...this.lastTokenUsage } // Convert to Record<string, unknown>
+      );
+    }
+    
+    // Call the original onFinish callback if provided
+    if (originalOnFinish) {
+      originalOnFinish(result.text);
     }
 
     return result;
@@ -125,30 +171,89 @@ export class LLMBase {
       maxSteps: options.maxSteps
     }));
 
-    // @ts-ignore - AI SDK types are not fully compatible with our usage
-    const result = await streamText({
+    // Reset token usage
+    this.lastTokenUsage = null;
+
+    // Create a wrapper for the onFinish callback
+    const originalOnFinish = options.onFinish;
+    
+    // Create a custom onFinish callback that captures token usage
+    const wrappedOnFinish = (completion: any) => {
+      // Capture token usage if available
+      if (completion.usage) {
+        this.lastTokenUsage = {
+          promptTokens: completion.usage.promptTokens,
+          completionTokens: completion.usage.completionTokens,
+          totalTokens: completion.usage.promptTokens + completion.usage.completionTokens,
+          provider: this.provider
+        };
+        
+        // Log token usage once with all relevant information
+        logger.debug(
+          LogCategory.LLM,
+          this.name,
+          'Token usage information',
+          { ...this.lastTokenUsage } // Convert to Record<string, unknown>
+        );
+      }
+      
+      // Call the original onFinish callback if provided
+      if (originalOnFinish) {
+        originalOnFinish(completion.text);
+      }
+    };
+    
+    // Create a wrapper for the onStepFinish callback if provided
+    const originalOnStepFinish = options.onStepFinish;
+    const wrappedOnStepFinish = originalOnStepFinish ? (stepData: any) => {
+      // Log step completion
+      logger.debug(
+        LogCategory.LLM,
+        this.name,
+        'Step completed',
+        { 
+          hasToolCalls: stepData.toolCalls && stepData.toolCalls.length > 0,
+          hasToolResults: stepData.toolResults && Object.keys(stepData.toolResults).length > 0,
+          finishReason: stepData.finishReason
+        }
+      );
+      
+      // Call the original onStepFinish callback if it exists
+      if (originalOnStepFinish) {
+        originalOnStepFinish(stepData);
+      }
+    } : undefined;
+    
+    // Call the Vercel AI SDK's streamText function with our wrapped callbacks
+    const streamOptions = {
       model: this.model,
       messages: options.messages,
       tools: options.tools,
-      // Add maxSteps parameter for multi-step tool calls
       maxSteps: options.maxSteps,
-      // @ts-ignore - AI SDK types are not fully compatible with our usage
-      onToken: options.onToken
-    });
-
-    // Store the onFinish callback to be called when the stream completes
-    if (options.onFinish) {
-      // @ts-ignore - AI SDK types are not fully compatible with our usage
-      result.onFinish().then(options.onFinish);
-    }
-
-    return result;
+      onFinish: wrappedOnFinish,
+      onStepFinish: wrappedOnStepFinish
+    };
+    
+    // Log the stream options
+    logger.debug(
+      LogCategory.LLM,
+      this.name,
+      'Streaming with options',
+      { 
+        model: this.modelId,
+        hasTools: !!options.tools,
+        maxSteps: options.maxSteps,
+        hasOnStepFinish: !!wrappedOnStepFinish
+      }
+    );
+    
+    return await aiStreamText(streamOptions);
   }
 
   /**
    * Generate structured output from messages
    */
-  async generateObject<T>(options: LLMObjectOptions<T>): Promise<GenerateObjectResult<T>> {
+  async generateObject<T extends ZodType<any, ZodTypeDef, any>>(options: LLMObjectOptions<T>): Promise<GenerateObjectResult<any>> {
     logger.debug(LogCategory.LLM, 'Generating object', JSON.stringify({
       provider: this.provider,
       modelId: this.modelId,
@@ -156,28 +261,57 @@ export class LLMBase {
       hasTools: !!options.tools
     }));
 
+    // Reset token usage
+    this.lastTokenUsage = null;
+
+    // Create a wrapper for the onFinish callback
+    const originalOnFinish = options.onFinish;
+    
+    // Create a custom onFinish callback that captures token usage
+    const wrappedOnFinish = (completion: any) => {
+      // Capture token usage if available
+      if (completion.usage) {
+        this.lastTokenUsage = {
+          promptTokens: completion.usage.promptTokens,
+          completionTokens: completion.usage.completionTokens,
+          totalTokens: completion.usage.promptTokens + completion.usage.completionTokens,
+          provider: this.provider
+        };
+        
+        // Log token usage once with all relevant information
+        logger.debug(
+          LogCategory.LLM,
+          this.name,
+          'Token usage information',
+          { ...this.lastTokenUsage } // Convert to Record<string, unknown>
+        );
+      }
+      
+      // Call the original onFinish callback if provided
+      if (originalOnFinish) {
+        originalOnFinish(completion.object);
+      }
+    };
+    
     // @ts-ignore - AI SDK types are not fully compatible with our usage
-    const result = await generateObject({
+    const result = await aiGenerateObject({
       model: this.model,
       messages: options.messages,
       // @ts-ignore - AI SDK types are not fully compatible with our usage
-      schema: options.schema,
+      output: 'object',
       // @ts-ignore - AI SDK types are not fully compatible with our usage
-      tools: options.tools
+      schema: options.schema,
+      tools: options.tools,
+      onFinish: wrappedOnFinish
     });
-
-    if (options.onFinish) {
-      options.onFinish(result.object);
-    }
-
-    // @ts-ignore - AI SDK types are not fully compatible with our usage
+    
     return result;
   }
 
   /**
    * Stream structured output from messages
    */
-  async streamObject<T>(options: LLMObjectOptions<T>): Promise<StreamObjectResult<any, T, any>> {
+  async streamObject<T extends ZodType<any, ZodTypeDef, any>>(options: LLMObjectOptions<T>): Promise<StreamObjectResult<any, any, any>> {
     logger.debug(LogCategory.LLM, 'Streaming object', JSON.stringify({
       provider: this.provider,
       modelId: this.modelId,
@@ -185,22 +319,47 @@ export class LLMBase {
       hasTools: !!options.tools
     }));
 
-    // @ts-ignore - AI SDK types are not fully compatible with our usage
-    const result = await streamObject({
+    // Reset token usage
+    this.lastTokenUsage = null;
+
+    // Create a wrapper for the onFinish callback
+    const originalOnFinish = options.onFinish;
+    
+    // Create a custom onFinish callback that captures token usage
+    const wrappedOnFinish = (completion: any) => {
+      // Capture token usage if available
+      if (completion.usage) {
+        this.lastTokenUsage = {
+          promptTokens: completion.usage.promptTokens,
+          completionTokens: completion.usage.completionTokens,
+          totalTokens: completion.usage.promptTokens + completion.usage.completionTokens,
+          provider: this.provider
+        };
+        
+        // Log token usage once with all relevant information
+        logger.debug(
+          LogCategory.LLM,
+          this.name,
+          'Token usage information',
+          { ...this.lastTokenUsage } // Convert to Record<string, unknown>
+        );
+      }
+      
+      // Call the original onFinish callback if provided
+      if (originalOnFinish) {
+        originalOnFinish(completion.object);
+      }
+    };
+    
+    // Call the Vercel AI SDK's streamObject function with our wrapped callback
+    return await aiStreamObject({
       model: this.model,
       messages: options.messages,
       // @ts-ignore - AI SDK types are not fully compatible with our usage
+      output: 'object',
+      // @ts-ignore - AI SDK types are not fully compatible with our usage
       schema: options.schema,
-      // @ts-ignore - AI SDK types are not fully compatible with our usage
-      tools: options.tools
+      onFinish: wrappedOnFinish
     });
-
-    if (options.onFinish) {
-      // @ts-ignore - AI SDK types are not fully compatible with our usage
-      result.onFinish = options.onFinish;
-    }
-
-    // @ts-ignore - AI SDK types are not fully compatible with our usage
-    return result;
   }
 } 

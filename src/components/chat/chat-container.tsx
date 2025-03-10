@@ -13,6 +13,8 @@ import { useRouter } from "next/navigation"
 import { templates, TemplateId } from '@/generated/templates'
 import type { GlobalSettings, RuntimeConfig } from '@/lib/types/settings'
 import { PersonalitySchema } from 'agentdock-core/types/agent-config'
+import { useChatSettings } from '@/hooks/use-chat-settings'
+import { useCallback, useMemo } from "react"
 
 // ============================================================================
 // TEMPORARY IMPLEMENTATION FOR V1
@@ -110,13 +112,41 @@ function ChatLoading() {
 const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, ChatContainerProps>(({ className, agentId = 'default', header }, ref) => {
   const { agents } = useAgents()
   const [isInitializing, setIsInitializing] = React.useState(true)
-  const [apiKey, setApiKey] = React.useState<string>('')
   const [runtimeConfig, setRuntimeConfig] = React.useState<RuntimeConfig | null>(null)
-  const [savedMessages, setSavedMessages] = React.useState<Message[]>([])
-  const storage = React.useMemo(() => SecureStorage.getInstance('agentdock'), []);
-  const [error, setError] = React.useState<Error | null>(null);
+  const [apiKey, setApiKey] = React.useState<string>('')
+  const [initError, setInitError] = React.useState<Error | null>(null)
+  const storage = React.useMemo(() => SecureStorage.getInstance('agentdock'), [])
 
-  // Load saved messages and config on mount
+  // Load saved messages for this agent
+  const loadSavedMessages = useCallback(() => {
+    if (typeof window !== 'undefined' && agentId) {
+      try {
+        // Try both storage keys for backward compatibility
+        const storageKey = `chat-${agentId}`;
+        const legacyStorageKey = `ai-conversation-${agentId}`;
+        
+        const savedData = localStorage.getItem(storageKey) || localStorage.getItem(legacyStorageKey);
+        
+        if (savedData) {
+          const parsedMessages = JSON.parse(savedData) as Message[];
+          return parsedMessages;
+        }
+      } catch (error) {
+        logger.error(
+          LogCategory.SYSTEM,
+          'ChatContainer',
+          'Failed to load saved messages',
+          { error: error instanceof Error ? error.message : 'Unknown error' }
+        ).catch(console.error);
+      }
+    }
+    return [];
+  }, [agentId]);
+
+  // Initialize with saved messages
+  const initialMessages = useMemo(() => loadSavedMessages(), [loadSavedMessages]);
+
+  // Load settings and config on mount
   React.useEffect(() => {
     const loadData = async () => {
       try {
@@ -154,14 +184,6 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
           maxTokens: template.nodeConfigurations?.['llm.anthropic']?.maxTokens
         });
 
-        // Load saved messages
-        const storageKey = `ai-conversation-${agentId}`;
-        const savedMessages = localStorage.getItem(storageKey);
-        if (savedMessages) {
-          const messages = JSON.parse(savedMessages) as Message[];
-          setSavedMessages(messages);
-        }
-
         setIsInitializing(false);
       } catch (error) {
         if (error instanceof APIError) {
@@ -178,7 +200,7 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
     };
 
     loadData().catch((error) => {
-      setError(error);
+      setInitError(error);
       setIsInitializing(false);
     });
   }, [agentId, storage]);
@@ -189,15 +211,15 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
     handleInputChange,
     handleSubmit,
     isLoading,
-    error: chatError,
-    reload,
     stop,
+    error: chatError,
     append,
-    setMessages
+    setMessages,
+    reload,
   } = useChat({
-    api: `/api/chat/${agentId}`,
     id: agentId,
-    initialMessages: savedMessages,
+    api: `/api/chat/${agentId}`,
+    initialMessages: initialMessages,
     streamProtocol: 'data',
     headers: {
       'x-api-key': apiKey
@@ -207,7 +229,23 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
       temperature: runtimeConfig?.temperature,
       maxTokens: runtimeConfig?.maxTokens
     },
+    maxSteps: 5,
     sendExtraMessageFields: true,
+    onToolCall: async ({ toolCall }) => {
+      // Log tool call for debugging
+      await logger.debug(
+        LogCategory.SYSTEM,
+        'ChatContainer',
+        'Tool call received',
+        { 
+          toolName: toolCall.toolName,
+          toolArgs: toolCall.args
+        }
+      );
+      
+      // Return null to let the server handle the tool call
+      return null;
+    },
     onResponse: async (response) => {
       if (!response.ok) {
         await logger.error(
@@ -221,6 +259,7 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
     },
     onFinish: async (message) => {
       try {
+        // Log the message completion
         await logger.info(
           LogCategory.API,
           'ChatContainer',
@@ -228,7 +267,8 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
           { 
             messageId: message.id,
             messageCount: messages.length + 1,
-            role: message.role
+            role: message.role,
+            hasToolInvocations: !!message.toolInvocations && message.toolInvocations.length > 0
           }
         );
       } catch (error) {
@@ -252,72 +292,79 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
     }
   });
 
-  // Enhanced reset functionality
+  // Handle chat reset
   const handleReset = React.useCallback(async () => {
     try {
-      // First stop any ongoing generation
-      if (isLoading) {
-        await stop();
-      }
-
       // Track reset progress
       let progress = 0;
       const updateProgress = (step: string) => {
         progress += 1;
-        logger.debug(
+        // Restore crucial reset progress logging
+        logger.info(
           LogCategory.API,
           'ChatContainer',
           `Reset progress: ${step}`,
-          { progress, total: 3 }
-        );
+          { progress, total: 4 }
+        ).catch(console.error);
       };
-
+      
+      if (isLoading) {
+        stop();
+        updateProgress('Stopped ongoing request');
+      }
+      
       // Clear React state
-      setSavedMessages([]);
       setMessages([]);
       updateProgress('Cleared component state');
-
-      // Clear localStorage
-      const storageKey = `ai-conversation-${agentId}`;
-      localStorage.removeItem(storageKey);
-      updateProgress('Cleared localStorage');
-
-      // Reset Vercel AI SDK state
-      reload();
-      updateProgress('Reset AI SDK state');
-
-      await logger.info(
-        LogCategory.API,
-        'ChatContainer',
-        'Chat session reset successfully',
-        { agentId }
-      );
-
-      // Show success message
+      
+      // Clear local storage
+      if (agentId) {
+        const storageKey = `chat-${agentId}`;
+        localStorage.removeItem(storageKey);
+        updateProgress('Cleared local storage');
+      }
+      
+      // Reload the chat
+      await reload();
+      updateProgress('Reloaded chat');
+      
       toast.success('Chat session reset successfully');
     } catch (error) {
-      await logger.error(
-        LogCategory.API,
-        'ChatContainer',
-        'Failed to reset chat session',
-        { error: error instanceof Error ? error.message : 'Unknown error' }
-      );
+      console.error('Failed to reset chat:', error);
       toast.error('Failed to reset chat session. Please try reloading the page.');
     }
-  }, [isLoading, stop, setMessages, setSavedMessages, agentId, reload]);
+  }, [isLoading, stop, setMessages, agentId, reload]);
 
   // Expose handleReset through ref
   React.useImperativeHandle(ref, () => ({
     handleReset
   }), [handleReset]);
 
-  // Effect to save messages whenever they change
+  // Save messages to local storage whenever they change
   React.useEffect(() => {
-    if (messages.length > 0) {
-      const storageKey = `ai-conversation-${agentId}`;
-      localStorage.setItem(storageKey, JSON.stringify(messages));
+    if (agentId && messages.length > 0) {
+      try {
+        localStorage.setItem(`chat-${agentId}`, JSON.stringify(messages));
+        
+        // Only log once per session when messages are first saved
+        if (messages.length === 1) {
+          logger.info(
+            LogCategory.SYSTEM,
+            'ChatContainer',
+            'Started saving messages to local storage',
+            { agentId }
+          ).catch(console.error);
+        }
+      } catch (error) {
+        logger.error(
+          LogCategory.SYSTEM,
+          'ChatContainer',
+          'Failed to save messages to local storage',
+          { error: error instanceof Error ? error.message : 'Unknown error' }
+        ).catch(console.error);
+      }
     }
-  }, [messages, agentId]);
+  }, [agentId, messages]);
 
   // Handle user message submission
   const handleUserSubmit = async (event?: { preventDefault?: () => void }, options?: { experimental_attachments?: FileList }) => {

@@ -1,10 +1,18 @@
 /**
  * @fileoverview Core exports for the AgentDock framework
+ * This is the main entry point for the AgentDock Core library.
  */
 
+//=============================================================================
 // Core types
+//=============================================================================
+
+/**
+ * Basic type definitions used throughout the framework
+ */
 export * from './types/agent-config';  // Agent configuration
 export * from './types/messages';      // Message types
+export * from './types/node-category';
 export type {
   ToolState,
   BaseToolInvocation,
@@ -17,41 +25,59 @@ export type {
   ToolRegistrationOptions
 } from './types/tools';
 
+//=============================================================================
 // Node system
-export { BaseNode } from './nodes/base-node';
-export type { NodeMetadata, NodePort } from './nodes/base-node';
+//=============================================================================
 
-// Core nodes
-export { registerCoreNodes } from './nodes/register-core-nodes'; // Core node registration
-export { AgentNode } from './nodes/agent-node';
-export type { AgentNodeConfig, AgentNodeOptions } from './nodes/agent-node';
+/**
+ * Complete node system including BaseNode, AgentNode, and tool registry
+ * Import these to work with the node-based architecture
+ */
+export * from './nodes';
 
-// Tool registry
-export { 
-  getToolRegistry, 
-  setToolRegistry, 
-  DefaultToolRegistry 
-} from './nodes/tool-registry';
-export type { ToolRegistry } from './nodes/tool-registry';
+//=============================================================================
+// Error handling
+//=============================================================================
 
-// Core functionality
-export * from './nodes';              // Node implementations
-export * from './errors';             // Error handling
-export * from './logging';            // Logging system
-export * from './llm';                // LLM implementations
+/**
+ * Error handling utilities and error types
+ * Use these to create and handle standardized errors
+ */
+export * from './errors';
 
-// Configuration and utilities
-export { loadAgentConfig } from './config/agent-config';  // Configuration utilities
+//=============================================================================
+// Configuration
+//=============================================================================
 
+/**
+ * Configuration utilities for loading and managing agent configurations
+ */
+export { loadAgentConfig } from './config/agent-config';
+
+//=============================================================================
 // Storage
-export { SecureStorage } from './storage/secure-storage';  // Secure storage for settings
+//=============================================================================
 
-// Logging system
-export {
-  logger,
-  LogLevel,
-  LogCategory,
-  type LogEntry,
-  type CommonOperation,
-  type BaseMetadata
-} from './logging';
+/**
+ * Storage system for persisting data
+ */
+export * from './storage';
+
+//=============================================================================
+// Logging
+//=============================================================================
+
+/**
+ * Logging system for consistent logging across the framework
+ */
+export * from './logging';
+
+//=============================================================================
+// LLM system
+//=============================================================================
+
+/**
+ * Language model implementations and utilities
+ * Includes LLMBase, AnthropicLLM, and related types
+ */
+export * from './llm';

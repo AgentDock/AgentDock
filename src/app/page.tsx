@@ -15,7 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Bot, Search, Brain, Globe, Send } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
-import type { LLMConfig } from "agentdock-core/types/llm";
+import type { LLMConfig } from "agentdock-core/llm/types";
 
 type Mode = "research" | "reason";
 

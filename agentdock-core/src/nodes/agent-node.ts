@@ -4,12 +4,16 @@
  */
 
 import { BaseNode } from './base-node';
-import { AnthropicLLM } from '../llm/anthropic-llm';
+import { LLMBase } from '../llm/llm-base';
+import { createLLM } from '../llm';
+import { LLMConfig, LLMProvider, TokenUsage } from '../llm/types';
 import { createError, ErrorCode } from '../errors';
 import { logger, LogCategory } from '../logging';
 import { NodeCategory } from '../types/node-category';
 import { getToolRegistry } from './tool-registry';
 import { CoreMessage } from 'ai';
+import { convertCoreToLLMMessages } from '../utils/message-utils';
+import { NodeMetadata, NodePort } from './base-node';
 
 /**
  * Configuration for the agent node
@@ -19,6 +23,10 @@ export interface AgentNodeConfig {
   agentConfig: any;
   /** API key for LLM provider */
   apiKey: string;
+  /** Fallback API key for LLM provider (optional) */
+  fallbackApiKey?: string;
+  /** LLM provider (default: 'anthropic') */
+  provider?: LLMProvider;
 }
 
 /**
@@ -29,6 +37,10 @@ export interface AgentNodeOptions {
   messages: CoreMessage[];
   /** Optional system message to override the one in agent configuration */
   system?: string;
+  /** Force use of fallback API key */
+  useFallback?: boolean;
+  /** Callback function to be called on each step of the LLM */
+  onStepFinish?: (stepData: any) => void;
 }
 
 /**
@@ -36,12 +48,10 @@ export interface AgentNodeOptions {
  */
 export class AgentNode extends BaseNode<AgentNodeConfig> {
   readonly type = 'core.agent';
-  private llm: AnthropicLLM;
+  private llm: LLMBase;
+  private fallbackLlm: LLMBase | null = null;
 
-  /**
-   * Get static node metadata
-   */
-  static getNodeMetadata() {
+  static getNodeMetadata(): NodeMetadata {
     return {
       category: NodeCategory.CORE,
       label: 'Agent',
@@ -66,89 +76,92 @@ export class AgentNode extends BaseNode<AgentNodeConfig> {
     };
   }
 
-  /**
-   * Constructor
-   */
-  constructor(id: string, config: AgentNodeConfig) {
-    super(id, config);
-    
-    // Create LLM instance
-    this.llm = new AnthropicLLM({
-      apiKey: config.apiKey,
-      model: config.agentConfig.llm?.model || 'claude-3-sonnet-20240229',
-      temperature: config.agentConfig.llm?.temperature,
-      maxTokens: config.agentConfig.llm?.maxTokens,
-      maxSteps: config.agentConfig.options?.maxSteps || 5
-    });
-    
-    logger.debug(
-      LogCategory.NODE,
-      'AgentNode',
-      'Created agent node',
-      { nodeId: this.id }
-    );
+  protected getMetadata(): NodeMetadata {
+    return AgentNode.getNodeMetadata();
   }
 
-  /**
-   * Get node category
-   */
-  protected getCategory() {
+  protected getCategory(): NodeCategory {
     return NodeCategory.CORE;
   }
 
-  /**
-   * Get node label
-   */
-  protected getLabel() {
+  protected getLabel(): string {
     return 'Agent';
   }
 
-  /**
-   * Get node description
-   */
-  protected getDescription() {
+  protected getDescription(): string {
     return 'Handles agent functionality with tool calling support';
   }
 
-  /**
-   * Get node version
-   */
-  protected getVersion() {
+  protected getVersion(): string {
     return '1.0.0';
   }
 
-  /**
-   * Get node compatibility
-   */
-  protected getCompatibility() {
+  protected getCompatibility(): NodeMetadata['compatibility'] {
+    return { core: true, pro: true, custom: true };
+  }
+
+  protected getInputs(): readonly NodePort[] {
+    return AgentNode.getNodeMetadata().inputs;
+  }
+
+  protected getOutputs(): readonly NodePort[] {
+    return AgentNode.getNodeMetadata().outputs;
+  }
+
+  constructor(id: string, config: AgentNodeConfig) {
+    super(id, config);
+    
+    if (!config.apiKey) {
+      throw createError('node', 'Missing API key', ErrorCode.NODE_VALIDATION);
+    }
+    
+    logger.debug(LogCategory.NODE, 'AgentNode', 'Creating agent node', { 
+      nodeId: this.id,
+      apiKeyPrefix: config.apiKey.substring(0, 8) + '...',
+      hasFallback: !!config.fallbackApiKey
+    });
+    
+    try {
+      const llmConfig = this.getLLMConfig(config);
+      this.llm = createLLM(llmConfig);
+      
+      if (config.fallbackApiKey) {
+        this.fallbackLlm = createLLM({...llmConfig, apiKey: config.fallbackApiKey});
+      }
+      
+      logger.debug(LogCategory.NODE, 'AgentNode', 'LLM instances created', { 
+        nodeId: this.id, 
+        model: llmConfig.model,
+        hasFallback: !!this.fallbackLlm
+      });
+    } catch (error) {
+      throw createError(
+        'node', 
+        `Failed to create LLM: ${error instanceof Error ? error.message : 'Unknown error'}`, 
+        ErrorCode.NODE_EXECUTION, 
+        { error }
+      );
+    }
+  }
+
+  private getLLMConfig(config: AgentNodeConfig): LLMConfig {
     return {
-      core: true,
-      pro: true,
-      custom: true
+      provider: config.provider || 'anthropic',
+      apiKey: config.apiKey,
+      model: config.agentConfig?.nodeConfigurations?.['llm.anthropic']?.model || 'claude-3-7-sonnet-20250219',
+      temperature: config.agentConfig?.nodeConfigurations?.['llm.anthropic']?.temperature,
+      maxTokens: config.agentConfig?.nodeConfigurations?.['llm.anthropic']?.maxTokens,
+      topP: config.agentConfig?.nodeConfigurations?.['llm.anthropic']?.topP,
+      maxSteps: config.agentConfig?.nodeConfigurations?.['llm.anthropic']?.maxSteps
     };
   }
 
-  /**
-   * Get node inputs
-   */
-  protected getInputs() {
-    return [{
-      id: 'message',
-      type: 'string',
-      label: 'Input Message',
-      required: true
-    }];
+  private getLLM(useFallback?: boolean): LLMBase {
+    return (useFallback && this.fallbackLlm) ? this.fallbackLlm : this.llm;
   }
 
-  /**
-   * Get node outputs
-   */
-  protected getOutputs() {
-    return [{
-      id: 'response',
-      type: 'string',
-      label: 'Agent Response'
-    }];
+  getLastTokenUsage(): TokenUsage | null {
+    return this.llm.getLastTokenUsage();
   }
 
   /**
@@ -156,49 +169,99 @@ export class AgentNode extends BaseNode<AgentNodeConfig> {
    */
   async handleMessage(options: AgentNodeOptions): Promise<any> {
     try {
-      logger.debug(
-        LogCategory.NODE,
-        'AgentNode',
-        'Handling message',
-        { 
-          nodeId: this.id,
-          messageCount: options.messages.length
-        }
-      );
-      
-      // Get tools for this agent
       const tools = this.getTools();
       
-      // Prepare system message
+      // Prepare system message and messages array
       const systemPrompt = options.system || this.config.agentConfig.personality;
       const finalSystemPrompt = typeof systemPrompt === 'string' 
         ? systemPrompt 
-        : Array.isArray(systemPrompt) 
-          ? systemPrompt.join('\n') 
-          : String(systemPrompt || '');
+        : Array.isArray(systemPrompt) ? systemPrompt.join('\n') : String(systemPrompt || '');
       
-      // Prepare messages
       const messagesWithSystem: CoreMessage[] = [
         { role: 'system', content: finalSystemPrompt },
         ...options.messages
       ];
       
-      // Call LLM
-      return await this.llm.streamText({
-        messages: messagesWithSystem,
-        tools: tools
+      logger.debug(LogCategory.NODE, 'AgentNode', 'Processing message', { 
+        nodeId: this.id,
+        messageCount: messagesWithSystem.length,
+        systemPromptLength: finalSystemPrompt.length,
+        toolCount: Object.keys(tools).length,
+        useFallback: options.useFallback || false
       });
-    } catch (error) {
-      logger.error(
-        LogCategory.NODE,
-        'AgentNode',
-        'Failed to handle message',
-        { error: error instanceof Error ? error.message : 'Unknown error' }
-      );
       
+      // Determine which LLM to use and call it
+      const useFallback = options.useFallback || false;
+      const activeLlm = this.getLLM(useFallback);
+      
+      try {
+        // Create a wrapper for the onStepFinish callback
+        const onStepFinish = options.onStepFinish ? (stepData: any) => {
+          logger.debug(LogCategory.NODE, 'AgentNode', 'Step completed', { 
+            nodeId: this.id,
+            hasText: !!stepData.text,
+            hasToolCalls: !!stepData.toolCalls && stepData.toolCalls.length > 0,
+            hasToolResults: !!stepData.toolResults && Object.keys(stepData.toolResults).length > 0
+          });
+          
+          options.onStepFinish?.(stepData);
+        } : undefined;
+        
+        // Call the LLM
+        const result = await activeLlm.streamText({
+          messages: convertCoreToLLMMessages(messagesWithSystem),
+          tools,
+          maxSteps: this.config.agentConfig.options?.maxSteps || 5,
+          onStepFinish
+        });
+        
+        // Log token usage if available
+        const tokenUsage = activeLlm.getLastTokenUsage();
+        if (tokenUsage) {
+          logger.info(LogCategory.NODE, 'AgentNode', 'Token usage', {
+            nodeId: this.id,
+            ...tokenUsage,
+            usedFallback: useFallback && !!this.fallbackLlm
+          });
+        }
+        
+        return result;
+      } catch (error) {
+        // Try fallback if available and not already using it
+        if (!useFallback && this.fallbackLlm) {
+          logger.info(LogCategory.NODE, 'AgentNode', 'Using fallback LLM', { 
+            nodeId: this.id, 
+            error: error instanceof Error ? error.message : 'Unknown error' 
+          });
+          
+          try {
+            return await this.fallbackLlm.streamText({
+              messages: convertCoreToLLMMessages(messagesWithSystem),
+              tools,
+              maxSteps: this.config.agentConfig.options?.maxSteps || 5,
+              onStepFinish: options.onStepFinish
+            });
+          } catch (fallbackError) {
+            throw createError(
+              'node',
+              `Both LLMs failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+              ErrorCode.NODE_EXECUTION,
+              { primaryError: error, fallbackError }
+            );
+          }
+        }
+        
+        throw createError(
+          'node',
+          `LLM error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          ErrorCode.NODE_EXECUTION,
+          { error }
+        );
+      }
+    } catch (error) {
       throw createError(
         'node',
-        'Failed to handle message',
+        `Message handling failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
         ErrorCode.NODE_EXECUTION,
         { error }
       );
@@ -209,47 +272,47 @@ export class AgentNode extends BaseNode<AgentNodeConfig> {
    * Get tools for this agent
    */
   private getTools(): Record<string, any> {
-    // Get the tool registry
-    const registry = getToolRegistry();
-    
-    // Get tools for this agent
-    return registry.getToolsForAgent(this.config.agentConfig.nodes || []);
+    try {
+      return getToolRegistry().getToolsForAgent(this.config.agentConfig.nodes || []);
+    } catch (error) {
+      logger.error(LogCategory.NODE, 'AgentNode', 'Failed to get tools', { 
+        nodeId: this.id,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      return {};
+    }
   }
 
   /**
    * Execute the agent node
-   * This is required by the BaseNode interface but delegates to handleMessage
    */
   async execute(input: string | { message: string }): Promise<string> {
     try {
-      // Extract message from input
+      // Create message object and handle it
       const message = typeof input === 'string' ? input : input.message;
-      
-      // Create message object
-      const messageObj: CoreMessage = {
-        role: 'user',
-        content: message
-      };
-      
-      // Handle message
-      const result = await this.handleMessage({
-        messages: [messageObj]
+      const result = await this.handleMessage({ 
+        messages: [{ role: 'user', content: message } as CoreMessage] 
       });
       
-      // For now, just return a placeholder response
-      // In a real implementation, we would process the result
-      return `Response to: ${message}`;
-    } catch (error) {
-      logger.error(
-        LogCategory.NODE,
-        'AgentNode',
-        'Failed to execute agent node',
-        { error: error instanceof Error ? error.message : 'Unknown error' }
-      );
+      // Extract text from the result
+      if (result?.textStream) {
+        try {
+          let responseText = '';
+          for await (const chunk of result.textStream) {
+            responseText += chunk;
+          }
+          return responseText;
+        } catch {
+          // Fall back to other text extraction methods
+        }
+      }
       
+      // Try other ways to get the text
+      return result?.text || (typeof result === 'string' ? result : 'No response generated');
+    } catch (error) {
       throw createError(
         'node',
-        'Failed to execute agent node',
+        `Execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
         ErrorCode.NODE_EXECUTION,
         { error }
       );

@@ -3,7 +3,7 @@
  * This is the single entry point for all system initialization
  */
 
-import { logger, LogCategory } from 'agentdock-core';
+import { logger, LogCategory, LogLevel } from 'agentdock-core';
 import { initToolRegistry } from '@/nodes/init';
 
 // Global initialization flag (will persist across hot reloads)
@@ -26,6 +26,9 @@ export function initSystem(): void {
     logger.debug(LogCategory.SYSTEM, 'System', 'System already initialized, skipping');
     return;
   }
+
+  // Set log level to INFO to reduce excessive debug logging
+  logger.setLogLevel(LogLevel.INFO);
 
   logger.info(LogCategory.SYSTEM, 'System', 'Initializing AgentDock system');
   

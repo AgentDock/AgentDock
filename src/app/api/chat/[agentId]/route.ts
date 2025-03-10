@@ -131,7 +131,29 @@ export async function POST(
     // Handle the message
     const result = await agent.handleMessage({
       messages,
-      system
+      system,
+      onStepFinish: (stepData) => {
+        console.log('Step finished:', {
+          hasText: !!stepData.text,
+          hasToolCalls: !!stepData.toolCalls && stepData.toolCalls.length > 0,
+          hasToolResults: !!stepData.toolResults && Object.keys(stepData.toolResults).length > 0,
+          finishReason: stepData.finishReason
+        });
+        
+        // If this is a step with tool calls, we want to create a separate message for it
+        if (stepData.toolCalls && stepData.toolCalls.length > 0) {
+          // The tool calls will be included in the response automatically
+          console.log('Step has tool calls:', stepData.toolCalls.length);
+        }
+        
+        // If this is a step with text, we want to create a separate message for it
+        if (stepData.text && stepData.text.trim()) {
+          console.log('Step has text:', stepData.text.substring(0, 50) + '...');
+          
+          // We can't directly modify the response here, but we can log the text
+          // The client will handle creating separate messages
+        }
+      }
     });
     
     // Get the response

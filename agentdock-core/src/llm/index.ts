@@ -15,11 +15,13 @@ import {
   StreamTextResult,
   StreamObjectResult
 } from 'ai';
-import { AnthropicLLM, AnthropicConfig } from './anthropic-llm';
+import { AnthropicLLM } from './anthropic-llm';
 import { LLMBase } from './llm-base';
 import { logger, LogCategory } from '../logging';
 import { createError, ErrorCode } from '../errors';
-import { LLMConfig, LLMProvider, TokenUsage } from './types';
+
+// Export all types from types.ts
+export * from './types';
 
 // Export the LLM base class and interfaces
 export * from './llm-base';
@@ -27,13 +29,10 @@ export * from './llm-base';
 // Export the Anthropic LLM implementation
 export * from './anthropic-llm';
 
-// Export types
-export * from './types';
-
 /**
  * Create an LLM instance based on the provider
  */
-export function createLLM(config: LLMConfig): LLMBase {
+export function createLLM(config: any): LLMBase {
   // Log creation once with comprehensive information
   logger.debug(
     LogCategory.LLM,

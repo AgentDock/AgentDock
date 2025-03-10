@@ -2,7 +2,7 @@
  * @fileoverview Type exports
  */
 
-export * from './llm';
+export * from '../llm/types';
 export * from './storage';
 export * from './messages';
 export * from './node-category';

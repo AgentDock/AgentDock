@@ -13,20 +13,7 @@ import { logger, LogCategory } from '../logging';
 import { ZodType, ZodTypeDef } from 'zod';
 import { createError, ErrorCode } from '../errors';
 import { LLMBase, LLMTextOptions, LLMStreamOptions, LLMObjectOptions } from './llm-base';
-import { TokenUsage } from './types';
-
-/**
- * Anthropic-specific configuration
- */
-export interface AnthropicConfig {
-  apiKey: string;
-  model: string;
-  temperature?: number;
-  maxTokens?: number;
-  topP?: number;
-  maxSteps?: number;
-  [key: string]: any;
-}
+import { TokenUsage, AnthropicConfig } from './types';
 
 /**
  * Anthropic LLM implementation

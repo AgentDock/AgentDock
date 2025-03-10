@@ -17,7 +17,13 @@ import {
 } from 'ai';
 import { logger, LogCategory } from '../logging';
 import { ZodType, ZodTypeDef } from 'zod';
-import { TokenUsage } from './types';
+import { 
+  LLMConfig, 
+  LLMMessage, 
+  ProviderConfig,
+  StepData,
+  TokenUsage
+} from './types';
 
 /**
  * Options for text generation
@@ -32,11 +38,12 @@ export interface LLMTextOptions {
  * Options for streaming text
  */
 export interface LLMStreamOptions {
-  messages: CoreMessage[];
+  messages: LLMMessage[];
   tools?: Record<string, any>;
   maxSteps?: number;
   onToken?: (token: string) => void;
   onFinish?: (result: string) => void;
+  onStepFinish?: (stepData: StepData) => void;
 }
 
 /**
@@ -196,14 +203,51 @@ export class LLMBase {
       }
     };
     
-    // Call the Vercel AI SDK's streamText function with our wrapped callback
-    return await aiStreamText({
+    // Create a wrapper for the onStepFinish callback if provided
+    const originalOnStepFinish = options.onStepFinish;
+    const wrappedOnStepFinish = originalOnStepFinish ? (stepData: any) => {
+      // Log step completion
+      logger.debug(
+        LogCategory.LLM,
+        this.name,
+        'Step completed',
+        { 
+          hasToolCalls: stepData.toolCalls && stepData.toolCalls.length > 0,
+          hasToolResults: stepData.toolResults && Object.keys(stepData.toolResults).length > 0,
+          finishReason: stepData.finishReason
+        }
+      );
+      
+      // Call the original onStepFinish callback if it exists
+      if (originalOnStepFinish) {
+        originalOnStepFinish(stepData);
+      }
+    } : undefined;
+    
+    // Call the Vercel AI SDK's streamText function with our wrapped callbacks
+    const streamOptions = {
       model: this.model,
       messages: options.messages,
       tools: options.tools,
       maxSteps: options.maxSteps,
-      onFinish: wrappedOnFinish
-    });
+      onFinish: wrappedOnFinish,
+      onStepFinish: wrappedOnStepFinish
+    };
+    
+    // Log the stream options
+    logger.debug(
+      LogCategory.LLM,
+      this.name,
+      'Streaming with options',
+      { 
+        model: this.modelId,
+        hasTools: !!options.tools,
+        maxSteps: options.maxSteps,
+        hasOnStepFinish: !!wrappedOnStepFinish
+      }
+    );
+    
+    return await aiStreamText(streamOptions);
   }
 
   /**

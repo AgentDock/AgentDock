@@ -17,7 +17,7 @@ import { useChatSettings } from '@/hooks/use-chat-settings'
 function ChatPageContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const rawAgentId = searchParams.get('agent')?.split('?')[0] // Clean agentId
+  const rawAgentId = searchParams?.get('agent')?.split('?')[0] // Clean agentId
   const agentId = rawAgentId || null // Keep as null for type compatibility
   const chatContainerRef = useRef<{ handleReset: () => Promise<void> }>(null)
   

@@ -9,10 +9,12 @@ import {
   logger, 
   LogCategory, 
   loadAgentConfig,
-  AgentNode
+  AgentNode,
+  LLMProvider
 } from 'agentdock-core';
 import { maskSensitiveData } from 'agentdock-core/utils/security-utils';
 import { templates, TemplateId } from '@/generated/templates';
+import { getLLMInfo } from '@/lib/utils';
 
 // Import the agent adapter to ensure the tool registry is set
 import '@/lib/agent-adapter';
@@ -21,11 +23,16 @@ import '@/lib/agent-adapter';
 import '@/nodes/init';
 
 // Log runtime configuration
-console.log('Route Handler Initialized:', {
-  runtime: 'edge',
-  path: '/api/chat/[agentId]',
-  timestamp: new Date().toISOString()
-});
+logger.debug(
+  LogCategory.API,
+  'ChatRoute',
+  'Route handler initialized',
+  {
+    runtime: 'edge',
+    path: '/api/chat/[agentId]',
+    timestamp: new Date().toISOString()
+  }
+);
 
 export const runtime = 'edge';
 
@@ -42,7 +49,7 @@ export async function POST(
   try {
     // Get agentId from params
     const { agentId } = await params;
-    console.log(`Processing request for agent: ${agentId}`);
+    logger.debug(LogCategory.API, 'ChatRoute', 'Processing chat request', { agentId });
     
     // Validate template
     const template = templates[agentId as TemplateId];
@@ -67,36 +74,23 @@ export async function POST(
       );
     }
     
-    // Get provider from template
-    const isOpenAI = template.nodes?.includes('llm.openai');
+    // Get LLM info from template
+    const llmInfo = getLLMInfo(template);
     
     // add debug log here
-    logger.debug(LogCategory.API, 'ChatRoute', 'Processing chat request x ', {
+    logger.debug(LogCategory.API, 'ChatRoute', 'Processing chat request', {
       agentId,
-      isOpenAI
+      provider: llmInfo.provider
     });
 
-    // Validate API key format based on provider
-    if (isOpenAI) {
-      // OpenAI API keys must start with 'sk-' and can have various formats
-      if (!apiKey.startsWith('sk-')) {
-        throw new APIError(
-          'Invalid API key format. OpenAI API keys must start with "sk-"',
-          ErrorCode.LLM_API_KEY,
-          request.url,
-          'POST'
-        );
-      }
-    } else {
-      // Anthropic API keys must start with 'sk-ant-'
-      if (!apiKey.startsWith('sk-ant-')) {
-        throw new APIError(
-          'Invalid API key format. Anthropic API keys must start with "sk-ant-"',
-          ErrorCode.LLM_API_KEY,
-          request.url,
-          'POST'
-        );
-      }
+    // Validate API key format
+    if (!llmInfo.validateApiKey(apiKey)) {
+      throw new APIError(
+        `Invalid API key format for ${llmInfo.displayName}`,
+        ErrorCode.LLM_API_KEY,
+        request.url,
+        'POST'
+      );
     }
     
     // Get fallback API key from request headers or use default
@@ -104,17 +98,16 @@ export async function POST(
     
     // Log API key prefix for debugging (safely)
     const apiKeyPrefix = maskSensitiveData(apiKey, 8);
-    console.log(`Using API key: ${apiKeyPrefix}... (length: ${apiKey.length})`);
+    logger.debug(LogCategory.API, 'ChatRoute', 'API key prefix', { apiKeyPrefix, apiKeyLength: apiKey.length });
     
     if (fallbackApiKey) {
       const fallbackApiKeyPrefix = maskSensitiveData(fallbackApiKey, 8);
-      console.log(`Fallback API key available: ${fallbackApiKeyPrefix}... (length: ${fallbackApiKey.length})`);
+      logger.debug(LogCategory.API, 'ChatRoute', 'Fallback API key prefix', { fallbackApiKeyPrefix, fallbackApiKeyLength: fallbackApiKey.length });
     }
 
     // Load and validate config
     const config = await loadAgentConfig(template, apiKey);
-    const llmNode = isOpenAI ? 'llm.openai' : 'llm.anthropic';
-    const llmConfig = config.nodeConfigurations?.[llmNode];
+    const llmConfig = config.nodeConfigurations?.[llmInfo.provider];
     if (!llmConfig) {
       throw new APIError(
         'LLM configuration not found',
@@ -127,7 +120,7 @@ export async function POST(
 
     // Parse request body
     const { messages, system } = await request.json();
-    console.log(`Received ${messages.length} messages`);
+    logger.debug(LogCategory.API, 'ChatRoute', 'Received messages', { messageCount: messages.length });
     
     // Log request details
     await logger.debug(
@@ -140,17 +133,18 @@ export async function POST(
         model: llmConfig.model,
         apiKeyPrefix,
         apiKeyLength: apiKey.length,
-        hasFallback: !!fallbackApiKey
+        hasFallback: !!fallbackApiKey,
+        provider: llmInfo.provider
       }
     );
 
     // Create the AgentNode instance
-    console.log('Creating AgentNode instance...');
+    logger.debug(LogCategory.API, 'ChatRoute', 'Creating AgentNode instance', { agentId });
     const agent = new AgentNode(`agent-${agentId}`, {
       agentConfig: template,
       apiKey,
       fallbackApiKey,
-      provider: isOpenAI ? 'openai' : 'anthropic'
+      provider: llmInfo.provider.replace('llm.', '') as LLMProvider // Remove 'llm.' prefix
     });
     
     // Handle the message
@@ -158,7 +152,7 @@ export async function POST(
       messages,
       system,
       onStepFinish: (stepData) => {
-        console.log('Step finished:', {
+        logger.debug(LogCategory.API, 'ChatRoute', 'Step finished', {
           hasText: !!stepData.text,
           hasToolCalls: !!stepData.toolCalls && stepData.toolCalls.length > 0,
           hasToolResults: !!stepData.toolResults && Object.keys(stepData.toolResults).length > 0,
@@ -168,12 +162,12 @@ export async function POST(
         // If this is a step with tool calls, we want to create a separate message for it
         if (stepData.toolCalls && stepData.toolCalls.length > 0) {
           // The tool calls will be included in the response automatically
-          console.log('Step has tool calls:', stepData.toolCalls.length);
+          logger.debug(LogCategory.API, 'ChatRoute', 'Step has tool calls', { toolCallCount: stepData.toolCalls.length });
         }
         
         // If this is a step with text, we want to create a separate message for it
         if (stepData.text && stepData.text.trim()) {
-          console.log('Step has text:', maskSensitiveData(stepData.text, 50));
+          logger.debug(LogCategory.API, 'ChatRoute', 'Step has text', { text: maskSensitiveData(stepData.text, 50) });
           
           // We can't directly modify the response here, but we can log the text
           // The client will handle creating separate messages
@@ -245,8 +239,9 @@ export async function POST(
               if (data.error.type) errorDetails.errorType = data.error.type;
               if (data.error.message) errorDetails.errorMessage = data.error.message;
             }
-          } catch (e) {
-            errorDetails.responseDataError = 'Could not process response data';
+          } catch (parseError) {
+              logger.debug(LogCategory.API, 'ChatRoute', 'Failed to parse error response', { error: parseError });
+              errorDetails.responseDataError = 'Could not process response data';
           }
         }
       }
@@ -268,7 +263,8 @@ export async function POST(
           if (details.details) {
             errorDetails.additionalDetails = details.details;
           }
-        } catch (e) {
+        } catch (parseError) {
+          logger.debug(LogCategory.API, 'ChatRoute', 'Failed to parse error details', { error: parseError });
           errorDetails.detailsError = 'Could not process error details';
         }
       }

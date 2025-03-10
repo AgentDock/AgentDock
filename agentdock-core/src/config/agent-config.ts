@@ -21,6 +21,13 @@ function ensureString(value: unknown): string {
 }
 
 /**
+ * Get LLM provider from template nodes
+ */
+function getLLMProvider(template: any) {
+  return template.nodes?.includes('llm.openai') ? 'llm.openai' : 'llm.anthropic';
+}
+
+/**
  * Load and validate an agent configuration
  */
 export async function loadAgentConfig(
@@ -61,8 +68,8 @@ export async function loadAgentConfig(
       },
       nodeConfigurations: {
         ...template.nodeConfigurations,
-        'llm.anthropic': {
-          ...template.nodeConfigurations?.['llm.anthropic'],
+        [getLLMProvider(template)]: {
+          ...template.nodeConfigurations?.[getLLMProvider(template)],
           apiKey
         }
       },

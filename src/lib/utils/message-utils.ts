@@ -6,8 +6,6 @@ import {
   SystemMessage,
   ToolMessage,
   MessageContent,
-  TextContent,
-  ToolCallContent,
   ToolResultContent,
   isMultipartContent
 } from 'agentdock-core';
@@ -57,28 +55,31 @@ export function toCoreMessage(message: AIMessage): AgentMessage {
   const base = createBaseMessage(message.id, message.createdAt);
 
   switch (message.role) {
-    case 'system':
+    case 'system': {
       return {
         ...base,
         role: 'system',
         content: message.content
       } as SystemMessage;
+    }
 
-    case 'user':
+    case 'user': {
       return {
         ...base,
         role: 'user',
         content: message.content
       } as UserMessage;
+    }
 
-    case 'assistant':
+    case 'assistant': {
       return {
         ...base,
         role: 'assistant',
         content: message.content
       } as AssistantMessage;
+    }
 
-    case 'data':
+    case 'data': {
       const toolResult: ToolResultContent = {
         type: 'tool_result',
         toolCallId: uuidv4(),
@@ -92,13 +93,15 @@ export function toCoreMessage(message: AIMessage): AgentMessage {
         toolCallId: toolResult.toolCallId,
         toolName: 'data'
       } as ToolMessage;
+    }
 
-    default:
+    default: {
       return {
         ...base,
         role: 'assistant',
         content: message.content
       } as AssistantMessage;
+    }
   }
 }
 

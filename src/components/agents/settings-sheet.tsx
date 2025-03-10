@@ -16,19 +16,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { SecureStorage, logger, LogCategory } from 'agentdock-core';
 import { ErrorBoundary } from "@/components/error-boundary";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { templates, TemplateId } from '@/generated/templates';
-import type { AgentSettings, GlobalSettings } from '@/lib/types/settings';
+import type { AgentSettings } from '@/lib/types/settings';
 
 interface SettingsSheetProps {
   open: boolean;
@@ -36,8 +28,6 @@ interface SettingsSheetProps {
   agentId: string;
   children: React.ReactNode;
 }
-
-const storage = SecureStorage.getInstance('agentdock');
 
 // Memoize the sheet contents component to prevent unnecessary re-renders
 const SheetContents = memo(({ 
@@ -288,7 +278,7 @@ function BaseSettingsSheet({
             Agent Runtime Settings - {agent?.name}
           </SheetTitle>
           <SheetDescription>
-            Configure this agent's runtime settings and parameters.
+            Configure this agent&apos;s runtime settings and parameters.
           </SheetDescription>
         </SheetHeader>
           

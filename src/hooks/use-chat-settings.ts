@@ -58,7 +58,8 @@ export function useChatSettings(agentId: string | null) {
         }
 
         // Determine provider from template nodes
-        const provider = getProviderFromNodes(template.nodes || []);
+        // const provider = getProviderFromNodes(template.nodes || []);// Determine provider from template nodes
+        const provider = getProviderFromNodes((template.nodes || []).slice());
 
         // Load global settings for API key
         const globalSettings = await storage.get<GlobalSettings>('global_settings');

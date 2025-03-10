@@ -28,18 +28,11 @@ function ChatPageContent() {
     error, 
     debugMode 
   } = useChatSettings(agentId);
-
+  
   const {
     messages,
-    setMessages,
-    input,
-    handleInputChange,
-    handleSubmit,
     isLoading: chatIsLoading,
     error: chatError,
-    reload,
-    stop,
-    append
   } = useChat({
     api: `/api/chat/${agentId || ''}`, // Empty string fallback for type safety
     id: agentId || '', // Empty string fallback for type safety
@@ -66,12 +59,17 @@ function ChatPageContent() {
         toast.error('Failed to send message');
       }
     },
-    onFinish: (message) => {
+    onFinish: (_message) => {
       try {
         const storageKey = `ai-conversation-${agentId}`;
         localStorage.setItem(storageKey, JSON.stringify(messages));
       } catch (error) {
-        logger.error(LogCategory.API, 'ChatPage', 'Failed to save messages');
+        logger.error(
+          LogCategory.API, 
+          'ChatPage', 
+          'Failed to save messages', 
+          { error: error instanceof Error ? error.message : 'Unknown error' }
+        );
       }
     },
     onError: (error) => {
@@ -92,6 +90,12 @@ function ChatPageContent() {
       }
     } catch (error) {
       toast.error('Failed to reset chat');
+      logger.error(
+        LogCategory.API, 
+        'ChatPage', 
+        'Failed to reset chat', 
+        { error: error instanceof Error ? error.message : 'Unknown error' }
+      );
     }
   };
 

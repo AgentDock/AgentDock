@@ -89,14 +89,21 @@ export class OpenAI extends LLMBase {
     return super.generateText({
       messages,
       tools,
-      onFinish: (_result) => {
+      onFinish: (result) => {
+        // Log successful generation with token usage if available
+        const tokenUsage = this.getLastTokenUsage();
         logger.debug(
           LogCategory.LLM, 
           'OpenAI', 
           'Successfully generated text from OpenAI', 
           {
             model: this.config.model,
-            apiKeyPrefix: maskSensitiveData(this.config.apiKey, 8)
+            apiKeyPrefix: maskSensitiveData(this.config.apiKey, 8),
+            tokenUsage: tokenUsage ? {
+              promptTokens: tokenUsage.promptTokens,
+              completionTokens: tokenUsage.completionTokens,
+              totalTokens: tokenUsage.totalTokens
+            } : undefined
           }
         );
       }
@@ -111,14 +118,20 @@ export class OpenAI extends LLMBase {
       // Call the parent streamText method which handles token usage tracking
       const result = await super.streamText(options);
       
-      // Log successful streaming without duplicating token usage information
+      // Log successful streaming with token usage if available
+      const tokenUsage = this.getLastTokenUsage();
       logger.debug(
         LogCategory.LLM,
         'OpenAI',
         'Successfully streamed text from OpenAI',
         { 
           model: this.config.model,
-          apiKeyPrefix: maskSensitiveData(this.config.apiKey, 8)
+          apiKeyPrefix: maskSensitiveData(this.config.apiKey, 8),
+          tokenUsage: tokenUsage ? {
+            promptTokens: tokenUsage.promptTokens,
+            completionTokens: tokenUsage.completionTokens,
+            totalTokens: tokenUsage.totalTokens
+          } : undefined
         }
       );
       
@@ -148,6 +161,32 @@ export class OpenAI extends LLMBase {
 
     const { generateObject } = await import('ai');
     
+    // Create a wrapper for the onFinish callback
+    const originalOnFinish = options.onFinish;
+    const wrappedOnFinish = (completion: any) => {
+      // Log successful generation with token usage if available
+      const tokenUsage = this.getLastTokenUsage();
+      logger.debug(
+        LogCategory.LLM,
+        'OpenAI',
+        'Successfully generated object from OpenAI',
+        {
+          model: this.config.model,
+          apiKeyPrefix: maskSensitiveData(this.config.apiKey, 8),
+          tokenUsage: tokenUsage ? {
+            promptTokens: tokenUsage.promptTokens,
+            completionTokens: tokenUsage.completionTokens,
+            totalTokens: tokenUsage.totalTokens
+          } : undefined
+        }
+      );
+      
+      // Call the original onFinish callback if provided
+      if (originalOnFinish) {
+        originalOnFinish(completion.object);
+      }
+    };
+    
     // @ts-ignore - AI SDK types are not fully compatible with our usage
     return generateObject({
       model: this.model,
@@ -159,7 +198,8 @@ export class OpenAI extends LLMBase {
       temperature: this.config.temperature,
       maxTokens: this.config.maxTokens,
       // @ts-ignore - AI SDK types are not fully compatible with our usage
-      tools: options.tools
+      tools: options.tools,
+      onFinish: wrappedOnFinish
     });
   }
 
@@ -175,6 +215,32 @@ export class OpenAI extends LLMBase {
 
     const { streamObject } = await import('ai');
     
+    // Create a wrapper for the onFinish callback
+    const originalOnFinish = options.onFinish;
+    const wrappedOnFinish = (completion: any) => {
+      // Log successful streaming with token usage if available
+      const tokenUsage = this.getLastTokenUsage();
+      logger.debug(
+        LogCategory.LLM,
+        'OpenAI',
+        'Successfully streamed object from OpenAI',
+        {
+          model: this.config.model,
+          apiKeyPrefix: maskSensitiveData(this.config.apiKey, 8),
+          tokenUsage: tokenUsage ? {
+            promptTokens: tokenUsage.promptTokens,
+            completionTokens: tokenUsage.completionTokens,
+            totalTokens: tokenUsage.totalTokens
+          } : undefined
+        }
+      );
+      
+      // Call the original onFinish callback if provided
+      if (originalOnFinish) {
+        originalOnFinish(completion.object);
+      }
+    };
+    
     // @ts-ignore - AI SDK types are not fully compatible with our usage
     return streamObject({
       model: this.model,
@@ -186,7 +252,8 @@ export class OpenAI extends LLMBase {
       temperature: this.config.temperature,
       maxTokens: this.config.maxTokens,
       // @ts-ignore - AI SDK types are not fully compatible with our usage
-      tools: options.tools
+      tools: options.tools,
+      onFinish: wrappedOnFinish
     });
   }
 } 

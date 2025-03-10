@@ -18,9 +18,7 @@ import {
 import { logger, LogCategory } from '../logging';
 import { ZodType, ZodTypeDef } from 'zod';
 import { 
-  LLMConfig, 
   LLMMessage, 
-  ProviderConfig,
   StepData,
   TokenUsage
 } from './types';
@@ -136,19 +134,26 @@ export class LLMBase {
     
     // Capture token usage if available
     if (result.usage) {
-      this.lastTokenUsage = {
-        promptTokens: result.usage.promptTokens,
-        completionTokens: result.usage.completionTokens,
-        totalTokens: result.usage.promptTokens + result.usage.completionTokens,
-        provider: this.provider
-      };
-      
-      logger.debug(
-        LogCategory.LLM,
-        this.name,
-        'Token usage information',
-        { ...this.lastTokenUsage } // Convert to Record<string, unknown>
-      );
+      // Handle OpenAI vs Anthropic token usage format differences
+      const promptTokens = result.usage.promptTokens;
+      const completionTokens = result.usage.completionTokens;
+
+      // Only set token usage if we have valid numbers
+      if (typeof promptTokens === 'number' && typeof completionTokens === 'number') {
+        this.lastTokenUsage = {
+          promptTokens,
+          completionTokens,
+          totalTokens: promptTokens + completionTokens,
+          provider: this.provider
+        };
+        
+        logger.debug(
+          LogCategory.LLM,
+          this.name,
+          'Token usage information for generating text',
+          { ...this.lastTokenUsage } // Convert to Record<string, unknown>
+        );
+      }
     }
     
     // Call the original onFinish callback if provided
@@ -181,20 +186,32 @@ export class LLMBase {
     const wrappedOnFinish = (completion: any) => {
       // Capture token usage if available
       if (completion.usage) {
-        this.lastTokenUsage = {
-          promptTokens: completion.usage.promptTokens,
-          completionTokens: completion.usage.completionTokens,
-          totalTokens: completion.usage.promptTokens + completion.usage.completionTokens,
-          provider: this.provider
-        };
-        
-        // Log token usage once with all relevant information
-        logger.debug(
-          LogCategory.LLM,
-          this.name,
-          'Token usage information',
-          { ...this.lastTokenUsage } // Convert to Record<string, unknown>
-        );
+
+        // Handle OpenAI vs Anthropic token usage format differences
+        const promptTokens = typeof completion.usage.prompt_tokens === 'number' 
+          ? completion.usage.prompt_tokens 
+          : completion.usage.promptTokens;
+        const completionTokens = typeof completion.usage.completion_tokens === 'number'
+          ? completion.usage.completion_tokens
+          : completion.usage.completionTokens;
+
+        // Only set token usage if we have valid numbers
+        if (typeof promptTokens === 'number' && typeof completionTokens === 'number') {
+          this.lastTokenUsage = {
+            promptTokens,
+            completionTokens,
+            totalTokens: promptTokens + completionTokens,
+            provider: this.provider
+          };
+          
+          // Log token usage once with all relevant information
+          logger.debug(
+            LogCategory.LLM,
+            this.name,
+            'Token usage information for streaming text',
+            { ...this.lastTokenUsage } // Convert to Record<string, unknown>
+          );
+        }
       }
       
       // Call the original onFinish callback if provided
@@ -271,20 +288,31 @@ export class LLMBase {
     const wrappedOnFinish = (completion: any) => {
       // Capture token usage if available
       if (completion.usage) {
-        this.lastTokenUsage = {
-          promptTokens: completion.usage.promptTokens,
-          completionTokens: completion.usage.completionTokens,
-          totalTokens: completion.usage.promptTokens + completion.usage.completionTokens,
-          provider: this.provider
-        };
-        
-        // Log token usage once with all relevant information
-        logger.debug(
-          LogCategory.LLM,
-          this.name,
-          'Token usage information',
-          { ...this.lastTokenUsage } // Convert to Record<string, unknown>
-        );
+        // Handle OpenAI vs Anthropic token usage format differences
+        const promptTokens = typeof completion.usage.prompt_tokens === 'number' 
+          ? completion.usage.prompt_tokens 
+          : completion.usage.promptTokens;
+        const completionTokens = typeof completion.usage.completion_tokens === 'number'
+          ? completion.usage.completion_tokens
+          : completion.usage.completionTokens;
+
+        // Only set token usage if we have valid numbers
+        if (typeof promptTokens === 'number' && typeof completionTokens === 'number') {
+          this.lastTokenUsage = {
+            promptTokens,
+            completionTokens,
+            totalTokens: promptTokens + completionTokens,
+            provider: this.provider
+          };
+          
+          // Log token usage once with all relevant information
+          logger.debug(
+            LogCategory.LLM,
+            this.name,
+            'Token usage information for generating object',
+            { ...this.lastTokenUsage } // Convert to Record<string, unknown>
+          );
+        }
       }
       
       // Call the original onFinish callback if provided
@@ -329,20 +357,31 @@ export class LLMBase {
     const wrappedOnFinish = (completion: any) => {
       // Capture token usage if available
       if (completion.usage) {
-        this.lastTokenUsage = {
-          promptTokens: completion.usage.promptTokens,
-          completionTokens: completion.usage.completionTokens,
-          totalTokens: completion.usage.promptTokens + completion.usage.completionTokens,
-          provider: this.provider
-        };
-        
-        // Log token usage once with all relevant information
-        logger.debug(
-          LogCategory.LLM,
-          this.name,
-          'Token usage information',
-          { ...this.lastTokenUsage } // Convert to Record<string, unknown>
-        );
+        // Handle OpenAI vs Anthropic token usage format differences
+        const promptTokens = typeof completion.usage.prompt_tokens === 'number' 
+          ? completion.usage.prompt_tokens 
+          : completion.usage.promptTokens;
+        const completionTokens = typeof completion.usage.completion_tokens === 'number'
+          ? completion.usage.completion_tokens
+          : completion.usage.completionTokens;
+
+        // Only set token usage if we have valid numbers
+        if (typeof promptTokens === 'number' && typeof completionTokens === 'number') {
+          this.lastTokenUsage = {
+            promptTokens,
+            completionTokens,
+            totalTokens: promptTokens + completionTokens,
+            provider: this.provider
+          };
+          
+          // Log token usage once with all relevant information
+          logger.debug(
+            LogCategory.LLM,
+            this.name,
+            'Token usage information for streaming object',
+            { ...this.lastTokenUsage } // Convert to Record<string, unknown>
+          );
+        }
       }
       
       // Call the original onFinish callback if provided

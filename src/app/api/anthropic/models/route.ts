@@ -48,11 +48,11 @@ export async function GET(req: NextRequest) {
         valid: true,
         models
       });
-    } catch (error: any) {
+    } catch (error) {
       // If the API key is invalid, Anthropic will throw an error
       return NextResponse.json({ 
         valid: false,
-        error: error.message 
+        error: error instanceof Error ? error.message : 'Unknown error' 
       }, { status: 401 });
     }
   } catch (error) {

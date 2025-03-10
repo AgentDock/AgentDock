@@ -3,9 +3,8 @@
  * This file registers all core nodes with the NodeRegistry.
  */
 
-import { NodeRegistry } from 'agentdock-core';
+import { NodeRegistry , logger, LogCategory } from 'agentdock-core';
 import { ChatNode } from '@/lib/store/chat-node';
-import { logger, LogCategory } from 'agentdock-core';
 
 /**
  * Register all core nodes with the registry

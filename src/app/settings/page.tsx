@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useEffect, useCallback, useMemo } from "react"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
+import { useState, useEffect, useCallback, useMemo , ErrorInfo } from "react"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -11,10 +11,8 @@ import { toast } from "sonner"
 import { SecureStorage } from 'agentdock-core'
 import { ErrorBoundary } from "@/components/error-boundary"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ErrorInfo } from "react"
 import { Badge } from "@/components/ui/badge"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { TooltipProvider } from "@/components/ui/tooltip"
 import { Save, AlertCircle, KeyRound, Bug, Shield } from "lucide-react"
 
 interface GlobalSettings {
@@ -304,7 +302,7 @@ function SettingsPage() {
                       <div className="flex items-center gap-3">
                         <AlertCircle className="h-5 w-5 text-yellow-500" />
                         <p className="text-sm text-yellow-500">
-                          Warning: With this enabled, agents will fail if you haven't provided your own API keys.
+                          Warning: With this enabled, agents will fail if you haven&apos;t provided your own API keys.
                         </p>
                       </div>
                     </div>

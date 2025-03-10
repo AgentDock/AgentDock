@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react"
 import { motion } from "framer-motion"
-import { FileIcon, FileText, FileType, File, X } from "lucide-react"
+import { FileIcon, FileText, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface FilePreviewProps {

@@ -8,6 +8,7 @@
 
 // Global flag to persist across hot reloads
 declare global {
+  // eslint-disable-next-line no-var
   var __toolRegistryInitialized: boolean;
 }
 
@@ -18,12 +19,12 @@ declare global {
 export function initToolRegistry() {
   // Prevent multiple initializations
   if (global.__toolRegistryInitialized) {
-    console.log('Tool registry already initialized, skipping');
+    console.debug('Tool registry already initialized, skipping');
     return;
   }
 
   try {
-    console.log('Initializing tool registry...');
+    console.debug('Initializing tool registry...');
     
     // Custom tools are registered in registry.ts when it's imported
     
@@ -36,4 +37,4 @@ export function initToolRegistry() {
 }
 
 // Auto-initialization removed to prevent duplicate registrations
-// initToolRegistry(); 
+// initToolRegistry();

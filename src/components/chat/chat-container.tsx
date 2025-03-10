@@ -5,8 +5,7 @@ import { useChat, Message } from 'ai/react'
 import { useAgents } from "@/lib/store"
 import { Chat } from "@/components/ui/chat"
 import { toast } from "sonner"
-import { logger, LogCategory } from 'agentdock-core'
-import { APIError, ErrorCode, SecureStorage } from 'agentdock-core'
+import { logger, LogCategory , APIError, ErrorCode, SecureStorage } from 'agentdock-core'
 import { ErrorBoundary } from "@/components/ui/error-boundary"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { useRouter } from "next/navigation"
@@ -46,7 +45,6 @@ const getNodeConfig = (template: TemplateConfig, nodeType: LLMNodeType) => {
   }
 }
 import { PersonalitySchema } from 'agentdock-core/types/agent-config'
-import { useChatSettings } from '@/hooks/use-chat-settings'
 import { useCallback, useMemo } from "react"
 
 // ============================================================================
@@ -158,8 +156,8 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
   const [isInitializing, setIsInitializing] = React.useState(true)
   const [runtimeConfig, setRuntimeConfig] = React.useState<RuntimeConfig | null>(null)
   const [apiKey, setApiKey] = React.useState<string>('')
-  const [provider, setProvider] = React.useState<'anthropic' | 'openai'>('anthropic')
-  const [initError, setInitError] = React.useState<Error | null>(null)
+  const [_provider, setProvider] = React.useState<'anthropic' | 'openai'>('anthropic')
+  const [_initError, setInitError] = React.useState<Error | null>(null)
   const storage = React.useMemo(() => SecureStorage.getInstance('agentdock'), [])
 
   // Load saved messages for this agent

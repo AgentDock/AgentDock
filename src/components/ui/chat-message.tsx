@@ -234,18 +234,20 @@ function ToolCall({
 
   React.useEffect(() => {
     if (toolInvocations?.length) {
-      const initialState = { ...expandedTools };
-      
-      toolInvocations.forEach((invocation, index) => {
-        const toolId = `${invocation.toolName}-${index}`;
+      setExpandedTools(prevState => {
+        const newState = { ...prevState };
         
-        if (!processedToolsRef.current.has(toolId)) {
-          initialState[toolId] = true;
-          processedToolsRef.current.add(toolId);
-        }
+        toolInvocations.forEach((invocation, index) => {
+          const toolId = `${invocation.toolName}-${index}`;
+          
+          if (!processedToolsRef.current.has(toolId)) {
+            newState[toolId] = true;
+            processedToolsRef.current.add(toolId);
+          }
+        });
+        
+        return newState;
       });
-      
-      setExpandedTools(initialState);
     }
   }, [toolInvocations]);
 

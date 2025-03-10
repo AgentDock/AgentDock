@@ -331,7 +331,8 @@ export class AgentNode extends BaseNode<AgentNodeConfig> {
       try {
         const result = await activeLlm.streamText({
           messages: messagesWithSystem,
-          tools: tools
+          tools: tools,
+          maxSteps: this.config.agentConfig.options?.maxSteps || 5
         });
         
         logger.debug(
@@ -409,7 +410,8 @@ export class AgentNode extends BaseNode<AgentNodeConfig> {
             // Use fallback directly instead of recursive call to avoid potential issues
             const fallbackResult = await this.fallbackLlm.streamText({
               messages: messagesWithSystem,
-              tools: tools
+              tools: tools,
+              maxSteps: this.config.agentConfig.options?.maxSteps || 5
             });
             
             logger.info(

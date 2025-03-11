@@ -5,9 +5,10 @@
 
 import { z } from 'zod';
 import { Tool } from '../types';
-import type { WeatherForecast, WeatherApiResponse } from './types';
+import type { WeatherForecast } from './types';
 import { Weather } from './components';
-import { fetchWithCors, getCoordinates, parseCoordinates, getWeatherForecast } from './utils';
+import { getCoordinates, parseCoordinates, getWeatherForecast } from './utils';
+import { logger, LogCategory } from 'agentdock-core';
 
 /**
  * Schema for weather tool parameters
@@ -25,8 +26,8 @@ export const weatherTool: Tool = {
   name: 'weather',
   description: 'Get weather forecast for any location worldwide. You can provide either a city name (e.g. "New York") or coordinates (e.g. "40.7128,-74.0060")',
   parameters: weatherSchema,
-  async execute({ location }, { toolCallId }) {
-    console.log(`Executing weather tool with location: ${location}`);
+  async execute({ location }) {
+    logger.info(LogCategory.NODE, 'WeatherTool', `Executing weather tool with location: ${location}`);
     try {
       // Parse coordinates or geocode the location
       const coords = parseCoordinates(location);
@@ -37,11 +38,11 @@ export const weatherTool: Tool = {
         name = `${latitude},${longitude}`;
         country = 'Coordinates';
         region = '';
-        console.log(`Using provided coordinates: ${latitude},${longitude}`);
+        logger.info(LogCategory.NODE, 'WeatherTool', `Using provided coordinates: ${latitude},${longitude}`);
       } else {
-        console.log(`Geocoding location: ${location}`);
+        logger.info(LogCategory.NODE, 'WeatherTool', `Geocoding location: ${location}`);
         [latitude, longitude, name, country, region] = await getCoordinates(location);
-        console.log(`Geocoded to: ${name}, ${country} (${latitude},${longitude})`);
+        logger.info(LogCategory.NODE, 'WeatherTool', `Geocoded to: ${name}, ${country} (${latitude},${longitude})`);
       }
 
       // Get weather forecast from Open-Meteo
@@ -94,7 +95,7 @@ export const weatherTool: Tool = {
             isDay: weatherInfo.current.isDay === 1
           }
         },
-        forecast: weatherInfo.daily.map((day, index) => ({
+        forecast: weatherInfo.daily.map((day, _index) => ({
           date: day.date,
           temperature: {
             min: day.temperatureMin,
@@ -113,7 +114,7 @@ export const weatherTool: Tool = {
       // Use our Weather component to format the output
       return Weather(weatherData);
     } catch (error) {
-      console.error('Weather tool error:', {
+      logger.error(LogCategory.NODE, 'WeatherTool', 'Weather tool error', {
         location,
         error: error instanceof Error ? error.message : 'Unknown error',
         stack: error instanceof Error ? error.stack : undefined

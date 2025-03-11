@@ -14,6 +14,7 @@ import { getToolRegistry } from './tool-registry';
 import { CoreMessage } from 'ai';
 import { convertCoreToLLMMessages } from '../utils/message-utils';
 import { NodeMetadata, NodePort } from './base-node';
+import { maskSensitiveData } from '../utils/security-utils';
 
 /**
  * Configuration for the agent node
@@ -117,7 +118,7 @@ export class AgentNode extends BaseNode<AgentNodeConfig> {
     
     logger.debug(LogCategory.NODE, 'AgentNode', 'Creating agent node', { 
       nodeId: this.id,
-      apiKeyPrefix: config.apiKey.substring(0, 8) + '...',
+      apiKeyPrefix: maskSensitiveData(config.apiKey, 8),
       hasFallback: !!config.fallbackApiKey
     });
     
@@ -145,14 +146,19 @@ export class AgentNode extends BaseNode<AgentNodeConfig> {
   }
 
   private getLLMConfig(config: AgentNodeConfig): LLMConfig {
+    const provider = config.provider || 'anthropic';
+    const modelConfig = provider === 'openai' 
+      ? config.agentConfig?.nodeConfigurations?.['llm.openai']
+      : config.agentConfig?.nodeConfigurations?.['llm.anthropic'];
+
     return {
-      provider: config.provider || 'anthropic',
+      provider,
       apiKey: config.apiKey,
-      model: config.agentConfig?.nodeConfigurations?.['llm.anthropic']?.model || 'claude-3-7-sonnet-20250219',
-      temperature: config.agentConfig?.nodeConfigurations?.['llm.anthropic']?.temperature,
-      maxTokens: config.agentConfig?.nodeConfigurations?.['llm.anthropic']?.maxTokens,
-      topP: config.agentConfig?.nodeConfigurations?.['llm.anthropic']?.topP,
-      maxSteps: config.agentConfig?.nodeConfigurations?.['llm.anthropic']?.maxSteps
+      model: modelConfig?.model || (provider === 'openai' ? 'gpt-4' : 'claude-3-7-sonnet-20250219'),
+      temperature: modelConfig?.temperature,
+      maxTokens: modelConfig?.maxTokens,
+      topP: modelConfig?.topP,
+      maxSteps: modelConfig?.maxSteps
     };
   }
 

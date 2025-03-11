@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useEffect, useCallback, useMemo } from "react"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
+import { useState, useEffect, useCallback, useMemo , ErrorInfo } from "react"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -11,10 +11,8 @@ import { toast } from "sonner"
 import { SecureStorage } from 'agentdock-core'
 import { ErrorBoundary } from "@/components/error-boundary"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ErrorInfo } from "react"
 import { Badge } from "@/components/ui/badge"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { TooltipProvider } from "@/components/ui/tooltip"
 import { Save, AlertCircle, KeyRound, Bug, Shield } from "lucide-react"
 
 interface GlobalSettings {
@@ -29,6 +27,15 @@ interface GlobalSettings {
   }
   models?: {
     anthropic?: {
+      valid: boolean
+      models: Array<{
+        id: string
+        name: string
+        description: string
+        context_window: number
+      }>
+    }
+    openai?: {
       valid: boolean
       models: Array<{
         id: string
@@ -148,6 +155,35 @@ function SettingsPage() {
       } catch (error) {
         console.error('Failed to validate Anthropic API key:', error);
         toast.error('Failed to validate Anthropic API key');
+      }
+    }
+    
+    // If it's OpenAI, fetch available models
+    if (provider === 'openai' && value.length > 0) {
+      try {
+        const response = await fetch('/api/openai/models', {
+          headers: {
+            'x-api-key': value
+          }
+        });
+
+        const data = await response.json();
+        
+        if (data.valid) {
+          setSettings(prev => ({
+            ...prev,
+            models: {
+              ...prev.models,
+              openai: data
+            }
+          }));
+          toast.success('Successfully validated OpenAI API key and fetched models');
+        } else {
+          toast.error(data.error || 'Invalid OpenAI API key');
+        }
+      } catch (error) {
+        console.error('Failed to validate OpenAI API key:', error);
+        toast.error('Failed to validate OpenAI API key');
       }
     }
   }, []);
@@ -304,7 +340,7 @@ function SettingsPage() {
                       <div className="flex items-center gap-3">
                         <AlertCircle className="h-5 w-5 text-yellow-500" />
                         <p className="text-sm text-yellow-500">
-                          Warning: With this enabled, agents will fail if you haven't provided your own API keys.
+                          Warning: With this enabled, agents will fail if you haven&apos;t provided your own API keys.
                         </p>
                       </div>
                     </div>
@@ -383,6 +419,28 @@ function SettingsPage() {
                             <p className="text-sm font-medium">Available Models:</p>
                             <div className="grid gap-1.5">
                               {settings.models.anthropic.models.map(model => (
+                                <div key={model.id} className="text-sm">
+                                  <span className="font-medium">{model.name}</span>
+                                  <span className="text-muted-foreground"> - {model.description}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {key === 'openai' && settings.models?.openai && (
+                      <div className="rounded-md bg-muted p-4 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Badge variant={settings.models.openai.valid ? "default" : "destructive"}>
+                            {settings.models.openai.valid ? 'Valid' : 'Invalid'}
+                          </Badge>
+                        </div>
+                        {settings.models.openai.valid && (
+                          <div className="space-y-2">
+                            <p className="text-sm font-medium">Available Models:</p>
+                            <div className="grid gap-1.5">
+                              {settings.models.openai.models.map(model => (
                                 <div key={model.id} className="text-sm">
                                   <span className="font-medium">{model.name}</span>
                                   <span className="text-muted-foreground"> - {model.description}</span>

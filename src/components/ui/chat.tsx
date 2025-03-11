@@ -1,14 +1,13 @@
 "use client"
 
-import { forwardRef, useCallback, useState, type ReactElement } from "react"
-import { ArrowDown, ThumbsDown, ThumbsUp } from "lucide-react"
+import { forwardRef, useState, type ReactElement } from "react"
+import { ArrowDown, } from "lucide-react"
 import React from "react"
 
 import { cn } from "@/lib/utils"
 import { useAutoScroll } from "@/hooks/use-auto-scroll"
 import { Button } from "@/components/ui/button"
 import { type Message } from "@/components/ui/chat-message"
-import { CopyButton } from "@/components/ui/copy-button"
 import { MessageInput } from "@/components/ui/message-input"
 import { MessageList } from "@/components/ui/message-list"
 import { PromptSuggestions } from "@/components/ui/prompt-suggestions"
@@ -171,7 +170,7 @@ interface ChatFormProps {
 }
 
 export const ChatForm = forwardRef<HTMLFormElement, ChatFormProps>(
-  ({ children, handleSubmit, isPending, className }, ref) => {
+  ({ children, handleSubmit, className }, ref) => {
     const [files, setFiles] = useState<File[] | null>(null)
 
     const onSubmit = (event: React.FormEvent) => {

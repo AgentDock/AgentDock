@@ -7,11 +7,11 @@
 
 import { create } from 'zustand';
 import { SecureStorage, logger, LogCategory } from 'agentdock-core';
-import { templates, TemplateId, getTemplate } from '@/generated/templates';
+import { templates } from '@/generated/templates';
 import { Store, Agent, AgentState, AgentRuntimeSettings } from './types';
-import { registerCoreNodes } from '@/lib/core/register-nodes';
 import { toast } from 'sonner';
 import { PersonalitySchema } from 'agentdock-core/types/agent-config';
+import { getLLMInfo } from '@/lib/utils';
 
 // Create a single instance for the store
 const storage = SecureStorage.getInstance('agentdock');
@@ -80,8 +80,8 @@ export const useAgents = create<Store>((set) => ({
             lastStateChange: Date.now()
           },
           runtimeSettings: storedSettings[template.agentId] || {
-            temperature: template.nodeConfigurations?.['llm.anthropic']?.temperature || 0.7,
-            maxTokens: template.nodeConfigurations?.['llm.anthropic']?.maxTokens || 4096
+            temperature: getLLMInfo(template).config?.temperature || 0.7,
+            maxTokens: getLLMInfo(template).config?.maxTokens || 4096
           }
         };
       });

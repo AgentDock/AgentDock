@@ -14,6 +14,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "lint:fix": "next lint --fix",
     "test": "jest",
     "test:unit": "jest",
     "test:watch": "jest --watch",
@@ -27,6 +28,7 @@
   },
   "dependencies": {
     "@ai-sdk/anthropic": "1.0.7",
+    "@ai-sdk/openai": "1.0.14",
     "@anthropic-ai/sdk": "0.36.3",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "^1.2.3",

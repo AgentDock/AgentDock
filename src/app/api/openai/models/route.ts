@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Anthropic from '@anthropic-ai/sdk';
+import OpenAI from 'openai';
 
 export const runtime = 'edge';
 
-interface AnthropicModel {
+interface OpenAIModel {
   id: string;
   name: string;
   description?: string;
@@ -22,24 +22,29 @@ export async function GET(req: NextRequest) {
       }, { status: 400 });
     }
 
-    const anthropic = new Anthropic({
+    const openai = new OpenAI({
       apiKey
     });
 
     try {
       // Fetch available models
-      const response = await anthropic.models.list();
+      const response = await openai.models.list();
       
       // Filter and format models
       const models = response.data
-        .filter(model => model.id.startsWith('claude'))
+        .filter(model => 
+          // Filter for GPT models
+          model.id.includes('gpt') || 
+          // Include other relevant models as needed
+          model.id.includes('text-embedding')
+        )
         .map(model => {
-          const formatted: AnthropicModel = {
+          const formatted: OpenAIModel = {
             id: model.id,
-            name: model.id, // Use id as name since Anthropic doesn't provide a display name
-            description: 'Anthropic Claude language model',
-            context_window: 100000, // Default context window size
-            created: Math.floor(Date.now() / 1000) // Current timestamp since Anthropic doesn't provide creation date
+            name: model.id,
+            description: 'OpenAI language model',
+            context_window: getContextWindowSize(model.id), // Helper function to determine context window
+            created: model.created
           };
           return formatted;
         });
@@ -49,7 +54,7 @@ export async function GET(req: NextRequest) {
         models
       });
     } catch (error) {
-      // If the API key is invalid, Anthropic will throw an error
+      // If the API key is invalid, OpenAI will throw an error
       return NextResponse.json({ 
         valid: false,
         error: error instanceof Error ? error.message : 'Unknown error' 
@@ -62,4 +67,14 @@ export async function GET(req: NextRequest) {
       error: 'Invalid request' 
     }, { status: 400 });
   }
-} 
+}
+
+// Helper function to determine context window size based on model ID
+function getContextWindowSize(modelId: string): number {
+  if (modelId.includes('gpt-4-turbo')) return 128000;
+  if (modelId.includes('gpt-4-32k')) return 32768;
+  if (modelId.includes('gpt-4')) return 8192;
+  if (modelId.includes('gpt-3.5-turbo-16k')) return 16384;
+  if (modelId.includes('gpt-3.5-turbo')) return 4096;
+  return 4096; // Default fallback
+}

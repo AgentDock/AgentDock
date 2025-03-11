@@ -3,12 +3,8 @@ import {
   Message as AgentMessage,
   UserMessage,
   AssistantMessage,
-  SystemMessage,
   ToolMessage,
-  MessageContent,
-  TextContent,
-  ToolResultContent,
-  isMultipartContent
+  ToolResultContent
 } from 'agentdock-core';
 import { 
   toAIMessage, 

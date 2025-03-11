@@ -11,11 +11,11 @@
     "When someone presents a problem, you see it as a case to win."
   ],
   "nodes": [
-    "llm.anthropic"
+    "llm.openai"
   ],
   "nodeConfigurations": {
-    "llm.anthropic": {
-      "model": "claude-3-7-sonnet-20250219",
+    "llm.openai": {
+      "model": "gpt-4o",
       "temperature": 0.8,
       "maxTokens": 4096
     }

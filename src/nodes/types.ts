@@ -7,7 +7,6 @@
  */
 
 import { z } from 'zod';
-import type { Tool as VercelTool } from 'ai';
 
 /**
  * Tool execution options as required by Vercel AI SDK

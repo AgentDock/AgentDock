@@ -12,8 +12,9 @@ import {
 import { logger, LogCategory } from '../logging';
 import { ZodType, ZodTypeDef } from 'zod';
 import { createError, ErrorCode } from '../errors';
-import { LLMBase, LLMTextOptions, LLMStreamOptions, LLMObjectOptions } from './llm-base';
-import { TokenUsage, AnthropicConfig } from './types';
+import { LLMBase, LLMStreamOptions, LLMObjectOptions } from './llm-base';
+import { AnthropicConfig } from './types';
+import { maskSensitiveData } from '../utils/security-utils';
 
 /**
  * Anthropic LLM implementation
@@ -88,14 +89,14 @@ export class AnthropicLLM extends LLMBase {
     return super.generateText({
       messages,
       tools,
-      onFinish: (result) => {
+      onFinish: (_result) => {
         logger.debug(
           LogCategory.LLM, 
           'AnthropicLLM', 
           'Successfully generated text from Anthropic', 
           {
             model: this.config.model,
-            apiKeyPrefix: this.config.apiKey.substring(0, 8) + '...'
+            apiKeyPrefix: maskSensitiveData(this.config.apiKey, 8)
           }
         );
       }
@@ -117,7 +118,7 @@ export class AnthropicLLM extends LLMBase {
         'Successfully streamed text from Anthropic',
         { 
           model: this.config.model,
-          apiKeyPrefix: this.config.apiKey.substring(0, 8) + '...'
+          apiKeyPrefix: maskSensitiveData(this.config.apiKey, 8)
         }
       );
       

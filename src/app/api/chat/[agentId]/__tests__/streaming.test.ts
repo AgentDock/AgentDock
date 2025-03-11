@@ -1,7 +1,6 @@
 import { NextRequest } from 'next/server';
 import { Message } from 'ai';
 import { POST } from '../route';
-import { templates } from '@/generated/templates';
 import { ConfigCache } from '@/lib/services/config-cache';
 
 // Mock dependencies

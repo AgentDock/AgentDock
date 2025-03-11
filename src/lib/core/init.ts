@@ -7,9 +7,14 @@ import { logger, LogCategory, LogLevel } from 'agentdock-core';
 import { initToolRegistry } from '@/nodes/init';
 
 // Global initialization flag (will persist across hot reloads)
+/* eslint-disable */
+/* tslint:disable */
+// Required for system initialization
 declare global {
   var __systemInitialized: boolean;
 }
+/* eslint-enable */
+/* tslint:enable */
 
 // Initialize the global flag if it doesn't exist
 if (typeof global.__systemInitialized === 'undefined') {

@@ -11,8 +11,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Bot, MessageSquare, Settings, Plus } from "lucide-react"
-import { toast } from "sonner"
 import { SettingsSheet } from "@/components/agents/settings-sheet"
+import { getLLMInfo } from "@/lib/utils"
 import { logger, LogCategory } from 'agentdock-core'
 import { templates, TemplateId } from '@/generated/templates'
 import { Skeleton } from "@/components/ui/skeleton"
@@ -112,7 +112,7 @@ export default function AgentsPage() {
                 <div>
                   <div className="text-sm font-medium">Model</div>
                   <div className="text-sm text-muted-foreground">
-                    {template.nodeConfigurations?.['llm.anthropic']?.model || "Default"}
+                    {getLLMInfo(template).displayName}
                   </div>
                 </div>
                 {template.nodes && template.nodes.length > 0 && (

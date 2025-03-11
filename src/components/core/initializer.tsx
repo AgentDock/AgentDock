@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect , ErrorInfo } from 'react';
 import { ErrorBoundary } from "@/components/error-boundary";
-import { ErrorInfo } from "react";
 import { logger, LogCategory } from 'agentdock-core';
 import { useAgents } from '@/lib/store';
 

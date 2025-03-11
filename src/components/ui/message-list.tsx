@@ -29,7 +29,7 @@ export function MessageList({
 }: MessageListProps) {
   return (
     <div className={cn("flex flex-col gap-4", className)}>
-      {messages.map((message, index) => {
+      {messages.map((message, _index) => {
         const defaultOptions = {
           actions: message.role === "assistant" && (
             <div className="flex items-center gap-1">

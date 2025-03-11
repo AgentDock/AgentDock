@@ -9,6 +9,7 @@ import { PersonalitySchema } from 'agentdock-core/types/agent-config';
 const createAgentSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
+  systemPrompt: z.string().optional()
 });
 
 export async function POST(req: Request) {
@@ -16,13 +17,16 @@ export async function POST(req: Request) {
     const storage = SecureStorage.getInstance('agentdock');
     const data = await req.json();
     
+    // Validate input data
+    const validatedData = createAgentSchema.parse(data);
+    
     // Generate new agent with required fields
     const now = Date.now();
     const agent: Agent = {
       id: uuidv4(),
       agentId: uuidv4(),
-      name: data.name,
-      description: data.description || '',
+      name: validatedData.name,
+      description: validatedData.description || '',
       personality: PersonalitySchema.parse("helpful"),
       nodes: [],
       nodeConfigurations: {},
@@ -31,7 +35,7 @@ export async function POST(req: Request) {
         historyPolicy: "lastN",
         historyLength: 10
       },
-      instructions: data.systemPrompt,
+      instructions: validatedData.systemPrompt || '',
       state: AgentState.CREATED,
       runtimeSettings: {
         temperature: 0.7,

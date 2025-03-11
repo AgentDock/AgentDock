@@ -266,12 +266,12 @@ function FileUploadOverlay({ isDragging }: { isDragging: boolean }) {
 }
 
 // Interrupt prompt
-function InterruptPrompt({
+function _InterruptPrompt({
   isOpen,
-  close,
+  _close,
 }: {
   isOpen: boolean;
-  close: () => void;
+  _close: () => void;
 }) {
   if (!isOpen) return null;
 

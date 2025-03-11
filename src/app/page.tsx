@@ -14,15 +14,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { Bot, Search, Brain, Globe, Send } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { cn } from "@/lib/utils";
-import type { LLMConfig } from "agentdock-core/llm/types";
+import { cn, getLLMInfo } from "@/lib/utils";
 
 type Mode = "research" | "reason";
-
-interface NodeConfigurations {
-  'llm.anthropic'?: LLMConfig;
-  [key: string]: unknown;
-}
 
 export default function HomePage() {
   const { agents, initialize, isInitialized } = useAgents();
@@ -38,7 +32,6 @@ export default function HomePage() {
   }, [initialize, isInitialized]);
 
   const selectedAgentData = agents.find((agent: Agent) => agent.agentId === selectedAgent);
-  const llmConfig = selectedAgentData?.nodeConfigurations?.['llm.anthropic'] as LLMConfig | undefined;
 
   const handleAgentSelect = async (agentId: string) => {
     setIsLoading(true);
@@ -104,9 +97,9 @@ export default function HomePage() {
                     </div>
                   )}
 
-                  {llmConfig?.model && (
+                  {selectedAgentData && (
                     <div className="text-xs text-muted-foreground">
-                      Model: {llmConfig.model}
+                      Model: {getLLMInfo(selectedAgentData).displayName}
                     </div>
                   )}
 

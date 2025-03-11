@@ -6,6 +6,7 @@
 import { ServiceProvider, ServiceKeyResult, getEnvConfig } from '@/types/env';
 import { AgentError, ErrorCode } from 'agentdock-core';
 
+
 /**
  * Service key configuration
  * This will be expanded in the future provider registry
@@ -130,7 +131,7 @@ export async function validateServiceKey(
     });
 
     return response.ok;
-  } catch (error) {
+  } catch {
     return false;
   }
 }

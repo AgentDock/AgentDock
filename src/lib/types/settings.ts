@@ -3,6 +3,7 @@
  */
 
 import type { ValidatedPersonality } from 'agentdock-core/types/agent-config';
+import type { ChatRuntimeConfig } from '@/lib/types/chat';
 
 export interface AgentSettings {
   // Core settings
@@ -32,15 +33,5 @@ export interface GlobalSettings {
   };
 }
 
-export interface RuntimeConfig {
-  name?: string;
-  description?: string;
-  model?: string;
-  temperature?: number;
-  maxTokens?: number;
-  personality?: ValidatedPersonality;
-  chatSettings?: {
-    initialMessages?: string[];
-    chatPrompts?: string[];
-  };
-} 
+// Use ChatRuntimeConfig from shared types
+export type RuntimeConfig = ChatRuntimeConfig; 

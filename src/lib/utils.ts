@@ -1,57 +1,51 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { LLMConfig } from 'agentdock-core/llm/types'
+import { LLMConfig, LLMProvider, ProviderRegistry } from 'agentdock-core'
+import { ModelRegistry } from './models/registry'
+import { ModelService } from './services/model-service'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
-
-// Define provider information
-const LLM_PROVIDERS = {
-  'llm.openai': {
-    displayName: 'OpenAI',
-    validateApiKey: (key: string) => key.startsWith('sk-') && !key.startsWith('sk-ant-'),
-    defaultModel: 'gpt-3.5-turbo'
-  },
-  'llm.anthropic': {
-    displayName: 'Anthropic',
-    validateApiKey: (key: string) => key.startsWith('sk-ant-'),
-    defaultModel: 'claude-2'
-  }
-} as const;
-
-type LLMProvider = keyof typeof LLM_PROVIDERS;
 
 /**
  * Get LLM configuration and provider information from a template or agent
  * @param config Template or agent configuration containing nodes and nodeConfigurations
  * @returns LLM configuration details including provider info and display name
  */
-// export function getLLMInfo(config: { nodes?: string[], nodeConfigurations?: Record<string, any> }) {
 export function getLLMInfo(config: Record<string, any>) {
-  // Find the first matching LLM provider in the nodes
-  const provider = (config.nodes || []).find((node: string) => 
-    Object.keys(LLM_PROVIDERS).includes(node)
-  ) as LLMProvider | undefined;
-
-  if (!provider) {
-    throw new Error('No valid LLM provider found in configuration');
+  // Find the provider using the core registry
+  const provider = ProviderRegistry.getProviderFromNodes(config.nodes || []);
+  const nodeType = ProviderRegistry.getNodeTypeFromProvider(provider);
+  
+  // Get provider metadata
+  const providerMetadata = ProviderRegistry.getProvider(provider);
+  if (!providerMetadata) {
+    throw new Error(`Provider not found: ${provider}`);
   }
-
-  const providerInfo = LLM_PROVIDERS[provider];
-  const llmConfig = config.nodeConfigurations?.[provider] as LLMConfig | undefined;
+  
+  const llmConfig = config.nodeConfigurations?.[nodeType];
+  const modelId = llmConfig?.model || providerMetadata.defaultModel;
+  
+  // Get model metadata from application registry
+  const modelMetadata = ModelRegistry.getModel(modelId);
   
   return {
     config: llmConfig,
     provider,
-    displayName: llmConfig?.model 
-      ? `${providerInfo.displayName} - ${llmConfig.model}` 
-      : `${providerInfo.displayName} - ${providerInfo.defaultModel}`,
-    validateApiKey: providerInfo.validateApiKey
+    displayName: modelMetadata 
+      ? `${providerMetadata.displayName} - ${modelMetadata.displayName}` 
+      : `${providerMetadata.displayName} - ${modelId}`,
+    validateApiKey: (key: string) => ProviderRegistry.validateApiKey(provider, key)
   };
 }
 
 // Export provider utilities
 export const validateLLMApiKey = (provider: LLMProvider, apiKey: string): boolean => {
-  return LLM_PROVIDERS[provider].validateApiKey(apiKey);
+  return ProviderRegistry.validateApiKey(provider, apiKey);
+};
+
+// Export model utilities
+export const getModelsForProvider = (provider: LLMProvider): any[] => {
+  return ModelService.getModels(provider);
 };

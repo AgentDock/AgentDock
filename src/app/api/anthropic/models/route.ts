@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
+import { ModelRegistry } from '@/lib/models/registry';
+import { logger, LogCategory } from 'agentdock-core';
 
-export const runtime = 'edge';
+// Do NOT use edge runtime for this route
+// export const runtime = 'edge';
 
 interface AnthropicModel {
   id: string;
@@ -11,6 +14,10 @@ interface AnthropicModel {
   created: number;
 }
 
+/**
+ * Anthropic models endpoint
+ * This endpoint fetches models from Anthropic API and registers them
+ */
 export async function GET(req: NextRequest) {
   try {
     const apiKey = req.headers.get('x-api-key');
@@ -33,20 +40,24 @@ export async function GET(req: NextRequest) {
       // Filter and format models
       const models = response.data
         .filter(model => model.id.startsWith('claude'))
-        .map(model => {
-          const formatted: AnthropicModel = {
-            id: model.id,
-            name: model.id, // Use id as name since Anthropic doesn't provide a display name
-            description: 'Anthropic Claude language model',
-            context_window: 100000, // Default context window size
-            created: Math.floor(Date.now() / 1000) // Current timestamp since Anthropic doesn't provide creation date
-          };
-          return formatted;
-        });
+        .map(model => ({
+          id: model.id,
+          displayName: model.id, // Use id as name since Anthropic doesn't provide a display name
+          description: 'Anthropic Claude language model',
+          contextWindow: 100000, // Default context window size
+          defaultTemperature: 0.7,
+          defaultMaxTokens: 2048,
+          capabilities: ['text']
+        }));
+
+      // Register models with the registry
+      ModelRegistry.registerModels('anthropic', models);
+
+      logger.debug(LogCategory.API, 'AnthropicModelsAPI', `Processed ${models.length} models`);
 
       return NextResponse.json({ 
         valid: true,
-        models
+        models: ModelRegistry.getModelsForProvider('anthropic')
       });
     } catch (error) {
       // If the API key is invalid, Anthropic will throw an error

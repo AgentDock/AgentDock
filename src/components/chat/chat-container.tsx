@@ -5,57 +5,14 @@ import { useChat, Message } from 'ai/react'
 import { useAgents } from "@/lib/store"
 import { Chat } from "@/components/ui/chat"
 import { toast } from "sonner"
-import { logger, LogCategory , APIError, ErrorCode, SecureStorage } from 'agentdock-core'
+import { logger, LogCategory, APIError, ErrorCode, SecureStorage, LLMProvider, ProviderRegistry } from 'agentdock-core'
 import { ErrorBoundary } from "@/components/ui/error-boundary"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { useRouter } from "next/navigation"
 import { templates, TemplateId } from '@/generated/templates'
-import type { GlobalSettings, RuntimeConfig } from '@/lib/types/settings'
-
-type LLMProvider = 'anthropic' | 'openai'
-type LLMNodeType = 'llm.anthropic' | 'llm.openai'
-
-const getProvider = (nodes: readonly string[] | undefined): LLMProvider => {
-  if (nodes?.includes('llm.openai')) {
-    return 'openai'
-  }
-  return 'anthropic'
-}
-
-const getNodeType = (nodes: readonly string[] | undefined): LLMNodeType => {
-  if (nodes?.includes('llm.openai')) {
-    return 'llm.openai'
-  }
-  return 'llm.anthropic'
-}
-
-type TemplateConfig = {
-  nodeConfigurations: {
-    [K in LLMNodeType]?: {
-      temperature?: number
-      maxTokens?: number
-    }
-  }
-}
-
-const getNodeConfig = (template: TemplateConfig, nodeType: LLMNodeType) => {
-  return template.nodeConfigurations?.[nodeType] ?? {
-    temperature: undefined,
-    maxTokens: undefined
-  }
-}
-import { PersonalitySchema } from 'agentdock-core/types/agent-config'
+import type { GlobalSettings } from '@/lib/types/settings'
+import { useChatSettings } from '@/hooks/use-chat-settings'
 import { useCallback, useMemo } from "react"
-
-// ============================================================================
-// TEMPORARY IMPLEMENTATION FOR V1
-// This is a simplified implementation using direct message handling.
-// TODO: MIGRATION - This will be replaced with:
-// 1. Full CoreMessage type support
-// 2. Multi-part message handling
-// 3. Provider abstraction
-// Reference: plan_refactor.md Phase 1
-// ============================================================================
 
 interface ChatContainerProps {
   className?: string
@@ -71,7 +28,7 @@ interface ChatProps extends ChatContainerProps {
   setInput: (input: string) => void
   onSubmit: (event?: React.FormEvent<HTMLFormElement>) => void
   suggestions?: string[]
-  provider: 'anthropic' | 'openai'
+  provider: LLMProvider
 }
 
 function ChatError({ error, onRetry }: { error: Error, onRetry: () => void }) {
@@ -154,11 +111,13 @@ function ChatLoading() {
 const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, ChatContainerProps>(({ className, agentId = 'default', header }, ref) => {
   const { agents } = useAgents()
   const [isInitializing, setIsInitializing] = React.useState(true)
-  const [runtimeConfig, setRuntimeConfig] = React.useState<RuntimeConfig | null>(null)
   const [apiKey, setApiKey] = React.useState<string>('')
-  const [_provider, setProvider] = React.useState<'anthropic' | 'openai'>('anthropic')
-  const [_initError, setInitError] = React.useState<Error | null>(null)
+  const [provider, setProvider] = React.useState<LLMProvider>('anthropic')
+  const [initError, setInitError] = React.useState<Error | null>(null)
   const storage = React.useMemo(() => SecureStorage.getInstance('agentdock'), [])
+  
+  // Use the enhanced useChatSettings hook
+  const { chatSettings, isLoading: isSettingsLoading, error: settingsError } = useChatSettings(agentId);
 
   // Load saved messages for this agent
   const loadSavedMessages = useCallback(() => {
@@ -193,8 +152,10 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
   React.useEffect(() => {
     const loadData = async () => {
       try {
-        // Get template first to determine provider
-        const template = templates[agentId as TemplateId];
+        setIsInitializing(true)
+        
+        // Get template
+        const template = templates[agentId as TemplateId]
         if (!template) {
           throw new APIError(
             'Template not found',
@@ -205,39 +166,27 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
           );
         }
 
-        // Determine provider and node type from template
-        const providerType = getProvider(template.nodes);
-        const nodeType = getNodeType(template.nodes);
-        setProvider(providerType);
+        // Determine provider from template nodes using the core registry
+        const provider = ProviderRegistry.getProviderFromNodes((template.nodes || []).slice());
+        setProvider(provider);
 
         // Load settings and API key
         const settings = await storage.get<GlobalSettings>('global_settings');
-        const currentApiKey = settings?.apiKeys?.[providerType];
+        const apiKeys = settings?.apiKeys || {};
+        const currentApiKey = apiKeys[provider as keyof typeof apiKeys];
 
         if (!currentApiKey) {
+          const providerMetadata = ProviderRegistry.getProvider(provider);
+          const displayName = providerMetadata?.displayName || provider;
           throw new APIError(
-            `Please add your ${providerType === 'openai' ? 'OpenAI' : 'Anthropic'} API key in settings to use the chat`,
+            `Please add your ${displayName} API key in settings to use the chat`,
             ErrorCode.CONFIG_NOT_FOUND,
             'ChatContainer',
-            'loadData',
-            { agentId, provider: providerType }
+            'loadData'
           );
         }
 
         setApiKey(currentApiKey);
-
-        // Set runtime config from template
-        const config = getNodeConfig(template as TemplateConfig, nodeType);
-        setRuntimeConfig({
-          personality: PersonalitySchema.parse(template.personality),
-          temperature: config.temperature,
-          maxTokens: config.maxTokens,
-          chatSettings: {
-            initialMessages: template.chatSettings?.initialMessages ? Array.from(template.chatSettings.initialMessages) : undefined,
-            chatPrompts: template.chatSettings?.chatPrompts ? Array.from(template.chatSettings.chatPrompts) : undefined
-          }
-        });
-
         setIsInitializing(false);
       } catch (error) {
         if (error instanceof APIError) {
@@ -279,9 +228,9 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
       'x-api-key': apiKey
     },
     body: {
-      system: runtimeConfig?.personality,
-      temperature: runtimeConfig?.temperature,
-      maxTokens: runtimeConfig?.maxTokens
+      system: chatSettings?.personality,
+      temperature: chatSettings?.temperature,
+      maxTokens: chatSettings?.maxTokens
     },
     maxSteps: 5,
     sendExtraMessageFields: true,
@@ -439,21 +388,23 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
     }
   };
 
-  // Get agent-specific prompts from template or use fallbacks
-  const template = templates[agentId as TemplateId];
-  const suggestions = runtimeConfig?.chatSettings?.chatPrompts ? 
-                     Array.from(runtimeConfig.chatSettings.chatPrompts) : 
-                     template?.chatSettings?.chatPrompts ? 
-                     Array.from(template.chatSettings.chatPrompts) : 
-                     [
-                       "What can you help me with?",
-                       "How do I use the chat interface?",
-                       "Hello from AgentDock."
-                     ];
+  // Get suggestions from chatSettings
+  const suggestions = useMemo(() => {
+    return chatSettings?.chatPrompts as string[] || [];
+  }, [chatSettings]);
 
   // Handle loading states
-  if (isInitializing) {
+  if (isInitializing || isSettingsLoading) {
     return <ChatLoading />;
+  }
+
+  if (settingsError) {
+    return (
+      <ChatError 
+        error={new Error(settingsError)} 
+        onRetry={() => window.location.reload()} 
+      />
+    );
   }
 
   // Wrap chat in error boundary

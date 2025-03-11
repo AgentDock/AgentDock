@@ -84,4 +84,28 @@ export interface LLMAdapter {
   config: LLMConfig;
   generateStream(messages: LLMMessage[], tools?: any): Promise<ReadableStream>;
   generateText(messages: LLMMessage[], tools?: any): Promise<string>;
+}
+
+/**
+ * Model metadata interface
+ */
+export interface ModelMetadata {
+  id: string;
+  displayName: string;
+  description?: string;
+  contextWindow?: number;
+  defaultTemperature?: number;
+  defaultMaxTokens?: number;
+  capabilities?: string[];
+}
+
+/**
+ * Provider metadata interface
+ */
+export interface ProviderMetadata {
+  id: LLMProvider;
+  displayName: string;
+  description?: string;
+  validateApiKey: (key: string) => boolean;
+  defaultModel: string;
 } 

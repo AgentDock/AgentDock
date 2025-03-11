@@ -35,6 +35,15 @@ interface GlobalSettings {
         context_window: number
       }>
     }
+    openai?: {
+      valid: boolean
+      models: Array<{
+        id: string
+        name: string
+        description: string
+        context_window: number
+      }>
+    }
   }
 }
 
@@ -146,6 +155,35 @@ function SettingsPage() {
       } catch (error) {
         console.error('Failed to validate Anthropic API key:', error);
         toast.error('Failed to validate Anthropic API key');
+      }
+    }
+    
+    // If it's OpenAI, fetch available models
+    if (provider === 'openai' && value.length > 0) {
+      try {
+        const response = await fetch('/api/openai/models', {
+          headers: {
+            'x-api-key': value
+          }
+        });
+
+        const data = await response.json();
+        
+        if (data.valid) {
+          setSettings(prev => ({
+            ...prev,
+            models: {
+              ...prev.models,
+              openai: data
+            }
+          }));
+          toast.success('Successfully validated OpenAI API key and fetched models');
+        } else {
+          toast.error(data.error || 'Invalid OpenAI API key');
+        }
+      } catch (error) {
+        console.error('Failed to validate OpenAI API key:', error);
+        toast.error('Failed to validate OpenAI API key');
       }
     }
   }, []);
@@ -381,6 +419,28 @@ function SettingsPage() {
                             <p className="text-sm font-medium">Available Models:</p>
                             <div className="grid gap-1.5">
                               {settings.models.anthropic.models.map(model => (
+                                <div key={model.id} className="text-sm">
+                                  <span className="font-medium">{model.name}</span>
+                                  <span className="text-muted-foreground"> - {model.description}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {key === 'openai' && settings.models?.openai && (
+                      <div className="rounded-md bg-muted p-4 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Badge variant={settings.models.openai.valid ? "default" : "destructive"}>
+                            {settings.models.openai.valid ? 'Valid' : 'Invalid'}
+                          </Badge>
+                        </div>
+                        {settings.models.openai.valid && (
+                          <div className="space-y-2">
+                            <p className="text-sm font-medium">Available Models:</p>
+                            <div className="grid gap-1.5">
+                              {settings.models.openai.models.map(model => (
                                 <div key={model.id} className="text-sm">
                                   <span className="font-medium">{model.name}</span>
                                   <span className="text-muted-foreground"> - {model.description}</span>

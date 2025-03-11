@@ -231,7 +231,11 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
         setRuntimeConfig({
           personality: PersonalitySchema.parse(template.personality),
           temperature: config.temperature,
-          maxTokens: config.maxTokens
+          maxTokens: config.maxTokens,
+          chatSettings: {
+            initialMessages: template.chatSettings?.initialMessages ? Array.from(template.chatSettings.initialMessages) : undefined,
+            chatPrompts: template.chatSettings?.chatPrompts ? Array.from(template.chatSettings.chatPrompts) : undefined
+          }
         });
 
         setIsInitializing(false);
@@ -435,11 +439,17 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
     }
   };
 
-  const suggestions = [
-    "What can you help me with?",
-    "How do I use the chat interface?",
-    "Tell me about AgentDock."
-  ];
+  // Get agent-specific prompts from template or use fallbacks
+  const template = templates[agentId as TemplateId];
+  const suggestions = runtimeConfig?.chatSettings?.chatPrompts ? 
+                     Array.from(runtimeConfig.chatSettings.chatPrompts) : 
+                     template?.chatSettings?.chatPrompts ? 
+                     Array.from(template.chatSettings.chatPrompts) : 
+                     [
+                       "What can you help me with?",
+                       "How do I use the chat interface?",
+                       "Hello from AgentDock."
+                     ];
 
   // Handle loading states
   if (isInitializing) {

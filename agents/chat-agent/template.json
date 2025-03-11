@@ -24,6 +24,11 @@
         "historyLength": 50,
         "initialMessages": [
             "Hi! I'm your AI chat assistant. I'm here to help with any questions or topics you'd like to discuss. What's on your mind?"
+        ],
+        "chatPrompts": [
+            "What can you help me with?",
+            "Let's have a casual conversation",
+            "I need help with a complex topic"
         ]
     }
 } 

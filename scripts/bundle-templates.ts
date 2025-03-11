@@ -63,7 +63,8 @@ export function getTemplate(id: TemplateId): AgentConfig {
     nodes: [...template.nodes],
     chatSettings: {
       ...template.chatSettings,
-      initialMessages: template.chatSettings?.initialMessages ? [...template.chatSettings.initialMessages] : []
+      initialMessages: template.chatSettings?.initialMessages ? [...template.chatSettings.initialMessages] : [],
+      chatPrompts: template.chatSettings?.chatPrompts ? [...template.chatSettings.chatPrompts] : undefined
     }
   };
   

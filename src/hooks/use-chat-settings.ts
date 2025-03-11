@@ -19,6 +19,7 @@ interface ChatSettings {
   personality?: ValidatedPersonality;
   apiKey?: string;
   initialMessages?: readonly string[];
+  chatPrompts?: readonly string[];
 }
 
 // Helper to determine provider from node configuration
@@ -93,7 +94,8 @@ export function useChatSettings(agentId: string | null) {
           maxTokens: modelConfig.maxTokens || defaultValues[provider].maxTokens,
           personality: PersonalitySchema.parse(template.personality),
           apiKey: globalSettings.apiKeys[provider],
-          initialMessages: template.chatSettings?.initialMessages
+          initialMessages: template.chatSettings?.initialMessages,
+          chatPrompts: template.chatSettings?.chatPrompts
         });
 
         setDebugMode(globalSettings.core.debugMode || false);

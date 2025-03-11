@@ -41,5 +41,6 @@ export interface RuntimeConfig {
   personality?: ValidatedPersonality;
   chatSettings?: {
     initialMessages?: string[];
+    chatPrompts?: string[];
   };
 } 

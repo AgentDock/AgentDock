@@ -32,6 +32,11 @@
         "historyLength": 20,
         "initialMessages": [
             "What seems to be the problem? And don't waste my time with obvious symptoms—I need the weird stuff, the details that don't make sense. That's where the real diagnosis hides."
+        ],
+        "chatPrompts": [
+            "What can you help me with?",
+            "I have these unusual symptoms...",
+            "What's your diagnostic approach?"
         ]
     }
 }

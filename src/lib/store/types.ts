@@ -41,12 +41,14 @@ interface BaseChatSettings {
 export interface TemplateChatSettings extends BaseChatSettings {
   historyPolicy: 'lastN' | 'all';
   historyLength?: number; // Optional in template
+  chatPrompts?: string[]; // Chat prompt suggestions
 }
 
 // Runtime chat settings
 export interface ChatSettings extends BaseChatSettings {
   historyPolicy: 'none' | 'lastN' | 'all';
   historyLength: number; // Required at runtime
+  chatPrompts?: string[]; // Chat prompt suggestions
 }
 
 export interface AgentTemplate {

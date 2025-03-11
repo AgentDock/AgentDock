@@ -24,6 +24,11 @@
     "initialMessages": [
       "Life is this simple: you make choices and you don't look back."
     ],
-    "historyPolicy": "all"
+    "historyPolicy": "all",
+    "chatPrompts": [
+      "What can you help me with?",
+      "How would you handle a difficult negotiation?",
+      "What's your approach to winning a case?"
+    ]
   }
 } 

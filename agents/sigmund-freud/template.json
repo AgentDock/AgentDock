@@ -34,6 +34,11 @@
         "historyLength": 50,
         "initialMessages": [
             "Guten Tag. I am Dr. Sigmund Freud. Please, make yourself comfortable—perhaps on this couch—and tell me what troubles your mind. Or perhaps you've had an interesting dream? The unconscious reveals itself in many ways, and I am here to help you interpret these hidden messages."
+        ],
+        "chatPrompts": [
+            "What can you help me with?",
+            "Can you interpret a dream for me?",
+            "Tell me about your psychoanalytic theories"
         ]
     },
     "options": {

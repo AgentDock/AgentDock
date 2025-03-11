@@ -1,5 +1,5 @@
 import { BaseNode } from 'agentdock-core';
-import type { NodeMetadata, NodePort } from 'agentdock-core';
+import type { NodePort } from 'agentdock-core';
 import type { ChatNodeConfig, ChatNodeMetadata } from './types';
 
 export class ChatNode extends BaseNode<ChatNodeConfig> {

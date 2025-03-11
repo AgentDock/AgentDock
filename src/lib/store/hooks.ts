@@ -6,7 +6,7 @@
  */
 
 import { useAgents as useStore } from './index';
-import type { Store, Agent, AppState } from './types';
+import type { Store } from './types';
 
 // Type-safe hooks for accessing store slices
 

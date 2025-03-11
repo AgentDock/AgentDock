@@ -1,4 +1,3 @@
-import { BaseNode } from 'agentdock-core';
 import { ChatNode } from './chat-node';
 
 /**

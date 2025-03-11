@@ -9,8 +9,7 @@ import { tools as stockTools } from './stock-price';
 import { tools as weatherTools } from './weather';
 import { tools as searchTools } from './search';
 import { tools as deepResearchTools } from './deep-research';
-import type { Tool, ToolRegistry, ToolExecutionOptions } from './types';
-import { z } from 'zod';
+import type { ToolRegistry } from './types';
 
 // Combined tools registry
 const allTools: ToolRegistry = {

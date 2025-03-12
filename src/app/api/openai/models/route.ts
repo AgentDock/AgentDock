@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import { ModelRegistry } from '@/lib/models/registry';
+import { logger, LogCategory } from 'agentdock-core';
 
-export const runtime = 'edge';
+// Do NOT use edge runtime for this route
+// export const runtime = 'edge';
 
 interface OpenAIModel {
   id: string;
@@ -11,6 +14,10 @@ interface OpenAIModel {
   created: number;
 }
 
+/**
+ * OpenAI models endpoint
+ * This endpoint fetches models from OpenAI API and registers them
+ */
 export async function GET(req: NextRequest) {
   try {
     const apiKey = req.headers.get('x-api-key');
@@ -38,20 +45,24 @@ export async function GET(req: NextRequest) {
           // Include other relevant models as needed
           model.id.includes('text-embedding')
         )
-        .map(model => {
-          const formatted: OpenAIModel = {
-            id: model.id,
-            name: model.id,
-            description: 'OpenAI language model',
-            context_window: getContextWindowSize(model.id), // Helper function to determine context window
-            created: model.created
-          };
-          return formatted;
-        });
+        .map(model => ({
+          id: model.id,
+          displayName: model.id,
+          description: 'OpenAI language model',
+          contextWindow: getContextWindowSize(model.id),
+          defaultTemperature: 0.7,
+          defaultMaxTokens: 2048,
+          capabilities: ['text']
+        }));
+
+      // Register models with the registry
+      ModelRegistry.registerModels('openai', models);
+
+      logger.debug(LogCategory.API, 'OpenAIModelsAPI', `Processed ${models.length} models`);
 
       return NextResponse.json({ 
         valid: true,
-        models
+        models: ModelRegistry.getModelsForProvider('openai')
       });
     } catch (error) {
       // If the API key is invalid, OpenAI will throw an error

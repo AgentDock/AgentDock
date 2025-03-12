@@ -69,6 +69,8 @@ export interface AgentConfig {
     historyPolicy?: 'none' | 'lastN' | 'all';
     /** Number of messages to retain if historyPolicy is 'lastN' */
     historyLength?: number;
+    /** Chat prompt suggestions to display when chat is empty */
+    chatPrompts?: string[];
   };
   
   /** Maximum concurrent node executions */
@@ -93,6 +95,7 @@ export const AgentConfigSchema = z.object({
     initialMessages: z.array(z.string()).optional(),
     historyPolicy: z.enum(['none', 'lastN', 'all']).optional(),
     historyLength: z.number().optional(),
+    chatPrompts: z.array(z.string()).optional(),
   }),
   maxConcurrency: z.number().optional(),
   options: z.record(z.unknown()).optional()

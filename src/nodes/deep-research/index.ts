@@ -6,6 +6,7 @@
 import { z } from 'zod';
 import { Tool } from '../types';
 import { DeepResearchResult, DeepResearchReport } from './components';
+import { logger, LogCategory } from 'agentdock-core';
 
 /**
  * Schema for deep research tool parameters
@@ -29,7 +30,7 @@ export const deepResearchTool: Tool = {
   description: 'Perform in-depth research on a topic with multiple search iterations and summarization',
   parameters: deepResearchSchema,
   async execute({ query, depth = 1, breadth = 3 }) {
-    console.log(`[DeepResearchTool] Executing research for: "${query}" with depth: ${depth}, breadth: ${breadth}`);
+    logger.debug(LogCategory.NODE, '[DeepResearch]', `Executing deep research for query: ${query}`);
     
     // Simulate a multi-step research process
     // In a real implementation, this would:

@@ -32,6 +32,9 @@ export * from './llm-base';
 // Export the Anthropic LLM implementation
 export * from './anthropic-llm';
 
+// Export the Provider Registry
+export * from './provider-registry';
+
 /**
  * Create an LLM instance based on the provider
  */

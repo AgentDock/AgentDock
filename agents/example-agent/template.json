@@ -31,6 +31,11 @@
     "historyLength": 10,
     "initialMessages": [
       "Hello! I'm the Example Agent. I can help you with various tasks, including searching for information and performing deep research. How can I assist you today?"
+    ],
+    "chatPrompts": [
+      "What can you help me with?",
+      "Can you show me how to use your tools?",
+      "What makes you different from other agents?"
     ]
   },
   "options": {

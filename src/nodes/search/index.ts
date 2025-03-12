@@ -6,6 +6,7 @@
 import { z } from 'zod';
 import { Tool } from '../types';
 import { SearchResult, SearchResults } from './components';
+import { logger, LogCategory } from 'agentdock-core';
 
 /**
  * Schema for search tool parameters
@@ -28,7 +29,7 @@ export const searchTool: Tool = {
   description: 'Search the web for information on any topic',
   parameters: searchSchema,
   async execute({ query, limit = 5 }) {
-    console.log(`[SearchTool] Executing search for: "${query}" with limit: ${limit}`);
+    logger.debug(LogCategory.NODE, '[Search]', `Executing search for query: ${query}`);
     
     // Generate mock data
     const results: SearchResult[] = [

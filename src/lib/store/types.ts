@@ -7,6 +7,8 @@
 
 import type { BaseNode, NodeMetadata } from 'agentdock-core';
 import type { ValidatedPersonality } from 'agentdock-core/types/agent-config';
+import type { TemplateChatSettings, ChatSettings } from '@/lib/types/chat';
+
 export type { BaseNode };
 
 export interface ChatNodeConfig {
@@ -32,22 +34,24 @@ export interface ChatNode extends BaseNode<ChatNodeConfig> {
   chatMetadata: ChatNodeMetadata;
 }
 
-// Base chat settings interface
-interface BaseChatSettings {
-  initialMessages: string[];
-}
+// Import BaseChatSettings from shared types
+// interface BaseChatSettings {
+//   initialMessages: string[];
+// }
 
-// Template-specific chat settings
-export interface TemplateChatSettings extends BaseChatSettings {
-  historyPolicy: 'lastN' | 'all';
-  historyLength?: number; // Optional in template
-}
+// Import TemplateChatSettings from shared types
+// export interface TemplateChatSettings extends BaseChatSettings {
+//   historyPolicy: 'lastN' | 'all';
+//   historyLength?: number; // Optional in template
+//   chatPrompts?: string[]; // Chat prompt suggestions
+// }
 
-// Runtime chat settings
-export interface ChatSettings extends BaseChatSettings {
-  historyPolicy: 'none' | 'lastN' | 'all';
-  historyLength: number; // Required at runtime
-}
+// Import ChatSettings from shared types
+// export interface ChatSettings extends BaseChatSettings {
+//   historyPolicy: 'none' | 'lastN' | 'all';
+//   historyLength: number; // Required at runtime
+//   chatPrompts?: string[]; // Chat prompt suggestions
+// }
 
 export interface AgentTemplate {
   version?: string;

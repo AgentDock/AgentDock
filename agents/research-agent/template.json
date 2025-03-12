@@ -28,6 +28,11 @@
         "historyLength": 100,
         "initialMessages": [
             "Hello! I'm your AI research assistant. I can help you with research tasks, analysis, and information gathering. I have access to search tools and can perform deep research on topics. What would you like to research today?"
+        ],
+        "chatPrompts": [
+            "What can you help me with?",
+            "Can you research this topic for me?",
+            "How do you approach complex research questions?"
         ]
     }
 } 

@@ -10,7 +10,9 @@ import {
   LogCategory, 
   loadAgentConfig,
   AgentNode,
-  LLMProvider
+  LLMProvider,
+  SecureStorage,
+  ProviderRegistry
 } from 'agentdock-core';
 import { maskSensitiveData } from 'agentdock-core/utils/security-utils';
 import { templates, TemplateId } from '@/generated/templates';
@@ -38,6 +40,7 @@ export const runtime = 'edge';
 
 // Fallback API key (can be configured via environment variable)
 const FALLBACK_API_KEY = process.env.FALLBACK_API_KEY || '';
+const storage = SecureStorage.getInstance('agentdock');
 
 /**
  * POST handler for chat requests
@@ -63,17 +66,6 @@ export async function POST(
       );
     }
 
-    // Validate API key
-    const apiKey = request.headers.get('x-api-key');
-    if (!apiKey) {
-      throw new APIError(
-        'API key is required',
-        ErrorCode.LLM_API_KEY,
-        request.url,
-        'POST'
-      );
-    }
-    
     // Get LLM info from template
     const llmInfo = getLLMInfo(template);
     
@@ -82,6 +74,37 @@ export async function POST(
       agentId,
       provider: llmInfo.provider
     });
+
+    // Try to get API key from request headers
+    let apiKey = request.headers.get('x-api-key');
+    
+    // If no API key in headers, try to get from global settings
+    if (!apiKey) {
+      try {
+        const globalSettings = await storage.get<{ apiKeys: Record<string, string> }>("global_settings");
+        if (globalSettings?.apiKeys) {
+          apiKey = globalSettings.apiKeys[llmInfo.provider];
+          logger.debug(LogCategory.API, 'ChatRoute', 'Using API key from global settings', {
+            provider: llmInfo.provider,
+            hasKey: !!apiKey
+          });
+        }
+      } catch (error) {
+        logger.error(LogCategory.API, 'ChatRoute', 'Failed to load global settings', {
+          error: error instanceof Error ? error.message : String(error)
+        });
+      }
+    }
+
+    // If still no API key, throw error
+    if (!apiKey) {
+      throw new APIError(
+        'API key is required. Please add your API key in settings.',
+        ErrorCode.LLM_API_KEY,
+        request.url,
+        'POST'
+      );
+    }
 
     // Validate API key format
     if (!llmInfo.validateApiKey(apiKey)) {
@@ -106,9 +129,42 @@ export async function POST(
     }
 
     // Load and validate config
-    const config = await loadAgentConfig(template, apiKey);
-    const llmConfig = config.nodeConfigurations?.[llmInfo.provider];
+    // Create a mutable copy of the template with proper node configurations
+    const mutableTemplate = JSON.parse(JSON.stringify(template));
+    
+    // Get the correct node type from the provider
+    const nodeType = ProviderRegistry.getNodeTypeFromProvider(llmInfo.provider);
+    
+    // Ensure the node configuration exists for the provider
+    if (!mutableTemplate.nodeConfigurations) {
+      mutableTemplate.nodeConfigurations = {};
+    }
+    
+    if (!mutableTemplate.nodeConfigurations[nodeType]) {
+      mutableTemplate.nodeConfigurations[nodeType] = {
+        model: llmInfo.provider === 'anthropic' ? 'claude-3-7-sonnet-20250219' : 'gpt-4',
+        temperature: 0.7,
+        maxTokens: 2048
+      };
+      
+      logger.debug(LogCategory.API, 'ChatRoute', 'Created default node configuration', {
+        provider: llmInfo.provider,
+        nodeType,
+        config: mutableTemplate.nodeConfigurations[nodeType]
+      });
+    }
+    
+    const config = await loadAgentConfig(mutableTemplate, apiKey);
+    
+    // Check if the node configuration exists for the provider
+    const llmConfig = config.nodeConfigurations?.[nodeType];
     if (!llmConfig) {
+      logger.error(LogCategory.API, 'ChatRoute', 'LLM configuration not found', { 
+        provider: llmInfo.provider,
+        nodeType,
+        availableConfigs: Object.keys(config.nodeConfigurations || {})
+      });
+      
       throw new APIError(
         'LLM configuration not found',
         ErrorCode.CONFIG_NOT_FOUND,
@@ -141,7 +197,7 @@ export async function POST(
     // Create the AgentNode instance
     logger.debug(LogCategory.API, 'ChatRoute', 'Creating AgentNode instance', { agentId });
     const agent = new AgentNode(`agent-${agentId}`, {
-      agentConfig: template,
+      agentConfig: config,
       apiKey,
       fallbackApiKey,
       provider: llmInfo.provider.replace('llm.', '') as LLMProvider // Remove 'llm.' prefix

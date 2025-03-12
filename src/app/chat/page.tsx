@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense, useRef } from "react"
+import { Suspense, useRef, useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { ChatContainer } from "@/components/chat"
 import { logger, LogCategory } from 'agentdock-core'
@@ -21,9 +21,9 @@ function ChatPageContent() {
   const agentId = rawAgentId || null // Keep as null for type compatibility
   const chatContainerRef = useRef<{ handleReset: () => Promise<void> }>(null)
   
-  // Single hook for all chat settings
+  // Use the enhanced useChatSettings hook
   const { 
-    settings, 
+    chatSettings, 
     isLoading, 
     error, 
     debugMode 
@@ -37,45 +37,23 @@ function ChatPageContent() {
     api: `/api/chat/${agentId || ''}`, // Empty string fallback for type safety
     id: agentId || '', // Empty string fallback for type safety
     headers: {
-      'x-api-key': settings?.apiKey || ''
+      'x-api-key': chatSettings?.apiKey || ''
     },
     body: {
-      system: settings?.personality,
-      temperature: settings?.temperature,
-      maxTokens: settings?.maxTokens
+      system: chatSettings?.personality,
+      temperature: chatSettings?.temperature,
+      maxTokens: chatSettings?.maxTokens
     },
-    initialMessages: settings?.initialMessages ? 
-      settings.initialMessages.map(msg => ({ 
+    initialMessages: chatSettings?.initialMessages ? 
+      chatSettings.initialMessages.map(msg => ({ 
         id: crypto.randomUUID(),
         role: 'assistant' as const, 
-        content: msg,
-        createdAt: new Date()
-      })) : 
-      [],
-    sendExtraMessageFields: true,
-    streamProtocol: 'data',
-    onResponse: (response) => {
-      if (!response.ok) {
-        toast.error('Failed to send message');
-      }
-    },
-    onFinish: (_message) => {
-      try {
-        const storageKey = `ai-conversation-${agentId}`;
-        localStorage.setItem(storageKey, JSON.stringify(messages));
-      } catch (error) {
-        logger.error(
-          LogCategory.API, 
-          'ChatPage', 
-          'Failed to save messages', 
-          { error: error instanceof Error ? error.message : 'Unknown error' }
-        );
-      }
-    },
-    onError: (error) => {
-      toast.error(error.message);
-    }
+        content: msg 
+      })) : []
   });
+
+  const [_chatIsLoading, setChatIsLoading] = useState(false);
+  const [_chatError, setChatError] = useState<string | null>(null);
 
   // Redirect if no agent or invalid agent
   if (!agentId || !templates[agentId as TemplateId]) {
@@ -135,7 +113,7 @@ function ChatPageContent() {
         className="flex-1"
         header={
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-semibold">{settings?.name}</h1>
+            <h1 className="text-xl font-semibold">{chatSettings?.name}</h1>
             <Button
               variant="ghost"
               size="icon"
@@ -150,7 +128,7 @@ function ChatPageContent() {
         agentId={agentId}
       />
 
-      {debugMode && settings && (
+      {debugMode && chatSettings && (
         <footer className="flex-none border-t bg-muted/50">
           <div className="mx-auto max-w-4xl">
             <ScrollArea className="h-40">
@@ -162,15 +140,15 @@ function ChatPageContent() {
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="font-medium">Model</p>
-                    <p className="text-muted-foreground">{settings.model}</p>
+                    <p className="text-muted-foreground">{chatSettings.model}</p>
                   </div>
                   <div>
                     <p className="font-medium">Temperature</p>
-                    <p className="text-muted-foreground">{settings.temperature}</p>
+                    <p className="text-muted-foreground">{chatSettings.temperature}</p>
                   </div>
                   <div>
                     <p className="font-medium">Max Tokens</p>
-                    <p className="text-muted-foreground">{settings.maxTokens}</p>
+                    <p className="text-muted-foreground">{chatSettings.maxTokens}</p>
                   </div>
                   <div>
                     <p className="font-medium">Message Count</p>

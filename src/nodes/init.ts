@@ -6,6 +6,8 @@
  * This file initializes the registry for these custom tools.
  */
 
+import { logger, LogCategory } from 'agentdock-core';
+
 // Global flag to persist across hot reloads
 declare global {
   // eslint-disable-next-line no-var
@@ -19,19 +21,19 @@ declare global {
 export function initToolRegistry() {
   // Prevent multiple initializations
   if (global.__toolRegistryInitialized) {
-    console.debug('Tool registry already initialized, skipping');
+    logger.debug(LogCategory.NODE, '[NodeRegistry]', 'Tool registry already initialized, skipping');
     return;
   }
 
   try {
-    console.debug('Initializing tool registry...');
+    logger.debug(LogCategory.NODE, '[NodeRegistry]', 'Initializing tool registry...');
     
     // Custom tools are registered in registry.ts when it's imported
     
     // Mark as initialized globally
     global.__toolRegistryInitialized = true;
   } catch (error) {
-    console.error('Failed to initialize tool registry:', error);
+    logger.error(LogCategory.NODE, '[NodeRegistry]', 'Failed to initialize tool registry:', { error });
     throw error;
   }
 }

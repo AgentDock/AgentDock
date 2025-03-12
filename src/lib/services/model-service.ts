@@ -16,7 +16,12 @@ export class ModelService {
    * This does NOT fetch models from the API
    */
   static getModels(provider: LLMProvider): ModelMetadata[] {
-    return ModelRegistry.getModelsForProvider(provider);
+    try {
+      return ModelRegistry.getModelsForProvider(provider);
+    } catch (error) {
+      logger.error(LogCategory.LLM, '[ModelService]', `Error getting models for ${provider}:`, { error });
+      return [];
+    }
   }
   
   /**
@@ -29,7 +34,8 @@ export class ModelService {
       const response = await fetch(`/api/${provider}/models`, {
         headers: {
           'x-api-key': apiKey
-        }
+        },
+        cache: 'no-store'
       });
       
       if (!response.ok) {
@@ -46,7 +52,7 @@ export class ModelService {
       return ModelRegistry.getModelsForProvider(provider);
     } catch (error) {
       logger.error(LogCategory.LLM, '[ModelService]', `Error fetching models for ${provider}:`, { error });
-      throw error;
+      return [];
     }
   }
   
@@ -55,7 +61,11 @@ export class ModelService {
    * This clears the models from the registry without fetching new ones
    */
   static resetModels(provider: LLMProvider | LLMProvider[]): void {
-    ModelRegistry.resetModels(Array.isArray(provider) ? provider : [provider]);
+    try {
+      ModelRegistry.resetModels(Array.isArray(provider) ? provider : [provider]);
+    } catch (error) {
+      logger.error(LogCategory.LLM, '[ModelService]', `Error resetting models for ${provider}:`, { error });
+    }
   }
   
   /**
@@ -67,7 +77,8 @@ export class ModelService {
       const response = await fetch(`/api/${provider}/models`, {
         headers: {
           'x-api-key': apiKey
-        }
+        },
+        cache: 'no-store'
       });
       
       const data = await response.json();

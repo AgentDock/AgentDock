@@ -107,7 +107,7 @@ function ChatPageContent() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] flex-col -m-8 overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-4rem)] md:h-[calc(100vh-4rem)] -mb-8 overflow-hidden">
       <ChatContainer
         ref={chatContainerRef}
         className="flex-1"
@@ -129,7 +129,7 @@ function ChatPageContent() {
       />
 
       {debugMode && chatSettings && (
-        <footer className="flex-none border-t bg-muted/50">
+        <footer className="flex-none bg-muted/50">
           <div className="mx-auto max-w-4xl">
             <ScrollArea className="h-40">
               <div className="space-y-4 p-4">

@@ -141,7 +141,7 @@ export function MessageInput({
 
   return (
     <div 
-      className="relative flex w-full grow flex-col overflow-hidden bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95"
+      className="relative flex w-full grow flex-col overflow-hidden bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95 rounded-lg"
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}

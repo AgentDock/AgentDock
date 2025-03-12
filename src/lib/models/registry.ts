@@ -16,11 +16,26 @@ import {
  * This is separate from the core package to allow for dynamic model registration
  */
 export class ModelRegistry {
-  private static models: Map<string, ModelMetadata> = new Map();
-  private static modelsByProvider: Map<LLMProvider, string[]> = new Map([
-    ['anthropic', []],
-    ['openai', []]
-  ]);
+  private static _models: Map<string, ModelMetadata> | null = null;
+  private static _modelsByProvider: Map<LLMProvider, string[]> | null = null;
+
+  // Lazy initialization of maps
+  private static get models(): Map<string, ModelMetadata> {
+    if (!this._models) {
+      this._models = new Map();
+    }
+    return this._models;
+  }
+
+  private static get modelsByProvider(): Map<LLMProvider, string[]> {
+    if (!this._modelsByProvider) {
+      this._modelsByProvider = new Map([
+        ['anthropic', []],
+        ['openai', []]
+      ]);
+    }
+    return this._modelsByProvider;
+  }
 
   /**
    * Register models with the registry

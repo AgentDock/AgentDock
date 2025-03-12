@@ -116,8 +116,8 @@ export function Chat({
           </div>
         )}
       </div>
-      <div className="flex-none bg-background">
-        <div className="mx-auto w-full max-w-4xl px-4 py-4">
+      <div className="flex-none bg-background sticky bottom-0 left-0 right-0 z-10">
+        <div className="mx-auto w-full max-w-4xl px-4 py-2">
           <ChatForm
             isPending={isGenerating || isTyping}
             handleSubmit={handleFormSubmit}

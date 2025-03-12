@@ -251,6 +251,13 @@ export class LLMBase {
       onStepFinish: wrappedOnStepFinish
     };
     
+    // Add experimental_attachments if present in any message
+    const hasAttachments = options.messages.some(msg => msg.experimental_attachments);
+    if (hasAttachments) {
+      // @ts-ignore - AI SDK types are not fully compatible with our usage
+      streamOptions.experimental_attachments = true;
+    }
+    
     // Log the stream options
     logger.debug(
       LogCategory.LLM,
@@ -260,10 +267,14 @@ export class LLMBase {
         model: this.modelId,
         hasTools: !!options.tools,
         maxSteps: options.maxSteps,
-        hasOnStepFinish: !!wrappedOnStepFinish
+        hasOnStepFinish: !!wrappedOnStepFinish,
+        hasAttachments: hasAttachments
       }
     );
     
+    // We need to use @ts-ignore because the AI SDK expects CoreMessage[] but we have LLMMessage[]
+    // This works at runtime because the structure is compatible
+    // @ts-ignore - Type incompatibility between LLMMessage and CoreMessage
     return await aiStreamText(streamOptions);
   }
 

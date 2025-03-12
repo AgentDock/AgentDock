@@ -32,12 +32,14 @@ export interface LLMConfig {
 
 /**
  * LLM message interface
+ * This interface is designed to be compatible with CoreMessage from the AI SDK
  */
 export interface LLMMessage {
-  role: 'user' | 'assistant' | 'system';
+  role: 'system' | 'user' | 'assistant' | 'tool';
   content: string;
   id?: string;
   createdAt?: number;
+  experimental_attachments?: any[];
 }
 
 /**

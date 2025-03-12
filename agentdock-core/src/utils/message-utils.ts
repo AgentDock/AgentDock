@@ -12,22 +12,35 @@ import { LLMMessage } from '../llm/types';
  */
 export function convertCoreToLLMMessage(message: CoreMessage): LLMMessage {
   // Handle user messages with complex content
-  if (message.role === 'user' && typeof message.content !== 'string') {
-    // Extract text content from user message parts
-    const textContent = Array.isArray(message.content) 
-      ? message.content
-          .filter(part => typeof part === 'object' && 'type' in part && part.type === 'text')
-          .map(part => (part as any).text || '')
-          .join(' ')
-      : '';
+  if (message.role === 'user') {
+    // Check if message has experimental_attachments
+    if ((message as any).experimental_attachments) {
+      // Keep the attachments in the message
+      return {
+        role: message.role,
+        content: typeof message.content === 'string' ? message.content : '',
+        id: (message as any).id,
+        createdAt: (message as any).createdAt,
+        experimental_attachments: (message as any).experimental_attachments
+      };
+    }
     
-    return {
-      role: message.role,
-      content: textContent,
-      // id and createdAt are optional in LLMMessage
-      id: (message as any).id,
-      createdAt: (message as any).createdAt ? new Date((message as any).createdAt).getTime() : undefined
-    };
+    if (typeof message.content !== 'string') {
+      // Extract text content from user message parts
+      const textContent = Array.isArray(message.content) 
+        ? message.content
+            .filter(part => typeof part === 'object' && 'type' in part && part.type === 'text')
+            .map(part => (part as any).text || '')
+            .join(' ')
+        : '';
+      
+      return {
+        role: message.role,
+        content: textContent,
+        id: (message as any).id,
+        createdAt: (message as any).createdAt
+      };
+    }
   }
   
   // For tool messages, convert to assistant role (LLMMessage doesn't support tool role)

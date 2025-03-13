@@ -1,6 +1,11 @@
 /**
  * @fileoverview Agent node implementation for the AgentDock framework.
  * This node provides a clean abstraction for agent functionality with tool calling support.
+ * 
+ * Features:
+ * - Handles agent functionality with tool calling support
+ * - Supports fallback LLM instances
+ * - Injects current date and time into system prompts to ensure agents have access to current time information
  */
 
 import { BaseNode } from './base-node';
@@ -172,6 +177,12 @@ export class AgentNode extends BaseNode<AgentNodeConfig> {
 
   /**
    * Handle a message and return a response
+   * 
+   * This method:
+   * 1. Prepares the system prompt and messages
+   * 2. Injects current date and time information into the system prompt
+   * 3. Calls the LLM with the prepared messages and tools
+   * 4. Returns the LLM response
    */
   async handleMessage(options: AgentNodeOptions): Promise<any> {
     try {
@@ -179,9 +190,23 @@ export class AgentNode extends BaseNode<AgentNodeConfig> {
       
       // Prepare system message and messages array
       const systemPrompt = options.system || this.config.agentConfig.personality;
-      const finalSystemPrompt = typeof systemPrompt === 'string' 
+      let finalSystemPrompt = typeof systemPrompt === 'string' 
         ? systemPrompt 
         : Array.isArray(systemPrompt) ? systemPrompt.join('\n') : String(systemPrompt || '');
+      
+      // Inject current date and time information into the system prompt
+      const now = new Date();
+      const dateTimeInfo = `Current date and time: ${now.toISOString()} (ISO format)
+Current date: ${now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+Current time: ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' })}`;
+      
+      // Append the date/time information to the system prompt
+      finalSystemPrompt = `${finalSystemPrompt}\n\n${dateTimeInfo}`;
+      
+      logger.debug(LogCategory.NODE, 'AgentNode', 'Injected current date/time into system prompt', { 
+        nodeId: this.id,
+        currentDate: now.toISOString()
+      });
       
       const messagesWithSystem: CoreMessage[] = [
         { role: 'system', content: finalSystemPrompt },

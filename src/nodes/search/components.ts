@@ -3,6 +3,14 @@
  * These components are used by the search tool to display information.
  */
 
+import { 
+  formatBold, 
+  formatHeader, 
+  formatLink, 
+  joinSections, 
+  createToolResult 
+} from '@/lib/utils/markdown-utils';
+
 /**
  * Search result interface
  */
@@ -28,19 +36,19 @@ interface SearchResultsProps {
 function formatSearchResult(result: SearchResult, index?: number): string {
   // Special formatting for featured snippets
   if (result.isFeatured) {
-    return `**Featured Snippet:** ${result.snippet}`;
+    return `${formatBold('Featured Snippet:')} ${result.snippet}`;
   }
   
   // Special formatting for knowledge graph
   if (result.isKnowledgeGraph) {
-    return `**${result.title}**\n${result.snippet}`;
+    return `${formatBold(result.title)}\n${result.snippet}`;
   }
   
   // Standard result formatting with proper URL handling
-  const displayUrl = result.url === '#' ? '' : ` - [Source](${result.url})`;
-  const resultNumber = index !== undefined ? `**${index + 1}.** ` : '';
+  const displayUrl = result.url === '#' ? '' : ` - ${formatLink('Source', result.url)}`;
+  const resultNumber = index !== undefined ? `${formatBold(`${index + 1}.`)} ` : '';
   
-  return `${resultNumber}**${result.title}**${displayUrl}\n${result.snippet}`;
+  return `${resultNumber}${formatBold(result.title)}${displayUrl}\n${result.snippet}`;
 }
 
 /**
@@ -49,9 +57,9 @@ function formatSearchResult(result: SearchResult, index?: number): string {
  * This follows the same pattern as the weather components,
  * returning an object with type and content properties.
  */
-export function SearchResults(props: SearchResultsProps): { type: string; content: string } {
+export function SearchResults(props: SearchResultsProps) {
   // Format header
-  const header = `## Search Results for "${props.query}"`;
+  const header = formatHeader(`Search Results for "${props.query}"`);
   
   // Format results as markdown with proper spacing
   const resultsMarkdown = props.results
@@ -59,8 +67,8 @@ export function SearchResults(props: SearchResultsProps): { type: string; conten
     .join('\n\n');
 
   // Return the complete formatted output as an object with type and content
-  return {
-    type: 'search_results',
-    content: `${header}\n\n${resultsMarkdown}`
-  };
+  return createToolResult(
+    'search_results',
+    joinSections(header, resultsMarkdown)
+  );
 } 

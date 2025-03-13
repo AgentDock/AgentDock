@@ -73,18 +73,70 @@ Each tool MUST have components that format its output:
 
 ```typescript
 // components.ts
+import { formatBold, formatHeader, joinSections, createToolResult } from '@/lib/utils/markdown-utils';
+
 export interface MyComponentProps {
   result: string;
   timestamp: string;
 }
 
 export function MyComponent(props: MyComponentProps) {
-  return `**Result**: ${props.result}
-Last Updated: ${new Date(props.timestamp).toLocaleString()}`;
+  return createToolResult(
+    'my_component',
+    joinSections(
+      formatHeader('Result'),
+      `${formatBold('Value')}: ${props.result}`,
+      `Last Updated: ${new Date(props.timestamp).toLocaleString()}`
+    )
+  );
 }
 ```
 
-### 5. API Access and Security
+### 5. Shared Markdown Utilities
+
+AgentDock provides shared markdown utilities to ensure consistent formatting across all tools. These utilities are available in `src/lib/utils/markdown-utils.ts` and should be used for all markdown formatting:
+
+```typescript
+// Example of using shared markdown utilities
+import { 
+  formatBold, 
+  formatHeader, 
+  formatLink, 
+  joinSections, 
+  createToolResult 
+} from '@/lib/utils/markdown-utils';
+
+export function MyComponent(props: MyComponentProps) {
+  // Format a header
+  const header = formatHeader(`Results for "${props.query}"`);
+  
+  // Format items with consistent styling
+  const items = props.results.map((result, index) => {
+    return `${formatBold(`${index + 1}.`)} ${result.title} - ${formatLink('Source', result.url)}`;
+  }).join('\n\n');
+  
+  // Join sections with proper spacing
+  return createToolResult(
+    'my_component',
+    joinSections(header, items)
+  );
+}
+```
+
+Available markdown utilities include:
+- `cleanText(text)` - Clean text by removing excessive newlines, markdown formatting, and HTML tags
+- `cleanUrl(url)` - Clean a URL by removing tracking parameters
+- `formatHeader(text, level)` - Format a header with consistent styling
+- `formatSubheader(text)` - Format a subheader with consistent styling
+- `formatBold(text)` - Format text as bold
+- `formatItalic(text)` - Format text as italic
+- `formatLink(text, url)` - Format a link with proper markdown
+- `formatListItem(text, index, ordered)` - Format a list item with proper indentation
+- `formatErrorMessage(type, message, details)` - Format an error message with consistent styling
+- `createToolResult(type, content)` - Create a standard tool result object
+- `joinSections(...sections)` - Join multiple sections with proper spacing
+
+### 6. API Access and Security
 
 When implementing tools that access external APIs, follow these best practices:
 
@@ -124,36 +176,52 @@ Key security principles:
 - Implement proper error handling for API failures
 - Consider implementing rate limiting for APIs with usage restrictions
 
-### 6. Real Examples
+### 7. Real Examples
 
 #### Search Tool
 ```typescript
 // search/index.ts
+import { formatErrorMessage, createToolResult } from '@/lib/utils/markdown-utils';
+
 export const searchTool: Tool = {
   name: 'search',
   description: 'Search the web for information',
   parameters: searchSchema,
   async execute({ query, limit = 5 }) {
-    const results = await performSearch(query, limit);
-    return SearchResults({ query, results });  // Uses SearchResults component
+    try {
+      const results = await performSearch(query, limit);
+      return SearchResults({ query, results });  // Uses SearchResults component
+    } catch (error) {
+      return createToolResult(
+        'search_error',
+        formatErrorMessage('Error', `Unable to search for "${query}": ${error.message}`)
+      );
+    }
   }
 };
 
 export const tools = { search: searchTool };
 
 // search/components.ts
+import { formatBold, formatHeader, formatLink, joinSections, createToolResult } from '@/lib/utils/markdown-utils';
+
 export function SearchResults(props: SearchResultsProps) {
   const resultsMarkdown = props.results.map((result, index) => {
-    return `### ${index + 1}. [${result.title}](${result.url})\n${result.snippet}\n`;
-  }).join('\n');
+    return `${formatBold(`${index + 1}.`)} ${formatBold(result.title)} - ${formatLink('Source', result.url)}\n${result.snippet}`;
+  }).join('\n\n');
   
-  return `## Search Results for "${props.query}"\n\n${resultsMarkdown}`;
+  return createToolResult(
+    'search_results',
+    joinSections(formatHeader(`Search Results for "${props.query}"`), resultsMarkdown)
+  );
 }
 ```
 
 #### Stock Price Tool
 ```typescript
 // stock-price/index.ts
+import { createToolResult } from '@/lib/utils/markdown-utils';
+
 export const stockPriceTool: Tool = {
   name: 'stock_price',
   description: 'Get stock price',
@@ -167,42 +235,60 @@ export const stockPriceTool: Tool = {
 export const tools = { stock_price: stockPriceTool };
 
 // stock-price/components.ts
+import { formatBold, createToolResult } from '@/lib/utils/markdown-utils';
+
 export function StockPrice(props: StockPriceProps) {
-  return `📈 **${props.symbol}** Stock Price
-Price: ${formatCurrency(props.price, props.currency)}`;
+  return createToolResult(
+    'stock_price',
+    `📈 ${formatBold(props.symbol)} Stock Price\nPrice: ${formatCurrency(props.price, props.currency)}`
+  );
 }
 ```
 
 #### Weather Tool (with API access)
 ```typescript
 // weather/index.ts
+import { formatErrorMessage, createToolResult } from '@/lib/utils/markdown-utils';
+
 export const weatherTool: Tool = {
   name: 'weather',
   description: 'Get weather forecast',
   parameters: weatherSchema,
   async execute({ location }) {
-    // 1. Parse or geocode the location
-    const [lat, lon, name] = await getCoordinates(location);
-    
-    // 2. Get weather data (API call happens server-side)
-    const forecast = await getWeatherForecast(lat, lon);
-    
-    // 3. Format with component
-    return Weather({ location: name, forecast });
+    try {
+      // 1. Parse or geocode the location
+      const [lat, lon, name] = await getCoordinates(location);
+      
+      // 2. Get weather data (API call happens server-side)
+      const forecast = await getWeatherForecast(lat, lon);
+      
+      // 3. Format with component
+      return Weather({ location: name, forecast });
+    } catch (error) {
+      return createToolResult(
+        'weather_error',
+        formatErrorMessage('Error', `Unable to get weather for "${location}": ${error.message}`)
+      );
+    }
   }
 };
 
-// weather/utils.ts
-export async function getWeatherForecast(lat: number, lon: number): Promise<Forecast> {
-  // API call encapsulated in utility function
-  const url = `https://api.weather.com/forecast?lat=${lat}&lon=${lon}`;
+// weather/components.ts
+import { formatBold, formatHeader, formatSubheader, joinSections, createToolResult } from '@/lib/utils/markdown-utils';
+
+export function Weather(props: WeatherProps) {
+  const current = formatCurrentWeather(props.current);
+  const forecast = formatForecast(props.forecast);
   
-  // If API required authentication:
-  // const url = `https://api.weather.com/forecast?key=${process.env.WEATHER_API_KEY}&lat=${lat}&lon=${lon}`;
-  
-  const response = await fetch(url);
-  if (!response.ok) throw new Error('Weather API error');
-  return await response.json();
+  return createToolResult(
+    'weather_complete',
+    joinSections(
+      current,
+      formatHeader('7-Day Forecast'),
+      forecast,
+      `Last updated: ${new Date().toLocaleString()}`
+    )
+  );
 }
 ```
 

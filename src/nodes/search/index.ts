@@ -8,6 +8,7 @@ import { Tool } from '../types';
 import { SearchResults } from './components';
 import { searchWeb } from './utils';
 import { logger, LogCategory } from 'agentdock-core';
+import { formatErrorMessage, createToolResult } from '@/lib/utils/markdown-utils';
 
 /**
  * Schema for search tool parameters
@@ -23,16 +24,6 @@ const searchSchema = z.object({
 type SearchParams = z.infer<typeof searchSchema>;
 
 /**
- * Format an error message for display
- */
-function formatErrorMessage(type: string, message: string, details?: string): string {
-  const header = `## Search ${type}`;
-  const detailsSection = details ? `\n\n*${details}*` : '';
-  
-  return `${header}\n\n${message}${detailsSection}`;
-}
-
-/**
  * Search tool implementation
  */
 export const searchTool: Tool = {
@@ -46,10 +37,10 @@ export const searchTool: Tool = {
       // Validate input
       if (!query.trim()) {
         logger.warn(LogCategory.NODE, '[Search]', 'Empty search query provided');
-        return {
-          type: 'search_error',
-          content: formatErrorMessage('Error', 'Please provide a non-empty search query.')
-        };
+        return createToolResult(
+          'search_error',
+          formatErrorMessage('Error', 'Please provide a non-empty search query.')
+        );
       }
       
       // Get actual search results from the API
@@ -89,10 +80,7 @@ export const searchTool: Tool = {
         );
       }
       
-      return {
-        type: 'search_error',
-        content: errorContent
-      };
+      return createToolResult('search_error', errorContent);
     }
   }
 };

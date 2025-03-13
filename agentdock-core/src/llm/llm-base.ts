@@ -30,6 +30,11 @@ export interface LLMTextOptions {
   messages: CoreMessage[];
   tools?: Record<string, any>;
   onFinish?: (result: string) => void;
+  toolContext?: {
+    isToolInternalCall: boolean;
+    toolName: string;
+    operation: string;
+  };
 }
 
 /**
@@ -38,10 +43,14 @@ export interface LLMTextOptions {
 export interface LLMStreamOptions {
   messages: LLMMessage[];
   tools?: Record<string, any>;
-  maxSteps?: number;
-  onToken?: (token: string) => void;
   onFinish?: (result: string) => void;
   onStepFinish?: (stepData: StepData) => void;
+  maxSteps?: number;
+  toolContext?: {
+    isToolInternalCall: boolean;
+    toolName: string;
+    operation: string;
+  };
 }
 
 /**
@@ -112,11 +121,17 @@ export class LLMBase {
    * Generate text from messages
    */
   async generateText(options: LLMTextOptions): Promise<GenerateTextResult<any, any>> {
+    // Check if this is a tool-internal call
+    const isToolCall = options.toolContext?.isToolInternalCall || false;
+    
     logger.debug(LogCategory.LLM, 'Generating text', JSON.stringify({
       provider: this.provider,
       modelId: this.modelId,
       messageCount: options.messages.length,
-      hasTools: !!options.tools
+      hasTools: !!options.tools,
+      isToolCall: isToolCall,
+      toolName: options.toolContext?.toolName,
+      operation: options.toolContext?.operation
     }));
 
     // Reset token usage
@@ -168,12 +183,20 @@ export class LLMBase {
    * Stream text from messages
    */
   async streamText(options: LLMStreamOptions): Promise<StreamTextResult<any, any>> {
+    // Check if this is a tool-internal call
+    const isToolCall = options.toolContext?.isToolInternalCall || false;
+    
     logger.debug(LogCategory.LLM, 'Streaming text', JSON.stringify({
       provider: this.provider,
       modelId: this.modelId,
       messageCount: options.messages.length,
       hasTools: !!options.tools,
-      maxSteps: options.maxSteps
+      maxSteps: options.maxSteps,
+      hasOnStepFinish: !!options.onStepFinish,
+      hasAttachments: options.messages.some(msg => msg.experimental_attachments),
+      isToolCall: isToolCall,
+      toolName: options.toolContext?.toolName,
+      operation: options.toolContext?.operation
     }));
 
     // Reset token usage
@@ -223,6 +246,15 @@ export class LLMBase {
     // Create a wrapper for the onStepFinish callback if provided
     const originalOnStepFinish = options.onStepFinish;
     const wrappedOnStepFinish = originalOnStepFinish ? (stepData: any) => {
+      // If this is a tool-internal call, add the toolContext to the step data
+      if (options.toolContext?.isToolInternalCall) {
+        stepData.metadata = {
+          isToolInternalCall: true,
+          toolName: options.toolContext.toolName,
+          operation: options.toolContext.operation
+        };
+      }
+      
       // Log step completion
       logger.debug(
         LogCategory.LLM,
@@ -231,7 +263,8 @@ export class LLMBase {
         { 
           hasToolCalls: stepData.toolCalls && stepData.toolCalls.length > 0,
           hasToolResults: stepData.toolResults && Object.keys(stepData.toolResults).length > 0,
-          finishReason: stepData.finishReason
+          finishReason: stepData.finishReason,
+          isToolInternalCall: options.toolContext?.isToolInternalCall || false
         }
       );
       
@@ -256,6 +289,12 @@ export class LLMBase {
     if (hasAttachments) {
       // @ts-ignore - AI SDK types are not fully compatible with our usage
       streamOptions.experimental_attachments = true;
+    }
+    
+    // Add toolContext if this is a tool-internal call
+    if (options.toolContext?.isToolInternalCall) {
+      // @ts-ignore - AI SDK types are not fully compatible with our usage
+      streamOptions.toolContext = options.toolContext;
     }
     
     // Log the stream options

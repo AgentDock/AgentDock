@@ -208,6 +208,16 @@ export async function POST(
       messages,
       system,
       onStepFinish: (stepData) => {
+        // Check if this is a tool-internal error (from deep research or other tools using LLM)
+        if (stepData.finishReason === 'error' && stepData.metadata?.isToolInternalCall) {
+          // This is an expected error from a tool using LLM internally
+          logger.debug(LogCategory.API, 'ChatRoute', 'Tool internal LLM call completed', {
+            toolName: stepData.metadata?.toolName,
+            operation: stepData.metadata?.operation
+          });
+          return; // Skip normal error handling
+        }
+        
         logger.debug(LogCategory.API, 'ChatRoute', 'Step finished', {
           hasText: !!stepData.text,
           hasToolCalls: !!stepData.toolCalls && stepData.toolCalls.length > 0,

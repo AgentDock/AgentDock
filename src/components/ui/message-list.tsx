@@ -20,6 +20,9 @@ interface MessageListProps {
   className?: string
 }
 
+// Memoized message component to prevent unnecessary re-renders
+const MemoizedChatMessage = React.memo(ChatMessage);
+
 export function MessageList({
   messages,
   showTimeStamps = true,
@@ -47,7 +50,7 @@ export function MessageList({
             : messageOptions
 
         return (
-          <ChatMessage
+          <MemoizedChatMessage
             key={message.id}
             {...message}
             showTimeStamp={showTimeStamps}

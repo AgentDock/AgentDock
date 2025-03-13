@@ -117,36 +117,37 @@ export class AgentNode extends BaseNode<AgentNodeConfig> {
   constructor(id: string, config: AgentNodeConfig) {
     super(id, config);
     
+    // Validate API key
     if (!config.apiKey) {
-      throw createError('node', 'Missing API key', ErrorCode.NODE_VALIDATION);
+      throw new Error('API key is required for AgentNode');
     }
     
-    logger.debug(LogCategory.NODE, 'AgentNode', 'Creating agent node', { 
-      nodeId: this.id,
-      apiKeyPrefix: maskSensitiveData(config.apiKey, 8),
-      hasFallback: !!config.fallbackApiKey
-    });
+    // Validate API key format for Anthropic
+    if (config.provider === 'anthropic' && !config.apiKey.startsWith('sk-ant-')) {
+      throw new Error('Invalid Anthropic API key format. API key must start with "sk-ant-"');
+    }
     
-    try {
-      const llmConfig = this.getLLMConfig(config);
-      this.llm = createLLM(llmConfig);
-      
-      if (config.fallbackApiKey) {
-        this.fallbackLlm = createLLM({...llmConfig, apiKey: config.fallbackApiKey});
+    // Create LLM instance directly
+    const llmConfig = this.getLLMConfig(config);
+    this.llm = createLLM(llmConfig);
+    
+    // Create fallback LLM instance if fallback API key is provided
+    if (config.fallbackApiKey) {
+      try {
+        const fallbackConfig = {
+          ...llmConfig,
+          apiKey: config.fallbackApiKey
+        };
+        this.fallbackLlm = createLLM(fallbackConfig);
+      } catch (error) {
+        logger.warn(
+          LogCategory.NODE,
+          'AgentNode',
+          'Failed to create fallback LLM instance',
+          { error: error instanceof Error ? error.message : String(error) }
+        );
+        this.fallbackLlm = null;
       }
-      
-      logger.debug(LogCategory.NODE, 'AgentNode', 'LLM instances created', { 
-        nodeId: this.id, 
-        model: llmConfig.model,
-        hasFallback: !!this.fallbackLlm
-      });
-    } catch (error) {
-      throw createError(
-        'node', 
-        `Failed to create LLM: ${error instanceof Error ? error.message : 'Unknown error'}`, 
-        ErrorCode.NODE_EXECUTION, 
-        { error }
-      );
     }
   }
 
@@ -304,7 +305,39 @@ Current time: ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-di
    */
   private getTools(): Record<string, any> {
     try {
-      return getToolRegistry().getToolsForAgent(this.config.agentConfig.nodes || []);
+      const tools = getToolRegistry().getToolsForAgent(this.config.agentConfig.nodes || []);
+      
+      // Create LLM context for tools
+      const llmContext = {
+        apiKey: this.config.apiKey,
+        provider: this.config.provider || 'anthropic',
+        model: this.getLLM().modelId,
+        llm: this.getLLM()
+      };
+      
+      // Wrap tools to inject LLM context
+      const wrappedTools: Record<string, any> = {};
+      
+      for (const [name, tool] of Object.entries(tools)) {
+        // Create a wrapper for the tool's execute function
+        const originalExecute = tool.execute;
+        
+        // Create a new execute function that injects the LLM context
+        tool.execute = async (params: any, options: any) => {
+          // Create new options with LLM context
+          const newOptions = {
+            ...options,
+            llmContext
+          };
+          
+          // Call the original execute function with the new options
+          return await originalExecute(params, newOptions);
+        };
+        
+        wrappedTools[name] = tool;
+      }
+      
+      return wrappedTools;
     } catch (error) {
       logger.error(LogCategory.NODE, 'AgentNode', 'Failed to get tools', { 
         nodeId: this.id,

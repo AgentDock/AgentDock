@@ -7,7 +7,7 @@ import { Code2, Loader2, Terminal, ChevronDown, ChevronUp } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { FilePreview } from "@/components/ui/file-preview"
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer"
-import type { ToolInvocation } from 'agentdock-core'
+import type { BaseToolInvocation, ToolState } from 'agentdock-core'
 
 const chatBubbleVariants = cva(
   "group/message relative break-words rounded-lg p-3 text-sm sm:max-w-[70%]",
@@ -55,6 +55,15 @@ interface Attachment {
   name?: string
   contentType?: string
   url: string
+}
+
+// Custom ToolInvocation type that extends BaseToolInvocation with the additional properties needed
+type ToolInvocation = Omit<BaseToolInvocation, 'state'> & {
+  state: ToolState | 'partial-call';
+  result?: {
+    content?: string;
+    [key: string]: any;
+  } | any;
 }
 
 export interface Message {
@@ -225,31 +234,43 @@ function dataUrlToUint8Array(data: string) {
   return new Uint8Array(buf)
 }
 
-function ToolCall({
+export function ToolCall({
   toolInvocations,
 }: Pick<ChatMessageProps, "toolInvocations">) {
   const [expandedTools, setExpandedTools] = React.useState<Record<string, boolean>>({});
   
   const processedToolsRef = React.useRef<Set<string>>(new Set());
+  const toolInvocationsRef = React.useRef(toolInvocations);
 
+  // Only update expandedTools when toolInvocations actually change
   React.useEffect(() => {
-    if (toolInvocations?.length) {
-      setExpandedTools(prevState => {
-        const newState = { ...prevState };
-        
-        toolInvocations.forEach((invocation, index) => {
-          const toolId = `${invocation.toolName}-${index}`;
-          
-          if (!processedToolsRef.current.has(toolId)) {
-            newState[toolId] = true;
-            processedToolsRef.current.add(toolId);
-          }
-        });
-        
-        return newState;
-      });
+    // Skip if toolInvocations is the same reference as before
+    if (toolInvocationsRef.current === toolInvocations) {
+      return;
     }
-  }, [toolInvocations]);
+    
+    // Update the ref
+    toolInvocationsRef.current = toolInvocations;
+    
+    if (toolInvocations?.length) {
+      // Use a function that doesn't depend on previous state to avoid loops
+      const newExpandedState: Record<string, boolean> = {};
+      
+      toolInvocations.forEach((invocation, index) => {
+        const toolId = `${invocation.toolName}-${index}`;
+        
+        if (!processedToolsRef.current.has(toolId)) {
+          newExpandedState[toolId] = true;
+          processedToolsRef.current.add(toolId);
+        } else {
+          // Preserve existing expanded state
+          newExpandedState[toolId] = expandedTools[toolId] !== false;
+        }
+      });
+      
+      setExpandedTools(newExpandedState);
+    }
+  }, [toolInvocations, expandedTools]);
 
   const toggleExpanded = React.useCallback((toolId: string, e: React.MouseEvent) => {
     e.stopPropagation();

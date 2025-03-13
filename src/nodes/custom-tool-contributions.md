@@ -52,7 +52,7 @@ export const myTool: Tool = {
   name: 'my_tool',
   description: 'What this tool does',
   parameters: myToolSchema,
-  async execute({ input }) {
+  async execute({ input }, options) {
     // 3. Get your data
     const data = await fetchData(input);
     
@@ -92,7 +92,72 @@ export function MyComponent(props: MyComponentProps) {
 }
 ```
 
-### 5. Shared Markdown Utilities
+### 5. Using LLM in Custom Tools
+
+Tools can access the agent's LLM instance through the `options.llmContext` parameter. This allows tools to generate dynamic content or process data using the same LLM that powers the agent.
+
+```typescript
+// Example of using LLM in a custom tool
+import { CoreMessage } from 'ai';
+
+export const myTool: Tool = {
+  name: 'my_tool',
+  description: 'A tool that uses LLM for dynamic content generation',
+  parameters: myToolSchema,
+  async execute({ input }, options) {
+    // Get your data
+    const data = await fetchData(input);
+    
+    // Use LLM to generate dynamic content if available
+    let dynamicContent = "Default content";
+    
+    if (options.llmContext?.llm) {
+      try {
+        // Create messages for LLM
+        const messages: CoreMessage[] = [
+          {
+            role: 'system',
+            content: 'You are a helpful assistant that generates content based on data.'
+          },
+          {
+            role: 'user',
+            content: `Generate a summary of this data: ${JSON.stringify(data)}`
+          }
+        ];
+        
+        // Use the agent's LLM instance
+        const result = await options.llmContext.llm.generateText({ messages });
+        
+        // Use the generated text
+        dynamicContent = result.text;
+        
+      } catch (error) {
+        // Handle errors gracefully
+        console.error('Error using LLM:', error);
+        // Continue with default content
+      }
+    }
+    
+    // Use your component to format output with dynamic content
+    return MyComponent({
+      result: data.result,
+      dynamicContent,
+      timestamp: data.timestamp
+    });
+  }
+};
+```
+
+Key points for using LLM in tools:
+
+1. **Always check if LLM is available**: Use `if (options.llmContext?.llm)` to check if the LLM instance is available before attempting to use it.
+2. **Implement fallbacks**: Always have a fallback mechanism in case the LLM is not available or encounters an error.
+3. **Use proper error handling**: Wrap LLM calls in try/catch blocks to handle errors gracefully.
+4. **Keep messages focused**: Create clear system and user messages that focus on the specific task.
+5. **Use the result wisely**: Process the LLM result to extract the information you need.
+6. **Respect rate limits**: Be mindful of LLM usage to avoid excessive API calls.
+
+### 6. Shared Markdown Utilities
 
 AgentDock provides shared markdown utilities to ensure consistent formatting across all tools. These utilities are available in `src/lib/utils/markdown-utils.ts` and should be used for all markdown formatting:
 
@@ -136,7 +201,7 @@ Available markdown utilities include:
 - `createToolResult(type, content)` - Create a standard tool result object
 - `joinSections(...sections)` - Join multiple sections with proper spacing
 
-### 6. API Access and Security
+### 7. API Access and Security
 
 When implementing tools that access external APIs, follow these best practices:
 
@@ -161,7 +226,7 @@ export async function fetchFromExternalAPI(params: APIParams): Promise<APIRespon
 // index.ts - Use the utility function in your tool
 export const myTool: Tool = {
   // ...
-  async execute({ input }) {
+  async execute({ input }, options) {
     // API calls happen here on the server, not in the browser
     const data = await fetchFromExternalAPI({ value: input });
     return MyComponent(data);
@@ -176,7 +241,7 @@ Key security principles:
 - Implement proper error handling for API failures
 - Consider implementing rate limiting for APIs with usage restrictions
 
-### 7. Real Examples
+### 8. Real Examples
 
 #### Search Tool
 ```typescript
@@ -187,7 +252,7 @@ export const searchTool: Tool = {
   name: 'search',
   description: 'Search the web for information',
   parameters: searchSchema,
-  async execute({ query, limit = 5 }) {
+  async execute({ query, limit = 5 }, options) {
     try {
       const results = await performSearch(query, limit);
       return SearchResults({ query, results });  // Uses SearchResults component
@@ -217,82 +282,72 @@ export function SearchResults(props: SearchResultsProps) {
 }
 ```
 
-#### Stock Price Tool
+#### Deep Research Tool with LLM
 ```typescript
-// stock-price/index.ts
-import { createToolResult } from '@/lib/utils/markdown-utils';
+// deep-research/index.ts
+import { CoreMessage } from 'ai';
 
-export const stockPriceTool: Tool = {
-  name: 'stock_price',
-  description: 'Get stock price',
-  parameters: stockPriceSchema,
-  async execute({ symbol, currency = 'USD' }) {
-    const data = await getStockPrice(symbol, currency);
-    return StockPrice(data);  // Uses StockPrice component
+export const deepResearchTool: Tool = {
+  name: 'deep_research',
+  description: 'Perform in-depth research on a topic',
+  parameters: deepResearchSchema,
+  async execute({ query, depth = 2, breadth = 3 }, options) {
+    // Perform research and gather data
+    const searchResult = await performSearch(query, breadth);
+    const findings = extractKeyFindings(searchResult);
+    
+    // Format the research data with LLM-generated headings
+    const summary = await formatResearchData(query, findings, options);
+    
+    // Return the formatted report
+    return DeepResearchReport({ query, summary, sources });
   }
 };
 
-export const tools = { stock_price: stockPriceTool };
-
-// stock-price/components.ts
-import { formatBold, createToolResult } from '@/lib/utils/markdown-utils';
-
-export function StockPrice(props: StockPriceProps) {
-  return createToolResult(
-    'stock_price',
-    `📈 ${formatBold(props.symbol)} Stock Price\nPrice: ${formatCurrency(props.price, props.currency)}`
-  );
-}
-```
-
-#### Weather Tool (with API access)
-```typescript
-// weather/index.ts
-import { formatErrorMessage, createToolResult } from '@/lib/utils/markdown-utils';
-
-export const weatherTool: Tool = {
-  name: 'weather',
-  description: 'Get weather forecast',
-  parameters: weatherSchema,
-  async execute({ location }) {
+// Helper function using LLM for dynamic content
+async function formatResearchData(query, findings, options) {
+  // Default headings
+  let headings = {
+    keyFindings: "## Key Findings",
+    detailedFindings: "## Detailed Findings"
+  };
+  
+  // Use LLM to generate emoji headings if available
+  if (options.llmContext?.llm) {
     try {
-      // 1. Parse or geocode the location
-      const [lat, lon, name] = await getCoordinates(location);
+      const messages: CoreMessage[] = [
+        {
+          role: 'system',
+          content: 'Generate emoji-enhanced headings for a research report.'
+        },
+        {
+          role: 'user',
+          content: `Add relevant emojis to these headings for a report on "${query}": Key Findings, Detailed Findings`
+        }
+      ];
       
-      // 2. Get weather data (API call happens server-side)
-      const forecast = await getWeatherForecast(lat, lon);
+      const result = await options.llmContext.llm.generateText({ messages });
       
-      // 3. Format with component
-      return Weather({ location: name, forecast });
+      // Parse the result to extract emoji headings
+      const lines = result.text.split('\n').filter(line => line.trim().length > 0);
+      
+      if (lines.length >= 2) {
+        headings = {
+          keyFindings: lines[0].includes('Key Findings') ? lines[0] : headings.keyFindings,
+          detailedFindings: lines[1].includes('Detailed Findings') ? lines[1] : headings.detailedFindings
+        };
+      }
     } catch (error) {
-      return createToolResult(
-        'weather_error',
-        formatErrorMessage('Error', `Unable to get weather for "${location}": ${error.message}`)
-      );
+      // Continue with default headings on error
     }
   }
-};
-
-// weather/components.ts
-import { formatBold, formatHeader, formatSubheader, joinSections, createToolResult } from '@/lib/utils/markdown-utils';
-
-export function Weather(props: WeatherProps) {
-  const current = formatCurrentWeather(props.current);
-  const forecast = formatForecast(props.forecast);
   
-  return createToolResult(
-    'weather_complete',
-    joinSections(
-      current,
-      formatHeader('7-Day Forecast'),
-      forecast,
-      `Last updated: ${new Date().toLocaleString()}`
-    )
-  );
+  // Format the report with the headings
+  return `# Research Report: "${query}"\n\n${headings.keyFindings}\n\n${findings.map(f => `- ${f}`).join('\n')}\n\n${headings.detailedFindings}\n\n...`;
 }
 ```
 
-### 4. Multi-Step Tool Calls
+### 9. Multi-Step Tool Calls
 
 AgentDock supports multi-step tool calls, allowing the AI to make multiple tool calls in sequence before returning a final response. This is particularly useful for complex tasks that require multiple steps to complete.
 
@@ -304,7 +359,7 @@ export const deepResearchTool: Tool = {
   name: 'deep_research',
   description: 'Perform in-depth research on a topic with multiple search iterations and summarization',
   parameters: deepResearchSchema,
-  async execute({ query, depth = 1, breadth = 3 }) {
+  async execute({ query, depth = 1, breadth = 3 }, options) {
     // Step 1: Initial search
     // Step 2: Follow-up searches based on initial results
     // Step 3: Summarize findings

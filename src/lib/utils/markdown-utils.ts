@@ -48,7 +48,7 @@ export function cleanUrl(url: string): string {
       urlObj.searchParams.delete(param);
     });
     return urlObj.toString();
-  } catch (e) {
+  } catch (_e) {
     // If URL parsing fails, return the original URL
     return url;
   }

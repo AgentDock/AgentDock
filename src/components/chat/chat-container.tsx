@@ -244,7 +244,7 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
           toolName: toolCall.toolName,
           toolArgs: toolCall.args
         }
-      );
+      ).catch(console.error);
       
       // Return null to let the server handle the tool call
       return null;

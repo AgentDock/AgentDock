@@ -24,6 +24,16 @@ import '@/lib/agent-adapter';
 // Import the initialization module to ensure nodes are registered
 import '@/nodes/init';
 
+// Set the runtime to edge
+export const runtime = 'edge';
+
+// Configure the maximum duration for the Edge function
+// This can be set via the MAX_DURATION environment variable (in seconds)
+// For OSS deployments, this defaults to 120 seconds
+// For production, configure this in your Vercel Project Settings or .env file
+// Note: Vercel limits are 60s (Hobby), 300s (Pro), 900s (Enterprise)
+export const maxDuration = parseInt(process.env.MAX_DURATION || '120', 10);
+
 // Log runtime configuration
 logger.debug(
   LogCategory.API,
@@ -32,11 +42,10 @@ logger.debug(
   {
     runtime: 'edge',
     path: '/api/chat/[agentId]',
+    maxDuration,
     timestamp: new Date().toISOString()
   }
 );
-
-export const runtime = 'edge';
 
 // Fallback API key (can be configured via environment variable)
 const FALLBACK_API_KEY = process.env.FALLBACK_API_KEY || '';

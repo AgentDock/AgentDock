@@ -435,11 +435,14 @@ async function formatResearchData(
     researchStatus = `**Note: This research is incomplete.** Additional research is recommended to develop a more comprehensive understanding.\n\n`;
   }
   
-  // Step 4: Format key findings section
+  // Step 4: Format key findings section - always include this
   const keyFindings = `## Key Findings\n\n${findings.slice(0, 8).map(finding => `- ${finding}`).join('\n')}\n\n`;
   
-  // Step 5: Format detailed findings section
-  const detailedFindings = `## Detailed Findings\n\n${findings.map(finding => `- ${finding}`).join('\n')}\n\n`;
+  // Step 5: Format detailed findings section - only include if there are more than 8 findings
+  let detailedFindings = "";
+  if (findings.length > 8) {
+    detailedFindings = `## Detailed Findings\n\n${findings.map(finding => `- ${finding}`).join('\n')}\n\n`;
+  }
   
   // Step 6: Format research methodology section - simplified
   const methodology = `## Research Methodology\n\n- Conducted research with depth=${depth} and breadth=${breadth}

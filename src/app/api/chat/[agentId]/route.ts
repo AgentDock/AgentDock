@@ -27,12 +27,9 @@ import '@/nodes/init';
 // Set the runtime to edge
 export const runtime = 'edge';
 
-// Configure the maximum duration for the Edge function
-// This can be set via the MAX_DURATION environment variable (in seconds)
-// For OSS deployments, this defaults to 120 seconds
-// For production, configure this in your Vercel Project Settings or .env file
-// Note: Vercel limits are 60s (Hobby), 300s (Pro), 900s (Enterprise)
-export const maxDuration = parseInt(process.env.MAX_DURATION || '120', 10);
+// For Next.js Edge runtime configuration, we need to export a static value
+// The actual value used in the code will be determined by the environment variable
+export const maxDuration = 300;
 
 // Log runtime configuration
 logger.debug(
@@ -42,7 +39,7 @@ logger.debug(
   {
     runtime: 'edge',
     path: '/api/chat/[agentId]',
-    maxDuration,
+    maxDuration: process.env.MAX_DURATION ? parseInt(process.env.MAX_DURATION, 10) : 300,
     timestamp: new Date().toISOString()
   }
 );
@@ -58,6 +55,12 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ agentId: string }> }
 ) {
+  // Get the actual maxDuration from environment variable if available
+  // This is the dynamic approach shown in your example
+  const maxDurationValue = process.env.MAX_DURATION 
+    ? parseInt(process.env.MAX_DURATION, 10) 
+    : 300;
+    
   try {
     // Get agentId from params
     const { agentId } = await params;

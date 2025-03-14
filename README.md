@@ -169,4 +169,4 @@ This project *requires* the use of `pnpm` for consistent dependency management. 
 
 ## 👥 Contributing
 
-We welcome contributions to AgentDock! Please see the `.agentdock/docs/` folder for detailed documentation, including guidelines for creating custom nodes.
+We welcome contributions to AgentDock! Please see the [CONTRIBUTING.md](CONTRIBUTING.md) for detailed contribution guidelines and the `.agentdock/docs/` folder for detailed documentation, including guidelines for creating custom nodes.

@@ -4,6 +4,13 @@
  */
 
 import { z } from 'zod';
+import { 
+  formatBold, 
+  formatHeader, 
+  formatSubheader, 
+  joinSections, 
+  createToolResult 
+} from '@/lib/utils/markdown-utils';
 
 /**
  * Weather icon mapping
@@ -261,13 +268,13 @@ export function CurrentWeather({ location, conditions }: WeatherProps['current']
   const wind = formatWind(conditions.windSpeed, conditions.windDirection);
   const temp = formatTemperature(conditions.temperature);
   
-  return {
-    type: 'weather_current',
-    content: `${icon} **${description}** in ${location.name}, ${location.country}${location.region ? `, ${location.region}` : ''}
+  return createToolResult(
+    'weather_current',
+    `${icon} ${formatBold(description)} in ${location.name}, ${location.country}${location.region ? `, ${location.region}` : ''}
 Temperature: ${temp}
 Wind: ${wind}
 Time: ${conditions.isDay ? 'Day' : 'Night'}`
-  };
+  );
 }
 
 /**
@@ -282,17 +289,17 @@ export function WeatherForecast({ forecast }: Pick<WeatherProps, 'forecast'>) {
     const wind = formatWind(day.conditions.windSpeed, day.conditions.windDirection);
     const precip = Math.round(day.conditions.precipitationProbability);
     
-    return `### ${date}
-${icon} **${getWeatherDescription(day.conditions.weatherCode)}**
+    return `${formatSubheader(date)}
+${icon} ${formatBold(getWeatherDescription(day.conditions.weatherCode))}
 - Temperature Range: ${tempMin} to ${tempMax}
 - Wind: ${wind}
 - Precipitation: ${precip}%`;
   }).join('\n\n');
 
-  return {
-    type: 'weather_forecast',
-    content: `## 7-Day Forecast\n\n${forecastContent}`
-  };
+  return createToolResult(
+    'weather_forecast',
+    joinSections(formatHeader('7-Day Forecast'), forecastContent)
+  );
 }
 
 /**
@@ -302,8 +309,12 @@ export function Weather(props: WeatherProps) {
   const current = CurrentWeather(props.current);
   const forecast = WeatherForecast({ forecast: props.forecast });
   
-  return {
-    type: 'weather_complete',
-    content: `${current.content}\n\n${forecast.content}\n\nLast updated: ${new Date(props.timestamp).toLocaleString()}`
-  };
+  return createToolResult(
+    'weather_complete',
+    joinSections(
+      current.content, 
+      forecast.content, 
+      `Last updated: ${new Date(props.timestamp).toLocaleString()}`
+    )
+  );
 } 

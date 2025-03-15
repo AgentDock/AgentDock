@@ -29,7 +29,7 @@ export function Chat({ messages, className }: ChatProps) {
   return (
     <Card className={cn("flex h-[600px] flex-col", className)}>
       <ScrollArea className="flex-1 p-4">
-        <div className="space-y-4">
+        <div className="space-y-400">
           {messages.map((message) => (
             <div
               key={message.id}

@@ -14,6 +14,8 @@ import { z } from 'zod';
 export interface ToolExecutionOptions {
   toolCallId: string;
   messages?: any[];
+  /** API key for LLM access (optional, provided by agent) */
+  apiKey?: string;
 }
 
 /**

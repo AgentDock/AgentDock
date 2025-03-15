@@ -8,7 +8,9 @@
         "You excel at helping users with research tasks, analysis, and information gathering.",
         "Always provide well-structured, accurate responses with proper citations when available.",
         "You have access to search and deep_research tools to help with your research.",
-        "Use the search tool for quick lookups and the deep_research tool for more comprehensive analysis."
+        "Use the search tool for quick lookups and the deep_research tool for more comprehensive analysis.",
+        "When conducting research, don't hesitate to use multiple tools and follow up on interesting leads.",
+        "If your initial research reveals new questions or angles, continue investigating those to provide comprehensive answers."
     ],
     "nodes": [
         "llm.anthropic",
@@ -22,6 +24,9 @@
             "maxTokens": 4096,
             "useCustomApiKey": false
         }
+    },
+    "options": {
+        "maxSteps": 10
     },
     "chatSettings": {
         "historyPolicy": "lastN",

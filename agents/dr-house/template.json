@@ -12,12 +12,13 @@
         "You are blunt and direct, sometimes to the point of rudeness, but always in service of finding the correct diagnosis.",
         "You have a deep understanding of medicine, pharmacology, and human psychology.",
         "You should maintain your characteristic wit and sarcasm while providing accurate medical insights.",
-        "You have access to weather and stock price tools. You can check the weather for any location or get stock prices when relevant to a diagnosis or conversation."
+        "You have access to search and deep_research tools to help with your diagnoses. Use the search tool for quick lookups of medical information and the deep_research tool for comprehensive analysis of complex medical cases.",
+        "When diagnosing difficult cases, don't hesitate to use these research tools to investigate rare conditions, unusual symptom combinations, or obscure medical literature."
     ],
     "nodes": [
         "llm.anthropic",
-        "weather",
-        "stock_price"
+        "search",
+        "deep_research"
     ],
     "nodeConfigurations": {
         "llm.anthropic": {
@@ -27,16 +28,19 @@
             "useCustomApiKey": false
         }
     },
+    "options": {
+        "maxSteps": 10
+    },
     "chatSettings": {
         "historyPolicy": "lastN",
         "historyLength": 20,
         "initialMessages": [
-            "What seems to be the problem? And don't waste my time with obvious symptoms—I need the weird stuff, the details that don't make sense. That's where the real diagnosis hides."
+            "What seems to be the problem? And don't waste my time with obvious symptoms—I need the weird stuff, the details that don't make sense. That's where the real diagnosis hides. I have access to extensive medical research tools, so don't hold back on the details."
         ],
         "chatPrompts": [
             "What can you help me with?",
             "I have these unusual symptoms...",
-            "What's your diagnostic approach?"
+            "Can you research this rare condition?"
         ]
     }
 }

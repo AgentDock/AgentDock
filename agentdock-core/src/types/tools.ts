@@ -4,6 +4,7 @@
 
 import { z } from 'zod';
 import { BaseNode, NodeMetadata } from '../nodes/base-node';
+import { LLMBase } from '../llm/llm-base';
 
 // Tool registration types
 export interface ToolRegistrationOptions {
@@ -15,31 +16,56 @@ export interface ToolRegistrationOptions {
   description?: string;
 }
 
-// Tool invocation states
-export type ToolState = 'partial-call' | 'call' | 'result';
+// Tool state enum
+export type ToolState = 'call' | 'result' | 'error';
 
+// Base tool invocation interface
 export interface BaseToolInvocation {
   state: ToolState;
   toolName: string;
   toolCallId: string;
 }
 
-export interface PartialToolCall extends BaseToolInvocation {
-  state: 'partial-call';
-}
-
+// Tool call interface
 export interface ToolCall extends BaseToolInvocation {
   state: 'call';
   args?: Record<string, any>;
 }
 
-export interface ToolResult extends BaseToolInvocation {
-  state: 'result';
-  result: any;
+// Tool result interface
+export interface ToolResult<T = unknown> {
+  toolCallId: string;
+  result: T;
   error?: string;
 }
 
-export type ToolInvocation = PartialToolCall | ToolCall | ToolResult;
+/**
+ * LLM context for tool execution
+ * This provides tools with access to LLM capabilities
+ */
+export interface LLMContext {
+  /** API key for LLM access */
+  apiKey: string;
+  /** LLM provider (e.g., 'anthropic', 'openai') */
+  provider: string;
+  /** LLM model to use */
+  model: string;
+  /** LLM instance (if available) */
+  llm?: LLMBase;
+}
+
+/**
+ * Tool execution options
+ * These are passed to tools when they are executed
+ */
+export interface ToolExecutionOptions {
+  /** Tool call ID for tracking */
+  toolCallId: string;
+  /** Messages in the conversation (optional) */
+  messages?: any[];
+  /** LLM context for tool execution (optional) */
+  llmContext?: LLMContext;
+}
 
 // Tool interface types
 export type JSONSchema = {

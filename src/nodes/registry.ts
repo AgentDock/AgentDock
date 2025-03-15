@@ -13,7 +13,7 @@ import { tools as firecrawlTools } from './firecrawl';
 import type { ToolRegistry } from './types';
 
 // Combined tools registry
-const allTools: ToolRegistry = {
+export const allTools: ToolRegistry = {
   ...stockTools,
   ...weatherTools,
   ...searchTools,

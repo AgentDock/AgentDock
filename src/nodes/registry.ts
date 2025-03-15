@@ -9,6 +9,7 @@ import { tools as stockTools } from './stock-price';
 import { tools as weatherTools } from './weather';
 import { tools as searchTools } from './search';
 import { tools as deepResearchTools } from './deep-research';
+import { tools as firecrawlTools } from './firecrawl';
 import type { ToolRegistry } from './types';
 
 // Combined tools registry
@@ -16,7 +17,8 @@ const allTools: ToolRegistry = {
   ...stockTools,
   ...weatherTools,
   ...searchTools,
-  ...deepResearchTools
+  ...deepResearchTools,
+  ...firecrawlTools
 };
 
 /**

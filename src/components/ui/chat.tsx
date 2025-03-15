@@ -76,15 +76,43 @@ export function Chat({
 
   return (
     <div className={cn("flex h-full flex-col", className)}>
+      <style jsx global>{`
+        .scrollbar-container::-webkit-scrollbar {
+          width: 8px;
+          height: 100%;
+        }
+        .scrollbar-container::-webkit-scrollbar-track {
+          background: transparent;
+          height: 100%;
+        }
+        .scrollbar-container::-webkit-scrollbar-thumb {
+          background-color: rgba(155, 155, 155, 0.9);
+          border-radius: 20px;
+          height: auto;
+        }
+        .scrollbar-container::-webkit-scrollbar-thumb:hover {
+          background-color: rgba(155, 155, 155, 0.9);
+        }
+        .scrollbar-container::-webkit-scrollbar-thumb:active {
+          background-color: rgba(155, 155, 155, 0.9);
+        }
+      `}</style>
       <div className="flex-none bg-background">
         <div className="mx-auto w-full max-w-4xl px-4 py-3">
           {header}
         </div>
       </div>
       <div 
-        className="flex-1 overflow-y-auto" 
+        className="flex-1 overflow-y-auto scrollbar-container h-full min-h-0" 
         ref={containerRef}
         onScroll={handleScroll}
+        style={{
+          scrollbarWidth: 'thin',
+          scrollbarColor: 'rgba(155, 155, 155, 0.9) transparent',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column'
+        }}
       >
         <div className="mx-auto w-full max-w-4xl px-4 py-4">
           {isEmpty && append && suggestions ? (
@@ -104,7 +132,7 @@ export function Chat({
         </div>
         
         {shouldShowScrollButton && (
-          <div className="absolute bottom-4 right-4">
+            <div className="fixed bottom-24 md:right-18 left-1/2 -translate-x-1/2 md:left-auto md:right-4 md:translate-x-0 z-50">
             <Button
               onClick={scrollToBottom}
               size="icon"

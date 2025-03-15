@@ -107,8 +107,8 @@ function ChatPageContent() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] md:h-[calc(100vh-4rem)] -mb-8 overflow-hidden">
-      <ChatContainer
+    <div className="flex flex-col h-[calc(100vh-4rem)] md:h-[calc(100vh-4rem)] md:-mx-8 overflow-hidden">      
+    <ChatContainer
         ref={chatContainerRef}
         className="flex-1"
         header={

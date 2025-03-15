@@ -44,7 +44,15 @@ const HighlightedPre = React.memo(
         try {
           const { codeToTokens, bundledLanguages } = await import("shiki");
 
-          if (!(language in bundledLanguages)) {
+          // For directory structures or plain text, we don't need complex syntax highlighting
+          const isDirectoryStructure = children.split('\n').some(line => 
+            line.trim().startsWith('├──') || 
+            line.trim().startsWith('└──') || 
+            line.trim().startsWith('│')
+          );
+
+          // If it's a directory structure or the language isn't supported, use plaintext
+          if (isDirectoryStructure || !(language in bundledLanguages)) {
             setTokens([]);
             setIsLoading(false);
             return;
@@ -71,17 +79,28 @@ const HighlightedPre = React.memo(
       loadHighlighter();
     }, [children, language]);
 
-    if (isLoading) {
-      return <pre {...props}>{children}</pre>;
-    }
+    // For directory structures or when highlighting fails, render with preserved whitespace
+    if (isLoading || tokens.length === 0) {
+      const isDirectoryStructure = children.split('\n').some(line => 
+        line.trim().startsWith('├──') || 
+        line.trim().startsWith('└──') || 
+        line.trim().startsWith('│')
+      );
 
-    if (tokens.length === 0) {
-      return <pre {...props}>{children}</pre>;
+      if (isDirectoryStructure) {
+        return (
+          <pre {...props} className={`${props.className || ''} whitespace-pre font-mono`}>
+            <code className="whitespace-pre">{children}</code>
+          </pre>
+        );
+      }
+      
+      return <pre {...props}><code className="whitespace-pre">{children}</code></pre>;
     }
 
     return (
       <pre {...props}>
-        <code>
+        <code className="whitespace-pre">
           {tokens.map((line, lineIndex) => (
             <React.Fragment key={lineIndex}>
               <span>
@@ -130,8 +149,17 @@ const CodeBlock = ({
       ? children
       : childrenTakeAllStringContents(children)
 
+  // Ensure directory structures are properly formatted
+  // If the language is undefined or empty and the content looks like a directory structure,
+  // set the language to "plaintext" to ensure proper formatting
+  const detectedLanguage = language || (
+    (code.includes('/') && code.split('\n').some(line => line.trim().startsWith('├──') || line.trim().startsWith('└──') || line.trim().startsWith('│')))
+      ? 'plaintext'
+      : 'text'
+  );
+
   const preClass = cn(
-    "overflow-x-scroll rounded-md border bg-background/50 p-4 font-mono text-sm [scrollbar-width:none]",
+    "overflow-x-scroll rounded-md border bg-background/90 p-4 font-mono text-sm [scrollbar-width:none]",
     className
   )
 
@@ -140,11 +168,11 @@ const CodeBlock = ({
       <Suspense
         fallback={
           <pre className={preClass} {...restProps}>
-            {children}
+            <code className="whitespace-pre">{code}</code>
           </pre>
         }
       >
-        <HighlightedPre language={language} className={preClass}>
+        <HighlightedPre language={detectedLanguage} className={preClass}>
           {code}
         </HighlightedPre>
       </Suspense>
@@ -189,8 +217,13 @@ const COMPONENTS = {
   blockquote: withClass("blockquote", "border-l-2 border-primary pl-4"),
   code: ({ children, className, node, ...rest }: any) => {
     const match = /language-(\w+)/.exec(className || "")
-    return match ? (
-      <CodeBlock className={className} language={match[1]} {...rest}>
+    
+    // Check if this is a code block (inside a pre) or an inline code element
+    const isCodeBlock = node?.position?.start?.line !== node?.position?.end?.line || 
+                        (node?.parent?.type === 'element' && node?.parent?.tagName === 'pre');
+    
+    return match || isCodeBlock ? (
+      <CodeBlock className={className} language={match ? match[1] : ""} {...rest}>
         {children}
       </CodeBlock>
     ) : (
@@ -221,7 +254,24 @@ const COMPONENTS = {
     "border border-foreground/20 px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right"
   ),
   tr: withClass("tr", "m-0 border-t p-0 even:bg-muted"),
-  p: withClass("p", "whitespace-pre-wrap"),
+  p: ({ node, children, ...props }: ComponentProps) => {
+    // Check if this paragraph contains a code block or is part of a code block
+    const containsCodeBlock = React.Children.toArray(children).some(
+      (child) => 
+        React.isValidElement(child) && 
+        (child.type === CodeBlock || 
+         (typeof child.type === 'string' && child.type === 'code'))
+    );
+    
+    // If it contains a code block, don't apply whitespace-pre-wrap
+    const className = containsCodeBlock ? "" : "whitespace-pre-wrap";
+    
+    return (
+      <p className={className} {...props}>
+        {children}
+      </p>
+    );
+  },
   hr: withClass("hr", "border-foreground/20"),
 }
 

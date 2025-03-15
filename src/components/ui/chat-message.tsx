@@ -7,7 +7,7 @@ import { Code2, Loader2, Terminal, ChevronDown, ChevronUp } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { FilePreview } from "@/components/ui/file-preview"
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer"
-import type { ToolInvocation } from 'agentdock-core'
+import type { BaseToolInvocation, ToolState } from 'agentdock-core'
 
 const chatBubbleVariants = cva(
   "group/message relative break-words rounded-lg p-3 text-sm sm:max-w-[70%]",
@@ -55,6 +55,15 @@ interface Attachment {
   name?: string
   contentType?: string
   url: string
+}
+
+// Custom ToolInvocation type that extends BaseToolInvocation with the additional properties needed
+type ToolInvocation = Omit<BaseToolInvocation, 'state'> & {
+  state: ToolState | 'partial-call';
+  result?: {
+    content?: string;
+    [key: string]: any;
+  } | any;
 }
 
 export interface Message {
@@ -117,55 +126,9 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     // If there's no content, just render the tool calls
     if (!content || !content.trim()) {
       return (
-        <div className="relative">
-          <div className="flex flex-col gap-3">
-            <ToolCall toolInvocations={toolInvocations} />
-          </div>
+        <div className={cn("flex flex-col", isUser ? "items-end" : "items-start")}>
+          <ToolCall toolInvocations={toolInvocations} />
           {showTimeStamp && formattedTime ? (
-            <div className="absolute bottom-0 left-0 transform translate-y-full">
-              <time
-                dateTime={formattedTime.iso}
-                className={cn(
-                  "mt-1 block px-1 text-xs opacity-50",
-                  animation !== "none" && "duration-500 animate-in fade-in-0"
-                )}
-              >
-                {formattedTime.formatted}
-              </time>
-            </div>
-          ) : null}
-        </div>
-      );
-    }
-    
-    // If there's content, render it as a separate visual element after the tool calls
-    return (
-      <div className="relative">
-        <div className="flex flex-col gap-4">
-          {/* First render the tool calls */}
-          <div className="flex flex-col gap-3">
-            <ToolCall toolInvocations={toolInvocations} />
-          </div>
-          
-          {/* Then render the content */}
-          <div className="flex flex-col gap-3">
-            <div className={cn("flex flex-col", "items-start")}>
-              <div className={cn(chatBubbleVariants({ isUser: false, animation }), className)}>
-                <div>
-                  <MarkdownRenderer>{content}</MarkdownRenderer>
-                </div>
-                {actions ? (
-                  <div className="absolute -bottom-4 right-2 flex space-x-1 rounded-lg border bg-background p-1 text-foreground opacity-0 transition-opacity group-hover/message:opacity-100">
-                    {actions}
-                  </div>
-                ) : null}
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        {showTimeStamp && formattedTime ? (
-          <div className="absolute bottom-0 left-0 transform translate-y-full">
             <time
               dateTime={formattedTime.iso}
               className={cn(
@@ -175,7 +138,41 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             >
               {formattedTime.formatted}
             </time>
+          ) : null}
+        </div>
+      );
+    }
+    
+    // If there's content, render it as a separate visual element after the tool calls
+    return (
+      <div className={cn("flex flex-col", isUser ? "items-end" : "items-start")}>
+        <div className="flex flex-col gap-4 w-full">
+          {/* First render the tool calls */}
+          <ToolCall toolInvocations={toolInvocations} />
+          
+          {/* Then render the content */}
+          <div className={cn(chatBubbleVariants({ isUser: false, animation }), className)}>
+            <div>
+              <MarkdownRenderer>{content}</MarkdownRenderer>
+            </div>
+            {actions ? (
+              <div className="absolute -bottom-4 right-2 flex space-x-1 rounded-lg border bg-background p-1 text-foreground opacity-0 transition-opacity group-hover/message:opacity-100">
+                {actions}
+              </div>
+            ) : null}
           </div>
+        </div>
+        
+        {showTimeStamp && formattedTime ? (
+          <time
+            dateTime={formattedTime.iso}
+            className={cn(
+              "mt-1 block px-1 text-xs opacity-50",
+              animation !== "none" && "duration-500 animate-in fade-in-0"
+            )}
+          >
+            {formattedTime.formatted}
+          </time>
         ) : null}
       </div>
     );
@@ -225,31 +222,43 @@ function dataUrlToUint8Array(data: string) {
   return new Uint8Array(buf)
 }
 
-function ToolCall({
+export function ToolCall({
   toolInvocations,
 }: Pick<ChatMessageProps, "toolInvocations">) {
   const [expandedTools, setExpandedTools] = React.useState<Record<string, boolean>>({});
   
   const processedToolsRef = React.useRef<Set<string>>(new Set());
+  const toolInvocationsRef = React.useRef(toolInvocations);
 
+  // Only update expandedTools when toolInvocations actually change
   React.useEffect(() => {
-    if (toolInvocations?.length) {
-      setExpandedTools(prevState => {
-        const newState = { ...prevState };
-        
-        toolInvocations.forEach((invocation, index) => {
-          const toolId = `${invocation.toolName}-${index}`;
-          
-          if (!processedToolsRef.current.has(toolId)) {
-            newState[toolId] = true;
-            processedToolsRef.current.add(toolId);
-          }
-        });
-        
-        return newState;
-      });
+    // Skip if toolInvocations is the same reference as before
+    if (toolInvocationsRef.current === toolInvocations) {
+      return;
     }
-  }, [toolInvocations]);
+    
+    // Update the ref
+    toolInvocationsRef.current = toolInvocations;
+    
+    if (toolInvocations?.length) {
+      // Use a function that doesn't depend on previous state to avoid loops
+      const newExpandedState: Record<string, boolean> = {};
+      
+      toolInvocations.forEach((invocation, index) => {
+        const toolId = `${invocation.toolName}-${index}`;
+        
+        if (!processedToolsRef.current.has(toolId)) {
+          newExpandedState[toolId] = true;
+          processedToolsRef.current.add(toolId);
+        } else {
+          // Preserve existing expanded state
+          newExpandedState[toolId] = expandedTools[toolId] !== false;
+        }
+      });
+      
+      setExpandedTools(newExpandedState);
+    }
+  }, [toolInvocations, expandedTools]);
 
   const toggleExpanded = React.useCallback((toolId: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -262,7 +271,7 @@ function ToolCall({
   if (!toolInvocations?.length) return null
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 w-full">
       {toolInvocations.map((invocation, index) => {
         const toolId = `${invocation.toolName}-${index}`;
         const isExpanded = expandedTools[toolId] !== false;

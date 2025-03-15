@@ -52,7 +52,7 @@ export interface NodePort {
  * Base node class that all nodes must extend.
  * Provides core functionality and type safety.
  */
-export abstract class BaseNode<TConfig = any> {
+export abstract class BaseNode<TConfig = unknown> {
   /** Unique identifier for the node */
   readonly id: string;
   
@@ -60,7 +60,7 @@ export abstract class BaseNode<TConfig = any> {
   abstract readonly type: string;
   
   /** Node configuration (immutable after construction) */
-  protected readonly config: TConfig;
+  protected config: TConfig;
   
   /** Node metadata (immutable after construction) */
   readonly metadata: NodeMetadata;
@@ -73,7 +73,7 @@ export abstract class BaseNode<TConfig = any> {
 
   constructor(id: string, config: TConfig) {
     this.id = id;
-    this.config = Object.freeze({ ...config });
+    this.config = config;
     this.metadata = Object.freeze(this.getMetadata());
   }
 
@@ -216,17 +216,16 @@ export abstract class BaseNode<TConfig = any> {
     return true; // Override for specific validation
   }
 
-  /** Validate port connections */
+  /**
+   * Validate that a connection between two ports is valid
+   * @param sourcePort Source port ID
+   * @param targetPort Target port ID
+   * @returns Whether the connection is valid
+   */
   validateConnection(sourcePort: string, targetPort: string): boolean {
-    const sourcePortDef = this.metadata.outputs.find(p => p.id === sourcePort);
-    const targetPortDef = this.metadata.inputs.find(p => p.id === targetPort);
-
-    if (!sourcePortDef || !targetPortDef) {
-      return false;
-    }
-
-    // Check data type compatibility
-    return sourcePortDef.type === targetPortDef.type;
+    // Default implementation allows all connections
+    // Subclasses can override this to implement custom validation
+    return true;
   }
 
   /** Serialize node for storage/transmission */

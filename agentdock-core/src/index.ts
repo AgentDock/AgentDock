@@ -16,10 +16,8 @@ export * from './types/node-category';
 export type {
   ToolState,
   BaseToolInvocation,
-  PartialToolCall,
   ToolCall,
   ToolResult,
-  ToolInvocation,
   JSONSchema,
   Tool,
   ToolRegistrationOptions

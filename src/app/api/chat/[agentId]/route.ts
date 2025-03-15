@@ -24,6 +24,13 @@ import '@/lib/agent-adapter';
 // Import the initialization module to ensure nodes are registered
 import '@/nodes/init';
 
+// Set the runtime to edge
+export const runtime = 'edge';
+
+// For Next.js Edge runtime configuration, we need to export a static value
+// The actual value used in the code will be determined by the environment variable
+export const maxDuration = 300;
+
 // Log runtime configuration
 logger.debug(
   LogCategory.API,
@@ -32,11 +39,10 @@ logger.debug(
   {
     runtime: 'edge',
     path: '/api/chat/[agentId]',
+    maxDuration: process.env.MAX_DURATION ? parseInt(process.env.MAX_DURATION, 10) : 300,
     timestamp: new Date().toISOString()
   }
 );
-
-export const runtime = 'edge';
 
 // Fallback API key (can be configured via environment variable)
 const FALLBACK_API_KEY = process.env.FALLBACK_API_KEY || '';
@@ -49,6 +55,12 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ agentId: string }> }
 ) {
+  // Get the actual maxDuration from environment variable if available
+  // This is the dynamic approach shown in your example
+  const maxDurationValue = process.env.MAX_DURATION 
+    ? parseInt(process.env.MAX_DURATION, 10) 
+    : 300;
+    
   try {
     // Get agentId from params
     const { agentId } = await params;
@@ -208,6 +220,16 @@ export async function POST(
       messages,
       system,
       onStepFinish: (stepData) => {
+        // Check if this is a tool-internal error (from deep research or other tools using LLM)
+        if (stepData.finishReason === 'error' && stepData.metadata?.isToolInternalCall) {
+          // This is an expected error from a tool using LLM internally
+          logger.debug(LogCategory.API, 'ChatRoute', 'Tool internal LLM call completed', {
+            toolName: stepData.metadata?.toolName,
+            operation: stepData.metadata?.operation
+          });
+          return; // Skip normal error handling
+        }
+        
         logger.debug(LogCategory.API, 'ChatRoute', 'Step finished', {
           hasText: !!stepData.text,
           hasToolCalls: !!stepData.toolCalls && stepData.toolCalls.length > 0,

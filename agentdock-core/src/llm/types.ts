@@ -15,7 +15,7 @@ export interface TokenUsage {
 /**
  * LLM provider types
  */
-export type LLMProvider = 'anthropic' | 'openai';
+export type LLMProvider = 'anthropic' | 'openai' | 'gemini';
 
 /**
  * LLM configuration
@@ -71,7 +71,33 @@ export interface OpenAIConfig extends LLMConfig {
   provider: 'openai';
 }
 
-export type ProviderConfig = AnthropicConfig | OpenAIConfig;
+/**
+ * Google Gemini configuration
+ */
+export interface GeminiConfig extends LLMConfig {
+  /** Provider must be 'gemini' */
+  provider: 'gemini';
+  /** Enable Google Search for grounding responses in web search results */
+  useSearchGrounding?: boolean;
+  /** Dynamic retrieval configuration for Google Gemini */
+  dynamicRetrievalConfig?: {
+    /** Mode for dynamic retrieval */
+    mode: 'MODE_DYNAMIC' | 'MODE_UNSPECIFIED';
+    /** Dynamic threshold for retrieval */
+    dynamicThreshold?: number;
+  };
+  /** Safety settings for Google Gemini */
+  safetySettings?: Array<{
+    /** Category for the safety setting */
+    category: string;
+    /** Threshold for the safety setting */
+    threshold: string;
+  }>;
+  /** Enable structured outputs for object generation */
+  structuredOutputs?: boolean;
+}
+
+export type ProviderConfig = AnthropicConfig | OpenAIConfig | GeminiConfig;
 
 /**
  * LLM provider interface

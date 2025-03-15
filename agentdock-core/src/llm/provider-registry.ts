@@ -21,6 +21,13 @@ const DEFAULT_PROVIDERS: Record<LLMProvider, ProviderMetadata> = {
     description: 'GPT models by OpenAI',
     defaultModel: 'gpt-4',
     validateApiKey: (key: string) => key.startsWith('sk-') && !key.startsWith('sk-ant-')
+  },
+  'gemini': {
+    id: 'gemini',
+    displayName: 'Google Gemini',
+    description: 'Gemini models by Google',
+    defaultModel: 'gemini-2.0-flash-exp',
+    validateApiKey: (key: string) => key.length > 0 // Google API keys don't have a specific format to validate
   }
 };
 
@@ -64,6 +71,9 @@ export class ProviderRegistry {
     if (nodeType === 'llm.openai') {
       return 'openai';
     }
+    if (nodeType === 'llm.gemini') {
+      return 'gemini';
+    }
     return 'anthropic';
   }
 
@@ -71,7 +81,13 @@ export class ProviderRegistry {
    * Get node type from provider
    */
   static getNodeTypeFromProvider(provider: LLMProvider): string {
-    return provider === 'openai' ? 'llm.openai' : 'llm.anthropic';
+    if (provider === 'openai') {
+      return 'llm.openai';
+    }
+    if (provider === 'gemini') {
+      return 'llm.gemini';
+    }
+    return 'llm.anthropic';
   }
 
   /**
@@ -80,6 +96,9 @@ export class ProviderRegistry {
   static getProviderFromNodes(nodes: string[]): LLMProvider {
     if (nodes.includes('llm.openai')) {
       return 'openai';
+    }
+    if (nodes.includes('llm.gemini')) {
+      return 'gemini';
     }
     return 'anthropic';
   }

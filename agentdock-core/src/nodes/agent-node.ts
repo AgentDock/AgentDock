@@ -9,9 +9,7 @@
  */
 
 import { BaseNode } from './base-node';
-import { LLMBase } from '../llm/llm-base';
-import { createLLM } from '../llm';
-import { LLMConfig, LLMProvider, TokenUsage } from '../llm/types';
+import { LLMProvider, TokenUsage } from '../llm/types';
 import { createError, ErrorCode } from '../errors';
 import { logger, LogCategory } from '../logging';
 import { NodeCategory } from '../types/node-category';
@@ -20,6 +18,7 @@ import { CoreMessage } from 'ai';
 import { convertCoreToLLMMessages } from '../utils/message-utils';
 import { NodeMetadata, NodePort } from './base-node';
 import { maskSensitiveData } from '../utils/security-utils';
+import { CoreLLM, createLLM } from '../llm';
 
 /**
  * Configuration for the agent node
@@ -33,6 +32,8 @@ export interface AgentNodeConfig {
   fallbackApiKey?: string;
   /** LLM provider (default: 'anthropic') */
   provider?: LLMProvider;
+  /** Provider-specific options (optional) */
+  options?: Record<string, any>;
 }
 
 /**
@@ -54,8 +55,8 @@ export interface AgentNodeOptions {
  */
 export class AgentNode extends BaseNode<AgentNodeConfig> {
   readonly type = 'core.agent';
-  private llm: LLMBase;
-  private fallbackLlm: LLMBase | null = null;
+  private llm: CoreLLM;
+  private fallbackLlm: CoreLLM | null = null;
 
   static getNodeMetadata(): NodeMetadata {
     return {
@@ -129,7 +130,7 @@ export class AgentNode extends BaseNode<AgentNodeConfig> {
     
     // Create LLM instance directly
     const llmConfig = this.getLLMConfig(config);
-    this.llm = createLLM(llmConfig);
+    this.llm = this.createLLMInstance(llmConfig);
     
     // Create fallback LLM instance if fallback API key is provided
     if (config.fallbackApiKey) {
@@ -138,7 +139,7 @@ export class AgentNode extends BaseNode<AgentNodeConfig> {
           ...llmConfig,
           apiKey: config.fallbackApiKey
         };
-        this.fallbackLlm = createLLM(fallbackConfig);
+        this.fallbackLlm = this.createLLMInstance(fallbackConfig);
       } catch (error) {
         logger.warn(
           LogCategory.NODE,
@@ -151,24 +152,118 @@ export class AgentNode extends BaseNode<AgentNodeConfig> {
     }
   }
 
-  private getLLMConfig(config: AgentNodeConfig): LLMConfig {
-    const provider = config.provider || 'anthropic';
-    const modelConfig = provider === 'openai' 
-      ? config.agentConfig?.nodeConfigurations?.['llm.openai']
-      : config.agentConfig?.nodeConfigurations?.['llm.anthropic'];
+  /**
+   * Create an LLM instance based on the provider
+   */
+  private createLLMInstance(config: any): CoreLLM {
+    logger.debug(
+      LogCategory.NODE,
+      'AgentNode',
+      'Creating LLM instance',
+      {
+        provider: config.provider,
+        model: config.model,
+        apiKeyPrefix: maskSensitiveData(config.apiKey, 5)
+      }
+    );
+    
+    // Create the LLM instance using the unified createLLM function
+    return createLLM(config);
+  }
 
-    return {
+  private getLLMConfig(config: AgentNodeConfig): any {
+    const provider = config.provider || 'anthropic';
+    
+    let modelConfig;
+    if (provider === 'openai') {
+      modelConfig = config.agentConfig?.nodeConfigurations?.['llm.openai'];
+    } else if (provider === 'gemini') {
+      modelConfig = config.agentConfig?.nodeConfigurations?.['llm.gemini'];
+    } else {
+      // Default to Anthropic
+      modelConfig = config.agentConfig?.nodeConfigurations?.['llm.anthropic'];
+    }
+
+    const defaultModel = provider === 'openai' 
+      ? 'gpt-4' 
+      : provider === 'gemini' 
+        ? 'gemini-2.0-flash-exp' 
+        : 'claude-3-7-sonnet-20250219';
+
+    const llmConfig: any = {
       provider,
       apiKey: config.apiKey,
-      model: modelConfig?.model || (provider === 'openai' ? 'gpt-4' : 'claude-3-7-sonnet-20250219'),
+      model: modelConfig?.model || defaultModel,
       temperature: modelConfig?.temperature,
       maxTokens: modelConfig?.maxTokens,
       topP: modelConfig?.topP,
       maxSteps: modelConfig?.maxSteps
     };
+
+    // Add Google-specific features if provider is Gemini
+    if (provider === 'gemini') {
+      // First check options from the config parameter (highest priority)
+      if (config.options) {
+        // Add search grounding if specified in options
+        if (config.options.useSearchGrounding !== undefined) {
+          llmConfig.useSearchGrounding = config.options.useSearchGrounding;
+          logger.debug(
+            LogCategory.NODE,
+            'AgentNode',
+            'Using search grounding from options',
+            { useSearchGrounding: llmConfig.useSearchGrounding }
+          );
+        }
+        
+        // Add safety settings if specified in options
+        if (config.options.safetySettings) {
+          llmConfig.safetySettings = config.options.safetySettings;
+        }
+        
+        // Add dynamic retrieval config if specified in options
+        if (config.options.dynamicRetrievalConfig) {
+          llmConfig.dynamicRetrievalConfig = config.options.dynamicRetrievalConfig;
+        }
+      }
+      
+      // Then check model config (lower priority, only if not already set)
+      // Add search grounding if enabled and not already set
+      if (modelConfig?.useSearchGrounding !== undefined && llmConfig.useSearchGrounding === undefined) {
+        llmConfig.useSearchGrounding = modelConfig.useSearchGrounding;
+        logger.debug(
+          LogCategory.NODE,
+          'AgentNode',
+          'Using search grounding from model config',
+          { useSearchGrounding: llmConfig.useSearchGrounding }
+        );
+      }
+      
+      // Add dynamic retrieval config if provided and not already set
+      if (modelConfig?.dynamicRetrievalConfig && !llmConfig.dynamicRetrievalConfig) {
+        llmConfig.dynamicRetrievalConfig = modelConfig.dynamicRetrievalConfig;
+      }
+      
+      // Add safety settings if provided and not already set
+      if (modelConfig?.safetySettings && !llmConfig.safetySettings) {
+        llmConfig.safetySettings = modelConfig.safetySettings;
+      }
+      
+      // Default to true for search grounding if not specified anywhere
+      if (llmConfig.useSearchGrounding === undefined) {
+        llmConfig.useSearchGrounding = true;
+        logger.debug(
+          LogCategory.NODE,
+          'AgentNode',
+          'Using default search grounding (true)',
+          { useSearchGrounding: llmConfig.useSearchGrounding }
+        );
+      }
+    }
+
+    return llmConfig;
   }
 
-  private getLLM(useFallback?: boolean): LLMBase {
+  private getLLM(useFallback?: boolean): CoreLLM {
     return (useFallback && this.fallbackLlm) ? this.fallbackLlm : this.llm;
   }
 
@@ -241,7 +336,7 @@ Current time: ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-di
         
         // Call the LLM
         const result = await activeLlm.streamText({
-          messages: convertCoreToLLMMessages(messagesWithSystem),
+          messages: messagesWithSystem as CoreMessage[],
           tools,
           maxSteps: this.config.agentConfig.options?.maxSteps || 5,
           onStepFinish
@@ -268,7 +363,7 @@ Current time: ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-di
           
           try {
             return await this.fallbackLlm.streamText({
-              messages: convertCoreToLLMMessages(messagesWithSystem),
+              messages: messagesWithSystem as CoreMessage[],
               tools,
               maxSteps: this.config.agentConfig.options?.maxSteps || 5,
               onStepFinish: options.onStepFinish
@@ -311,7 +406,7 @@ Current time: ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-di
       const llmContext = {
         apiKey: this.config.apiKey,
         provider: this.config.provider || 'anthropic',
-        model: this.getLLM().modelId,
+        model: this.getLLM().getModelId(),
         llm: this.getLLM()
       };
       

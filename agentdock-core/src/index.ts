@@ -76,6 +76,6 @@ export * from './logging';
 
 /**
  * Language model implementations and utilities
- * Includes LLMBase, AnthropicLLM, and related types
+ * Includes CoreLLM, createLLM, and provider-specific model creation functions
  */
 export * from './llm';

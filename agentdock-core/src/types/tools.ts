@@ -4,7 +4,7 @@
 
 import { z } from 'zod';
 import { BaseNode, NodeMetadata } from '../nodes/base-node';
-import { LLMBase } from '../llm/llm-base';
+import { CoreLLM } from '../llm';
 
 // Tool registration types
 export interface ToolRegistrationOptions {
@@ -51,7 +51,7 @@ export interface LLMContext {
   /** LLM model to use */
   model: string;
   /** LLM instance (if available) */
-  llm?: LLMBase;
+  llm?: CoreLLM;
 }
 
 /**

@@ -28,6 +28,7 @@ const storage = SecureStorage.getInstance('agentdock');
 const API_KEY_PROVIDERS: ApiKeyProvider[] = [
   { key: 'openai', label: 'OpenAI API Key', icon: KeyRound, description: 'Used for OpenAI models like GPT-4 and GPT-3.5' },
   { key: 'anthropic', label: 'Anthropic API Key', icon: KeyRound, description: 'Used for Anthropic Claude models' },
+  { key: 'gemini', label: 'Google Gemini API Key', icon: KeyRound, description: 'Used for Google Gemini models' },
   { key: 'serpapi', label: 'SERP API Key', icon: KeyRound, description: 'Used for web search capabilities' }
 ];
 
@@ -354,6 +355,15 @@ function SettingsPage() {
                       <div className="pt-2">
                         <ModelDisplay 
                           provider="openai" 
+                          refreshTrigger={modelsRefreshTrigger} 
+                          onRefreshComplete={handleRefreshTrigger} 
+                        />
+                      </div>
+                    )}
+                    {key === 'gemini' && (
+                      <div className="pt-2">
+                        <ModelDisplay 
+                          provider="gemini" 
                           refreshTrigger={modelsRefreshTrigger} 
                           onRefreshComplete={handleRefreshTrigger} 
                         />

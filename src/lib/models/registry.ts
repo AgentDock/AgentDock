@@ -31,7 +31,8 @@ export class ModelRegistry {
     if (!this._modelsByProvider) {
       this._modelsByProvider = new Map([
         ['anthropic', []],
-        ['openai', []]
+        ['openai', []],
+        ['gemini', []]
       ]);
     }
     return this._modelsByProvider;

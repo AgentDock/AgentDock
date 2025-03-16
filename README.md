@@ -18,6 +18,14 @@ AgentDock is built on these core principles:
 - **Configurable Determinism**: Control the predictability of agent behavior
 - **Type Safety**: Comprehensive TypeScript types throughout
 
+### Configurable Determinism
+
+AgentDock balances deterministic and non-deterministic elements:
+- AgentNodes are inherently non-deterministic as LLMs may generate different responses each time
+- Workflows can be made more deterministic through defined tool execution paths
+- Developers can control the level of determinism by configuring which parts of the system use LLM inference
+- Even with LLM components, the overall system behavior remains predictable through structured tool interactions
+
 ## 🏗️ Core Architecture
 
 The framework is built around a powerful node-based system:

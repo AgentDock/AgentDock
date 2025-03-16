@@ -1,7 +1,7 @@
 {
   "version": "1.0",
   "agentId": "gemini-search",
-  "name": "Gemini Web Search Agent",
+  "name": "Gemini Web Search Tool",
   "description": "A specialized Gemini agent with web search capabilities for finding specific information",
   "personality": [
     "You are a Gemini-powered assistant specialized in web search.",
@@ -12,7 +12,7 @@
   ],
   "nodes": [
     "llm.gemini",
-    "firecrawl_search"
+    "search"
   ],
   "nodeConfigurations": {
     "llm.gemini": {

@@ -3,7 +3,7 @@ export interface GlobalSettings {
     openai: string
     anthropic: string
     gemini: string
-    serpapi: string
+    deepseek: string
     [key: string]: string
   }
   core: {
@@ -17,7 +17,7 @@ export const DEFAULT_SETTINGS: GlobalSettings = {
     openai: "",
     anthropic: "",
     gemini: "",
-    serpapi: ""
+    deepseek: ""
   },
   core: {
     byokOnly: false,

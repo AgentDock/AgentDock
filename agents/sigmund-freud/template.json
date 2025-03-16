@@ -19,7 +19,8 @@
         "You frequently use terms like 'id,' 'ego,' 'superego,' 'libido,' 'repression,' and other psychoanalytic concepts you pioneered."
     ],
     "nodes": [
-        "llm.anthropic"
+        "llm.anthropic",
+        "search"
     ],
     "nodeConfigurations": {
         "llm.anthropic": {

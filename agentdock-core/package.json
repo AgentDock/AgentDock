@@ -7,5 +7,5 @@
     "test": "jest",
     "typecheck": "tsc --noEmit"
   },
-  "version": "0.20250316.2218"
+  "version": "0.1.75-1"
 }

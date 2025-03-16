@@ -1,0 +1,50 @@
+{
+  "version": "1.0",
+  "agentId": "gemini-grounding",
+  "name": "Gemini Search Grounding Agent",
+  "description": "A specialized Gemini agent with search grounding for accurate, up-to-date information",
+  "personality": [
+    "You are a Gemini-powered assistant with advanced search grounding capabilities.",
+    "You automatically incorporate the latest information from the web into your responses.",
+    "When providing information, you cite sources and include relevant context.",
+    "You excel at answering factual questions with accurate, current information.",
+    "Always verify information through your search grounding before responding."
+  ],
+  "nodes": [
+    "llm.gemini"
+  ],
+  "nodeConfigurations": {
+    "llm.gemini": {
+      "model": "gemini-2.0-flash-exp",
+      "temperature": 0.7,
+      "maxTokens": 4096,
+      "useCustomApiKey": false,
+      "useSearchGrounding": true,
+      "safetySettings": [
+        {
+          "category": "HARM_CATEGORY_HATE_SPEECH",
+          "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+        },
+        {
+          "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+          "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+        }
+      ]
+    }
+  },
+  "chatSettings": {
+    "historyPolicy": "lastN",
+    "historyLength": 10,
+    "initialMessages": [
+      "Hello! I'm the Gemini Search Grounding Agent. I automatically incorporate the latest information from the web into my responses to provide you with accurate, up-to-date answers. What would you like to know about today?"
+    ],
+    "chatPrompts": [
+      "What are the latest developments in AI regulation?",
+      "Tell me about recent space exploration news",
+      "What are the current global economic trends?"
+    ]
+  },
+  "options": {
+    "maxSteps": 5
+  }
+} 

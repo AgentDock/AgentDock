@@ -32,13 +32,13 @@ function DebugPanelComponent({ settings, onRefreshTrigger }: DebugPanelProps) {
       
       // Fetch models from the registry API for both providers
       const [anthropicResponse, openaiResponse] = await Promise.all([
-        fetch('/api/models?provider=anthropic', {
+        fetch('/api/providers/models?provider=anthropic', {
           headers: {
             'x-api-key': anthropicKey || '',
             'Cache-Control': 'no-cache'
           }
         }),
-        fetch('/api/models?provider=openai', {
+        fetch('/api/providers/models?provider=openai', {
           headers: {
             'x-api-key': openaiKey || '',
             'Cache-Control': 'no-cache'
@@ -90,7 +90,7 @@ function DebugPanelComponent({ settings, onRefreshTrigger }: DebugPanelProps) {
       // Refresh Anthropic models
       if (anthropicKey) {
         try {
-          const response = await fetch('/api/anthropic/models', {
+          const response = await fetch('/api/providers/anthropic/models', {
             headers: {
               'x-api-key': anthropicKey,
               'Cache-Control': 'no-cache'
@@ -106,7 +106,7 @@ function DebugPanelComponent({ settings, onRefreshTrigger }: DebugPanelProps) {
       // Refresh OpenAI models
       if (openaiKey) {
         try {
-          const response = await fetch('/api/openai/models', {
+          const response = await fetch('/api/providers/openai/models', {
             headers: {
               'x-api-key': openaiKey,
               'Cache-Control': 'no-cache'

@@ -42,8 +42,9 @@ export function formatTimestamp(timestamp: string): string {
 
 /**
  * Stock price component props
+ * Extends StockData with additional UI-specific properties if needed
  */
-export interface StockPriceProps extends StockData {}
+export type StockPriceProps = StockData;
 
 /**
  * Stock price React component
@@ -73,6 +74,8 @@ export function StockPrice(props: StockPriceProps) {
 **Today's Range:** ${formattedLow} - ${formattedHigh}
 **Open:** ${formattedOpen}
 **Previous Close:** ${formattedPrevClose}
-**Volume:** ${formattedVolume}`
+**Volume:** ${formattedVolume}
+
+_Data provided by Alpha Vantage_`
   };
 } 

@@ -1,0 +1,39 @@
+{
+  "version": "1.0",
+  "agentId": "deepseek-agent",
+  "name": "DeepSeek Agent",
+  "description": "A powerful agent powered by DeepSeek models",
+  "personality": [
+    "You are a helpful AI assistant powered by DeepSeek.",
+    "You should respond to user queries in a clear and concise manner.",
+    "When appropriate, use examples to illustrate your points.",
+    "Always be respectful and considerate in your responses."
+  ],
+  "nodes": [
+    "llm.deepseek"
+  ],
+  "nodeConfigurations": {
+    "llm.deepseek": {
+      "model": "deepseek-chat",
+      "temperature": 0.7,
+      "maxTokens": 4096,
+      "useCustomApiKey": false
+    }
+  },
+  "chatSettings": {
+    "historyPolicy": "lastN",
+    "historyLength": 10,
+    "initialMessages": [
+      "Hello! I'm the DeepSeek Agent powered by DeepSeek-V3. How can I assist you today?"
+    ],
+    "chatPrompts": [
+      "What can you help me with?",
+      "Tell me about the latest advancements in AI",
+      "Explain quantum computing in simple terms"
+    ]
+  },
+  "options": {
+    "maxSteps": 5
+  },
+  "notes": "DeepSeek API is compatible with OpenAI's format. This agent uses the OpenAI client with DeepSeek's API endpoint."
+} 

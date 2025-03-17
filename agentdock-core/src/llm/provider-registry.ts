@@ -13,21 +13,96 @@ const DEFAULT_PROVIDERS: Record<LLMProvider, ProviderMetadata> = {
     displayName: 'Anthropic',
     description: 'Claude models by Anthropic',
     defaultModel: 'claude-3-7-sonnet-20250219',
-    validateApiKey: (key: string) => key.startsWith('sk-ant-')
+    validateApiKey: (key: string) => key.startsWith('sk-ant-'),
+    applyConfig: (baseConfig, modelConfig, options) => {
+      // Apply Anthropic-specific configurations
+      // Currently no special configurations needed
+    }
   },
   'openai': {
     id: 'openai',
     displayName: 'OpenAI',
     description: 'GPT models by OpenAI',
     defaultModel: 'gpt-4',
-    validateApiKey: (key: string) => key.startsWith('sk-') && !key.startsWith('sk-ant-')
+    validateApiKey: (key: string) => key.startsWith('sk-') && !key.startsWith('sk-ant-'),
+    applyConfig: (baseConfig, modelConfig, options) => {
+      // Apply OpenAI-specific configurations
+      // Currently no special configurations needed
+    }
   },
   'gemini': {
     id: 'gemini',
     displayName: 'Google Gemini',
     description: 'Gemini models by Google',
     defaultModel: 'gemini-2.0-flash-exp',
-    validateApiKey: (key: string) => key.length > 0 // Google API keys don't have a specific format to validate
+    validateApiKey: (key: string) => key.length > 0, // Google API keys don't have a specific format to validate
+    applyConfig: (baseConfig, modelConfig, options) => {
+      // Apply Gemini-specific configurations
+      
+      // First check options (highest priority)
+      if (options) {
+        // Add search grounding if specified in options
+        if (options.useSearchGrounding !== undefined) {
+          baseConfig.useSearchGrounding = options.useSearchGrounding;
+        }
+        
+        // Add safety settings if specified in options
+        if (options.safetySettings) {
+          baseConfig.safetySettings = options.safetySettings;
+        }
+        
+        // Add dynamic retrieval config if specified in options
+        if (options.dynamicRetrievalConfig) {
+          baseConfig.dynamicRetrievalConfig = options.dynamicRetrievalConfig;
+        }
+      }
+      
+      // Then check model config (lower priority, only if not already set)
+      // Add search grounding if enabled and not already set
+      if (modelConfig?.useSearchGrounding !== undefined && baseConfig.useSearchGrounding === undefined) {
+        baseConfig.useSearchGrounding = modelConfig.useSearchGrounding;
+      }
+      
+      // Add dynamic retrieval config if provided and not already set
+      if (modelConfig?.dynamicRetrievalConfig && !baseConfig.dynamicRetrievalConfig) {
+        baseConfig.dynamicRetrievalConfig = modelConfig.dynamicRetrievalConfig;
+      }
+      
+      // Add safety settings if provided and not already set
+      if (modelConfig?.safetySettings && !baseConfig.safetySettings) {
+        baseConfig.safetySettings = modelConfig.safetySettings;
+      }
+      
+      // Default to true for search grounding if not specified anywhere
+      if (baseConfig.useSearchGrounding === undefined) {
+        baseConfig.useSearchGrounding = true;
+      }
+    }
+  },
+  'deepseek': {
+    id: 'deepseek',
+    displayName: 'DeepSeek',
+    description: 'DeepSeek models including DeepSeek-V3 and DeepSeek-R1',
+    defaultModel: 'deepseek-chat',
+    validateApiKey: (key: string) => key.length > 0, // DeepSeek API keys don't have a specific format to validate
+    applyConfig: (baseConfig, modelConfig, options) => {
+      // Apply DeepSeek-specific configurations
+      
+      // Add safety settings if provided in options
+      if (options?.safetySettings) {
+        baseConfig.safetySettings = options.safetySettings;
+      }
+      
+      // Add safety settings from model config if not already set
+      if (modelConfig?.safetySettings && !baseConfig.safetySettings) {
+        baseConfig.safetySettings = modelConfig.safetySettings;
+      }
+      
+      // Add reasoning extraction if enabled
+      if (modelConfig?.extractReasoning !== undefined) {
+        baseConfig.extractReasoning = modelConfig.extractReasoning;
+      }
+    }
   }
 };
 
@@ -74,6 +149,9 @@ export class ProviderRegistry {
     if (nodeType === 'llm.gemini') {
       return 'gemini';
     }
+    if (nodeType === 'llm.deepseek') {
+      return 'deepseek';
+    }
     return 'anthropic';
   }
 
@@ -87,6 +165,9 @@ export class ProviderRegistry {
     if (provider === 'gemini') {
       return 'llm.gemini';
     }
+    if (provider === 'deepseek') {
+      return 'llm.deepseek';
+    }
     return 'llm.anthropic';
   }
 
@@ -99,6 +180,9 @@ export class ProviderRegistry {
     }
     if (nodes.includes('llm.gemini')) {
       return 'gemini';
+    }
+    if (nodes.includes('llm.deepseek')) {
+      return 'deepseek';
     }
     return 'anthropic';
   }

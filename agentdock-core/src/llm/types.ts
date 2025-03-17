@@ -15,7 +15,7 @@ export interface TokenUsage {
 /**
  * LLM provider types
  */
-export type LLMProvider = 'anthropic' | 'openai' | 'gemini';
+export type LLMProvider = 'anthropic' | 'openai' | 'gemini' | 'deepseek';
 
 /**
  * LLM configuration
@@ -97,7 +97,24 @@ export interface GeminiConfig extends LLMConfig {
   structuredOutputs?: boolean;
 }
 
-export type ProviderConfig = AnthropicConfig | OpenAIConfig | GeminiConfig;
+/**
+ * DeepSeek configuration
+ */
+export interface DeepSeekConfig extends LLMConfig {
+  /** Provider must be 'deepseek' */
+  provider: 'deepseek';
+  /** Safety settings for DeepSeek */
+  safetySettings?: Array<{
+    /** Category for the safety setting */
+    category: string;
+    /** Threshold for the safety setting */
+    threshold: string;
+  }>;
+  /** Enable reasoning extraction for DeepSeek-R1 */
+  extractReasoning?: boolean;
+}
+
+export type ProviderConfig = AnthropicConfig | OpenAIConfig | GeminiConfig | DeepSeekConfig;
 
 /**
  * LLM provider interface
@@ -136,4 +153,6 @@ export interface ProviderMetadata {
   description?: string;
   validateApiKey: (key: string) => boolean;
   defaultModel: string;
+  /** Apply provider-specific configurations to the base config */
+  applyConfig?: (baseConfig: any, modelConfig: any, options?: any) => void;
 } 

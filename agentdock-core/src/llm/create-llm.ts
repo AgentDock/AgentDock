@@ -4,7 +4,7 @@
 
 import { CoreLLM } from './core-llm';
 import { LLMConfig } from './types';
-import { createAnthropicModel, createOpenAIModel, createGeminiModel } from './model-utils';
+import { createAnthropicModel, createOpenAIModel, createGeminiModel, createDeepSeekModel } from './model-utils';
 import { createError, ErrorCode } from '../errors';
 import { logger, LogCategory } from '../logging';
 
@@ -33,6 +33,9 @@ export function createLLM(config: LLMConfig): CoreLLM {
       break;
     case 'gemini':
       model = createGeminiModel(config);
+      break;
+    case 'deepseek':
+      model = createDeepSeekModel(config);
       break;
     default:
       throw createError('llm', `Unsupported provider: ${config.provider}`, ErrorCode.LLM_EXECUTION);

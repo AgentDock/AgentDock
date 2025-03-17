@@ -2,10 +2,17 @@ import { LanguageModel } from 'ai';
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
-import { LLMConfig, GeminiConfig } from './types';
+import { LLMConfig, GeminiConfig, DeepSeekConfig } from './types';
 import { createError, ErrorCode } from '../errors';
 import { logger, LogCategory } from '../logging';
 import { ProviderRegistry } from './provider-registry';
+
+// Add structuredClone polyfill if it doesn't exist
+if (typeof globalThis.structuredClone === 'undefined') {
+  globalThis.structuredClone = function structuredClone(obj) {
+    return JSON.parse(JSON.stringify(obj));
+  };
+}
 
 /**
  * Create an Anthropic model
@@ -93,4 +100,51 @@ export function createGeminiModel(config: LLMConfig): LanguageModel {
   
   // Create and return the model with options
   return provider(config.model, modelOptions);
+}
+
+/**
+ * Create a DeepSeek model
+ * DeepSeek's API is compatible with OpenAI's format, so we can use the OpenAI client
+ * with a custom baseURL
+ */
+export function createDeepSeekModel(config: LLMConfig): LanguageModel {
+  // Validate API key
+  if (!config.apiKey) {
+    throw createError('llm', 'API key is required', ErrorCode.LLM_API_KEY);
+  }
+
+  const deepseekConfig = config as DeepSeekConfig;
+  
+  try {
+    // Create the DeepSeek provider using OpenAI's client with DeepSeek's baseURL
+    const provider = createOpenAI({
+      apiKey: config.apiKey,
+      baseURL: 'https://api.deepseek.com/v1'
+    });
+    
+    // Create model options
+    const modelOptions: any = {};
+    
+    // Add safety settings if provided
+    if (deepseekConfig.safetySettings) {
+      logger.debug(
+        LogCategory.LLM,
+        'createDeepSeekModel',
+        'Adding safety settings for DeepSeek model',
+        { model: config.model }
+      );
+      modelOptions.safetySettings = deepseekConfig.safetySettings;
+    }
+    
+    // Create and return the model with options
+    return provider(config.model, modelOptions);
+  } catch (error) {
+    logger.error(
+      LogCategory.LLM,
+      'createDeepSeekModel',
+      'Error creating DeepSeek model',
+      { error: (error as Error).message, model: config.model }
+    );
+    throw createError('llm', `Error creating DeepSeek model: ${(error as Error).message}`, ErrorCode.LLM_EXECUTION);
+  }
 } 

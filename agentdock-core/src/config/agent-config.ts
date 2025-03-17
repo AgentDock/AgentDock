@@ -5,6 +5,7 @@
 import { AgentConfig, AgentConfigSchema, PersonalitySchema } from '../types/agent-config';
 import { createError, ErrorCode } from '../errors';
 import { logger, LogCategory } from '../logging';
+import { ProviderRegistry } from '../llm/provider-registry';
 
 /**
  * Ensures a value is a string
@@ -24,7 +25,9 @@ function ensureString(value: unknown): string {
  * Get LLM provider from template nodes
  */
 function getLLMProvider(template: any) {
-  return template.nodes?.includes('llm.openai') ? 'llm.openai' : 'llm.anthropic';
+  // Use the provider registry to determine the provider from nodes
+  const provider = ProviderRegistry.getProviderFromNodes(template.nodes || []);
+  return ProviderRegistry.getNodeTypeFromProvider(provider);
 }
 
 /**

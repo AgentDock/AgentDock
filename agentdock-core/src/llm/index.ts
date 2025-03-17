@@ -19,7 +19,7 @@ import {
 // Export the unified LLM implementation
 export { CoreLLM } from './core-llm';
 export { createLLM } from './create-llm';
-export { createAnthropicModel, createOpenAIModel, createGeminiModel } from './model-utils';
+export { createAnthropicModel, createOpenAIModel, createGeminiModel, createDeepSeekModel } from './model-utils';
 
 // Export all types from types.ts
 export * from './types';

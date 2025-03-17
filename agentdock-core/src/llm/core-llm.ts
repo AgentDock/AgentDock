@@ -150,15 +150,25 @@ export class CoreLLM {
         ? (completion: any) => {
             if (completion.usage) {
               this.lastTokenUsage = {
-                promptTokens: completion.usage.promptTokens,
-                completionTokens: completion.usage.completionTokens,
-                totalTokens: completion.usage.totalTokens,
+                promptTokens: completion.usage.prompt_tokens || completion.usage.promptTokens,
+                completionTokens: completion.usage.completion_tokens || completion.usage.completionTokens,
+                totalTokens: completion.usage.total_tokens || completion.usage.totalTokens,
                 provider: this.getProvider()
               };
             }
             options.onFinish!(completion.text || completion);
           }
-        : undefined;
+        : (completion: any) => {
+            // Even if no onFinish is provided, we still want to capture token usage
+            if (completion.usage) {
+              this.lastTokenUsage = {
+                promptTokens: completion.usage.prompt_tokens || completion.usage.promptTokens,
+                completionTokens: completion.usage.completion_tokens || completion.usage.completionTokens,
+                totalTokens: completion.usage.total_tokens || completion.usage.totalTokens,
+                provider: this.getProvider()
+              };
+            }
+          };
       
       // Stream text using the model
       return streamText({
@@ -269,15 +279,25 @@ export class CoreLLM {
         ? (completion: any) => {
             if (completion.usage) {
               this.lastTokenUsage = {
-                promptTokens: completion.usage.promptTokens,
-                completionTokens: completion.usage.completionTokens,
-                totalTokens: completion.usage.totalTokens,
+                promptTokens: completion.usage.prompt_tokens || completion.usage.promptTokens,
+                completionTokens: completion.usage.completion_tokens || completion.usage.completionTokens,
+                totalTokens: completion.usage.total_tokens || completion.usage.totalTokens,
                 provider: this.getProvider()
               };
             }
             options.onFinish!(completion.object || completion);
           }
-        : undefined;
+        : (completion: any) => {
+            // Even if no onFinish is provided, we still want to capture token usage
+            if (completion.usage) {
+              this.lastTokenUsage = {
+                promptTokens: completion.usage.prompt_tokens || completion.usage.promptTokens,
+                completionTokens: completion.usage.completion_tokens || completion.usage.completionTokens,
+                totalTokens: completion.usage.total_tokens || completion.usage.totalTokens,
+                provider: this.getProvider()
+              };
+            }
+          };
       
       // Stream object using the model
       return streamObject({

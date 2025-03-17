@@ -59,7 +59,7 @@
     "@radix-ui/react-toggle-group": "^1.1.2",
     "@radix-ui/react-tooltip": "^1.1.8",
     "@types/crypto-js": "^4.2.2",
-    "@types/node": "^20.17.19",
+    "@types/node": "^22.13.10",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "@vercel/speed-insights": "^1.2.0",

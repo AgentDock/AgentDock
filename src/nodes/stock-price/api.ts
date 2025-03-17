@@ -64,6 +64,16 @@ function isErrorResponse(data: any): data is AlphaVantageErrorResponse {
 }
 
 /**
+ * Sanitize error messages to remove sensitive information like API keys
+ * @param message Error message that might contain sensitive information
+ * @returns Sanitized error message
+ */
+function sanitizeErrorMessage(message: string): string {
+  // Remove API keys (alphanumeric strings of 16+ characters)
+  return message.replace(/[A-Z0-9]{16,}/g, '[API_KEY_REDACTED]');
+}
+
+/**
  * Fetch stock price data from AlphaVantage API
  * @param symbol Stock symbol to look up
  * @param apiKey AlphaVantage API key (optional, uses environment variable if not provided)
@@ -94,13 +104,13 @@ export async function fetchStockPrice(symbol: string, apiKey?: string): Promise<
     // Check for API error responses
     if (isErrorResponse(data)) {
       if (data.Note) {
-        throw new Error(`API limit reached: ${data.Note}`);
+        throw new Error(`API limit reached: ${sanitizeErrorMessage(data.Note)}`);
       }
       if (data.Information) {
-        throw new Error(`API information: ${data.Information}`);
+        throw new Error(`API information: ${sanitizeErrorMessage(data.Information)}`);
       }
       if (data.Error) {
-        throw new Error(`API error: ${data.Error}`);
+        throw new Error(`API error: ${sanitizeErrorMessage(data.Error)}`);
       }
     }
     
@@ -129,7 +139,7 @@ export async function fetchStockPrice(symbol: string, apiKey?: string): Promise<
   } catch (error) {
     // Handle fetch errors
     if (error instanceof Error) {
-      throw new Error(`Failed to fetch stock price: ${error.message}`);
+      throw new Error(`Failed to fetch stock price: ${sanitizeErrorMessage(error.message)}`);
     }
     throw new Error('Failed to fetch stock price: Unknown error');
   }
@@ -173,13 +183,13 @@ export async function searchSymbols(keywords: string, apiKey?: string) {
     // Check for API error responses
     if (isErrorResponse(data)) {
       if (data.Note) {
-        throw new Error(`API limit reached: ${data.Note}`);
+        throw new Error(`API limit reached: ${sanitizeErrorMessage(data.Note)}`);
       }
       if (data.Information) {
-        throw new Error(`API information: ${data.Information}`);
+        throw new Error(`API information: ${sanitizeErrorMessage(data.Information)}`);
       }
       if (data.Error) {
-        throw new Error(`API error: ${data.Error}`);
+        throw new Error(`API error: ${sanitizeErrorMessage(data.Error)}`);
       }
     }
     
@@ -193,7 +203,7 @@ export async function searchSymbols(keywords: string, apiKey?: string) {
   } catch (error) {
     // Handle fetch errors
     if (error instanceof Error) {
-      throw new Error(`Failed to search symbols: ${error.message}`);
+      throw new Error(`Failed to search symbols: ${sanitizeErrorMessage(error.message)}`);
     }
     throw new Error('Failed to search symbols: Unknown error');
   }

@@ -7,7 +7,7 @@
     "test": "jest",
     "typecheck": "tsc --noEmit"
   },
-  "version": "0.0.1",
+  "version": "0.0.1-075-2",
   "comments": {
     "providers": "DeepSeek API is compatible with OpenAI's format, so we use the OpenAI client with a custom baseURL"
   }

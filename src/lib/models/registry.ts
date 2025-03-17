@@ -32,7 +32,8 @@ export class ModelRegistry {
       this._modelsByProvider = new Map([
         ['anthropic', []],
         ['openai', []],
-        ['gemini', []]
+        ['gemini', []],
+        ['deepseek', []]
       ]);
     }
     return this._modelsByProvider;

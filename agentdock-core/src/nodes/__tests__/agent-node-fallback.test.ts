@@ -21,7 +21,7 @@ jest.mock('../../llm', () => ({
     mockCreateLLM(config);
     
     // Return different mock implementations based on the API key
-    if (config.apiKey === 'primary-api-key') {
+    if (config.apiKey === 'sk-ant-primary-api-key') {
       return {
         streamText: shouldPrimaryFail 
           ? mockStreamText.mockRejectedValueOnce(
@@ -39,7 +39,7 @@ jest.mock('../../llm', () => ({
             }),
         getLastTokenUsage: jest.fn().mockReturnValue(null)
       };
-    } else if (config.apiKey === 'fallback-api-key') {
+    } else if (config.apiKey === 'sk-ant-fallback-api-key') {
       return {
         streamText: shouldFallbackFail
           ? mockFallbackStreamText.mockRejectedValueOnce(
@@ -108,8 +108,8 @@ describe('AgentNode Fallback', () => {
           maxSteps: 3
         }
       },
-      apiKey: 'primary-api-key',
-      fallbackApiKey: 'fallback-api-key'
+      apiKey: 'sk-ant-primary-api-key',
+      fallbackApiKey: 'sk-ant-fallback-api-key'
     };
 
     // Create an instance of AgentNode
@@ -126,10 +126,10 @@ describe('AgentNode Fallback', () => {
     // Verify that both LLMs were created
     expect(mockCreateLLM).toHaveBeenCalledTimes(2);
     expect(mockCreateLLM).toHaveBeenNthCalledWith(1, expect.objectContaining({
-      apiKey: 'primary-api-key'
+      apiKey: 'sk-ant-primary-api-key'
     }));
     expect(mockCreateLLM).toHaveBeenNthCalledWith(2, expect.objectContaining({
-      apiKey: 'fallback-api-key'
+      apiKey: 'sk-ant-fallback-api-key'
     }));
 
     // Verify that primary LLM was called and failed
@@ -168,8 +168,8 @@ describe('AgentNode Fallback', () => {
           maxSteps: 3
         }
       },
-      apiKey: 'primary-api-key',
-      fallbackApiKey: 'fallback-api-key'
+      apiKey: 'sk-ant-primary-api-key',
+      fallbackApiKey: 'sk-ant-fallback-api-key'
     };
 
     // Create an instance of AgentNode
@@ -193,8 +193,8 @@ describe('AgentNode Fallback', () => {
           maxSteps: 3
         }
       },
-      apiKey: 'primary-api-key',
-      fallbackApiKey: 'fallback-api-key'
+      apiKey: 'sk-ant-primary-api-key',
+      fallbackApiKey: 'sk-ant-fallback-api-key'
     };
 
     // Create an instance of AgentNode

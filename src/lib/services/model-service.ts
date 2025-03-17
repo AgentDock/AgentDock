@@ -31,7 +31,7 @@ export class ModelService {
   static async fetchAndRegisterModels(provider: LLMProvider, apiKey: string): Promise<ModelMetadata[]> {
     try {
       // Call the provider-specific endpoint to fetch and register models
-      const response = await fetch(`/api/${provider}/models`, {
+      const response = await fetch(`/api/providers/${provider}/models`, {
         headers: {
           'x-api-key': apiKey
         },
@@ -74,7 +74,7 @@ export class ModelService {
    */
   static async validateApiKey(provider: LLMProvider, apiKey: string): Promise<boolean> {
     try {
-      const response = await fetch(`/api/${provider}/models`, {
+      const response = await fetch(`/api/providers/${provider}/models`, {
         headers: {
           'x-api-key': apiKey
         },

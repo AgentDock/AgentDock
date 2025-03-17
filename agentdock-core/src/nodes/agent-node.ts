@@ -19,6 +19,7 @@ import { convertCoreToLLMMessages } from '../utils/message-utils';
 import { NodeMetadata, NodePort } from './base-node';
 import { maskSensitiveData } from '../utils/security-utils';
 import { CoreLLM, createLLM } from '../llm';
+import { ProviderRegistry } from '../llm/provider-registry';
 
 /**
  * Configuration for the agent node
@@ -123,9 +124,15 @@ export class AgentNode extends BaseNode<AgentNodeConfig> {
       throw new Error('API key is required for AgentNode');
     }
     
-    // Validate API key format for Anthropic
-    if (config.provider === 'anthropic' && !config.apiKey.startsWith('sk-ant-')) {
-      throw new Error('Invalid Anthropic API key format. API key must start with "sk-ant-"');
+    // Validate API key format using provider registry
+    const provider = config.provider || 'anthropic';
+    const providerMetadata = ProviderRegistry.getProvider(provider);
+    if (!providerMetadata) {
+      throw new Error(`Unknown provider: ${provider}`);
+    }
+    
+    if (!providerMetadata.validateApiKey(config.apiKey)) {
+      throw new Error(`Invalid API key format for ${providerMetadata.displayName}`);
     }
     
     // Create LLM instance directly
@@ -173,93 +180,31 @@ export class AgentNode extends BaseNode<AgentNodeConfig> {
 
   private getLLMConfig(config: AgentNodeConfig): any {
     const provider = config.provider || 'anthropic';
+    const nodeType = ProviderRegistry.getNodeTypeFromProvider(provider);
+    const modelConfig = config.agentConfig?.nodeConfigurations?.[nodeType];
     
-    let modelConfig;
-    if (provider === 'openai') {
-      modelConfig = config.agentConfig?.nodeConfigurations?.['llm.openai'];
-    } else if (provider === 'gemini') {
-      modelConfig = config.agentConfig?.nodeConfigurations?.['llm.gemini'];
-    } else {
-      // Default to Anthropic
-      modelConfig = config.agentConfig?.nodeConfigurations?.['llm.anthropic'];
+    // Get provider metadata from registry
+    const providerMetadata = ProviderRegistry.getProvider(provider);
+    if (!providerMetadata) {
+      throw createError('node', `Unknown provider: ${provider}`, ErrorCode.NODE_VALIDATION);
     }
-
-    const defaultModel = provider === 'openai' 
-      ? 'gpt-4' 
-      : provider === 'gemini' 
-        ? 'gemini-2.0-flash-exp' 
-        : 'claude-3-7-sonnet-20250219';
-
+    
+    // Base config with defaults from provider metadata
     const llmConfig: any = {
       provider,
       apiKey: config.apiKey,
-      model: modelConfig?.model || defaultModel,
+      model: modelConfig?.model || providerMetadata.defaultModel,
       temperature: modelConfig?.temperature,
       maxTokens: modelConfig?.maxTokens,
       topP: modelConfig?.topP,
       maxSteps: modelConfig?.maxSteps
     };
-
-    // Add Google-specific features if provider is Gemini
-    if (provider === 'gemini') {
-      // First check options from the config parameter (highest priority)
-      if (config.options) {
-        // Add search grounding if specified in options
-        if (config.options.useSearchGrounding !== undefined) {
-          llmConfig.useSearchGrounding = config.options.useSearchGrounding;
-          logger.debug(
-            LogCategory.NODE,
-            'AgentNode',
-            'Using search grounding from options',
-            { useSearchGrounding: llmConfig.useSearchGrounding }
-          );
-        }
-        
-        // Add safety settings if specified in options
-        if (config.options.safetySettings) {
-          llmConfig.safetySettings = config.options.safetySettings;
-        }
-        
-        // Add dynamic retrieval config if specified in options
-        if (config.options.dynamicRetrievalConfig) {
-          llmConfig.dynamicRetrievalConfig = config.options.dynamicRetrievalConfig;
-        }
-      }
-      
-      // Then check model config (lower priority, only if not already set)
-      // Add search grounding if enabled and not already set
-      if (modelConfig?.useSearchGrounding !== undefined && llmConfig.useSearchGrounding === undefined) {
-        llmConfig.useSearchGrounding = modelConfig.useSearchGrounding;
-        logger.debug(
-          LogCategory.NODE,
-          'AgentNode',
-          'Using search grounding from model config',
-          { useSearchGrounding: llmConfig.useSearchGrounding }
-        );
-      }
-      
-      // Add dynamic retrieval config if provided and not already set
-      if (modelConfig?.dynamicRetrievalConfig && !llmConfig.dynamicRetrievalConfig) {
-        llmConfig.dynamicRetrievalConfig = modelConfig.dynamicRetrievalConfig;
-      }
-      
-      // Add safety settings if provided and not already set
-      if (modelConfig?.safetySettings && !llmConfig.safetySettings) {
-        llmConfig.safetySettings = modelConfig.safetySettings;
-      }
-      
-      // Default to true for search grounding if not specified anywhere
-      if (llmConfig.useSearchGrounding === undefined) {
-        llmConfig.useSearchGrounding = true;
-        logger.debug(
-          LogCategory.NODE,
-          'AgentNode',
-          'Using default search grounding (true)',
-          { useSearchGrounding: llmConfig.useSearchGrounding }
-        );
-      }
+    
+    // Apply provider-specific configurations
+    if (providerMetadata.applyConfig) {
+      providerMetadata.applyConfig(llmConfig, modelConfig, config.options);
     }
-
+    
     return llmConfig;
   }
 
@@ -268,7 +213,25 @@ export class AgentNode extends BaseNode<AgentNodeConfig> {
   }
 
   getLastTokenUsage(): TokenUsage | null {
-    return this.llm.getLastTokenUsage();
+    // First check the primary LLM
+    const primaryTokenUsage = this.llm.getLastTokenUsage();
+    if (primaryTokenUsage) {
+      return primaryTokenUsage;
+    }
+    
+    // If no token usage from primary LLM, check fallback if available
+    if (this.fallbackLlm) {
+      return this.fallbackLlm.getLastTokenUsage();
+    }
+    
+    return null;
+  }
+
+  /**
+   * Get the provider of the LLM
+   */
+  getProvider(): string {
+    return this.llm.getProvider();
   }
 
   /**
@@ -339,18 +302,43 @@ Current time: ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-di
           messages: messagesWithSystem as CoreMessage[],
           tools,
           maxSteps: this.config.agentConfig.options?.maxSteps || 5,
-          onStepFinish
+          onStepFinish,
+          onFinish: (completion: any) => {
+            // Ensure token usage is captured when the stream is complete
+            if (completion && typeof completion === 'object' && completion.usage) {
+              // The token usage will be captured by the CoreLLM class
+            }
+            
+            // Log token usage after the stream completes and CoreLLM has had a chance to update it
+            const tokenUsage = activeLlm.getLastTokenUsage();
+            if (tokenUsage) {
+              logger.info(
+                LogCategory.NODE,
+                'AgentNode',
+                'Token usage',
+                {
+                  nodeId: this.id,
+                  provider: tokenUsage.provider,
+                  promptTokens: tokenUsage.promptTokens,
+                  completionTokens: tokenUsage.completionTokens,
+                  totalTokens: tokenUsage.totalTokens,
+                  usedFallback: useFallback && !!this.fallbackLlm
+                }
+              );
+            } else {
+              logger.warn(
+                LogCategory.NODE,
+                'AgentNode',
+                'No token usage available after completion',
+                {
+                  nodeId: this.id,
+                  provider: activeLlm.getProvider(),
+                  model: activeLlm.getModelId()
+                }
+              );
+            }
+          }
         });
-        
-        // Log token usage if available
-        const tokenUsage = activeLlm.getLastTokenUsage();
-        if (tokenUsage) {
-          logger.info(LogCategory.NODE, 'AgentNode', 'Token usage', {
-            nodeId: this.id,
-            ...tokenUsage,
-            usedFallback: useFallback && !!this.fallbackLlm
-          });
-        }
         
         return result;
       } catch (error) {
@@ -362,12 +350,49 @@ Current time: ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-di
           });
           
           try {
-            return await this.fallbackLlm.streamText({
+            const result = await this.fallbackLlm.streamText({
               messages: messagesWithSystem as CoreMessage[],
               tools,
               maxSteps: this.config.agentConfig.options?.maxSteps || 5,
-              onStepFinish: options.onStepFinish
+              onStepFinish: options.onStepFinish,
+              onFinish: (completion: any) => {
+                // Ensure token usage is captured when the stream is complete
+                if (completion && typeof completion === 'object' && completion.usage) {
+                  // The token usage will be captured by the CoreLLM class
+                }
+                
+                // Log token usage after the stream completes and CoreLLM has had a chance to update it
+                const tokenUsage = this.fallbackLlm?.getLastTokenUsage();
+                if (tokenUsage) {
+                  logger.info(
+                    LogCategory.NODE,
+                    'AgentNode',
+                    'Fallback token usage',
+                    {
+                      nodeId: this.id,
+                      provider: tokenUsage.provider,
+                      promptTokens: tokenUsage.promptTokens,
+                      completionTokens: tokenUsage.completionTokens,
+                      totalTokens: tokenUsage.totalTokens,
+                      usedFallback: true
+                    }
+                  );
+                } else {
+                  logger.warn(
+                    LogCategory.NODE,
+                    'AgentNode',
+                    'No fallback token usage available after completion',
+                    {
+                      nodeId: this.id,
+                      provider: this.fallbackLlm?.getProvider(),
+                      model: this.fallbackLlm?.getModelId()
+                    }
+                  );
+                }
+              }
             });
+            
+            return result;
           } catch (fallbackError) {
             throw createError(
               'node',

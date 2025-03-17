@@ -153,8 +153,11 @@ export async function POST(
     }
     
     if (!mutableTemplate.nodeConfigurations[nodeType]) {
+      // Get provider metadata to use default model
+      const providerMetadata = ProviderRegistry.getProvider(llmInfo.provider);
+      
       mutableTemplate.nodeConfigurations[nodeType] = {
-        model: llmInfo.provider === 'anthropic' ? 'claude-3-7-sonnet-20250219' : 'gpt-4',
+        model: providerMetadata ? providerMetadata.defaultModel : 'gpt-4',
         temperature: 0.7,
         maxTokens: 2048
       };
@@ -258,6 +261,7 @@ export async function POST(
     
     // Get token usage directly from the agent
     const tokenUsage = agent.getLastTokenUsage();
+    
     if (tokenUsage) {
       await logger.info(
         LogCategory.API,

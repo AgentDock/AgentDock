@@ -225,7 +225,7 @@ function BaseSettingsSheet({
       if (!settings.useCustomApiKey || !settings.apiKey.trim()) return;
 
       try {
-        const response = await fetch('/api/anthropic/models', {
+        const response = await fetch('/api/providers/anthropic/models', {
           headers: {
             'x-api-key': settings.apiKey
           }

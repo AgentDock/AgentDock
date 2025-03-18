@@ -398,12 +398,7 @@ async function formatResearchData(
       
       // Add a context flag to indicate this is a tool-internal LLM call
       const result = await options.llmContext.llm.generateText({ 
-        messages,
-        toolContext: {
-          isToolInternalCall: true,
-          toolName: 'deep_research',
-          operation: 'generate_findings'
-        }
+        messages
       });
       
       // Parse the result to extract findings

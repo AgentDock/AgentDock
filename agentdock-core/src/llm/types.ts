@@ -15,7 +15,7 @@ export interface TokenUsage {
 /**
  * LLM provider types
  */
-export type LLMProvider = 'anthropic' | 'openai';
+export type LLMProvider = 'anthropic' | 'openai' | 'gemini' | 'deepseek';
 
 /**
  * LLM configuration
@@ -71,7 +71,50 @@ export interface OpenAIConfig extends LLMConfig {
   provider: 'openai';
 }
 
-export type ProviderConfig = AnthropicConfig | OpenAIConfig;
+/**
+ * Google Gemini configuration
+ */
+export interface GeminiConfig extends LLMConfig {
+  /** Provider must be 'gemini' */
+  provider: 'gemini';
+  /** Enable Google Search for grounding responses in web search results */
+  useSearchGrounding?: boolean;
+  /** Dynamic retrieval configuration for Google Gemini */
+  dynamicRetrievalConfig?: {
+    /** Mode for dynamic retrieval */
+    mode: 'MODE_DYNAMIC' | 'MODE_UNSPECIFIED';
+    /** Dynamic threshold for retrieval */
+    dynamicThreshold?: number;
+  };
+  /** Safety settings for Google Gemini */
+  safetySettings?: Array<{
+    /** Category for the safety setting */
+    category: string;
+    /** Threshold for the safety setting */
+    threshold: string;
+  }>;
+  /** Enable structured outputs for object generation */
+  structuredOutputs?: boolean;
+}
+
+/**
+ * DeepSeek configuration
+ */
+export interface DeepSeekConfig extends LLMConfig {
+  /** Provider must be 'deepseek' */
+  provider: 'deepseek';
+  /** Safety settings for DeepSeek */
+  safetySettings?: Array<{
+    /** Category for the safety setting */
+    category: string;
+    /** Threshold for the safety setting */
+    threshold: string;
+  }>;
+  /** Enable reasoning extraction for DeepSeek-R1 */
+  extractReasoning?: boolean;
+}
+
+export type ProviderConfig = AnthropicConfig | OpenAIConfig | GeminiConfig | DeepSeekConfig;
 
 /**
  * LLM provider interface
@@ -110,4 +153,6 @@ export interface ProviderMetadata {
   description?: string;
   validateApiKey: (key: string) => boolean;
   defaultModel: string;
+  /** Apply provider-specific configurations to the base config */
+  applyConfig?: (baseConfig: any, modelConfig: any, options?: any) => void;
 } 

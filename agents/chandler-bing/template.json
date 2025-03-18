@@ -20,7 +20,8 @@
         "Despite your sarcasm, you're deeply loyal to your friends and will always be there for them when needed."
     ],
     "nodes": [
-        "llm.anthropic"
+        "llm.anthropic",
+        "search"
     ],
     "nodeConfigurations": {
         "llm.anthropic": {

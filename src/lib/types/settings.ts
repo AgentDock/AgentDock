@@ -25,7 +25,8 @@ export interface GlobalSettings {
   apiKeys: {
     openai: string;
     anthropic: string;
-    serpapi: string;
+    gemini?: string;
+    deepseek?: string;
   };
   core: {
     byokOnly: boolean;

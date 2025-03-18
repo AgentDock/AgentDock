@@ -88,4 +88,4 @@ function getContextWindowSize(modelId: string): number {
   if (modelId.includes('gpt-3.5-turbo-16k')) return 16384;
   if (modelId.includes('gpt-3.5-turbo')) return 4096;
   return 4096; // Default fallback
-}
+} 

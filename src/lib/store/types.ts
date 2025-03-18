@@ -5,54 +5,12 @@
  * @module lib/store/types
  */
 
-import type { BaseNode, NodeMetadata } from 'agentdock-core';
+import type { BaseNode } from 'agentdock-core';
 import type { ValidatedPersonality } from 'agentdock-core/types/agent-config';
 import type { TemplateChatSettings, ChatSettings } from '@/lib/types/chat';
 
-export type { BaseNode };
-
-export interface ChatNodeConfig {
-  personality?: string;
-  temperature?: number;
-  maxTokens?: number;
-  model?: string;
-}
-
-export interface ChatNodeMetadata {
-  created: number;
-  messages: Array<{
-    id: string;
-    role: 'user' | 'assistant';
-    content: string;
-    timestamp: number;
-  }>;
-}
-
-export interface ChatNode extends BaseNode<ChatNodeConfig> {
-  type: 'CHAT';
-  metadata: NodeMetadata;
-  chatMetadata: ChatNodeMetadata;
-}
-
-// Import BaseChatSettings from shared types
-// interface BaseChatSettings {
-//   initialMessages: string[];
-// }
-
-// Import TemplateChatSettings from shared types
-// export interface TemplateChatSettings extends BaseChatSettings {
-//   historyPolicy: 'lastN' | 'all';
-//   historyLength?: number; // Optional in template
-//   chatPrompts?: string[]; // Chat prompt suggestions
-// }
-
-// Import ChatSettings from shared types
-// export interface ChatSettings extends BaseChatSettings {
-//   historyPolicy: 'none' | 'lastN' | 'all';
-//   historyLength: number; // Required at runtime
-//   chatPrompts?: string[]; // Chat prompt suggestions
-// }
-
+export type { BaseNode }; 
+  
 export interface AgentTemplate {
   version?: string;
   agentId: string;
@@ -61,13 +19,12 @@ export interface AgentTemplate {
   personality: ValidatedPersonality;
   nodes: string[];
   nodeConfigurations: {
-    'llm.anthropic'?: {
+    [providerKey: string]: {
       model: string;
       temperature: number;
       maxTokens: number;
       useCustomApiKey?: boolean;
     };
-    [key: string]: unknown;
   };
   tools?: string[];
   chatSettings: TemplateChatSettings;
@@ -107,12 +64,8 @@ export interface Agent {
 
 export enum AgentState {
   CREATED = 'CREATED',
-  INITIALIZING = 'INITIALIZING',
-  READY = 'READY',
-  RUNNING = 'RUNNING',
-  PAUSED = 'PAUSED',
-  STOPPED = 'STOPPED',
-  ERROR = 'ERROR'
+  ERROR = 'ERROR',
+  RUNNING = 'RUNNING'
 }
 
 export interface AppState {
@@ -120,15 +73,6 @@ export interface AppState {
   isInitialized: boolean;
   templatesValidated: boolean;
   templatesError: string | null;
-}
-
-export interface AppActions {
-  addAgent: (agent: Omit<Agent, "id" | "state" | "metadata" | "start" | "pause" | "resume" | "stop">) => void;
-  removeAgent: (id: string) => void;
-  updateAgent: (id: string, updates: Partial<Agent>) => void;
-  setActiveAgent: (id: string | null) => void;
-  initialize: () => void;
-  reset: () => void;
 }
 
 export interface Store extends AppState {

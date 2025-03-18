@@ -7,14 +7,15 @@ AgentDock Core is the foundation library that powers the AgentDock platform, pro
 This library provides a set of tools and abstractions for working with Large Language Models (LLMs), managing agent configurations, and building interactive AI experiences. It's designed to be flexible, extensible, and easy to use.
 
 AgentDock Core can be used:
-- As part of the AgentDock reference implementation (this repository)
 - As a standalone library in your own projects
 - With any JavaScript framework or runtime environment
+- In both server and client environments (where supported)
 
 ## Key Features
 
-- **LLM Integration**: Built-in support for multiple LLM providers (Anthropic, OpenAI)
+- **Unified LLM Integration**: Built-in support for multiple LLM providers (Anthropic, OpenAI, Gemini) with a single, consistent interface
 - **Agent Framework**: Tools for building conversational AI agents with memory and context
+- **Tool LLM Integration**: Tools can leverage the agent's LLM capabilities for enhanced functionality
 - **Streaming Support**: First-class support for streaming responses
 - **Type Safety**: Comprehensive TypeScript types for all components
 - **Error Handling**: Robust error handling and logging
@@ -64,8 +65,17 @@ const result = await agent.handleMessage({
   messages: [{ role: 'user', content: 'Hello, how can you help me?' }]
 });
 
-// Get the response
-const response = result.toDataStreamResponse();
+// Process the response
+console.log(result.text);
+
+// Or work with the stream
+const stream = await agent.handleMessageStream({
+  messages: [{ role: 'user', content: 'Tell me a story' }]
+});
+
+for await (const chunk of stream) {
+  console.log(chunk.text);
+}
 ```
 
 ## Architecture & Design Philosophy
@@ -76,7 +86,7 @@ AgentDock Core follows these key architectural principles:
 
 The core library is designed to work seamlessly in different environments:
 
-- **Framework Independence**: Works with any JavaScript framework (Next.js, Express, etc.)
+- **Framework Independence**: Works with any JavaScript framework
 - **Runtime Flexibility**: Compatible with Node.js, Edge, and browser environments
 - **Deployment Versatility**: Supports various deployment models (serverless, containers, etc.)
 - **Environment Compatibility**: Node metadata tracks compatibility across different environments
@@ -154,9 +164,12 @@ The node system is the foundation of AgentDock Core:
 
 The LLM system provides a consistent interface for different providers:
 
-- **LLMBase**: Abstract base class for all LLM implementations
-- **Provider-Specific Implementations**: Concrete implementations for Anthropic, OpenAI
+- **CoreLLM**: Unified implementation for all LLM providers (Anthropic, OpenAI, Gemini)
+- **Provider-Specific Model Creation**: Functions for creating models from different providers
 - **ProviderRegistry**: Central registry for provider metadata and configuration
+- **Direct SDK Integration**: Direct integration with the Vercel AI SDK
+- **Tool LLM Integration**: Tools can access the agent's LLM instance for enhanced functionality
+- **Extensible Design**: Easy to add new providers (see docs/adding-new-provider.md)
 
 ### Storage System
 
@@ -212,4 +225,4 @@ We maintain stability by:
 
 ## License
 
-AgentDock Core is licensed under the same MIT License as the main AgentDock project. See the LICENSE file in the root directory for details. 
+AgentDock Core is licensed under the MIT License. See the LICENSE file in the root directory for details. 

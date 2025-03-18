@@ -39,7 +39,7 @@ export interface ChatSettings extends BaseChatSettings {
 /**
  * LLM provider type
  */
-export type LLMProvider = 'anthropic' | 'openai';
+export type LLMProvider = 'anthropic' | 'openai' | 'gemini' | 'deepseek';
 
 /**
  * Chat settings for the UI

@@ -64,7 +64,7 @@ describe('AgentNode', () => {
           maxSteps: 3
         }
       },
-      apiKey: 'test-api-key'
+      apiKey: 'sk-ant-test-api-key'
     };
 
     // Create an instance of AgentNode
@@ -115,7 +115,7 @@ describe('AgentNode', () => {
           maxSteps: 3
         }
       },
-      apiKey: 'test-api-key'
+      apiKey: 'sk-ant-test-api-key'
     };
 
     // Create an instance of AgentNode

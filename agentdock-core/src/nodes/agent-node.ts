@@ -9,9 +9,7 @@
  */
 
 import { BaseNode } from './base-node';
-import { LLMBase } from '../llm/llm-base';
-import { createLLM } from '../llm';
-import { LLMConfig, LLMProvider, TokenUsage } from '../llm/types';
+import { LLMProvider, TokenUsage } from '../llm/types';
 import { createError, ErrorCode } from '../errors';
 import { logger, LogCategory } from '../logging';
 import { NodeCategory } from '../types/node-category';
@@ -20,6 +18,8 @@ import { CoreMessage } from 'ai';
 import { convertCoreToLLMMessages } from '../utils/message-utils';
 import { NodeMetadata, NodePort } from './base-node';
 import { maskSensitiveData } from '../utils/security-utils';
+import { CoreLLM, createLLM } from '../llm';
+import { ProviderRegistry } from '../llm/provider-registry';
 
 /**
  * Configuration for the agent node
@@ -33,6 +33,8 @@ export interface AgentNodeConfig {
   fallbackApiKey?: string;
   /** LLM provider (default: 'anthropic') */
   provider?: LLMProvider;
+  /** Provider-specific options (optional) */
+  options?: Record<string, any>;
 }
 
 /**
@@ -54,8 +56,8 @@ export interface AgentNodeOptions {
  */
 export class AgentNode extends BaseNode<AgentNodeConfig> {
   readonly type = 'core.agent';
-  private llm: LLMBase;
-  private fallbackLlm: LLMBase | null = null;
+  private llm: CoreLLM;
+  private fallbackLlm: CoreLLM | null = null;
 
   static getNodeMetadata(): NodeMetadata {
     return {
@@ -122,14 +124,20 @@ export class AgentNode extends BaseNode<AgentNodeConfig> {
       throw new Error('API key is required for AgentNode');
     }
     
-    // Validate API key format for Anthropic
-    if (config.provider === 'anthropic' && !config.apiKey.startsWith('sk-ant-')) {
-      throw new Error('Invalid Anthropic API key format. API key must start with "sk-ant-"');
+    // Validate API key format using provider registry
+    const provider = config.provider || 'anthropic';
+    const providerMetadata = ProviderRegistry.getProvider(provider);
+    if (!providerMetadata) {
+      throw new Error(`Unknown provider: ${provider}`);
+    }
+    
+    if (!providerMetadata.validateApiKey(config.apiKey)) {
+      throw new Error(`Invalid API key format for ${providerMetadata.displayName}`);
     }
     
     // Create LLM instance directly
     const llmConfig = this.getLLMConfig(config);
-    this.llm = createLLM(llmConfig);
+    this.llm = this.createLLMInstance(llmConfig);
     
     // Create fallback LLM instance if fallback API key is provided
     if (config.fallbackApiKey) {
@@ -138,7 +146,7 @@ export class AgentNode extends BaseNode<AgentNodeConfig> {
           ...llmConfig,
           apiKey: config.fallbackApiKey
         };
-        this.fallbackLlm = createLLM(fallbackConfig);
+        this.fallbackLlm = this.createLLMInstance(fallbackConfig);
       } catch (error) {
         logger.warn(
           LogCategory.NODE,
@@ -151,29 +159,79 @@ export class AgentNode extends BaseNode<AgentNodeConfig> {
     }
   }
 
-  private getLLMConfig(config: AgentNodeConfig): LLMConfig {
-    const provider = config.provider || 'anthropic';
-    const modelConfig = provider === 'openai' 
-      ? config.agentConfig?.nodeConfigurations?.['llm.openai']
-      : config.agentConfig?.nodeConfigurations?.['llm.anthropic'];
+  /**
+   * Create an LLM instance based on the provider
+   */
+  private createLLMInstance(config: any): CoreLLM {
+    logger.debug(
+      LogCategory.NODE,
+      'AgentNode',
+      'Creating LLM instance',
+      {
+        provider: config.provider,
+        model: config.model,
+        apiKeyPrefix: maskSensitiveData(config.apiKey, 5)
+      }
+    );
+    
+    // Create the LLM instance using the unified createLLM function
+    return createLLM(config);
+  }
 
-    return {
+  private getLLMConfig(config: AgentNodeConfig): any {
+    const provider = config.provider || 'anthropic';
+    const nodeType = ProviderRegistry.getNodeTypeFromProvider(provider);
+    const modelConfig = config.agentConfig?.nodeConfigurations?.[nodeType];
+    
+    // Get provider metadata from registry
+    const providerMetadata = ProviderRegistry.getProvider(provider);
+    if (!providerMetadata) {
+      throw createError('node', `Unknown provider: ${provider}`, ErrorCode.NODE_VALIDATION);
+    }
+    
+    // Base config with defaults from provider metadata
+    const llmConfig: any = {
       provider,
       apiKey: config.apiKey,
-      model: modelConfig?.model || (provider === 'openai' ? 'gpt-4' : 'claude-3-7-sonnet-20250219'),
+      model: modelConfig?.model || providerMetadata.defaultModel,
       temperature: modelConfig?.temperature,
       maxTokens: modelConfig?.maxTokens,
       topP: modelConfig?.topP,
       maxSteps: modelConfig?.maxSteps
     };
+    
+    // Apply provider-specific configurations
+    if (providerMetadata.applyConfig) {
+      providerMetadata.applyConfig(llmConfig, modelConfig, config.options);
+    }
+    
+    return llmConfig;
   }
 
-  private getLLM(useFallback?: boolean): LLMBase {
+  private getLLM(useFallback?: boolean): CoreLLM {
     return (useFallback && this.fallbackLlm) ? this.fallbackLlm : this.llm;
   }
 
   getLastTokenUsage(): TokenUsage | null {
-    return this.llm.getLastTokenUsage();
+    // First check the primary LLM
+    const primaryTokenUsage = this.llm.getLastTokenUsage();
+    if (primaryTokenUsage) {
+      return primaryTokenUsage;
+    }
+    
+    // If no token usage from primary LLM, check fallback if available
+    if (this.fallbackLlm) {
+      return this.fallbackLlm.getLastTokenUsage();
+    }
+    
+    return null;
+  }
+
+  /**
+   * Get the provider of the LLM
+   */
+  getProvider(): string {
+    return this.llm.getProvider();
   }
 
   /**
@@ -241,21 +299,46 @@ Current time: ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-di
         
         // Call the LLM
         const result = await activeLlm.streamText({
-          messages: convertCoreToLLMMessages(messagesWithSystem),
+          messages: messagesWithSystem as CoreMessage[],
           tools,
           maxSteps: this.config.agentConfig.options?.maxSteps || 5,
-          onStepFinish
+          onStepFinish,
+          onFinish: (completion: any) => {
+            // Ensure token usage is captured when the stream is complete
+            if (completion && typeof completion === 'object' && completion.usage) {
+              // The token usage will be captured by the CoreLLM class
+            }
+            
+            // Log token usage after the stream completes and CoreLLM has had a chance to update it
+            const tokenUsage = activeLlm.getLastTokenUsage();
+            if (tokenUsage) {
+              logger.info(
+                LogCategory.NODE,
+                'AgentNode',
+                'Token usage',
+                {
+                  nodeId: this.id,
+                  provider: tokenUsage.provider,
+                  promptTokens: tokenUsage.promptTokens,
+                  completionTokens: tokenUsage.completionTokens,
+                  totalTokens: tokenUsage.totalTokens,
+                  usedFallback: useFallback && !!this.fallbackLlm
+                }
+              );
+            } else {
+              logger.warn(
+                LogCategory.NODE,
+                'AgentNode',
+                'No token usage available after completion',
+                {
+                  nodeId: this.id,
+                  provider: activeLlm.getProvider(),
+                  model: activeLlm.getModelId()
+                }
+              );
+            }
+          }
         });
-        
-        // Log token usage if available
-        const tokenUsage = activeLlm.getLastTokenUsage();
-        if (tokenUsage) {
-          logger.info(LogCategory.NODE, 'AgentNode', 'Token usage', {
-            nodeId: this.id,
-            ...tokenUsage,
-            usedFallback: useFallback && !!this.fallbackLlm
-          });
-        }
         
         return result;
       } catch (error) {
@@ -267,12 +350,49 @@ Current time: ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-di
           });
           
           try {
-            return await this.fallbackLlm.streamText({
-              messages: convertCoreToLLMMessages(messagesWithSystem),
+            const result = await this.fallbackLlm.streamText({
+              messages: messagesWithSystem as CoreMessage[],
               tools,
               maxSteps: this.config.agentConfig.options?.maxSteps || 5,
-              onStepFinish: options.onStepFinish
+              onStepFinish: options.onStepFinish,
+              onFinish: (completion: any) => {
+                // Ensure token usage is captured when the stream is complete
+                if (completion && typeof completion === 'object' && completion.usage) {
+                  // The token usage will be captured by the CoreLLM class
+                }
+                
+                // Log token usage after the stream completes and CoreLLM has had a chance to update it
+                const tokenUsage = this.fallbackLlm?.getLastTokenUsage();
+                if (tokenUsage) {
+                  logger.info(
+                    LogCategory.NODE,
+                    'AgentNode',
+                    'Fallback token usage',
+                    {
+                      nodeId: this.id,
+                      provider: tokenUsage.provider,
+                      promptTokens: tokenUsage.promptTokens,
+                      completionTokens: tokenUsage.completionTokens,
+                      totalTokens: tokenUsage.totalTokens,
+                      usedFallback: true
+                    }
+                  );
+                } else {
+                  logger.warn(
+                    LogCategory.NODE,
+                    'AgentNode',
+                    'No fallback token usage available after completion',
+                    {
+                      nodeId: this.id,
+                      provider: this.fallbackLlm?.getProvider(),
+                      model: this.fallbackLlm?.getModelId()
+                    }
+                  );
+                }
+              }
             });
+            
+            return result;
           } catch (fallbackError) {
             throw createError(
               'node',
@@ -311,7 +431,7 @@ Current time: ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-di
       const llmContext = {
         apiKey: this.config.apiKey,
         provider: this.config.provider || 'anthropic',
-        model: this.getLLM().modelId,
+        model: this.getLLM().getModelId(),
         llm: this.getLLM()
       };
       

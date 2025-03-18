@@ -3,10 +3,8 @@
  * This provides a clean abstraction for tool registration and discovery.
  */
 
-import { DefaultToolRegistry, setToolRegistry } from 'agentdock-core';
-import { tools as searchTools } from '@/nodes/search';
-import { tools as deepResearchTools } from '@/nodes/deep-research';
-import { tools as firecrawlTools } from '@/nodes/firecrawl';
+import { DefaultToolRegistry, setToolRegistry, logger, LogCategory } from 'agentdock-core';
+import { allTools } from '@/nodes/registry';
 
 /**
  * NextJs tool registry implementation that wraps tools to inject LLM context
@@ -15,16 +13,8 @@ export class NextJsToolRegistry extends DefaultToolRegistry {
   constructor() {
     super();
     
-    // Register all tools
-    Object.entries(searchTools).forEach(([name, tool]) => {
-      this.registerTool(name, this.wrapToolWithLLMContext(tool));
-    });
-    
-    Object.entries(deepResearchTools).forEach(([name, tool]) => {
-      this.registerTool(name, this.wrapToolWithLLMContext(tool));
-    });
-    
-    Object.entries(firecrawlTools).forEach(([name, tool]) => {
+    // Register all tools from the central registry
+    Object.entries(allTools).forEach(([name, tool]) => {
       this.registerTool(name, this.wrapToolWithLLMContext(tool));
     });
   }
@@ -44,24 +34,23 @@ export class NextJsToolRegistry extends DefaultToolRegistry {
           return await originalExecute(params, options);
         }
         
-        // Otherwise, create a minimal context with just the API key
-        // This is a fallback for direct tool calls outside of an agent
-        const apiKey = process.env.ANTHROPIC_API_KEY || '';
+        // If no llmContext is provided, log a warning but proceed with original options
+        // This allows tools to function without LLM capabilities when needed
+        logger.warn(
+          LogCategory.NODE, 
+          'ToolRegistry', 
+          `Tool ${tool.name} executed without LLM context. Some functionality may be limited.`
+        );
         
-        // Create new options with minimal LLM context
-        const newOptions = {
-          ...options,
-          llmContext: {
-            apiKey,
-            provider: 'anthropic',
-            model: 'claude-3-7-sonnet-20250219'
-          }
-        };
-        
-        // Call the original execute function with the new options
-        return await originalExecute(params, newOptions);
+        // Call the original execute function with the original options
+        return await originalExecute(params, options);
       } catch (error) {
-        console.error('Error executing tool with LLM context:', error);
+        logger.error(
+          LogCategory.NODE, 
+          'ToolRegistry', 
+          `Error executing tool ${tool.name}:`, 
+          { error: error instanceof Error ? error.message : 'Unknown error' }
+        );
         throw error;
       }
     };

@@ -12,6 +12,12 @@ const createAgentSchema = z.object({
   systemPrompt: z.string().optional()
 });
 
+/**
+ * POST /api/agents
+ * Creates a new agent with the provided data
+ * Note: This endpoint is currently not used in the application as agents are
+ * created from templates in the store initialization process.
+ */
 export async function POST(req: Request) {
   try {
     const storage = SecureStorage.getInstance('agentdock');
@@ -55,7 +61,6 @@ export async function POST(req: Request) {
     
     // Save updated list
     await storage.set('agents', agents);
-    await storage.set(`agent:${agent.id}`, agent);
     
     return NextResponse.json(agent);
   } catch (error) {
@@ -67,6 +72,12 @@ export async function POST(req: Request) {
   }
 }
 
+/**
+ * GET /api/agents
+ * Returns a list of agents
+ * Note: This endpoint is currently not used in the application as agents are
+ * loaded from templates in the store initialization process.
+ */
 export async function GET() {
   try {
     const storage = SecureStorage.getInstance('agentdock');
@@ -75,34 +86,7 @@ export async function GET() {
   } catch (error) {
     console.error('Failed to retrieve agents:', error);
     
-    // Return a mock list of agents for testing
-    const mockAgents: Agent[] = [
-      {
-        id: 'mock-agent-1',
-        agentId: 'research-agent',
-        name: 'Research Assistant',
-        description: 'A research assistant with search and deep research capabilities',
-        personality: PersonalitySchema.parse('helpful, analytical, thorough, I have access to search and deep research tools'),
-        nodes: ['llm.anthropic', 'search', 'deep_research'],
-        nodeConfigurations: {},
-        chatSettings: {
-          initialMessages: ['I am a research assistant with search and deep research capabilities. How can I help you today?'],
-          historyPolicy: "lastN",
-          historyLength: 10
-        },
-        instructions: 'You are a helpful research assistant with search and deep research capabilities.',
-        state: AgentState.CREATED,
-        runtimeSettings: {
-          temperature: 0.7,
-          maxTokens: 4096
-        },
-        metadata: {
-          created: Date.now(),
-          lastStateChange: Date.now()
-        }
-      }
-    ];
-    
-    return NextResponse.json(mockAgents);
+    // Return an empty array instead of mock data
+    return NextResponse.json([]);
   }
 } 

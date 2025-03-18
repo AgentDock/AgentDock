@@ -79,7 +79,7 @@ const ModelsTable = memo(({ models, onRefresh, isLoading }: {
 ));
 
 interface ModelDisplayProps {
-  provider: 'anthropic' | 'openai'
+  provider: 'anthropic' | 'openai' | 'gemini' | 'deepseek'
   refreshTrigger: number
   onRefreshComplete?: () => void
 }
@@ -107,7 +107,7 @@ function ModelDisplayComponent({ provider, refreshTrigger, onRefreshComplete }: 
       
       // Try to get models from registry first (unless forcing refresh)
       if (!forceRefresh) {
-        const registryResponse = await fetch(`/api/models?provider=${provider}`, {
+        const registryResponse = await fetch(`/api/providers/models?provider=${provider}`, {
           headers: { 'Cache-Control': 'no-cache' }
         });
         
@@ -126,7 +126,7 @@ function ModelDisplayComponent({ provider, refreshTrigger, onRefreshComplete }: 
       await ModelService.fetchAndRegisterModels(provider, apiKey);
       
       // Get updated models from registry
-      const updatedResponse = await fetch(`/api/models?provider=${provider}`, {
+      const updatedResponse = await fetch(`/api/providers/models?provider=${provider}`, {
         headers: { 'Cache-Control': 'no-cache' }
       });
       

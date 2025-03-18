@@ -262,6 +262,20 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
     },
     onFinish: async (message) => {
       try {
+        // Lightweight debouncing - use a flag to prevent multiple rapid calls
+        // for fast-responding models like Qwen
+        const finishTime = Date.now();
+        const lastFinishRef = (window as any).__lastMessageFinishTime;
+        
+        // If we've processed a message in the last 100ms, skip additional processing
+        if (lastFinishRef && finishTime - lastFinishRef < 100) {
+          console.debug('Skipping duplicate onFinish due to rapid response');
+          return;
+        }
+        
+        // Update the timestamp for the next potential call
+        (window as any).__lastMessageFinishTime = finishTime;
+        
         // Log the message completion
         await logger.info(
           LogCategory.API,

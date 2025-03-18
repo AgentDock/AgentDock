@@ -232,6 +232,9 @@ export function ToolCall({
 
   // Only update expandedTools when toolInvocations actually change
   React.useEffect(() => {
+    // Skip if no tool invocations
+    if (!toolInvocations?.length) return;
+    
     // Skip if toolInvocations is the same reference as before
     if (toolInvocationsRef.current === toolInvocations) {
       return;
@@ -240,25 +243,33 @@ export function ToolCall({
     // Update the ref
     toolInvocationsRef.current = toolInvocations;
     
-    if (toolInvocations?.length) {
-      // Use a function that doesn't depend on previous state to avoid loops
-      const newExpandedState: Record<string, boolean> = {};
+    // Use a timeout to debounce updates and prevent rapid state changes
+    const timeoutId = setTimeout(() => {
+      // Create a new expanded state object without relying on previous state
+      const newExpandedState = { ...expandedTools };
+      
+      let hasNewTools = false;
       
       toolInvocations.forEach((invocation, index) => {
         const toolId = `${invocation.toolName}-${index}`;
         
+        // Only set state for new tools, preserve existing state for others
         if (!processedToolsRef.current.has(toolId)) {
           newExpandedState[toolId] = true;
           processedToolsRef.current.add(toolId);
-        } else {
-          // Preserve existing expanded state
-          newExpandedState[toolId] = expandedTools[toolId] !== false;
+          hasNewTools = true;
         }
       });
       
-      setExpandedTools(newExpandedState);
-    }
-  }, [toolInvocations, expandedTools]);
+      // Only update state if we actually have new tools
+      if (hasNewTools) {
+        setExpandedTools(newExpandedState);
+      }
+    }, 50); // Small debounce of 50ms
+    
+    // Clean up the timeout on unmount or when dependencies change
+    return () => clearTimeout(timeoutId);
+  }, [toolInvocations]); // Remove expandedTools dependency to avoid cascading updates
 
   const toggleExpanded = React.useCallback((toolId: string, e: React.MouseEvent) => {
     e.stopPropagation();

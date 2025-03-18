@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { SecureStorage, logger, LogCategory, ProviderRegistry, LLMProvider } from 'agentdock-core';
+import { SecureStorage, logger, LogCategory, ProviderRegistry } from 'agentdock-core';
 import { templates, TemplateId } from '@/generated/templates';
 import type { GlobalSettings } from '@/lib/types/settings';
 import type { ValidatedPersonality } from 'agentdock-core/types/agent-config';
 import { PersonalitySchema } from 'agentdock-core/types/agent-config';
-import type { ChatUISettings } from '@/lib/types/chat';
+import type { ChatUISettings, LLMProvider } from '@/lib/types/chat';
 import { ModelRegistry } from '@/lib/models/registry';
 
 // Create a single instance for storage

@@ -10,6 +10,8 @@ import { tools as weatherTools } from './weather';
 import { tools as searchTools } from './search';
 import { tools as deepResearchTools } from './deep-research';
 import { tools as firecrawlTools } from './firecrawl';
+import { cryptoPriceTool, trendingCryptosTool } from './crypto-price';
+import { tools as snowtracerTools } from './snowtracer/index';
 import type { ToolRegistry } from './types';
 
 // Combined tools registry
@@ -18,7 +20,10 @@ export const allTools: ToolRegistry = {
   ...weatherTools,
   ...searchTools,
   ...deepResearchTools,
-  ...firecrawlTools
+  ...firecrawlTools,
+  ...snowtracerTools,
+  crypto_price: cryptoPriceTool,
+  trending_cryptos: trendingCryptosTool
 };
 
 /**

@@ -15,7 +15,7 @@ export interface TokenUsage {
 /**
  * LLM provider types
  */
-export type LLMProvider = 'anthropic' | 'openai' | 'gemini' | 'deepseek';
+export type LLMProvider = 'anthropic' | 'openai' | 'gemini' | 'deepseek' | 'groq';
 
 /**
  * LLM configuration
@@ -114,7 +114,17 @@ export interface DeepSeekConfig extends LLMConfig {
   extractReasoning?: boolean;
 }
 
-export type ProviderConfig = AnthropicConfig | OpenAIConfig | GeminiConfig | DeepSeekConfig;
+/**
+ * Groq configuration
+ */
+export interface GroqConfig extends LLMConfig {
+  /** Provider must be 'groq' */
+  provider: 'groq';
+  /** Enable reasoning extraction for models that support it */
+  extractReasoning?: boolean;
+}
+
+export type ProviderConfig = AnthropicConfig | OpenAIConfig | GeminiConfig | DeepSeekConfig | GroqConfig;
 
 /**
  * LLM provider interface

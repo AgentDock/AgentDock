@@ -103,6 +103,26 @@ const DEFAULT_PROVIDERS: Record<LLMProvider, ProviderMetadata> = {
         baseConfig.extractReasoning = modelConfig.extractReasoning;
       }
     }
+  },
+  'groq': {
+    id: 'groq',
+    displayName: 'Groq',
+    description: 'Groq API for ultra-fast LLM inference with models like Llama 3',
+    defaultModel: 'llama-3.1-8b-instant',
+    validateApiKey: (key: string) => key.startsWith('gsk_') || key.length > 25, // Groq API keys start with gsk_
+    applyConfig: (baseConfig, modelConfig, options) => {
+      // Apply Groq-specific configurations
+      
+      // Add reasoning extraction if enabled
+      if (modelConfig?.extractReasoning !== undefined) {
+        baseConfig.extractReasoning = modelConfig.extractReasoning;
+      }
+
+      // Add reasoning extraction from options if provided
+      if (options?.extractReasoning !== undefined) {
+        baseConfig.extractReasoning = options.extractReasoning;
+      }
+    }
   }
 };
 
@@ -152,6 +172,9 @@ export class ProviderRegistry {
     if (nodeType === 'llm.deepseek') {
       return 'deepseek';
     }
+    if (nodeType === 'llm.groq') {
+      return 'groq';
+    }
     return 'anthropic';
   }
 
@@ -168,6 +191,9 @@ export class ProviderRegistry {
     if (provider === 'deepseek') {
       return 'llm.deepseek';
     }
+    if (provider === 'groq') {
+      return 'llm.groq';
+    }
     return 'llm.anthropic';
   }
 
@@ -183,6 +209,9 @@ export class ProviderRegistry {
     }
     if (nodes.includes('llm.deepseek')) {
       return 'deepseek';
+    }
+    if (nodes.includes('llm.groq')) {
+      return 'groq';
     }
     return 'anthropic';
   }

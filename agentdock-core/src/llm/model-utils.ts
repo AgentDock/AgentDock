@@ -2,7 +2,8 @@ import { LanguageModel } from 'ai';
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
-import { LLMConfig, GeminiConfig, DeepSeekConfig } from './types';
+import { createGroq } from '@ai-sdk/groq';
+import { LLMConfig, GeminiConfig, DeepSeekConfig, GroqConfig } from './types';
 import { createError, ErrorCode } from '../errors';
 import { logger, LogCategory } from '../logging';
 import { ProviderRegistry } from './provider-registry';
@@ -146,5 +147,49 @@ export function createDeepSeekModel(config: LLMConfig): LanguageModel {
       { error: (error as Error).message, model: config.model }
     );
     throw createError('llm', `Error creating DeepSeek model: ${(error as Error).message}`, ErrorCode.LLM_EXECUTION);
+  }
+}
+
+/**
+ * Create a Groq model
+ */
+export function createGroqModel(config: LLMConfig): LanguageModel {
+  // Validate API key
+  if (!config.apiKey) {
+    throw createError('llm', 'API key is required', ErrorCode.LLM_API_KEY);
+  }
+
+  const groqConfig = config as GroqConfig;
+  
+  try {
+    // Create the Groq provider
+    const provider = createGroq({
+      apiKey: config.apiKey
+    });
+    
+    // Create model options
+    const modelOptions: any = {};
+    
+    // Add reasoning extraction if enabled
+    if (groqConfig.extractReasoning) {
+      logger.debug(
+        LogCategory.LLM,
+        'createGroqModel',
+        'Enabling reasoning extraction for Groq model',
+        { model: config.model }
+      );
+      modelOptions.extractReasoning = true;
+    }
+    
+    // Create and return the model with options
+    return provider(config.model, modelOptions);
+  } catch (error) {
+    logger.error(
+      LogCategory.LLM,
+      'createGroqModel',
+      'Error creating Groq model',
+      { error: (error as Error).message, model: config.model }
+    );
+    throw createError('llm', `Error creating Groq model: ${(error as Error).message}`, ErrorCode.LLM_EXECUTION);
   }
 } 

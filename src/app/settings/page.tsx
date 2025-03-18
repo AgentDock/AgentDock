@@ -29,7 +29,8 @@ const API_KEY_PROVIDERS: ApiKeyProvider[] = [
   { key: 'openai', label: 'OpenAI API Key', icon: KeyRound, description: 'Used for OpenAI models like GPT-4 and GPT-3.5' },
   { key: 'anthropic', label: 'Anthropic API Key', icon: KeyRound, description: 'Used for Anthropic Claude models' },
   { key: 'gemini', label: 'Google Gemini API Key', icon: KeyRound, description: 'Used for Google Gemini models' },
-  { key: 'deepseek', label: 'DeepSeek API Key', icon: KeyRound, description: 'Used for DeepSeek models including DeepSeek-V3 and DeepSeek-R1' }
+  { key: 'deepseek', label: 'DeepSeek API Key', icon: KeyRound, description: 'Used for DeepSeek models including DeepSeek-V3 and DeepSeek-R1' },
+  { key: 'groq', label: 'Groq API Key', icon: KeyRound, description: 'Used for Groq models like Llama 3 and Mixtral' }
 ];
 
 function SettingsPage() {
@@ -373,6 +374,15 @@ function SettingsPage() {
                       <div className="pt-2">
                         <ModelDisplay 
                           provider="deepseek" 
+                          refreshTrigger={modelsRefreshTrigger} 
+                          onRefreshComplete={handleRefreshTrigger} 
+                        />
+                      </div>
+                    )}
+                    {key === 'groq' && (
+                      <div className="pt-2">
+                        <ModelDisplay 
+                          provider="groq" 
                           refreshTrigger={modelsRefreshTrigger} 
                           onRefreshComplete={handleRefreshTrigger} 
                         />

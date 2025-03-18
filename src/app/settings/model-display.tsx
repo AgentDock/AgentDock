@@ -65,7 +65,7 @@ const ModelsTable = memo(({ models, onRefresh, isLoading }: {
         <tbody className="divide-y">
           {models.map(model => (
             <tr key={model.id} className="hover:bg-muted/30 transition-colors">
-              <td className="py-2.5 px-3 text-sm font-medium">{model.displayName}</td>
+              <td className="py-2.5 px-3 text-sm font-medium">{model.id}</td>
               <td className="py-2.5 px-3 text-xs text-muted-foreground">{model.description}</td>
               <td className="py-2.5 px-3 text-xs text-right font-mono">
                 {model.contextWindow ? `${(model.contextWindow / 1000).toFixed(0)}K` : 'N/A'}
@@ -79,7 +79,7 @@ const ModelsTable = memo(({ models, onRefresh, isLoading }: {
 ));
 
 interface ModelDisplayProps {
-  provider: 'anthropic' | 'openai' | 'gemini' | 'deepseek'
+  provider: 'anthropic' | 'openai' | 'gemini' | 'deepseek' | 'groq'
   refreshTrigger: number
   onRefreshComplete?: () => void
 }

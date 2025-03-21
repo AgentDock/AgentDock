@@ -39,6 +39,43 @@ This architecture provides a consistent foundation for all capabilities while en
 
 For detailed documentation on AgentDock Core's architecture, design philosophy, and contribution guidelines, see [agentdock-core/README.md](agentdock-core/README.md).
 
+## 🔐 Environment Configuration
+
+AgentDock requires API keys for LLM providers to function.
+
+### LLM Provider API Keys
+
+Add your LLM provider API keys to your `.env.local` file for development. At least one provider key is required:
+
+```bash
+# LLM Provider API Keys - at least one is required
+ANTHROPIC_API_KEY=sk-ant-xxxxxxx  # Anthropic API key
+OPENAI_API_KEY=sk-xxxxxxx         # OpenAI API key
+GEMINI_API_KEY=xxxxxxx            # Google Gemini API key
+DEEPSEEK_API_KEY=xxxxxxx          # DeepSeek API key
+GROQ_API_KEY=xxxxxxx              # Groq API key
+```
+
+### API Key Resolution
+
+AgentDock follows a priority order when resolving which API key to use:
+
+1. **Per-agent custom API key** (set via agent settings in the UI)
+2. **Global settings API key** (set via the settings page in the UI)
+3. **Environment variable** (from .env.local or deployment platform)
+
+### Tool-specific API Keys
+
+Some tools also require their own API keys, which are also configured through environment variables:
+
+```bash
+# Tool-specific API Keys
+SERPER_API_KEY=                  # Required for search functionality
+FIRECRAWL_API_KEY=               # Required for deeper web search
+```
+
+For more details about environment configuration, see the implementation in [`src/types/env.ts`](src/types/env.ts).
+
 ## 💡 What You Can Build
 
 1. **AI-Powered Applications**
@@ -132,13 +169,23 @@ See the [agentdock-core/README.md](agentdock-core/README.md#storage-system-devel
    pnpm install
    ```
 
-3. **Start Development Server**:
+3. **Configure Environment**:
+   
+   Create a `.env.local` file based on `.env.example`:
+   
+   ```bash
+   cp .env.example .env.local
+   ```
+   
+   Then add your API keys to the `.env.local` file.
+
+4. **Start Development Server**:
 
    ```bash
    pnpm dev
    ```
 
-4. **Create Your First Agent**:
+5. **Create Your First Agent**:
    - Configure your agent in the `agents` directory
    - Add custom nodes for your specific needs
    - Deploy anywhere

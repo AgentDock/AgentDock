@@ -1,3 +1,6 @@
+import { FontFamily } from "@/lib/fonts";
+import { LLMProvider } from "agentdock-core";
+
 export interface GlobalSettings {
   apiKeys: {
     openai: string
@@ -10,6 +13,10 @@ export interface GlobalSettings {
   core: {
     byokOnly: boolean
     debugMode?: boolean
+  }
+  fonts: {
+    primary: FontFamily
+    mono: string
   }
 }
 
@@ -24,12 +31,16 @@ export const DEFAULT_SETTINGS: GlobalSettings = {
   core: {
     byokOnly: false,
     debugMode: false
+  },
+  fonts: {
+    primary: 'inter',
+    mono: 'default'
   }
 }
 
 export interface ApiKeyProvider {
-  key: string
+  key: keyof GlobalSettings['apiKeys']
   label: string
-  icon: React.ComponentType<{ className?: string }>
-  description?: string
+  icon: React.ElementType
+  description: string
 } 

@@ -7,6 +7,7 @@ import { toast } from "sonner"
 import { logger, LogCategory, ModelMetadata, SecureStorage } from 'agentdock-core'
 import { ModelService } from '@/lib/services/model-service'
 import { RefreshCw, Database } from "lucide-react"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 // Create a single instance for settings
 const storage = SecureStorage.getInstance('agentdock');
@@ -24,59 +25,85 @@ const ModelsTable = memo(({ models, onRefresh, isLoading }: {
   models: ModelMetadata[],
   onRefresh: () => void,
   isLoading: boolean
-}) => (
-  <>
-    <div className="flex items-center justify-between mb-4">
-      <div className="flex items-center gap-2">
-        <Database className="h-4 w-4 text-muted-foreground" />
-        <Badge variant="outline" className="bg-primary/10 hover:bg-primary/20 transition-colors px-2.5 py-0.5 text-xs font-medium">
-          {models.length} models available
-        </Badge>
+}) => {
+  // Determine if we need scrolling (more than 7 models to show exactly 8)
+  const needsScrolling = models.length > 7;
+  
+  return (
+    <>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <Database className="h-4 w-4 text-muted-foreground" />
+          <Badge variant="outline" className="bg-primary/10 hover:bg-primary/20 transition-colors px-2.5 py-0.5 text-xs font-medium">
+            {models.length} models available
+          </Badge>
+        </div>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={onRefresh}
+          disabled={isLoading}
+          className="h-8 gap-1.5"
+        >
+          {isLoading ? (
+            <>
+              <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent opacity-70" />
+              <span>Refreshing</span>
+            </>
+          ) : (
+            <>
+              <RefreshCw className="h-3.5 w-3.5" />
+              <span>Refresh</span>
+            </>
+          )}
+        </Button>
       </div>
-      <Button 
-        variant="outline" 
-        size="sm" 
-        onClick={onRefresh}
-        disabled={isLoading}
-        className="h-8 gap-1.5"
-      >
-        {isLoading ? (
-          <>
-            <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent opacity-70" />
-            <span>Refreshing</span>
-          </>
-        ) : (
-          <>
-            <RefreshCw className="h-3.5 w-3.5" />
-            <span>Refresh</span>
-          </>
-        )}
-      </Button>
-    </div>
-    <div className="rounded-md border overflow-hidden">
-      <table className="w-full bg-background">
-        <thead>
-          <tr className="border-b bg-muted/50">
-            <th className="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground">Model</th>
-            <th className="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground">Description</th>
-            <th className="text-right py-2.5 px-3 text-xs font-medium text-muted-foreground">Context</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y">
-          {models.map(model => (
-            <tr key={model.id} className="hover:bg-muted/30 transition-colors">
-              <td className="py-2.5 px-3 text-sm font-medium">{model.id}</td>
-              <td className="py-2.5 px-3 text-xs text-muted-foreground">{model.description}</td>
-              <td className="py-2.5 px-3 text-xs text-right font-mono">
-                {model.contextWindow ? `${(model.contextWindow / 1000).toFixed(0)}K` : 'N/A'}
-              </td>
+      <div className="rounded-md border overflow-hidden">
+        <table className="w-full bg-background">
+          <thead className="bg-background">
+            <tr className="border-b">
+              <th className="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground bg-background">Model</th>
+              <th className="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground bg-background">Description</th>
+              <th className="text-right py-2.5 px-3 text-xs font-medium text-muted-foreground bg-background">Context</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  </>
-));
+          </thead>
+        </table>
+        
+        {needsScrolling ? (
+          <ScrollArea className="h-[320px]">
+            <table className="w-full bg-background">
+              <tbody className="divide-y">
+                {models.map(model => (
+                  <tr key={model.id} className="hover:bg-muted/30 transition-colors">
+                    <td className="py-2.5 px-3 text-sm font-medium">{model.id}</td>
+                    <td className="py-2.5 px-3 text-xs text-muted-foreground">{model.description}</td>
+                    <td className="py-2.5 px-3 text-xs text-right font-mono">
+                      {model.contextWindow ? `${(model.contextWindow / 1000).toFixed(0)}K` : 'N/A'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </ScrollArea>
+        ) : (
+          <table className="w-full bg-background">
+            <tbody className="divide-y">
+              {models.map(model => (
+                <tr key={model.id} className="hover:bg-muted/30 transition-colors">
+                  <td className="py-2.5 px-3 text-sm font-medium">{model.id}</td>
+                  <td className="py-2.5 px-3 text-xs text-muted-foreground">{model.description}</td>
+                  <td className="py-2.5 px-3 text-xs text-right font-mono">
+                    {model.contextWindow ? `${(model.contextWindow / 1000).toFixed(0)}K` : 'N/A'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </>
+  );
+});
 
 interface ModelDisplayProps {
   provider: 'anthropic' | 'openai' | 'gemini' | 'deepseek' | 'groq'

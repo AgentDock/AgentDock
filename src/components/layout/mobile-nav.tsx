@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { Bot, Settings, Boxes, Home } from "lucide-react"
+import { Bot, Settings, Boxes, Home, Image } from "lucide-react"
 import { Logo } from "@/components/ui/logo"
 
 const navigationItems = [
@@ -16,6 +16,11 @@ const navigationItems = [
     name: "Agents",
     href: "/agents",
     icon: Bot
+  },
+  {
+    name: "Image Generation",
+    href: "/image-generation",
+    icon: Image
   },
   {
     name: "Settings",

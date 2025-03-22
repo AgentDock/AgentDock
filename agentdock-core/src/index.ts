@@ -79,3 +79,26 @@ export * from './logging';
  * Includes CoreLLM, createLLM, and provider-specific model creation functions
  */
 export * from './llm';
+
+//=============================================================================
+// Client components (Re-exported from AI SDK)
+//=============================================================================
+
+/**
+ * Re-export client-side components for React applications
+ * This is only used when imported in client components
+ */
+import type { 
+  UseChatOptions,
+  UseChatHelpers,
+  Message,
+  CreateMessage
+} from 'ai/react';
+
+// Re-export types for client-side components
+export type {
+  UseChatOptions,
+  UseChatHelpers,
+  Message,
+  CreateMessage
+};

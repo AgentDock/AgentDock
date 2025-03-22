@@ -1,0 +1,8 @@
+{
+  "name": "agentdock-core-client",
+  "version": "0.1.0",
+  "private": true,
+  "main": "../dist/client/index.js",
+  "types": "../dist/client/index.d.ts",
+  "sideEffects": false
+} 

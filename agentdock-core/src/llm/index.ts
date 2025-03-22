@@ -13,7 +13,13 @@ import {
   GenerateTextResult,
   GenerateObjectResult,
   StreamTextResult,
-  StreamObjectResult
+  StreamObjectResult,
+  smoothStream,
+  streamText,
+  streamObject,
+  generateText,
+  generateObject,
+  createDataStreamResponse
 } from 'ai';
 
 // Export the unified LLM implementation
@@ -26,6 +32,16 @@ export * from './types';
 
 // Export the Provider Registry
 export * from './provider-registry';
+
+// Re-export directly from Vercel AI SDK
+export {
+  smoothStream,
+  streamText,
+  streamObject,
+  generateText,
+  generateObject,
+  createDataStreamResponse
+}
 
 // Re-export types from Vercel AI SDK
 export type {

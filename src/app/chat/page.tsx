@@ -11,7 +11,6 @@ import { toast } from "sonner"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { RefreshCw } from "lucide-react"
 import { templates, TemplateId } from '@/generated/templates'
-import { useChat } from 'ai/react'
 import { useChatSettings } from '@/hooks/use-chat-settings'
 
 function ChatPageContent() {
@@ -29,31 +28,8 @@ function ChatPageContent() {
     debugMode 
   } = useChatSettings(agentId);
   
-  const {
-    messages,
-    isLoading: chatIsLoading,
-    error: chatError,
-  } = useChat({
-    api: `/api/chat/${agentId || ''}`, // Empty string fallback for type safety
-    id: agentId || '', // Empty string fallback for type safety
-    headers: {
-      'x-api-key': chatSettings?.apiKey || ''
-    },
-    body: {
-      system: chatSettings?.personality,
-      temperature: chatSettings?.temperature,
-      maxTokens: chatSettings?.maxTokens
-    },
-    initialMessages: chatSettings?.initialMessages ? 
-      chatSettings.initialMessages.map(msg => ({ 
-        id: crypto.randomUUID(),
-        role: 'assistant' as const, 
-        content: msg 
-      })) : []
-  });
-
-  const [_chatIsLoading, setChatIsLoading] = useState(false);
-  const [_chatError, setChatError] = useState<string | null>(null);
+  // State for debug information only
+  const [messagesCount, setMessagesCount] = useState(0);
 
   // Redirect if no agent or invalid agent
   if (!agentId || !templates[agentId as TemplateId]) {
@@ -65,6 +41,7 @@ function ChatPageContent() {
     try {
       if (chatContainerRef.current) {
         await chatContainerRef.current.handleReset();
+        setMessagesCount(0); // Reset count for debug display
       }
     } catch (error) {
       toast.error('Failed to reset chat');
@@ -108,7 +85,7 @@ function ChatPageContent() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] md:h-[calc(100vh-4rem)] md:-mx-8 overflow-hidden">      
-    <ChatContainer
+      <ChatContainer
         ref={chatContainerRef}
         className="flex-1"
         header={
@@ -152,7 +129,7 @@ function ChatPageContent() {
                   </div>
                   <div>
                     <p className="font-medium">Message Count</p>
-                    <p className="text-muted-foreground">{messages.length}</p>
+                    <p className="text-muted-foreground">{messagesCount}</p>
                   </div>
                 </div>
               </div>

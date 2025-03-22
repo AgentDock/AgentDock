@@ -17,6 +17,7 @@ import {
 import { maskSensitiveData } from 'agentdock-core/utils/security-utils';
 import { templates, TemplateId } from '@/generated/templates';
 import { getLLMInfo } from '@/lib/utils';
+import { getProviderApiKey } from '@/types/env';
 
 // Import the agent adapter to ensure the tool registry is set
 import '@/lib/agent-adapter';
@@ -87,10 +88,17 @@ export async function POST(
       provider: llmInfo.provider
     });
 
-    // Try to get API key from request headers
+    // =====================================================================
+    // API KEY RESOLUTION - Priority order:
+    // 1. Per-agent custom API key (from agent settings)
+    // 2. Global settings API key
+    // 3. Environment variable as fallback
+    // =====================================================================
+    
+    // Try to get API key from request headers (these are set by the client when custom per-agent keys are configured)
     let apiKey = request.headers.get('x-api-key');
     
-    // If no API key in headers, try to get from global settings
+    // If no per-agent custom API key, try to get from global settings
     if (!apiKey) {
       try {
         const globalSettings = await storage.get<{ apiKeys: Record<string, string> }>("global_settings");
@@ -104,6 +112,20 @@ export async function POST(
       } catch (error) {
         logger.error(LogCategory.API, 'ChatRoute', 'Failed to load global settings', {
           error: error instanceof Error ? error.message : String(error)
+        });
+      }
+    }
+    
+    // If still no API key, try to get from environment variables
+    if (!apiKey) {
+      // Get provider name without the 'llm.' prefix
+      const providerName = llmInfo.provider.replace('llm.', '') as LLMProvider;
+      apiKey = getProviderApiKey(providerName);
+      
+      if (apiKey) {
+        logger.debug(LogCategory.API, 'ChatRoute', 'Using API key from environment variables', {
+          provider: llmInfo.provider,
+          hasKey: !!apiKey
         });
       }
     }
@@ -193,6 +215,8 @@ export async function POST(
     const { messages, system } = await request.json();
     logger.debug(LogCategory.API, 'ChatRoute', 'Received messages', { messageCount: messages.length });
     
+    // No need to filter images - they are now URLs instead of base64 data
+    
     // Log request details
     await logger.debug(
       LogCategory.API,
@@ -218,7 +242,7 @@ export async function POST(
       provider: llmInfo.provider.replace('llm.', '') as LLMProvider // Remove 'llm.' prefix
     });
     
-    // Handle the message
+    // Handle the message with the original messages
     const result = await agent.handleMessage({
       messages,
       system,

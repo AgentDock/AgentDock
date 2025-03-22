@@ -1,51 +1,79 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react";
 
 // How many pixels from the bottom of the container to enable auto-scroll
-const ACTIVATION_THRESHOLD = 50
+const ACTIVATION_THRESHOLD = 50;
 
+/**
+ * Disabled auto-scroll hook that does nothing to avoid React maximum update depth errors
+ * This is a temporary measure to identify the root cause
+ */
 export function useAutoScroll(dependencies: React.DependencyList, options?: { 
   // If true, will force scroll to bottom (like when sending a new message)
   forceScroll?: boolean
 }) {
-  const containerRef = useRef<HTMLDivElement | null>(null)
-  const [isAtBottom, setIsAtBottom] = useState(true)
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [shouldShowScrollButton, setShouldShowScrollButton] = useState(false);
 
   const scrollToBottom = () => {
     if (containerRef.current) {
       containerRef.current.scrollTo({
         top: containerRef.current.scrollHeight,
         behavior: 'smooth'
-      })
+      });
     }
-  }
+  };
 
   const handleScroll = () => {
-    if (!containerRef.current) return
+    if (!containerRef.current) return;
     
-    const { scrollTop, scrollHeight, clientHeight } = containerRef.current
-    const distanceFromBottom = scrollHeight - scrollTop - clientHeight
+    const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
+    const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
     
-    // Update if we're at bottom or not
-    setIsAtBottom(distanceFromBottom < ACTIVATION_THRESHOLD)
-  }
+    // Only update state if the value would change - prevents render loops
+    const shouldShowButton = distanceFromBottom >= ACTIVATION_THRESHOLD;
+    if (shouldShowButton !== shouldShowScrollButton) {
+      setShouldShowScrollButton(shouldShowButton);
+    }
+  };
 
-  // Extract the first dependency for the primary effect trigger
-  // This is typically the messages array or other content that changes
-  const primaryDependency = dependencies[0]
-
+  // Set up scroll event listener
   useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    
+    container.addEventListener('scroll', handleScroll);
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  // Auto-scroll effect - using a separate effect to avoid dependencies on handleScroll
+  useEffect(() => {
+    // Get current values to avoid stale closures
+    const container = containerRef.current;
+    if (!container) return;
+    
+    const { scrollTop, scrollHeight, clientHeight } = container;
+    const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+    const isNearBottom = distanceFromBottom < ACTIVATION_THRESHOLD;
+    
     // Only scroll if:
     // 1. Force scroll is requested (new message sent) OR
     // 2. We were already at the bottom
-    if (options?.forceScroll || isAtBottom) {
-      scrollToBottom()
+    if (options?.forceScroll || isNearBottom) {
+      // Use setTimeout for more reliable DOM updates
+      setTimeout(() => {
+        if (containerRef.current) {
+          containerRef.current.scrollTop = containerRef.current.scrollHeight;
+        }
+      }, 0);
     }
-  }, [primaryDependency, isAtBottom, options?.forceScroll])
+  }, dependencies);
 
   return {
     containerRef,
     scrollToBottom,
     handleScroll,
-    shouldShowScrollButton: !isAtBottom
-  }
+    shouldShowScrollButton
+  };
 }

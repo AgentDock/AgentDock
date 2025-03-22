@@ -1,12 +1,12 @@
 "use client"
 
 import * as React from "react"
-import { useChat, Message } from 'ai/react'
+import { useChat, type Message } from 'agentdock-core/client'
 import { useAgents } from "@/lib/store"
-import { Chat } from "@/components/ui/chat"
+import { Chat } from "@/components/chat/chat"
 import { toast } from "sonner"
-import { logger, LogCategory, APIError, ErrorCode, SecureStorage, LLMProvider, ProviderRegistry } from 'agentdock-core'
-import { ErrorBoundary } from "@/components/ui/error-boundary"
+import { logger, LogCategory, APIError, ErrorCode, SecureStorage, LLMProvider, ProviderRegistry, smoothStream } from 'agentdock-core'
+import { ErrorBoundary } from "@/components/error-boundary"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { useRouter } from "next/navigation"
 import { templates, TemplateId } from '@/generated/templates'
@@ -18,17 +18,6 @@ interface ChatContainerProps {
   className?: string
   agentId?: string
   header?: React.ReactNode
-}
-
-// Add provider type to Chat component props
-interface ChatProps extends ChatContainerProps {
-  messages: Message[]
-  isLoading: boolean
-  input: string
-  setInput: (input: string) => void
-  onSubmit: (event?: React.FormEvent<HTMLFormElement>) => void
-  suggestions?: string[]
-  provider: LLMProvider
 }
 
 function ChatError({ error, onRetry }: { error: Error, onRetry: () => void }) {
@@ -116,46 +105,57 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
   const [initError, setInitError] = React.useState<Error | null>(null)
   const storage = React.useMemo(() => SecureStorage.getInstance('agentdock'), [])
   
+  // Track the previous message length to avoid unnecessary saves
+  const prevMessageLengthRef = React.useRef<number>(0);
+  
+  // Track if initial messages have been loaded
+  const initialMessagesLoadedRef = React.useRef<boolean>(false);
+  
   // Use the enhanced useChatSettings hook
   const { chatSettings, isLoading: isSettingsLoading, error: settingsError } = useChatSettings(agentId);
 
   // Load saved messages for this agent
   const loadSavedMessages = useCallback(() => {
-    if (typeof window !== 'undefined' && agentId) {
-      try {
-        // Try both storage keys for backward compatibility
-        const storageKey = `chat-${agentId}`;
-        const legacyStorageKey = `ai-conversation-${agentId}`;
-        
-        const savedData = localStorage.getItem(storageKey) || localStorage.getItem(legacyStorageKey);
-        
-        if (savedData) {
-          const parsedMessages = JSON.parse(savedData) as Message[];
-          return parsedMessages;
-        }
-      } catch (error) {
-        logger.error(
-          LogCategory.SYSTEM,
-          'ChatContainer',
-          'Failed to load saved messages',
-          { error: error instanceof Error ? error.message : 'Unknown error' }
-        ).catch(console.error);
+    if (typeof window === 'undefined' || !agentId) return [];
+    
+    try {
+      const storageKey = `chat-${agentId}`;
+      const savedData = localStorage.getItem(storageKey);
+      
+      if (savedData) {
+        return JSON.parse(savedData) as Message[];
       }
+    } catch (error) {
+      logger.error(
+        LogCategory.SYSTEM,
+        'ChatContainer',
+        'Failed to load saved messages',
+        { error: error instanceof Error ? error.message : 'Unknown error' }
+      ).catch(console.error);
     }
     return [];
   }, [agentId]);
 
   // Initialize with saved messages
-  const initialMessages = useMemo(() => loadSavedMessages(), [loadSavedMessages]);
+  const initialMessages = useMemo(() => {
+    // Only load messages once
+    if (!initialMessagesLoadedRef.current) {
+      const messages = loadSavedMessages();
+      initialMessagesLoadedRef.current = true;
+      prevMessageLengthRef.current = messages.length;
+      return messages;
+    }
+    return [];
+  }, [loadSavedMessages]);
 
   // Load settings and config on mount
   React.useEffect(() => {
     const loadData = async () => {
       try {
-        setIsInitializing(true)
+        setIsInitializing(true);
         
         // Get template
-        const template = templates[agentId as TemplateId]
+        const template = templates[agentId as TemplateId];
         if (!template) {
           throw new APIError(
             'Template not found',
@@ -166,11 +166,11 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
           );
         }
 
-        // Determine provider from template nodes using the core registry
+        // Determine provider from template
         const provider = ProviderRegistry.getProviderFromNodes((template.nodes || []).slice());
         setProvider(provider);
 
-        // Load settings and API key
+        // Load API key
         const settings = await storage.get<GlobalSettings>('global_settings');
         const apiKeys = settings?.apiKeys || {};
         const currentApiKey = apiKeys[provider as keyof typeof apiKeys];
@@ -189,23 +189,18 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
         setApiKey(currentApiKey);
         setIsInitializing(false);
       } catch (error) {
-        if (error instanceof APIError) {
-          throw error;
-        }
-        throw new APIError(
+        setInitError(error instanceof APIError ? error : new APIError(
           'Failed to initialize chat',
           ErrorCode.CONFIG_NOT_FOUND,
           'ChatContainer',
           'loadData',
           { agentId }
-        );
+        ));
+        setIsInitializing(false);
       }
     };
 
-    loadData().catch((error) => {
-      setInitError(error);
-      setIsInitializing(false);
-    });
+    loadData();
   }, [agentId, storage]);
 
   const {
@@ -232,8 +227,9 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
       temperature: chatSettings?.temperature,
       maxTokens: chatSettings?.maxTokens
     },
-    maxSteps: 5,
+    maxSteps: 10,
     sendExtraMessageFields: true,
+    experimental_throttle: 50,
     onToolCall: async ({ toolCall }) => {
       // Log tool call for debugging
       await logger.debug(
@@ -262,31 +258,38 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
     },
     onFinish: async (message) => {
       try {
-        // Lightweight debouncing - use a flag to prevent multiple rapid calls
-        // for fast-responding models like Qwen
+        // Avoid duplicate processing during rapid responses
         const finishTime = Date.now();
-        const lastFinishRef = (window as any).__lastMessageFinishTime;
+        const lastFinishTime = (window as any).__lastMessageFinishTime;
         
-        // If we've processed a message in the last 100ms, skip additional processing
-        if (lastFinishRef && finishTime - lastFinishRef < 100) {
-          console.debug('Skipping duplicate onFinish due to rapid response');
+        if (lastFinishTime && finishTime - lastFinishTime < 100) {
           return;
         }
         
-        // Update the timestamp for the next potential call
+        // Update timestamp for debouncing
         (window as any).__lastMessageFinishTime = finishTime;
         
-        // Log the message completion
+        // Save messages to local storage
+        if (agentId) {
+          try {
+            localStorage.setItem(`chat-${agentId}`, JSON.stringify(messages));
+            prevMessageLengthRef.current = messages.length;
+          } catch (error) {
+            logger.error(
+              LogCategory.SYSTEM,
+              'ChatContainer',
+              'Failed to save messages to local storage',
+              { error: error instanceof Error ? error.message : 'Unknown error' }
+            ).catch(console.error);
+          }
+        }
+        
+        // Log success
         await logger.info(
           LogCategory.API,
           'ChatContainer',
-          'Message processed successfully',
-          { 
-            messageId: message.id,
-            messageCount: messages.length + 1,
-            role: message.role,
-            hasToolInvocations: !!message.toolInvocations && message.toolInvocations.length > 0
-          }
+          'Message processed',
+          { messageId: message.id, messageCount: messages.length }
         );
       } catch (error) {
         await logger.error(
@@ -309,41 +312,36 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
     }
   });
 
+  // Only show typing indicator when we're loading but no streaming has started yet
+  const showTypingIndicator = React.useMemo(() => {
+    const lastMessageIsUser = messages.length > 0 && messages[messages.length - 1]?.role === 'user';
+    return isLoading && lastMessageIsUser;
+  }, [isLoading, messages]);
+
+  // Create a string-accepting wrapper for handleInputChange
+  const handleStringInputChange = React.useCallback((value: string) => {
+    handleInputChange({
+      target: { value }
+    } as React.ChangeEvent<HTMLInputElement>);
+  }, [handleInputChange]);
+
   // Handle chat reset
   const handleReset = React.useCallback(async () => {
     try {
-      // Track reset progress
-      let progress = 0;
-      const updateProgress = (step: string) => {
-        progress += 1;
-        // Restore crucial reset progress logging
-        logger.info(
-          LogCategory.API,
-          'ChatContainer',
-          `Reset progress: ${step}`,
-          { progress, total: 4 }
-        ).catch(console.error);
-      };
-      
       if (isLoading) {
         stop();
-        updateProgress('Stopped ongoing request');
       }
       
       // Clear React state
       setMessages([]);
-      updateProgress('Cleared component state');
       
       // Clear local storage
       if (agentId) {
-        const storageKey = `chat-${agentId}`;
-        localStorage.removeItem(storageKey);
-        updateProgress('Cleared local storage');
+        localStorage.removeItem(`chat-${agentId}`);
       }
       
       // Reload the chat
       await reload();
-      updateProgress('Reloaded chat');
       
       toast.success('Chat session reset successfully');
     } catch (error) {
@@ -357,21 +355,15 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
     handleReset
   }), [handleReset]);
 
-  // Save messages to local storage whenever they change
+  // Save messages to local storage when they change
   React.useEffect(() => {
-    if (agentId && messages.length > 0) {
+    if (!agentId || messages.length === 0 || isLoading) return;
+    
+    // Only save if the message count has changed
+    if (messages.length !== prevMessageLengthRef.current) {
       try {
         localStorage.setItem(`chat-${agentId}`, JSON.stringify(messages));
-        
-        // Only log once per session when messages are first saved
-        if (messages.length === 1) {
-          logger.info(
-            LogCategory.SYSTEM,
-            'ChatContainer',
-            'Started saving messages to local storage',
-            { agentId }
-          ).catch(console.error);
-        }
+        prevMessageLengthRef.current = messages.length;
       } catch (error) {
         logger.error(
           LogCategory.SYSTEM,
@@ -381,7 +373,7 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
         ).catch(console.error);
       }
     }
-  }, [agentId, messages]);
+  }, [agentId, messages, isLoading]);
 
   // Handle user message submission
   const handleUserSubmit = async (event?: { preventDefault?: () => void }, options?: { experimental_attachments?: FileList }) => {
@@ -389,13 +381,12 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
       if (event?.preventDefault) {
         event.preventDefault();
       }
-
-      await handleSubmit(event, options);
+      return await handleSubmit(event, options);
     } catch (error) {
       logger.error(
         LogCategory.API,
         'ChatContainer',
-        'Failed to submit user message',
+        'Failed to submit message',
         { error: error instanceof Error ? error.message : 'Unknown error' }
       );
       throw error;
@@ -412,6 +403,14 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
     return <ChatLoading />;
   }
 
+  if (initError) {
+    return <ChatError error={initError} onRetry={() => window.location.reload()} />;
+  }
+
+  if (chatError) {
+    return <ChatError error={chatError} onRetry={reload} />;
+  }
+
   if (settingsError) {
     return (
       <ChatError 
@@ -424,22 +423,32 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
   // Wrap chat in error boundary
   return (
     <ErrorBoundary
-      fallback={({ error }) => (
-        <ChatError error={error} onRetry={reload} />
-      )}
+      fallback={
+        <ChatError 
+          error={new Error("Chat error occurred")} 
+          onRetry={reload} 
+        />
+      }
+      onError={(error) => {
+        console.error("Chat error:", error);
+      }}
+      resetOnPropsChange={true}
     >
       <div className="flex h-full flex-col">
         <Chat
           messages={messages}
           input={input}
-          handleInputChange={handleInputChange}
+          handleInputChange={handleStringInputChange}
           handleSubmit={handleUserSubmit}
           isGenerating={isLoading}
+          isTyping={showTypingIndicator}
           stop={stop}
           append={append}
           suggestions={suggestions}
-          className="flex-1"
+          className={className || "flex-1"}
           header={header}
+          agentName={typeof agents === 'object' && agentId in agents ? (agents as any)[agentId]?.name : agentId}
+          agent={agentId}
         />
       </div>
     </ErrorBoundary>

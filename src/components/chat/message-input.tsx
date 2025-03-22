@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useRef, useState } from "react"
+import React, { useRef, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { ArrowUp, Paperclip, Square } from "lucide-react"
 import { omit } from "remeda"
@@ -8,30 +8,28 @@ import { omit } from "remeda"
 import { cn } from "@/lib/utils"
 import { useAutosizeTextArea } from "@/hooks/use-autosize-textarea"
 import { Button } from "@/components/ui/button"
-import { FilePreview } from "@/components/ui/file-preview"
+import { FilePreview } from "@/components/chat/file-preview"
 
-interface MessageInputBaseProps
-  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+interface MessageInputProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   value: string
-  submitOnEnter?: boolean
+  onChange: React.ChangeEventHandler<HTMLTextAreaElement>
+  allowAttachments?: boolean
+  files?: File[] | null
+  setFiles?: React.Dispatch<React.SetStateAction<File[] | null>>
   stop?: () => void
-  isGenerating: boolean
-  enableInterrupt?: boolean
+  isGenerating?: boolean
+  submitOnEnter?: boolean
 }
 
-interface MessageInputWithoutAttachmentProps extends MessageInputBaseProps {
-  allowAttachments?: false
-}
-
-interface MessageInputWithAttachmentsProps extends MessageInputBaseProps {
-  allowAttachments: true
-  files: File[] | null
-  setFiles: React.Dispatch<React.SetStateAction<File[] | null>>
-}
-
-type MessageInputProps =
-  | MessageInputWithoutAttachmentProps
-  | MessageInputWithAttachmentsProps
+// Supported file types
+const SUPPORTED_FILE_TYPES = [
+  "image/*",
+  "application/pdf",
+  "text/plain",
+  "text/markdown",
+  "text/csv",
+  "application/json"
+].join(",");
 
 export function MessageInput({
   placeholder = "Ask AI...",
@@ -40,38 +38,24 @@ export function MessageInput({
   submitOnEnter = true,
   stop,
   isGenerating,
-  enableInterrupt = true,
   ...props
 }: MessageInputProps) {
   const [isDragging, setIsDragging] = useState(false)
-  const [showInterruptPrompt, setShowInterruptPrompt] = useState(false)
-  const textAreaRef = useRef<HTMLTextAreaElement>(null) as React.MutableRefObject<HTMLTextAreaElement>
+  const textAreaRef = useRef<HTMLTextAreaElement | null>(null)
+  const showFileList = props.allowAttachments && props.files && props.files.length > 0
 
-  useEffect(() => {
-    if (!isGenerating) {
-      setShowInterruptPrompt(false)
-    }
-  }, [isGenerating])
-
-  // Use autosize hook
   useAutosizeTextArea({
-    ref: textAreaRef,
+    ref: textAreaRef as React.RefObject<HTMLTextAreaElement>,
     maxHeight: 240,
     borderWidth: 1,
-    dependencies: [props.value, props.allowAttachments && props.files?.length]
-  });
+    dependencies: [props.value, showFileList],
+  })
 
   const addFiles = (files: File[] | null) => {
-    if (props.allowAttachments) {
+    if (props.allowAttachments && props.setFiles) {
       props.setFiles((currentFiles) => {
-        if (currentFiles === null) {
-          return files
-        }
-
-        if (files === null) {
-          return currentFiles
-        }
-
+        if (currentFiles === null) return files
+        if (files === null) return currentFiles
         return [...currentFiles, ...files]
       })
     }
@@ -99,92 +83,87 @@ export function MessageInput({
     }
   }
 
-  const onPaste = (event: React.ClipboardEvent) => {
-    const items = event.clipboardData?.items
-    if (!items) return
-
-    const text = event.clipboardData.getData("text")
-    if (text && text.length > 500 && props.allowAttachments) {
+  const onPaste = (event: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    if (props.allowAttachments !== true) return
+    
+    const clipboardData = event.clipboardData
+    
+    // Check if there are files in the clipboard (images)
+    if (clipboardData.files.length > 0) {
       event.preventDefault()
-      const blob = new Blob([text], { type: "text/plain" })
-      const file = new File([blob], "Pasted text", {
-        type: "text/plain",
-        lastModified: Date.now(),
+      
+      // Get all files from clipboard
+      const pastedFiles = Array.from(clipboardData.files)
+      
+      // Filter for supported file types
+      const supportedFiles = pastedFiles.filter(file => {
+        const fileType = file.type
+        return fileType.startsWith('image/') || 
+               fileType === 'application/pdf' || 
+               fileType === 'text/plain' ||
+               fileType === 'text/markdown' ||
+               fileType === 'text/csv' ||
+               fileType === 'application/json'
       })
-      addFiles([file])
-      return
-    }
-
-    const files = Array.from(items)
-      .map((item) => item.getAsFile())
-      .filter((file): file is File => file !== null)
-
-    if (props.allowAttachments && files.length > 0) {
-      addFiles(files)
+      
+      if (supportedFiles.length > 0) {
+        addFiles(supportedFiles)
+      }
+    } else {
+      // Handle long text pastes
+      const pastedText = clipboardData.getData('text/plain')
+      const TEXT_LENGTH_THRESHOLD = 1000 // Text longer than 1000 chars becomes a file
+      
+      if (pastedText && pastedText.length > TEXT_LENGTH_THRESHOLD) {
+        // Prevent default paste to avoid text appearing in textarea
+        event.preventDefault()
+        
+        // Create a new file from the pasted text
+        const textFile = new File(
+          [pastedText], 
+          `pasted.txt`, 
+          { type: 'text/plain' }
+        )
+        
+        // Add the text file to the files
+        addFiles([textFile])
+      }
     }
   }
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (submitOnEnter && event.key === "Enter" && !event.shiftKey) {
       event.preventDefault()
-
-      if (isGenerating && stop && enableInterrupt) {
-        if (showInterruptPrompt) {
-          stop()
-          setShowInterruptPrompt(false)
-          event.currentTarget.form?.requestSubmit()
-        } else if (
-          props.value ||
-          (props.allowAttachments && props.files?.length)
-        ) {
-          setShowInterruptPrompt(true)
-          return
-        }
-      }
-
       event.currentTarget.form?.requestSubmit()
     }
-
     onKeyDownProp?.(event)
   }
 
-  const showFileList =
-    props.allowAttachments && props.files && props.files.length > 0
-
   return (
-    <div
-      className="relative flex w-full"
+    <div 
+      className="relative flex w-full grow flex-col overflow-hidden bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95 rounded-lg"
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}
     >
-      {enableInterrupt && showInterruptPrompt && (
-        <div className="pointer-events-none absolute inset-x-0 bottom-full z-50 mb-2">
-          <div className="mx-auto w-fit rounded-lg border bg-background px-4 py-2 text-center text-sm">
-            <p>Press Enter again to stop generating</p>
-          </div>
-        </div>
-      )}
-
       <textarea
         aria-label="Write your prompt here"
         placeholder={placeholder}
         ref={textAreaRef}
-        onPaste={onPaste}
         onKeyDown={onKeyDown}
+        onPaste={onPaste}
         className={cn(
-          "z-10 w-full grow resize-none rounded-xl border border-input bg-background p-3 pr-24 text-sm ring-offset-background transition-[border] placeholder:text-muted-foreground focus-visible:border-primary focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50",
+          "w-full grow resize-none rounded-lg border border-input bg-transparent p-3 pr-20 text-sm ring-offset-background transition-[border] placeholder:text-muted-foreground focus-visible:border-primary focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50",
           showFileList && "pb-16",
           className
         )}
-        rows={1}
         {...(props.allowAttachments
           ? omit(props, ["allowAttachments", "files", "setFiles"])
           : omit(props, ["allowAttachments"]))}
       />
 
       {props.allowAttachments && (
-        <div className="absolute inset-x-3 bottom-0 z-20 overflow-x-scroll py-3">
+        <div className="absolute inset-x-3 bottom-0 z-20 overflow-x-scroll py-2">
           <div className="flex space-x-3">
             <AnimatePresence mode="popLayout">
               {props.files?.map((file) => (
@@ -192,15 +171,14 @@ export function MessageInput({
                   key={file.name + String(file.lastModified)}
                   file={file}
                   onRemove={() => {
-                    props.setFiles((files) => {
-                      if (!files) return null
-
-                      const filtered = Array.from(files).filter(
-                        (f) => f !== file
-                      )
-                      if (filtered.length === 0) return null
-                      return filtered
-                    })
+                    if (props.setFiles) {
+                      props.setFiles((files) => {
+                        if (!files) return null
+                        const filtered = Array.from(files).filter(f => f !== file)
+                        if (filtered.length === 0) return null
+                        return filtered
+                      })
+                    }
                   }}
                 />
               ))}
@@ -209,7 +187,7 @@ export function MessageInput({
         </div>
       )}
 
-      <div className="absolute right-3 top-3 z-20 flex gap-2">
+      <div className="absolute right-4 top-4 z-20 flex gap-2">
         {props.allowAttachments && (
           <Button
             type="button"
@@ -248,24 +226,13 @@ export function MessageInput({
         )}
       </div>
 
-      {props.allowAttachments && isDragging && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="pointer-events-none absolute inset-0 z-50 flex items-center justify-center rounded-xl border-2 border-dashed border-primary bg-background/80 p-8"
-        >
-          <p className="text-center text-sm font-medium">Drop files to attach</p>
-        </motion.div>
-      )}
+      {props.allowAttachments && <FileUploadOverlay isDragging={isDragging} />}
     </div>
   )
 }
 MessageInput.displayName = "MessageInput"
 
 // File upload dialog
-const SUPPORTED_FILE_TYPES = "*/*"; // Allow all file types initially, can be restricted as needed
-
 const showFileUploadDialog = async (): Promise<File[] | null> => {
   return new Promise((resolve) => {
     const input = document.createElement("input");
@@ -280,4 +247,28 @@ const showFileUploadDialog = async (): Promise<File[] | null> => {
     
     input.click();
   });
-}; 
+};
+
+// File upload overlay component
+function FileUploadOverlay({ isDragging }: { isDragging: boolean }) {
+  if (!isDragging) {
+    return null;
+  }
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="absolute inset-0 z-50 flex items-center justify-center rounded-lg border-2 border-dashed border-primary bg-background/80 backdrop-blur"
+    >
+      <div className="flex flex-col items-center justify-center space-y-2 p-4 text-center">
+        <Paperclip className="h-8 w-8 text-primary" />
+        <p className="text-lg font-medium">Drop files to attach</p>
+        <p className="text-sm text-muted-foreground">
+          Supports images, PDFs, and text files
+        </p>
+      </div>
+    </motion.div>
+  );
+} 

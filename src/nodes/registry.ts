@@ -13,6 +13,7 @@ import { tools as firecrawlTools } from './firecrawl';
 import { cryptoPriceTool, trendingCryptosTool } from './crypto-price';
 import { tools as snowtracerTools } from './snowtracer/index';
 import { tools as imageGenerationTools } from './image-generation';
+import { tools as cognitiveTools } from './cognitive-tools';
 import type { ToolRegistry } from './types';
 
 // Combined tools registry
@@ -24,6 +25,7 @@ export const allTools: ToolRegistry = {
   ...firecrawlTools,
   ...snowtracerTools,
   ...imageGenerationTools,
+  ...cognitiveTools,
   crypto_price: cryptoPriceTool,
   trending_cryptos: trendingCryptosTool
 };

@@ -45,7 +45,8 @@ export function createOpenAIModel(config: LLMConfig): LanguageModel {
   }
 
   return createOpenAI({ 
-    apiKey: config.apiKey
+    apiKey: config.apiKey,
+    compatibility: 'strict'
     // Note: Temperature is passed at the request level, not at model creation
   })(config.model);
 }
@@ -120,7 +121,8 @@ export function createDeepSeekModel(config: LLMConfig): LanguageModel {
     // Create the DeepSeek provider using OpenAI's client with DeepSeek's baseURL
     const provider = createOpenAI({
       apiKey: config.apiKey,
-      baseURL: 'https://api.deepseek.com/v1'
+      baseURL: 'https://api.deepseek.com/v1',
+      compatibility: 'strict'
     });
     
     // Create model options

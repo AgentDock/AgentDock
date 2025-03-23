@@ -32,7 +32,7 @@ const SUPPORTED_FILE_TYPES = [
 ].join(",");
 
 export function MessageInput({
-  placeholder = "Ask AI...",
+  placeholder = "Ask Anything",
   className,
   onKeyDown: onKeyDownProp,
   submitOnEnter = true,
@@ -153,7 +153,7 @@ export function MessageInput({
         onKeyDown={onKeyDown}
         onPaste={onPaste}
         className={cn(
-          "w-full grow resize-none rounded-lg border border-input bg-transparent p-3 pr-20 text-sm ring-offset-background transition-[border] placeholder:text-muted-foreground focus-visible:border-primary focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50",
+          "w-full grow resize-none rounded-2xl border border-input bg-transparent p-3 pr-28 text-sm ring-offset-background transition-[border] placeholder:text-muted-foreground focus-visible:border-primary focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50",
           showFileList && "pb-16",
           className
         )}
@@ -187,7 +187,7 @@ export function MessageInput({
         </div>
       )}
 
-      <div className="absolute right-4 top-4 z-20 flex gap-2">
+      <div className="absolute right-6 top-4 z-40 flex gap-4">
         {props.allowAttachments && (
           <Button
             type="button"

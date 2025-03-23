@@ -159,7 +159,7 @@ const CodeBlock = ({
   );
 
   const preClass = cn(
-    "overflow-x-scroll rounded-md border bg-background/90 p-4 font-mono text-sm [scrollbar-width:none]",
+    "overflow-x-scroll rounded-md border bg-muted/50 p-4 font-mono text-sm [scrollbar-width:none]",
     className
   )
 
@@ -177,8 +177,8 @@ const CodeBlock = ({
         </HighlightedPre>
       </Suspense>
 
-      <div className="invisible absolute right-2 top-2 flex space-x-1 rounded-lg p-1 opacity-0 transition-all duration-200 group-hover/code:visible group-hover/code:opacity-100">
-        <CopyButton content={code} copyMessage="Copied code to clipboard" />
+      <div className="invisible absolute right-2 top-2 opacity-0 transition-all duration-200 group-hover/code:visible group-hover/code:opacity-100">
+        <CopyButton content={code} copyMessage="Copied code to clipboard" size="small" />
       </div>
     </div>
   )

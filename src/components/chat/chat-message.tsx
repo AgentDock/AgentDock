@@ -13,7 +13,7 @@ import { motion } from "framer-motion"
 
 // Keep the chat bubble styling
 const chatBubbleVariants = cva(
-  "group/message relative break-words rounded-lg p-3 text-sm sm:max-w-[70%]",
+  "group/message relative break-words rounded-3xl p-4 text-sm sm:max-w-[70%]",
   {
     variants: {
       isUser: {

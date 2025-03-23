@@ -8,8 +8,9 @@ import type { ToolState } from 'agentdock-core'
 import type { ToolInvocation } from "@/components/chat/types"
 import { ImageResultDisplay } from "@/components/chat/image-result"
 import { CognitiveToolLoadingIndicator, getToolLoadingUI } from "@/nodes/cognitive-tools/components/loading"
+import { CopyButton } from "@/components/ui/copy-button"
 
-const chatBubbleVariants = "group/message relative break-words rounded-lg p-3 text-sm sm:max-w-[70%] bg-muted text-foreground";
+const chatBubbleVariants = "group/message relative break-words rounded-2xl p-4 text-sm sm:max-w-[70%] bg-muted text-foreground";
 
 // Special class for the most recent tool
 const recentToolClass = "border-l-2 border-primary transition-all duration-300";
@@ -268,10 +269,63 @@ export function ToolCall({ toolInvocations }: ToolCallProps) {
             );
           }
           
-          // Handle text/content results
-          const hasContentProperty = invocation.result && 
-                                    typeof invocation.result === 'object' && 
-                                    'content' in invocation.result;
+          // For all other tools with results
+          let content = '';
+          let toolType = '';
+          let isCognitiveTool = false;
+          let isEmptyResult = false;
+          
+          // Extract content and type from result
+          if (typeof invocation.result === 'object' && invocation.result) {
+            if ('content' in invocation.result) {
+              content = invocation.result.content;
+            }
+            if ('type' in invocation.result) {
+              toolType = invocation.result.type;
+              
+              // Check if this is a cognitive tool (think or reflect)
+              isCognitiveTool = toolType === 'think_result' || toolType === 'reflect_result';
+              
+              // For cognitive tools, check if this is an empty result or contains only placeholder text
+              if (isCognitiveTool && content) {
+                // Check for placeholder text that indicates loading state
+                const hasPlaceholder = content.includes('Processing thoughts...') || 
+                                      content.includes('Processing reflection...');
+                
+                isEmptyResult = hasPlaceholder;
+                
+                // Log detected empty cognitive tool result
+                if (isEmptyResult) {
+                  logToolVisibility(invocation.toolName, toolId, 
+                    `DETECTED PLACEHOLDER CONTENT (showing loading state instead)`);
+                }
+              }
+            }
+          } else if (typeof invocation.result === 'string') {
+            content = invocation.result;
+          }
+          
+          // If this is a cognitive tool with an empty result, show loading state instead
+          if (isCognitiveTool && isEmptyResult) {
+            // Get the appropriate loading UI for this cognitive tool
+            const toolLoadingUI = getToolLoadingUI(invocation.toolName);
+            
+            if (toolLoadingUI) {
+              return (
+                <CognitiveToolLoadingIndicator
+                  key={toolId}
+                  toolName={invocation.toolName} 
+                  iconName={toolLoadingUI.icon}
+                  loadingText={toolLoadingUI.loadingText}
+                  animationClass={toolLoadingUI.animationClass}
+                  toolId={toolId}
+                />
+              );
+            }
+            
+            // Fallback to generic loading if no specific UI defined
+            return <LoadingToolCall key={toolId} toolName={invocation.toolName} toolId={toolId} />;
+          }
           
           return (
             <div
@@ -290,14 +344,11 @@ export function ToolCall({ toolInvocations }: ToolCallProps) {
               />
               
               {isExpanded && (
-                <div className="text-foreground mt-2 transition-all duration-300 overflow-hidden">
-                  {hasContentProperty ? (
-                    <MarkdownRenderer>{invocation.result.content}</MarkdownRenderer>
-                  ) : (
-                    <pre className="overflow-x-auto whitespace-pre-wrap text-foreground">
-                      {JSON.stringify(invocation.result, null, 2)}
-                    </pre>
-                  )}
+                <div className="mt-3 relative group/tool-content">
+                  <MarkdownRenderer>{content}</MarkdownRenderer>
+                  <div className="invisible absolute bottom-0 right-0 -mb-2.5 -mr-2 opacity-0 transition-all duration-200 group-hover/tool-content:visible group-hover/tool-content:opacity-100">
+                    <CopyButton content={content} copyMessage="Copied tool result to clipboard" size="small" />
+                  </div>
                 </div>
               )}
             </div>

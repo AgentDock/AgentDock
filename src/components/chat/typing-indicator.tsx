@@ -11,7 +11,7 @@ export const TypingIndicator = React.memo(() => {
   return (
     <div 
       className={cn(
-        "group/message relative break-words rounded-lg p-3 text-sm sm:max-w-[70%]",
+        "group/message relative break-words rounded-2xl p-4 text-sm sm:max-w-[70%]",
         "bg-muted text-foreground"
       )}
       role="status"

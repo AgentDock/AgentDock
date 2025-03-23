@@ -14,7 +14,8 @@
   ],
   "nodes": [
     "llm.groq",
-    "search"
+    "search",
+    "think"
   ],
   "nodeConfigurations": {
     "llm.groq": {

@@ -4,7 +4,6 @@ import { Component, ErrorInfo, ReactNode } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, RefreshCw, Home } from "lucide-react";
-import { useRouter } from "next/navigation";
 
 interface Props {
   children: ReactNode;
@@ -74,7 +73,6 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   private ErrorFallback = () => {
-    const router = useRouter();
     const errorMessage = this.getErrorMessage(this.state.error);
     const isNetworkError = this.state.error?.name === 'NetworkError';
     const isStorageError = this.state.error?.name === 'StorageError';
@@ -109,7 +107,7 @@ export class ErrorBoundary extends Component<Props, State> {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => router.push('/')}
+                onClick={() => window.location.href = '/'}
               >
                 <Home className="mr-2 h-4 w-4" />
                 Back to home

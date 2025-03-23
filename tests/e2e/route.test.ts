@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { POST } from '@/app/api/chat/[agentId]/route';
-import { Message } from 'ai';
+import { Message } from 'agentdock-core';
 
 describe.skip('Chat Route E2E', () => {
   const mockMessages: Message[] = [

@@ -1,10 +1,10 @@
-import { Message as AIMessage } from 'ai';
 import { 
   Message as AgentMessage,
   UserMessage,
   AssistantMessage,
   ToolMessage,
-  ToolResultContent
+  ToolResultContent,
+  AISdkMessage
 } from 'agentdock-core';
 import { 
   toAIMessage, 
@@ -76,7 +76,7 @@ describe('Message Utils', () => {
 
   describe('toCoreMessage', () => {
     it('should convert AI SDK message to core message', () => {
-      const input: AIMessage = {
+      const input: AISdkMessage = {
         id: '1',
         role: 'user',
         content: 'Hello'
@@ -89,7 +89,7 @@ describe('Message Utils', () => {
     });
 
     it('should handle data role as tool message', () => {
-      const input: AIMessage = {
+      const input: AISdkMessage = {
         id: '2',
         role: 'assistant',
         content: 'Result',
@@ -128,7 +128,7 @@ describe('Message Utils', () => {
     });
 
     it('should convert array of AI SDK messages to core messages', () => {
-      const input: AIMessage[] = [
+      const input: AISdkMessage[] = [
         {
           id: '1',
           role: 'user',

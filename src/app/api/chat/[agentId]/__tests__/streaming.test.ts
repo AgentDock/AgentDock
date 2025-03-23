@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { Message } from 'ai';
+import { Message } from 'agentdock-core';
 import { POST } from '../route';
 import { ConfigCache } from '@/lib/services/config-cache';
 

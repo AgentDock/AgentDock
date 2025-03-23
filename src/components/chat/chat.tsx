@@ -207,7 +207,7 @@ export function Chat({
             <MessageInput
               value={input}
               onChange={onInputChange}
-              placeholder="Ask AI..."
+              placeholder="How can I help you today?"
               disabled={isGenerating}
               stop={stop}
               isGenerating={isGenerating}

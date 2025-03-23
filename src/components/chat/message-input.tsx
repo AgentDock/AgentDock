@@ -32,7 +32,7 @@ const SUPPORTED_FILE_TYPES = [
 ].join(",");
 
 export function MessageInput({
-  placeholder = "Ask Anything",
+  placeholder = "Ask anything",
   className,
   onKeyDown: onKeyDownProp,
   submitOnEnter = true,

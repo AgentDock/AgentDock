@@ -7,6 +7,10 @@
 
 import { tools as thinkTools } from './think';
 import { tools as reflectTools } from './reflect';
+import { tools as compareTools } from './compare';
+import { tools as critiqueTools } from './critique';
+import { tools as debateTools } from './debate';
+import { tools as brainstormTools } from './brainstorm';
 
 /**
  * Export tools directly for the registry
@@ -14,5 +18,9 @@ import { tools as reflectTools } from './reflect';
  */
 export const tools = {
   ...thinkTools,
-  ...reflectTools
+  ...reflectTools,
+  ...compareTools,
+  ...critiqueTools,
+  ...debateTools,
+  ...brainstormTools
 }; 

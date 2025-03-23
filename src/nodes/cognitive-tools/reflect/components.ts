@@ -11,7 +11,6 @@ import { createToolResult } from '@/lib/utils/markdown-utils';
 export interface ReflectComponentProps {
   topic?: string;
   reflection: string; 
-  confidence?: number;
 }
 
 /**
@@ -38,7 +37,7 @@ function formatReflectionContent(text: string): string {
   formatted = formatted.replace(/^>\s*(.+)$/gm, '\n> *$1*');
   
   // Find and fix table formatting
-  const hasTable = formatted.includes('|') && (formatted.includes('\n|') || formatted.match(/\|[-:|\s]+\|/));
+  const hasTable = formatted.includes('|') && (formatted.includes('\n|') || formatted.match(/[-:|\s]+/));
   if (hasTable) {
     // First, identify table blocks
     const tablePattern = /((?:\|.+\|\r?\n)+)/g;
@@ -47,13 +46,13 @@ function formatReflectionContent(text: string): string {
       let processedTable = tableMatch;
       
       // Ensure proper pipe character formatting (ensure spaces around content)
-      processedTable = processedTable.replace(/\|([^\|\n\r]+?)\|/g, '| $1 |');
+      processedTable = processedTable.replace(/\|([^|\n\r]+?)\|/g, '| $1 |');
       processedTable = processedTable.replace(/\|\s{2,}/g, '| ');
       processedTable = processedTable.replace(/\s{2,}\|/g, ' |');
       
       // Ensure the header separator row has proper dashes and alignment indicators
       // Look for patterns like: | Header | Header |
-      const headerRowPattern = /\|(.*?)\|\n\|(?:[^-:\|\n]*?)\|/;
+      const headerRowPattern = /\|(.*?)\|\n\|(?:[^-:|\n]*?)\|/;
       const headerMatch = processedTable.match(headerRowPattern);
       
       if (headerMatch) {
@@ -105,20 +104,13 @@ function formatReflectionContent(text: string): string {
  */
 export function ReflectComponent({ 
   topic = "", 
-  reflection = "", 
-  confidence 
+  reflection = ""
 }: ReflectComponentProps) {
   // Ensure topic is always a string
   const safeTopicText = typeof topic === 'string' ? topic : '';
   
   // Format reflection with enhanced markdown
   const formattedReflection = formatReflectionContent(reflection);
-  
-  // Add confidence indicator if provided and valid
-  let confidenceIndicator = '';
-  if (confidence !== undefined && confidence !== null && typeof confidence === 'number' && !isNaN(confidence)) {
-    confidenceIndicator = `\n\n*Confidence: ${(confidence * 100).toFixed(1)}%*`;
-  }
   
   // Construct the title with the topic if provided
   const title = safeTopicText 
@@ -136,6 +128,6 @@ export function ReflectComponent({
   // Return the complete reflection with enhanced markdown formatting
   return createToolResult(
     'reflect_result',
-    `${title}\n\n${formattedReflection}${confidenceIndicator}`
+    `${title}\n\n${formattedReflection}`
   );
 } 

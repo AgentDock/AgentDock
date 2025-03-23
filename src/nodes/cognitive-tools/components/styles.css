@@ -58,6 +58,50 @@
   color: #0369a1;
 }
 
+/* Critique Tool */
+.critique-issue {
+  font-weight: 600;
+  color: #ef4444;
+}
+
+.critique-suggestion {
+  color: #047857;
+}
+
+.critique-strength {
+  color: #0369a1;
+}
+
+/* Brainstorm Tool */
+.brainstorm-idea {
+  font-weight: 600;
+  color: #f59e0b;
+}
+
+.brainstorm-theme {
+  color: #8b5cf6;
+}
+
+.brainstorm-application {
+  color: #10b981;
+}
+
+/* Debate Tool */
+.debate-position {
+  font-weight: 600;
+  color: #ef4444;
+}
+
+.debate-counter {
+  font-weight: 600;
+  color: #3b82f6;
+}
+
+.debate-synthesis {
+  color: #8b5cf6;
+  font-weight: 600;
+}
+
 /* Shared elements */
 .confidence-indicator {
   margin-top: 1rem;
@@ -118,6 +162,42 @@
   
   .reflect-observation {
     color: #38bdf8;
+  }
+  
+  .critique-issue {
+    color: #f87171;
+  }
+  
+  .critique-suggestion {
+    color: #34d399;
+  }
+  
+  .critique-strength {
+    color: #38bdf8;
+  }
+  
+  .brainstorm-idea {
+    color: #fbbf24;
+  }
+  
+  .brainstorm-theme {
+    color: #c4b5fd;
+  }
+  
+  .brainstorm-application {
+    color: #34d399;
+  }
+  
+  .debate-position {
+    color: #f87171;
+  }
+  
+  .debate-counter {
+    color: #60a5fa;
+  }
+  
+  .debate-synthesis {
+    color: #c4b5fd;
   }
   
   .confidence-indicator {

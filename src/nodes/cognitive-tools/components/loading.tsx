@@ -105,6 +105,26 @@ export function getToolLoadingUI(toolName: string): {
       icon: 'reflect',
       loadingText: 'Reflecting...',
       animationClass: 'thinking'  // Reuse the same animation styles
+    },
+    'compare': {
+      icon: 'compare',
+      loadingText: 'Comparing options...',
+      animationClass: 'thinking'  // Reuse the same animation styles
+    },
+    'critique': {
+      icon: 'critique',
+      loadingText: 'Analyzing critically...',
+      animationClass: 'thinking'
+    },
+    'brainstorm': {
+      icon: 'brainstorm',
+      loadingText: 'Generating ideas...',
+      animationClass: 'thinking'
+    },
+    'debate': {
+      icon: 'debate',
+      loadingText: 'Exploring perspectives...',
+      animationClass: 'thinking'
     }
     // Additional tools will be added here as they are implemented
   };

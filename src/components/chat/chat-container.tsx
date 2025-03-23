@@ -206,7 +206,7 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
   const {
     messages,
     input,
-    handleInputChange,
+    handleInputChange: setInput,
     handleSubmit,
     isLoading,
     stop,
@@ -317,13 +317,6 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
     const lastMessageIsUser = messages.length > 0 && messages[messages.length - 1]?.role === 'user';
     return isLoading && lastMessageIsUser;
   }, [isLoading, messages]);
-
-  // Create a string-accepting wrapper for handleInputChange
-  const handleStringInputChange = React.useCallback((value: string) => {
-    handleInputChange({
-      target: { value }
-    } as React.ChangeEvent<HTMLInputElement>);
-  }, [handleInputChange]);
 
   // Handle chat reset
   const handleReset = React.useCallback(async () => {
@@ -438,7 +431,7 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
         <Chat
           messages={messages}
           input={input}
-          handleInputChange={handleStringInputChange}
+          handleInputChange={(value: string) => setInput({ target: { value } } as React.ChangeEvent<HTMLTextAreaElement>)}
           handleSubmit={handleUserSubmit}
           isGenerating={isLoading}
           isTyping={showTypingIndicator}

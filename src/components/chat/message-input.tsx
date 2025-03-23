@@ -10,15 +10,19 @@ import { useAutosizeTextArea } from "@/hooks/use-autosize-textarea"
 import { Button } from "@/components/ui/button"
 import { FilePreview } from "@/components/chat/file-preview"
 
-interface MessageInputProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+interface MessageInputProps {
   value: string
-  onChange: React.ChangeEventHandler<HTMLTextAreaElement>
+  onChange: (value: string) => void
   allowAttachments?: boolean
   files?: File[] | null
   setFiles?: React.Dispatch<React.SetStateAction<File[] | null>>
   stop?: () => void
   isGenerating?: boolean
   submitOnEnter?: boolean
+  placeholder?: string
+  className?: string
+  disabled?: boolean
+  onKeyDown?: (event: React.KeyboardEvent<HTMLTextAreaElement>) => void
 }
 
 // Supported file types
@@ -32,28 +36,33 @@ const SUPPORTED_FILE_TYPES = [
 ].join(",");
 
 export function MessageInput({
-  placeholder = "Ask anything",
+  placeholder = "Ask Anything...",
   className,
   onKeyDown: onKeyDownProp,
   submitOnEnter = true,
   stop,
   isGenerating,
-  ...props
+  value,
+  onChange,
+  disabled,
+  allowAttachments,
+  files,
+  setFiles,
 }: MessageInputProps) {
   const [isDragging, setIsDragging] = useState(false)
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null)
-  const showFileList = props.allowAttachments && props.files && props.files.length > 0
+  const showFileList = allowAttachments && files && files.length > 0
 
   useAutosizeTextArea({
     ref: textAreaRef as React.RefObject<HTMLTextAreaElement>,
     maxHeight: 240,
     borderWidth: 1,
-    dependencies: [props.value, showFileList],
+    dependencies: [value, showFileList],
   })
 
   const addFiles = (files: File[] | null) => {
-    if (props.allowAttachments && props.setFiles) {
-      props.setFiles((currentFiles) => {
+    if (allowAttachments && setFiles) {
+      setFiles((currentFiles) => {
         if (currentFiles === null) return files
         if (files === null) return currentFiles
         return [...currentFiles, ...files]
@@ -62,20 +71,20 @@ export function MessageInput({
   }
 
   const onDragOver = (event: React.DragEvent) => {
-    if (props.allowAttachments !== true) return
+    if (allowAttachments !== true) return
     event.preventDefault()
     setIsDragging(true)
   }
 
   const onDragLeave = (event: React.DragEvent) => {
-    if (props.allowAttachments !== true) return
+    if (allowAttachments !== true) return
     event.preventDefault()
     setIsDragging(false)
   }
 
   const onDrop = (event: React.DragEvent) => {
     setIsDragging(false)
-    if (props.allowAttachments !== true) return
+    if (allowAttachments !== true) return
     event.preventDefault()
     const dataTransfer = event.dataTransfer
     if (dataTransfer.files.length) {
@@ -84,7 +93,7 @@ export function MessageInput({
   }
 
   const onPaste = (event: React.ClipboardEvent<HTMLTextAreaElement>) => {
-    if (props.allowAttachments !== true) return
+    if (allowAttachments !== true) return
     
     const clipboardData = event.clipboardData
     
@@ -139,6 +148,11 @@ export function MessageInput({
     onKeyDownProp?.(event)
   }
 
+  // Handle onChange to convert from event to string value
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    onChange(e.target.value);
+  };
+
   return (
     <div 
       className="relative flex w-full grow flex-col overflow-hidden bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95 rounded-lg"
@@ -152,27 +166,27 @@ export function MessageInput({
         ref={textAreaRef}
         onKeyDown={onKeyDown}
         onPaste={onPaste}
+        onChange={handleChange}
         className={cn(
           "w-full grow resize-none rounded-2xl border border-input bg-transparent p-3 pr-28 text-sm ring-offset-background transition-[border] placeholder:text-muted-foreground focus-visible:border-primary focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50",
           showFileList && "pb-16",
           className
         )}
-        {...(props.allowAttachments
-          ? omit(props, ["allowAttachments", "files", "setFiles"])
-          : omit(props, ["allowAttachments"]))}
+        value={value}
+        disabled={disabled}
       />
 
-      {props.allowAttachments && (
+      {allowAttachments && (
         <div className="absolute inset-x-3 bottom-0 z-20 overflow-x-scroll py-2">
           <div className="flex space-x-3">
             <AnimatePresence mode="popLayout">
-              {props.files?.map((file) => (
+              {files?.map((file) => (
                 <FilePreview
                   key={file.name + String(file.lastModified)}
                   file={file}
                   onRemove={() => {
-                    if (props.setFiles) {
-                      props.setFiles((files) => {
+                    if (setFiles) {
+                      setFiles((files) => {
                         if (!files) return null
                         const filtered = Array.from(files).filter(f => f !== file)
                         if (filtered.length === 0) return null
@@ -188,7 +202,7 @@ export function MessageInput({
       )}
 
       <div className="absolute right-6 top-4 z-40 flex gap-4">
-        {props.allowAttachments && (
+        {allowAttachments && (
           <Button
             type="button"
             size="icon"
@@ -219,14 +233,14 @@ export function MessageInput({
             size="icon"
             className="h-8 w-8 transition-opacity"
             aria-label="Send message"
-            disabled={props.value === "" || isGenerating}
+            disabled={value === "" || isGenerating}
           >
             <ArrowUp className="h-5 w-5" />
           </Button>
         )}
       </div>
 
-      {props.allowAttachments && <FileUploadOverlay isDragging={isDragging} />}
+      {allowAttachments && <FileUploadOverlay isDragging={isDragging} />}
     </div>
   )
 }

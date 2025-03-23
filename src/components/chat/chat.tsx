@@ -74,7 +74,7 @@ export function Chat({
     }
   }, [])
 
-  // Performance optimized scroll handler with debounce
+  // Handle scroll events
   const handleScroll = React.useCallback(() => {
     if (!scrollContainerRef.current) return
     
@@ -86,11 +86,6 @@ export function Chat({
     setIsNearBottom(nearBottom)
     setShowScrollButton(!nearBottom)
   }, [])
-
-  // Handle input change
-  const onInputChange = React.useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    handleInputChange(e.target.value)
-  }, [handleInputChange])
 
   // Optimized form submission handler
   const onFormSubmit = React.useCallback(
@@ -206,8 +201,8 @@ export function Chat({
           <form onSubmit={onFormSubmit} className="mx-auto">
             <MessageInput
               value={input}
-              onChange={onInputChange}
-              placeholder="How can I help you today?"
+              onChange={handleInputChange}
+              placeholder="Ask Anything"
               disabled={isGenerating}
               stop={stop}
               isGenerating={isGenerating}

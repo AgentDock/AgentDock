@@ -88,7 +88,7 @@
 
     /* Syntax Highlighting */
     --shiki-light: #24292e;
-    --shiki-light-bg: #ffffff;
+    --shiki-light-bg: #f6f8fa;
     --shiki-dark: #e1e4e8;
     --shiki-dark-bg: #24292e;
   }

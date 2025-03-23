@@ -1,7 +1,6 @@
 'use server';
 
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { logger, LogCategory } from "agentdock-core";
+import { logger, LogCategory, GoogleGenerativeAI } from "agentdock-core";
 import { storeAndGetImageUrl } from "../../../../lib/image-store";
 import { headers } from "next/headers";
 import { getProviderApiKey } from "@/types/env";

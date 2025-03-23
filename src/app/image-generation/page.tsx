@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ImageUpload } from "./components/ImageUpload";
 import { ImagePromptInput } from "./components/ImagePromptInput";
@@ -24,7 +24,10 @@ interface HistoryPart {
   image?: string;
 }
 
-export default function ImageGenerationPage() {
+// SearchParams wrapper component to fix hydration issues
+function ImageGenerationWithParams(props: { editIdFromUrl?: string | null }) {
+  const { editIdFromUrl } = props;
+  
   const [image, setImage] = useState<string | null>(null);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [description, setDescription] = useState<string | null>(null);
@@ -36,7 +39,6 @@ export default function ImageGenerationPage() {
   const [galleryLoading, setGalleryLoading] = useState(true);
   
   const router = useRouter();
-  const searchParams = useSearchParams();
   
   // Effect to load stored images on mount
   useEffect(() => {
@@ -97,11 +99,10 @@ export default function ImageGenerationPage() {
   // Effect to check for image edit query param
   useEffect(() => {
     const checkForImageToEdit = async () => {
-      const imageId = searchParams?.get('edit');
-      if (imageId) {
+      if (editIdFromUrl) {
         try {
           setLoading(true);
-          await handleGalleryImageSelect(imageId);
+          await handleGalleryImageSelect(editIdFromUrl);
         } catch (error) {
           console.error("Error selecting image from URL:", error);
           setError("Failed to load the requested image for editing.");
@@ -112,7 +113,7 @@ export default function ImageGenerationPage() {
     };
     
     checkForImageToEdit();
-  }, [searchParams]);
+  }, [editIdFromUrl]);
 
   // Helper function to get image data from URL
   const getImageDataFromUrl = async (url: string): Promise<string | null> => {
@@ -509,4 +510,26 @@ export default function ImageGenerationPage() {
       </div>
     </div>
   );
+}
+
+// Main component that safely uses searchParams
+export default function ImageGenerationPage() {
+  return (
+    <Suspense fallback={<div className="p-12 flex justify-center">
+      <div className="animate-spin mr-2">
+        <ImageIcon className="h-6 w-6 text-primary" />
+      </div>
+      <span>Loading image editor...</span>
+    </div>}>
+      <SearchParamsWrapper />
+    </Suspense>
+  );
+}
+
+// Separate component for handling searchParams to avoid hydration issues
+function SearchParamsWrapper() {
+  const searchParams = useSearchParams();
+  const editIdFromUrl = searchParams?.get('edit');
+  
+  return <ImageGenerationWithParams editIdFromUrl={editIdFromUrl} />;
 } 

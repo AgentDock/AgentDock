@@ -1,15 +1,20 @@
-import { Message as AIMessage } from 'ai';
 import { 
-  Message as AgentMessage, 
+  Message as AgentMessage,
   UserMessage,
   AssistantMessage,
   SystemMessage,
   ToolMessage,
   MessageContent,
   ToolResultContent,
-  isMultipartContent
+  isMultipartContent,
+  toAIMessage as coreToAIMessage,
+  fromAIMessage as coreFromAIMessage,
+  AISdkMessage,
 } from 'agentdock-core';
 import { v4 as uuidv4 } from 'uuid';
+
+// Define mapping for role types to handle type incompatibilities
+type AgentRole = 'system' | 'user' | 'assistant' | 'tool';
 
 // Common base message creation
 function createBaseMessage(id?: string, createdAt?: Date) {
@@ -19,13 +24,11 @@ function createBaseMessage(id?: string, createdAt?: Date) {
   };
 }
 
-// Content formatting for display
+// Format message content parts
 function formatContent(content: MessageContent): string {
   switch (content.type) {
     case 'text':
       return content.text;
-    case 'tool_call':
-      return `[Tool Call: ${content.toolName}]`;
     case 'tool_result':
       return `[Tool Result: ${content.toolCallId}]`;
     default:
@@ -34,88 +37,34 @@ function formatContent(content: MessageContent): string {
 }
 
 /**
- * Convert a Message to Vercel AI SDK Message
+ * Convert an AgentDock Message to Vercel AI SDK Message
+ * 
+ * Uses the conversion function from agentdock-core
  */
-export function toAIMessage(message: AgentMessage): AIMessage {
-  const content = isMultipartContent(message.content)
-    ? message.content.map(formatContent).join('\n')
-    : message.content;
-
-  return {
-    ...createBaseMessage(message.id, message.createdAt),
-    role: message.role === 'tool' ? 'assistant' : message.role,
-    content
-  };
+export function toAIMessage(message: AgentMessage): AISdkMessage {
+  return coreToAIMessage(message);
 }
 
 /**
- * Convert a Vercel AI SDK Message to CoreMessage
+ * Convert a Vercel AI SDK Message to AgentDock Message
+ * 
+ * Uses the conversion function from agentdock-core
  */
-export function toCoreMessage(message: AIMessage): AgentMessage {
-  const base = createBaseMessage(message.id, message.createdAt);
-
-  switch (message.role) {
-    case 'system': {
-      return {
-        ...base,
-        role: 'system',
-        content: message.content
-      } as SystemMessage;
-    }
-
-    case 'user': {
-      return {
-        ...base,
-        role: 'user',
-        content: message.content
-      } as UserMessage;
-    }
-
-    case 'assistant': {
-      return {
-        ...base,
-        role: 'assistant',
-        content: message.content
-      } as AssistantMessage;
-    }
-
-    case 'data': {
-      const toolResult: ToolResultContent = {
-        type: 'tool_result',
-        toolCallId: uuidv4(),
-        result: message.content
-      };
-      
-      return {
-        ...base,
-        role: 'tool',
-        content: [toolResult],
-        toolCallId: toolResult.toolCallId,
-        toolName: 'data'
-      } as ToolMessage;
-    }
-
-    default: {
-      return {
-        ...base,
-        role: 'assistant',
-        content: message.content
-      } as AssistantMessage;
-    }
-  }
+export function toCoreMessage(message: AISdkMessage): AgentMessage {
+  return coreFromAIMessage(message);
 }
 
 /**
- * Convert an array of CoreMessages to Vercel AI SDK Messages
+ * Convert an array of AgentDock Messages to Vercel AI SDK Messages
  */
-export function toAIMessages(messages: AgentMessage[]): AIMessage[] {
+export function toAIMessages(messages: AgentMessage[]): AISdkMessage[] {
   return messages.map(toAIMessage);
 }
 
 /**
- * Convert an array of Vercel AI SDK Messages to CoreMessages
+ * Convert an array of Vercel AI SDK Messages to AgentDock Messages
  */
-export function toCoreMessages(messages: AIMessage[]): AgentMessage[] {
+export function toCoreMessages(messages: AISdkMessage[]): AgentMessage[] {
   return messages.map(toCoreMessage);
 }
 
@@ -126,37 +75,47 @@ export function createMessage(role: AgentMessage['role'], content: string | Mess
   const base = createBaseMessage();
 
   switch (role) {
-    case 'system':
+    case 'system': {
       return {
         ...base,
         role,
-        content: typeof content === 'string' ? content : content[0].type === 'text' ? content[0].text : ''
+        content: typeof content === 'string' ? content : content[0]?.type === 'text' ? content[0].text : ''
       } as SystemMessage;
+    }
 
-    case 'user':
+    case 'user': {
       return {
         ...base,
         role,
         content
       } as UserMessage;
+    }
 
-    case 'assistant':
+    case 'assistant': {
       return {
         ...base,
         role,
         content
       } as AssistantMessage;
+    }
 
-    case 'tool':
+    case 'tool': 
+    case 'data': {
       if (typeof content === 'string' || !content.every(part => part.type === 'tool_result')) {
         throw new Error('Tool messages must contain only tool results');
       }
+      
       return {
         ...base,
-        role,
+        role: 'tool',
         content: content as ToolResultContent[],
         toolCallId: content[0].toolCallId,
         toolName: 'unknown'
       } as ToolMessage;
+    }
+    
+    default: {
+      throw new Error(`Invalid role: ${role}`);
+    }
   }
 } 

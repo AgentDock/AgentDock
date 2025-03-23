@@ -168,6 +168,12 @@ See the [agentdock-core/README.md](agentdock-core/README.md#storage-system-devel
    ```bash
    pnpm install
    ```
+   
+   For a clean reinstallation (when you need to rebuild from scratch):
+   ```bash
+   pnpm run clean-install
+   ```
+   This script removes all node_modules, lock files, and reinstalls dependencies correctly.
 
 3. **Configure Environment**:
    

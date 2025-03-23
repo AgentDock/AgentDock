@@ -3,8 +3,7 @@
  * Contains the core functionality for generating images using Gemini API.
  */
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { logger, LogCategory } from 'agentdock-core';
+import { logger, LogCategory, GoogleGenerativeAI } from 'agentdock-core';
 import { getProviderApiKey } from '@/types/env';
 
 // Define the model ID for Gemini 2.0 Flash experimental

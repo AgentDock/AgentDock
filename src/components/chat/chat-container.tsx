@@ -76,22 +76,12 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
     },
     onFinish: async (message) => {
       try {
-        // Avoid duplicate processing during rapid responses
-        const finishTime = Date.now();
-        const lastFinishTime = (window as any).__lastMessageFinishTime;
-        
-        if (lastFinishTime && finishTime - lastFinishTime < 100) {
-          return;
-        }
-        
-        // Update timestamp for debouncing
-        (window as any).__lastMessageFinishTime = finishTime;
-        
-        // Save completed messages to local storage
+        // Save completed messages to local storage once the stream is fully complete
+        // This ensures we only save the final state, not partial streaming states
         saveMessages(messages);
         
         // Log success
-        await logInfo('ChatContainer', 'Message processed', undefined, { 
+        await logInfo('ChatContainer', 'Message processing complete', undefined, { 
           messageId: message.id, 
           messageCount: messages.length 
         });
@@ -144,13 +134,15 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
   React.useEffect(() => {
     if (messages.length === 0) return;
     
-    // Always save messages, even during loading (streaming)
-    // This ensures partial responses are saved
-    saveMessages(messages);
-    
-    // Add debug log to track message saves
-    if (process.env.NODE_ENV === 'development') {
-      console.debug(`Saving ${messages.length} messages, isLoading: ${isLoading}`);
+    // Only save messages when not in the middle of streaming
+    // This prevents potentially causing issues during fast streams
+    if (!isLoading) {
+      saveMessages(messages);
+      
+      // Add debug log to track message saves
+      if (process.env.NODE_ENV === 'development') {
+        console.debug(`Saving ${messages.length} messages after stream completed`);
+      }
     }
   }, [messages, saveMessages, isLoading]);
 

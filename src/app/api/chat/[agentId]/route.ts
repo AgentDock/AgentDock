@@ -122,10 +122,22 @@ export async function POST(
       const providerName = llmInfo.provider.replace('llm.', '') as LLMProvider;
       apiKey = getProviderApiKey(providerName);
       
+      // Log the result (safely)
       if (apiKey) {
+        const apiKeyPrefix = apiKey.substring(0, 4);
+        const apiKeyLength = apiKey.length;
+        
         logger.debug(LogCategory.API, 'ChatRoute', 'Using API key from environment variables', {
           provider: llmInfo.provider,
-          hasKey: !!apiKey
+          hasKey: true,
+          keyPrefix: apiKeyPrefix,
+          keyLength: apiKeyLength
+        });
+      } else {
+        // Log more details about environment vars for debugging
+        logger.error(LogCategory.API, 'ChatRoute', 'API key not found in environment variables', {
+          provider: llmInfo.provider,
+          searchedKey: `${providerName.toUpperCase()}_API_KEY`
         });
       }
     }

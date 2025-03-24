@@ -1,0 +1,67 @@
+# AgentDock Architecture
+
+This section provides an overview of the architecture of AgentDock Core, the foundation library that powers all AgentDock functionality.
+
+## Core Philosophy
+
+AgentDock Core is designed with the following principles:
+
+-   **Modularity:** Components like LLM interaction, session management, storage, and orchestration are distinct and replaceable.
+-   **Extensibility:** Easy to add new LLM providers, storage backends, tools, or custom agent logic.
+-   **Type Safety:** Comprehensive TypeScript types ensure developer confidence and reduce runtime errors.
+-   **Provider Agnosticism:** Abstracting away differences between LLM providers and storage systems where possible.
+-   **State Management Focus:** Robust mechanisms for managing conversational state across interactions.
+
+## Key Subsystems
+
+AgentDock Core is composed of several interconnected subsystems:
+
+1.  **LLM Abstraction (`/llm`):** Provides a consistent interface (`CoreLLM`) for interacting with different LLM providers (OpenAI, Anthropic, Gemini via Vercel AI SDK). Handles API calls, streaming, and basic token usage reporting.
+2.  **Storage Abstraction Layer (`/storage`):** Offers a pluggable system for Key-Value storage (Memory, Redis, Vercel KV implemented) with plans for Vector and Relational storage. See [Storage Overview](../storage/README.md).
+3.  **Session Management (`/session`):** Manages isolated conversational state using the Storage Abstraction Layer. Ensures context preservation and handles state lifecycle (creation, updates, TTL-based cleanup). See [Session Management](./sessions/session-management.md).
+4.  **Orchestration Framework (`/orchestration`):** Controls agent behavior by managing steps (modes), conditional transitions, tool availability, and optional tool sequencing based on session state. See [Orchestration Overview](./orchestration/orchestration-overview.md).
+5.  **Node System (`/nodes`):** Defines the core execution units. The primary node is `AgentNode`, which integrates LLM interaction, tool usage, session state, and orchestration.
+6.  **Tool System (Integrated within `/nodes` & `/llm`):** Defines tool interfaces and integrates tool execution within the LLM interaction flow (e.g., via function/tool calling APIs). Tools can interact with session state and other core systems.
+7.  **Error Handling (`/errors`):** Standardized error types and handling mechanisms.
+8.  **Configuration (`/config`, Agent Templates):** Agent behavior is defined via template files (`template.json`) specifying LLM, tools, prompts, orchestration rules, etc.
+
+## High-Level Interaction Flow
+
+A typical interaction involves:
+
+1.  **Request:** An incoming request (e.g., from the Open Source Client) hits an API endpoint.
+2.  **Session Handling:** The endpoint retrieves or establishes a `SessionId`.
+3.  **Agent Instantiation:** An `AgentNode` instance is created based on the agent template configuration.
+4.  **State Retrieval:** Relevant session state (e.g., `OrchestrationState`) is loaded via `SessionManager` / `OrchestrationStateManager`.
+5.  **Orchestration Check:** The orchestration logic determines the active step and filters available tools based on conditions and sequences.
+6.  **LLM Call:** `AgentNode` uses `CoreLLM` to interact with the LLM provider, passing the message history, system prompt, and filtered tools.
+7.  **Tool Execution (if needed):** If the LLM requests a tool, `AgentNode` executes it, potentially updating session state.
+8.  **Response Streaming:** The LLM response (text or tool calls) is streamed back.
+9.  **State Update:** Session state (message history, token usage, orchestration state) is updated via the respective managers.
+10. **Response Completion:** The stream ends, and the final state is persisted.
+
+See [Request Flow](./core/request-flow.md) for more details.
+
+## Directory Structure (`agentdock-core/src`)
+
+```
+/src
+├── client/         # (Primarily for Open Source Client integration)
+├── config/         # Configuration loading utilities
+├── errors/         # Custom error types and factory
+├── llm/            # CoreLLM abstraction, provider specifics
+├── logging/        # Logging utilities
+├── nodes/          # AgentNode, tool execution logic
+├── orchestration/  # State management, sequencing, conditions
+├── session/        # SessionManager implementation
+├── storage/        # Storage abstraction, providers (KV, Secure)
+├── tools/          # Base tool definitions and specific tool implementations
+├── types/          # Core TypeScript type definitions
+└── utils/          # General utility functions
+```
+
+## Further Reading
+
+-   [Core Architecture Overview](./core/overview.md)
+-   [Agent Node](./agent-node.md)
+-   [Technology Stack](./core/technology-stack.md) 

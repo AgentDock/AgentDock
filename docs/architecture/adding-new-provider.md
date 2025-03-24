@@ -20,7 +20,7 @@ First, add the provider-specific configuration types to `src/llm/types.ts`:
 
 ```typescript
 // Add a new provider to the LLMProvider type
-export type LLMProvider = 'anthropic' | 'openai' | 'gemini' | 'your-provider';
+export type LLMProvider = 'anthropic' | 'openai' | 'gemini' | 'deepseek' | 'groq' | 'your-provider';
 
 // Add provider-specific configuration
 export interface YourProviderConfig extends LLMConfig {
@@ -29,7 +29,7 @@ export interface YourProviderConfig extends LLMConfig {
 }
 
 // Update the ProviderConfig type
-export type ProviderConfig = AnthropicConfig | OpenAIConfig | GeminiConfig | YourProviderConfig;
+export type ProviderConfig = AnthropicConfig | OpenAIConfig | GeminiConfig | DeepSeekConfig | GroqConfig | YourProviderConfig;
 ```
 
 ## Step 2: Add Provider SDK Dependency
@@ -43,6 +43,7 @@ Add the provider's SDK to the project's dependencies in `package.json`. If the p
     "@ai-sdk/anthropic": "^1.0.7",
     "@ai-sdk/google": "^1.1.26",
     "@ai-sdk/openai": "^1.0.14",
+    "@ai-sdk/groq": "^1.0.0",
     
     // Add your provider's SDK
     "@ai-sdk/your-provider": "^1.0.0",
@@ -51,6 +52,8 @@ Add the provider's SDK to the project's dependencies in `package.json`. If the p
   }
 }
 ```
+
+Note: Some providers like DeepSeek use OpenAI-compatible APIs, so they can utilize the OpenAI SDK with a custom base URL.
 
 ## Step 3: Create a Model Creation Function
 
@@ -208,6 +211,8 @@ import {
   createAnthropicModel, 
   createOpenAIModel, 
   createGeminiModel, 
+  createDeepSeekModel,
+  createGroqModel,
   createYourProviderModel 
 } from './model-utils';
 
@@ -234,11 +239,17 @@ export function createLLM(config: LLMConfig): CoreLLM {
     case 'gemini':
       model = createGeminiModel(config);
       break;
+    case 'deepseek':
+      model = createDeepSeekModel(config);
+      break;
+    case 'groq':
+      model = createGroqModel(config);
+      break;
     case 'your-provider':
       model = createYourProviderModel(config);
       break;
     default:
-      throw createError('llm', `Unsupported provider: ${config.provider}`, ErrorCode.LLM_PROVIDER);
+      throw createError('llm', `Unsupported provider: ${config.provider}`, ErrorCode.LLM_EXECUTION);
   }
 
   // Create and return the CoreLLM instance
@@ -255,7 +266,9 @@ Update the exports in `src/llm/index.ts` to include your new provider:
 export { 
   createAnthropicModel, 
   createOpenAIModel, 
-  createGeminiModel, 
+  createGeminiModel,
+  createDeepSeekModel,
+  createGroqModel,
   createYourProviderModel 
 } from './model-utils';
 ```
@@ -271,8 +284,9 @@ If needed, also update the main exports in `src/index.ts` to include any provide
  * Re-export provider-specific classes and types
  */
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GroqAPI } from '@ai-sdk/groq';
 import { YourProviderClient } from 'your-provider-sdk'; // If needed
-export { GoogleGenerativeAI, YourProviderClient };
+export { GoogleGenerativeAI, GroqAPI, YourProviderClient };
 ```
 
 ## Step 7: Message Format Compatibility

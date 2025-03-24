@@ -1,11 +1,3 @@
----
-id: 001
-title: "Code Reviewer Agent"
-tags: ["development", "productivity", "security"]
-status: "open"
-bounty: true
----
-
 # RFA-001: Code Reviewer Agent
 
 ## The Problem

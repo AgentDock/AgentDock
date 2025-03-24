@@ -235,9 +235,27 @@ export const ChatMessage = React.memo(React.forwardRef<HTMLDivElement, ChatMessa
       {/* Render file previews if attachments are present */}
       {files && files.length > 0 && (
         <div className="mb-1 flex flex-wrap gap-2">
-          {files.map((file, index) => (
-            <FilePreview file={file} key={index} />
-          ))}
+          {files.map((file, index) => {
+            if (file.type.startsWith("image/")) {
+              // Special handling for images to make them much larger
+              return (
+                <div key={index} className="relative">
+                  <img
+                    src={URL.createObjectURL(file)}
+                    alt="Uploaded image"
+                    className="max-w-full h-auto rounded-lg border border-border"
+                    style={{ 
+                      maxHeight: "400px", // Allow large images but cap the maximum height
+                      minWidth: "200px"   // Ensure small images are still reasonably sized
+                    }}
+                  />
+                  {/* We don't show a filename for the larger images */}
+                </div>
+              );
+            }
+            // For non-image files, use the regular FilePreview
+            return <FilePreview file={file} key={index} />;
+          })}
         </div>
       )}
       

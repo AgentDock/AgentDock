@@ -87,7 +87,9 @@ export function ImageResultDisplay({ imageData, prompt, description }: ImageResu
               !isLoaded ? "opacity-0" : "opacity-100"
             )}
             style={{ 
-              maxHeight: "60vh", 
+              maxHeight: "80vh",
+              minWidth: "250px",
+              minHeight: "250px",
               objectFit: "contain"
             }}
             onLoad={() => setIsLoaded(true)}

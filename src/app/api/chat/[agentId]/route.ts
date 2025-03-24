@@ -120,6 +120,8 @@ export async function POST(
     if (!apiKey) {
       // Get provider name without the 'llm.' prefix
       const providerName = llmInfo.provider.replace('llm.', '') as LLMProvider;
+      
+      // Get API key from environment variables
       apiKey = getProviderApiKey(providerName);
       
       // Log the result (safely)
@@ -332,13 +334,11 @@ export async function POST(
       code: error instanceof APIError ? error.code : 'INTERNAL_ERROR'
     };
     
-    // Extract Anthropic-specific error details
+    // Extract common error properties
     if (error && typeof error === 'object') {
-      // Extract common error properties
       if ('status' in error) errorDetails.status = (error as any).status;
       if ('type' in error) errorDetails.type = (error as any).type;
       if ('code' in error) errorDetails.code = (error as any).code;
-      if ('stack' in error) errorDetails.stack = (error as any).stack;
       
       // Extract response details if available
       if ('response' in error && (error as any).response) {
@@ -346,44 +346,34 @@ export async function POST(
         errorDetails.responseStatus = response.status;
         errorDetails.responseStatusText = response.statusText;
         
-        // Try to extract response data
+        // Extract provider-agnostic response data
         if (response.data) {
-          try {
-            const data = response.data;
-            errorDetails.responseData = data;
-            
-            // Extract Anthropic error details from response data
-            if (data.error) {
-              if (data.error.type) errorDetails.errorType = data.error.type;
-              if (data.error.message) errorDetails.errorMessage = data.error.message;
-            }
-          } catch (parseError) {
-              logger.debug(LogCategory.API, 'ChatRoute', 'Failed to parse error response', { error: parseError });
-              errorDetails.responseDataError = 'Could not process response data';
+          errorDetails.responseData = response.data;
+          
+          // Generic error extraction from response data
+          if (response.data.error) {
+            if (response.data.error.type) errorDetails.errorType = response.data.error.type;
+            if (response.data.error.message) errorDetails.errorMessage = response.data.error.message;
           }
         }
       }
       
       // Extract details from AgentError
       if ('details' in error && (error as any).details) {
-        try {
-          const details = (error as any).details;
-          errorDetails.errorDetails = details;
-          
-          // Extract nested error details if available
-          if (details.error) {
-            errorDetails.nestedError = details.error instanceof Error 
-              ? details.error.message 
-              : String(details.error);
-          }
-          
-          // Extract additional details
-          if (details.details) {
-            errorDetails.additionalDetails = details.details;
-          }
-        } catch (parseError) {
-          logger.debug(LogCategory.API, 'ChatRoute', 'Failed to parse error details', { error: parseError });
-          errorDetails.detailsError = 'Could not process error details';
+        errorDetails.errorDetails = (error as any).details;
+        
+        const details = (error as any).details;
+        
+        // Extract nested error details if available
+        if (details.error) {
+          errorDetails.nestedError = details.error instanceof Error 
+            ? details.error.message 
+            : String(details.error);
+        }
+        
+        // Extract additional details
+        if (details.details) {
+          errorDetails.additionalDetails = details.details;
         }
       }
     }
@@ -400,18 +390,18 @@ export async function POST(
 
     // Determine user-friendly error message
     let userMessage = 'An error occurred';
-    let errorCode = errorDetails.code || errorDetails.errorType || 'UNKNOWN_ERROR';
+    let errorCode = errorDetails.code || 'UNKNOWN_ERROR';
     
-    // Handle specific error types
-    if (errorDetails.type === 'rate_limit_error') {
+    // Generic error type handling
+    if (errorDetails.type === 'rate_limit') {
       userMessage = 'Rate limit exceeded. Please try again later.';
-      errorCode = 'RATE_LIMIT';
-    } else if (errorDetails.type === 'overloaded_error') {
+      errorCode = ErrorCode.LLM_RATE_LIMIT;
+    } else if (errorDetails.type === 'service_overloaded' || errorDetails.status === 503) {
       userMessage = 'The service is currently overloaded. Please try again later.';
-      errorCode = 'SERVICE_OVERLOADED';
+      errorCode = ErrorCode.SERVICE_UNAVAILABLE;
     } else if (errorDetails.status >= 500 && errorDetails.status < 600) {
       userMessage = 'The service is experiencing issues. Please try again later.';
-      errorCode = 'SERVICE_ERROR';
+      errorCode = ErrorCode.INTERNAL;
     } else if (errorDetails.errorMessage) {
       userMessage = errorDetails.errorMessage;
     } else if (errorDetails.message) {

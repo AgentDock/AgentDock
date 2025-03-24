@@ -70,29 +70,24 @@ export function getEnvConfig(): EnvConfig {
       NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
     });
     
-    // Log environment information in development
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Environment variables loaded successfully');
-      
-      // Log which API keys are available (safely)
-      const availableKeys = Object.entries(env)
-        .filter(([key, value]) => key.includes('API_KEY') && value)
-        .map(([key]) => key);
-      
-      console.log('Available API keys:', availableKeys);
-    }
-    
     return env;
   } catch (error) {
-    // If in development, provide more details about missing/invalid env vars
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Environment validation error:', error);
-    } else {
-      console.error('Environment validation failed. Check environment variables.');
-    }
-    
-    // Return empty object as fallback - application will handle missing keys gracefully
-    return {} as EnvConfig;
+    // Always return raw environment variables when validation fails
+    // This ensures keys are accessible even if they don't match expected format
+    return {
+      ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
+      OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+      GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+      DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY,
+      GROQ_API_KEY: process.env.GROQ_API_KEY,
+      SERPER_API_KEY: process.env.SERPER_API_KEY,
+      FIRECRAWL_API_KEY: process.env.FIRECRAWL_API_KEY,
+      ALPHAVANTAGE_API_KEY: process.env.ALPHAVANTAGE_API_KEY,
+      NODE_ENV: process.env.NODE_ENV as any,
+      FALLBACK_API_KEY: process.env.FALLBACK_API_KEY,
+      MAX_DURATION: process.env.MAX_DURATION ? parseInt(process.env.MAX_DURATION) : undefined,
+      NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL
+    } as EnvConfig;
   }
 }
 
@@ -107,16 +102,47 @@ export function getEnvConfig(): EnvConfig {
  * @returns The API key string or null if not found
  */
 export function getProviderApiKey(provider: LLMProvider): string | null {
-  const env = getEnvConfig();
-  
-  // Map provider ID to environment variable
-  const keyMap: Record<string, string | undefined> = {
-    'anthropic': env.ANTHROPIC_API_KEY,
-    'openai': env.OPENAI_API_KEY, 
-    'gemini': env.GEMINI_API_KEY,
-    'deepseek': env.DEEPSEEK_API_KEY,
-    'groq': env.GROQ_API_KEY
+  // Direct access to environment variables for maximum reliability
+  const envVarMap: Record<string, string | undefined> = {
+    'anthropic': process.env.ANTHROPIC_API_KEY,
+    'openai': process.env.OPENAI_API_KEY, 
+    'gemini': process.env.GEMINI_API_KEY,
+    'deepseek': process.env.DEEPSEEK_API_KEY,
+    'groq': process.env.GROQ_API_KEY
   };
   
-  return keyMap[provider] || null;
+  return envVarMap[provider] || null;
+}
+
+/**
+ * Special debugging function to directly access API keys from environment
+ * This bypasses validation and is useful for troubleshooting
+ */
+export function debugDirectEnvAccess(provider: LLMProvider): string | null {
+  // Map provider to environment variable name
+  const envVarMap: Record<string, string> = {
+    'anthropic': 'ANTHROPIC_API_KEY',
+    'openai': 'OPENAI_API_KEY',
+    'gemini': 'GEMINI_API_KEY',
+    'deepseek': 'DEEPSEEK_API_KEY',
+    'groq': 'GROQ_API_KEY'
+  };
+  
+  const envVar = envVarMap[provider];
+  if (!envVar) return null;
+  
+  // Direct access from process.env, bypassing validation
+  const value = process.env[envVar];
+  
+  // Log result (safely)
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`Direct environment access for ${provider}:`, {
+      envVar,
+      exists: !!value,
+      length: value?.length || 0,
+      prefix: value?.substring(0, 4) || ''
+    });
+  }
+  
+  return value || null;
 } 

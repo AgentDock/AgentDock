@@ -78,9 +78,10 @@ const BaseFilePreview = React.forwardRef<
     >
       <div className="flex w-full items-center space-x-2">
         {children}
-        <span className="w-full truncate text-muted-foreground">
+        {/* Remove filename display - keep this commented line for reference */}
+        {/* <span className="w-full truncate text-muted-foreground">
           {file.name}
-        </span>
+        </span> */}
       </div>
 
       {onRemove ? (

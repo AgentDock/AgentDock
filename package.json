@@ -126,7 +126,7 @@
     "jest-environment-jsdom": "^29.7.0",
     "next-themes": "^0.2.1",
     "node-fetch": "2",
-    "postcss-import": "^15.1.0",
+    "postcss-import": "^16.1.0",
     "shadcn": "^2.3.0",
     "sharp": "^0.33.5",
     "ts-jest": "^29.2.5",

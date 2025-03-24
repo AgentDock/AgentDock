@@ -49,3 +49,15 @@ export const validateLLMApiKey = (provider: LLMProvider, apiKey: string): boolea
 export const getModelsForProvider = (provider: LLMProvider): any[] => {
   return ModelService.getModels(provider);
 };
+
+/**
+ * Converts an array of File objects to a proper FileList
+ * This is useful for handling file uploads in forms
+ */
+export function createFileList(files: File[]): FileList {
+  const dataTransfer = new DataTransfer();
+  for (const file of files) {
+    dataTransfer.items.add(file);
+  }
+  return dataTransfer.files;
+}

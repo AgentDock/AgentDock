@@ -1,19 +1,18 @@
 # AgentDock Store
 
-This directory contains the core state management implementation for AgentDock, built with React Context and the Context API. It provides a type-safe state management solution for managing agents and their nodes.
+This directory contains the core state management implementation for AgentDock, built with Zustand. It provides a type-safe, lightweight state management solution for managing agents and their runtime settings.
 
 ## Features
 
 - Type-safe state management with TypeScript
-- Minimal persistence using localStorage
-- Clean separation between Core and Pro features
+- Persistent settings using SecureStorage
 - Efficient agent lifecycle management
-- Automatic template loading from filesystem
+- Automatic template loading from generated templates
 
 ## Structure
 
-- `index.ts` - Main store exports and types
-- `agentContext.tsx` - React Context implementation
+- `index.ts` - Main store implementation using Zustand
+- `hooks.ts` - Custom hooks for accessing store slices
 - `types.ts` - TypeScript types and interfaces
 
 ## Usage
@@ -22,7 +21,10 @@ This directory contains the core state management implementation for AgentDock, 
 import { useAgents } from '@/lib/store';
 
 function MyComponent() {
-  const { agents, initialize, isInitialized } = useAgents();
+  const { agents } = useAgents();
+  // Or with the hooks API
+  const agents = useAgents();
+  const { isInitialized, initialize } = useAppState();
   
   useEffect(() => {
     if (!isInitialized) {
@@ -46,19 +48,25 @@ function MyComponent() {
 
 The store manages:
 - List of agents
-- Active agent ID
 - Initialization state
-- Agent lifecycle methods (start, pause, resume, stop)
+- Template validation status
+- Agent runtime settings (temperature, max tokens, etc.)
+
+## Key Functions
+
+- `initialize()` - Load and validate agent templates
+- `updateAgentRuntime()` - Update runtime settings for an agent
+- `reset()` - Reset the store state
 
 ## Agent Templates
 
-Agent templates are loaded from the filesystem:
+Agent templates are loaded from the generated templates:
 ```
-src/lib/agents/{agent-name}/template.json
+/generated/templates.ts
 ```
 
 Each template defines:
-- Agent name and description
-- Model configuration
-- Tools and RAG settings
-- Instructions for contributors 
+- Agent name, ID, and description
+- Personality configuration
+- Node configurations and model settings
+- Tools and chat settings 

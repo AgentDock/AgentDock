@@ -8,6 +8,10 @@
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
     
+    /* Font families */
+    --font-primary: 'Inter', system-ui, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    
     /* Brand Colors */
     --brand: 217 91% 60%;
     --brand-foreground: 0 0% 98%;
@@ -84,7 +88,7 @@
 
     /* Syntax Highlighting */
     --shiki-light: #24292e;
-    --shiki-light-bg: #ffffff;
+    --shiki-light-bg: #f6f8fa;
     --shiki-dark: #e1e4e8;
     --shiki-dark-bg: #24292e;
   }
@@ -171,6 +175,15 @@
     --shiki-dark: #e1e4e8;
     --shiki-dark-bg: #24292e00;
   }
+  
+  /* Apply fonts properly */
+  body {
+    font-family: var(--font-primary);
+  }
+  
+  code, pre, kbd, samp, .font-mono {
+    font-family: var(--font-mono) !important;
+  }
 }
  
 @layer base {
@@ -180,4 +193,15 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Make sure markdown code blocks use monospace font */
+.markdown pre, 
+.markdown code,
+.prose pre,
+.prose code,
+div[data-rehype-pretty-code-fragment],
+pre[data-language],
+code[data-language] {
+  font-family: var(--font-mono) !important;
 }

@@ -12,11 +12,13 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { Save, AlertCircle, KeyRound } from "lucide-react"
 import { ModelService } from '@/lib/services/model-service'
+import { FontFamily } from '@/lib/fonts'
 
 // Import components
 import { ModelDisplay } from './model-display'
 import { CoreSettings } from './core-settings'
 import { DebugPanel } from './debug-panel'
+import { FontSettings } from './font-settings'
 
 // Import types
 import { GlobalSettings, DEFAULT_SETTINGS, ApiKeyProvider } from './types'
@@ -226,6 +228,55 @@ function SettingsPage() {
     setModelsRefreshTrigger(prev => prev + 1);
   }, []);
 
+  // Handle font settings changes
+  const handlePrimaryFontChange = useCallback(async (value: FontFamily) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const updatedSettings = {
+        ...settings,
+        fonts: {
+          ...settings.fonts,
+          primary: value
+        }
+      };
+      
+      await storage.set("global_settings", updatedSettings);
+      setSettings(updatedSettings);
+      toast.success("Font settings saved. Reload the page to see changes.");
+    } catch (error) {
+      logger.error(LogCategory.SYSTEM, '[Settings]', 'Error saving font settings:', { error });
+      setError("Failed to save font settings");
+    } finally {
+      setLoading(false);
+    }
+  }, [settings]);
+
+  const handleMonoFontChange = useCallback(async (value: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const updatedSettings = {
+        ...settings,
+        fonts: {
+          ...settings.fonts,
+          mono: value
+        }
+      };
+      
+      await storage.set("global_settings", updatedSettings);
+      setSettings(updatedSettings);
+      toast.success("Font settings saved. Reload the page to see changes.");
+    } catch (error) {
+      logger.error(LogCategory.SYSTEM, '[Settings]', 'Error saving font settings:', { error });
+      setError("Failed to save font settings");
+    } finally {
+      setLoading(false);
+    }
+  }, [settings]);
+
   // Memoize loading skeleton component
   const LoadingSkeleton = useMemo(() => (
     <div className="grid gap-6">
@@ -251,7 +302,7 @@ function SettingsPage() {
 
   return (
     <TooltipProvider>
-      <div className="container mx-auto py-8">
+      <div className="container py-6 space-y-6 md:py-10">
         <div className="flex items-center justify-between mb-8">
           <div className="space-y-1">
             <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
@@ -273,7 +324,7 @@ function SettingsPage() {
             )}
           </Button>
         </div>
-
+        
         {error && (
           <Card className="mb-6 border-destructive">
             <CardContent className="flex items-start gap-4 pt-6">
@@ -285,17 +336,25 @@ function SettingsPage() {
             </CardContent>
           </Card>
         )}
-
-        <div className="grid gap-6">
-          {/* Core Settings */}
+        
+        {/* Core Settings and Font Settings */}
+        <div className="grid gap-6 md:grid-cols-2">
           <CoreSettings 
-            settings={settings} 
-            onByokChange={handleByokOnlyChange} 
-            onDebugModeChange={handleDebugModeChange} 
-                    />
-
-          {/* API Keys */}
-          <Card>
+            settings={settings}
+            onByokChange={handleByokOnlyChange}
+            onDebugModeChange={handleDebugModeChange}
+          />
+          
+          <FontSettings 
+            settings={settings}
+            onPrimaryFontChange={handlePrimaryFontChange}
+            onMonoFontChange={handleMonoFontChange}
+          />
+        </div>
+        
+        {/* API Keys */}
+        <div className="space-y-4">
+          <Card className="shadow-none">
             <div className="p-6 space-y-6">
               <div className="flex items-center gap-2">
                 <KeyRound className="h-5 w-5" />
@@ -307,14 +366,14 @@ function SettingsPage() {
               
               <div className="grid gap-6">
                 {API_KEY_PROVIDERS.map(({ key, label, icon: Icon, description }) => (
-                  <div key={key} className="grid gap-2">
-                    <Label htmlFor={key} className="flex items-center gap-2">
+                  <div key={key.toString()} className="grid gap-2">
+                    <Label htmlFor={key.toString()} className="flex items-center gap-2">
                       <Icon className="h-4 w-4" />
                       {label}
                     </Label>
                     <div className="relative">
                       <Input
-                        id={key}
+                        id={key.toString()}
                         type="password"
                         placeholder={`Enter your ${key} API key`}
                         value={settings.apiKeys[key]}

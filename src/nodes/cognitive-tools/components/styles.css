@@ -1,0 +1,207 @@
+/**
+ * Cognitive Tools Shared Styles
+ * CSS for styling the cognitive tool components
+ */
+
+/* Container styles shared across cognitive tools */
+.cognitive-tool-container {
+  margin: 1rem 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background-color: #f9fafb;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.cognitive-tool-header {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background-color: #f3f4f6;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.cognitive-tool-icon {
+  margin-right: 0.5rem;
+  font-size: 1.25rem;
+}
+
+.cognitive-tool-title {
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.cognitive-tool-content {
+  padding: 1rem;
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+/* Tool-specific styling */
+/* Think Tool */
+.think-step-number {
+  font-weight: 600;
+  color: #4f46e5;
+}
+
+.think-conclusion {
+  color: #047857;
+}
+
+/* Reflect Tool */
+.reflect-insight {
+  font-weight: 600;
+  color: #8b5cf6;
+}
+
+.reflect-observation {
+  color: #0369a1;
+}
+
+/* Critique Tool */
+.critique-issue {
+  font-weight: 600;
+  color: #ef4444;
+}
+
+.critique-suggestion {
+  color: #047857;
+}
+
+.critique-strength {
+  color: #0369a1;
+}
+
+/* Brainstorm Tool */
+.brainstorm-idea {
+  font-weight: 600;
+  color: #f59e0b;
+}
+
+.brainstorm-theme {
+  color: #8b5cf6;
+}
+
+.brainstorm-application {
+  color: #10b981;
+}
+
+/* Debate Tool */
+.debate-position {
+  font-weight: 600;
+  color: #ef4444;
+}
+
+.debate-counter {
+  font-weight: 600;
+  color: #3b82f6;
+}
+
+.debate-synthesis {
+  color: #8b5cf6;
+  font-weight: 600;
+}
+
+/* Shared elements */
+.confidence-indicator {
+  margin-top: 1rem;
+  padding: 0.5rem;
+  background-color: #f3f4f6;
+  border-radius: 0.25rem;
+  font-style: italic;
+  color: #6b7280;
+}
+
+/* Loading animations for all cognitive tools */
+@keyframes thinking {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(0.98); }
+}
+
+@keyframes thinking-progress {
+  0% { width: 15%; transform: translateX(-100%); }
+  50% { width: 40%; }
+  100% { width: 15%; transform: translateX(1000%); }
+}
+
+.animate-thinking {
+  animation: thinking 2s ease-in-out infinite;
+}
+
+.animate-thinking-progress {
+  animation: thinking-progress 3s ease-in-out infinite;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .cognitive-tool-container {
+    border-color: #374151;
+    background-color: #1f2937;
+  }
+  
+  .cognitive-tool-header {
+    background-color: #111827;
+    border-color: #374151;
+  }
+  
+  .cognitive-tool-title {
+    color: #e5e7eb;
+  }
+  
+  .think-step-number {
+    color: #818cf8;
+  }
+  
+  .think-conclusion {
+    color: #34d399;
+  }
+  
+  .reflect-insight {
+    color: #c4b5fd;
+  }
+  
+  .reflect-observation {
+    color: #38bdf8;
+  }
+  
+  .critique-issue {
+    color: #f87171;
+  }
+  
+  .critique-suggestion {
+    color: #34d399;
+  }
+  
+  .critique-strength {
+    color: #38bdf8;
+  }
+  
+  .brainstorm-idea {
+    color: #fbbf24;
+  }
+  
+  .brainstorm-theme {
+    color: #c4b5fd;
+  }
+  
+  .brainstorm-application {
+    color: #34d399;
+  }
+  
+  .debate-position {
+    color: #f87171;
+  }
+  
+  .debate-counter {
+    color: #60a5fa;
+  }
+  
+  .debate-synthesis {
+    color: #c4b5fd;
+  }
+  
+  .confidence-indicator {
+    background-color: #111827;
+    color: #d1d5db;
+  }
+} 

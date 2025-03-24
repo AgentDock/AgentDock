@@ -20,12 +20,15 @@ AgentDock Core can be used:
 - **Type Safety**: Comprehensive TypeScript types for all components
 - **Error Handling**: Robust error handling and logging
 - **Secure Storage**: Utilities for securely storing sensitive information
+- **AI SDK Integration**: Direct integration with Vercel AI SDK for building AI-powered UIs
+- **React Hooks**: Built-in hooks for chat and completion interfaces in React applications
 
 ## Directory Structure
 
 ```
 agentdock-core/
 ├── src/
+│   ├── client/       # Client-side React components and hooks
 │   ├── config/       # Configuration management
 │   ├── errors/       # Error definitions and handling
 │   ├── llm/          # LLM provider integrations
@@ -41,7 +44,9 @@ agentdock-core/
 
 ## Usage
 
-AgentDock Core is designed to be used as a library in your applications. Here's a basic example:
+AgentDock Core is designed to be used as a library in your applications. Here are some examples:
+
+### Server-Side Usage
 
 ```typescript
 import { 
@@ -75,6 +80,59 @@ const stream = await agent.handleMessageStream({
 
 for await (const chunk of stream) {
   console.log(chunk.text);
+}
+```
+
+### Client-Side Usage with React Hooks
+
+AgentDock Core now includes direct integration with Vercel's AI SDK, providing React hooks for building chat interfaces:
+
+```tsx
+import { useChat } from 'agentdock-core/client';
+import { useState } from 'react';
+
+function ChatComponent() {
+  const { 
+    messages, 
+    input, 
+    handleInputChange, 
+    handleSubmit, 
+    isLoading 
+  } = useChat({
+    api: '/api/chat',
+    // Optional configuration for the chat interface
+    initialMessages: [],
+    // Works with server-side streaming
+    streamProtocol: 'data',
+    // Pass additional body data
+    body: {
+      system: "You are a helpful assistant."
+    }
+  });
+
+  return (
+    <div>
+      <div className="messages">
+        {messages.map(message => (
+          <div key={message.id} className={message.role}>
+            {message.content}
+          </div>
+        ))}
+        {isLoading && <div className="loading">AI is thinking...</div>}
+      </div>
+      
+      <form onSubmit={handleSubmit}>
+        <input
+          value={input}
+          onChange={e => handleInputChange(e.target.value)}
+          placeholder="Say something..."
+        />
+        <button type="submit" disabled={isLoading}>
+          Send
+        </button>
+      </form>
+    </div>
+  );
 }
 ```
 
@@ -170,6 +228,16 @@ The LLM system provides a consistent interface for different providers:
 - **Direct SDK Integration**: Direct integration with the Vercel AI SDK
 - **Tool LLM Integration**: Tools can access the agent's LLM instance for enhanced functionality
 - **Extensible Design**: Easy to add new providers (see docs/adding-new-provider.md)
+
+### AI SDK Integration
+
+AgentDock Core now integrates directly with Vercel's AI SDK, offering:
+
+- **Client-Side Hooks**: React hooks for chat and completion interfaces (`useChat`, `useCompletion`)
+- **Streaming Support**: First-class support for streaming responses with various protocols
+- **Type Safety**: Comprehensive TypeScript types for all components
+- **Provider Integration**: Seamless integration with all supported LLM providers
+- **Tool Calling**: Support for tool calling and function invocation
 
 ### Storage System
 

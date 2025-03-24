@@ -1,29 +1,15 @@
 /**
- * @fileoverview Centralized service for model management
- * Provides a single point of access for model operations
+ * @fileoverview Next.js implementation of the ModelService
+ * Extends the core ModelService with Next.js-specific features
  */
 
-import { LLMProvider, ModelMetadata, logger, LogCategory } from 'agentdock-core';
-import { ModelRegistry } from '@/lib/models/registry';
+import { LLMProvider, ModelMetadata, ModelService as CoreModelService, logger, LogCategory } from 'agentdock-core';
 
 /**
- * ModelService provides a centralized way to manage models
- * This reduces duplicate API calls and simplifies the UI components
+ * Next.js implementation of the ModelService
+ * Extends the core ModelService with web fetch capabilities
  */
-export class ModelService {
-  /**
-   * Get models for a provider from the registry
-   * This does NOT fetch models from the API
-   */
-  static getModels(provider: LLMProvider): ModelMetadata[] {
-    try {
-      return ModelRegistry.getModelsForProvider(provider);
-    } catch (error) {
-      logger.error(LogCategory.LLM, '[ModelService]', `Error getting models for ${provider}:`, { error });
-      return [];
-    }
-  }
-  
+export class ModelService extends CoreModelService {
   /**
    * Fetch models from the provider API and register them
    * This makes a single API call to the provider-specific endpoint
@@ -49,22 +35,10 @@ export class ModelService {
       }
       
       // Return the models from the registry after they've been registered
-      return ModelRegistry.getModelsForProvider(provider);
+      return CoreModelService.getModels(provider);
     } catch (error) {
       logger.error(LogCategory.LLM, '[ModelService]', `Error fetching models for ${provider}:`, { error });
       return [];
-    }
-  }
-  
-  /**
-   * Reset models for a provider
-   * This clears the models from the registry without fetching new ones
-   */
-  static resetModels(provider: LLMProvider | LLMProvider[]): void {
-    try {
-      ModelRegistry.resetModels(Array.isArray(provider) ? provider : [provider]);
-    } catch (error) {
-      logger.error(LogCategory.LLM, '[ModelService]', `Error resetting models for ${provider}:`, { error });
     }
   }
   

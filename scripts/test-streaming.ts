@@ -1,4 +1,4 @@
-import { Message } from 'ai';
+import { Message } from 'agentdock-core';
 import fetch, { Headers, Response } from 'node-fetch';
 
 const TEST_SIZES = {

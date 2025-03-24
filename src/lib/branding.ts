@@ -1,7 +1,5 @@
-import { Inter } from "next/font/google";
 import { Bot } from "lucide-react";
-
-const inter = Inter({ subsets: ["latin"] });
+import { inter } from "./fonts";
 
 export const branding = {
   colors: {

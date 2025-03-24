@@ -17,9 +17,11 @@
     "firecrawl_search",
     "firecrawl_scrape",
     "firecrawl_crawl",
-    "firecrawl_map",
     "firecrawl_extract",
-    "deep_research"
+    "deep_research",
+    "think",
+    "debate",
+    "reflect"
   ],
   "nodeConfigurations": {
     "llm.openai": {

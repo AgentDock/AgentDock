@@ -9,6 +9,21 @@
 import { z } from 'zod';
 
 /**
+ * LLM context for tool execution
+ * This provides tools with access to LLM capabilities
+ */
+export interface LLMContext {
+  /** API key for LLM access */
+  apiKey: string;
+  /** LLM provider (e.g., 'anthropic', 'openai') */
+  provider: string;
+  /** LLM model to use */
+  model: string;
+  /** LLM instance (if available) */
+  llm?: any;
+}
+
+/**
  * Tool execution options as required by Vercel AI SDK
  */
 export interface ToolExecutionOptions {
@@ -16,6 +31,8 @@ export interface ToolExecutionOptions {
   messages?: any[];
   /** API key for LLM access (optional, provided by agent) */
   apiKey?: string;
+  /** LLM context for tool execution (optional) */
+  llmContext?: LLMContext;
 }
 
 /**

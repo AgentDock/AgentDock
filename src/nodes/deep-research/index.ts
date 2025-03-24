@@ -6,13 +6,12 @@
 import { z } from 'zod';
 import { Tool } from '../types';
 import { DeepResearchReport, DeepResearchResult } from './components';
-import { logger, LogCategory } from 'agentdock-core';
+import { logger, LogCategory, CoreMessage } from 'agentdock-core';
 import { formatErrorMessage, createToolResult } from '@/lib/utils/markdown-utils';
 // Import Firecrawl tools
 import { firecrawlScrapeTool, firecrawlSearchTool } from '../firecrawl';
 // Import tool LLM utilities
 import { ToolExecutionOptions } from '../../../agentdock-core/src/types/tools';
-import { CoreMessage } from 'ai';
 
 /**
  * Schema for deep research tool parameters

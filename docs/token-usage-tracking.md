@@ -1,6 +1,6 @@
 # Token Usage Tracking in AgentDock
 
-This document explains how token usage tracking is implemented in AgentDock and how to implement it in a Hono-based API.
+This document explains how token usage tracking is implemented in AgentDock and how to implement it in your own server backend.
 
 ## Overview
 
@@ -10,7 +10,7 @@ Token usage tracking in AgentDock follows a three-layer architecture:
 2. **Logging Layer (AgentNode)**: Logs token usage for debugging and monitoring
 3. **API Response Layer (Route Handler)**: Adds token usage to response headers
 
-The first two layers are framework-agnostic and part of the `agentdock-core` package. Only the third layer is framework-specific (NextJS in the reference implementation).
+The first two layers are framework-agnostic and part of the `agentdock-core` package. Only the third layer is specific to your server implementation (NextJS in the reference implementation).
 
 ## Implementation Details
 
@@ -145,22 +145,19 @@ if (tokenUsage) {
 }
 ```
 
-## Implementing Token Usage Tracking in Hono
+## Implementing Token Usage Tracking in Your Backend
 
-To implement token usage tracking in a Hono-based API, you only need to implement the third layer (API Response Layer) in your Hono route handlers. The first two layers are already provided by `agentdock-core`.
+To implement token usage tracking in your own server backend, you only need to implement the third layer (API Response Layer) in your route handlers. The first two layers are already provided by `agentdock-core`.
 
-Here's an example of how to implement token usage tracking in a Hono route handler:
+Here's an example of how to implement token usage tracking in a generic API backend:
 
 ```typescript
-import { Hono } from 'hono';
+// Using a generic backend framework
 import { AgentNode } from 'agentdock-core';
 import { logger, LogCategory } from 'agentdock-core';
 
-const app = new Hono();
-
-app.post('/api/chat/:agentId', async (c) => {
-  const agentId = c.req.param('agentId');
-  
+// Define your route handler (framework-specific)
+async function handleChatRequest(request, agentId) {
   // Create agent and handle message (implementation details omitted)
   const agent = new AgentNode(/* ... */);
   const result = await agent.handleMessage(/* ... */);
@@ -168,8 +165,8 @@ app.post('/api/chat/:agentId', async (c) => {
   // Get token usage directly from the agent
   const tokenUsage = agent.getLastTokenUsage();
   
-  // Create the response
-  const response = result.toResponse(); // Convert your stream result to a Hono response
+  // Create the response (framework-specific)
+  const response = createResponse(result); // Convert your stream result to a response
   
   if (tokenUsage) {
     await logger.info(
@@ -182,20 +179,29 @@ app.post('/api/chat/:agentId', async (c) => {
       }
     );
     
-    // Add token usage to response headers
-    response.headers.set('x-token-usage', JSON.stringify(tokenUsage));
+    // Add token usage to response headers (framework-specific)
+    setResponseHeader(response, 'x-token-usage', JSON.stringify(tokenUsage));
   }
   
   return response;
-});
+}
 
-export default app;
+// Example helper functions (implement based on your framework)
+function createResponse(result) {
+  // Implementation depends on your backend framework
+  // This would convert your result to the appropriate response type
+}
+
+function setResponseHeader(response, name, value) {
+  // Implementation depends on your backend framework
+  // This would set a header on your response object
+}
 ```
 
 ## Benefits of This Architecture
 
 1. **Separation of Concerns**: Each layer has a clear responsibility
-2. **Framework Agnostic Core**: The core functionality is in `agentdock-core` and works with any framework
+2. **Framework Agnostic Core**: The core functionality is in `agentdock-core` and works with any backend
 3. **Consistent Logging**: Token usage is logged consistently at the AgentNode level
 4. **Client Access**: Client applications can access token usage via response headers
 5. **Extensibility**: Easy to add additional token usage tracking features

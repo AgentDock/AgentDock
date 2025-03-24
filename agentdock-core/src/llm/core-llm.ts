@@ -13,7 +13,8 @@ import {
   GenerateTextResult,
   GenerateObjectResult,
   StreamTextResult,
-  StreamObjectResult
+  StreamObjectResult,
+  smoothStream
 } from 'ai';
 import { z, ZodType, ZodTypeDef } from 'zod';
 import { logger, LogCategory } from '../logging';
@@ -141,7 +142,8 @@ export class CoreLLM {
           provider: this.getProvider(),
           modelId: this.getModelId(),
           messageCount: options.messages.length,
-          hasTools: !!options.tools && Object.keys(options.tools).length > 0
+          hasTools: !!options.tools && Object.keys(options.tools).length > 0,
+          enableToolCallStreaming: true
         }
       );
       
@@ -170,11 +172,13 @@ export class CoreLLM {
             }
           };
       
-      // Stream text using the model
+      // Stream text using the model with tool call streaming enabled
       return streamText({
         model: this.model,
         ...options,
-        onFinish: wrappedOnFinish
+        onFinish: wrappedOnFinish,
+        toolCallStreaming: true, // Enable tool call streaming
+        experimental_transform: smoothStream({ chunking: 'word' }) // Add word chunking for smoother streaming
       });
     } catch (error) {
       logger.error(

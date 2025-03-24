@@ -44,9 +44,11 @@ export function useChatSettings(agentId: string | null) {
         // Load global settings for API key
         const globalSettings = await storage.get<GlobalSettings>('global_settings');
         const apiKeys = globalSettings?.apiKeys || {};
-        if (!apiKeys[provider as keyof typeof apiKeys]) {
-          throw new Error(`Please add your ${providerMetadata.displayName} API key in settings to use the chat`);
-        }
+        
+        // Skip API key validation - server will handle env vars if needed
+        // if (!apiKeys[provider as keyof typeof apiKeys]) {
+        //   throw new Error(`Please add your ${providerMetadata.displayName} API key in settings to use the chat`);
+        // }
 
         // Get model configuration
         const nodeType = ProviderRegistry.getNodeTypeFromProvider(provider);
@@ -69,7 +71,7 @@ export function useChatSettings(agentId: string | null) {
           temperature: modelConfig.temperature || defaultTemperature,
           maxTokens: modelConfig.maxTokens || defaultMaxTokens,
           personality: PersonalitySchema.parse(template.personality),
-          apiKey: apiKeys[provider as keyof typeof apiKeys],
+          apiKey: apiKeys[provider as keyof typeof apiKeys] || '',
           initialMessages: template.chatSettings?.initialMessages,
           chatPrompts: template.chatSettings?.chatPrompts
         });

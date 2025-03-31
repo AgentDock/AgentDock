@@ -112,7 +112,7 @@
     "@types/react-dropzone": "^5.1.0",
     "@types/semver": "^7.5.8",
     "@types/uuid": "^10.0.0",
-    "@typescript-eslint/eslint-plugin": "^8.24.1",
+    "@typescript-eslint/eslint-plugin": "^8.28.0",
     "@typescript-eslint/parser": "^8.24.1",
     "depcheck": "^1.4.7",
     "dotenv": "^16.4.7",

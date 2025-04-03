@@ -161,7 +161,7 @@ export function MessageInput({
       onDrop={onDrop}
     >
       <textarea
-        aria-label="Write your prompt here"
+        aria-label="Write your message"
         placeholder={placeholder}
         ref={textAreaRef}
         onKeyDown={onKeyDown}
@@ -177,7 +177,7 @@ export function MessageInput({
       />
 
       {allowAttachments && (
-        <div className="absolute inset-x-3 bottom-0 z-20 overflow-x-scroll py-2">
+        <div className="absolute inset-x-3 bottom-0 z-20 overflow-x-auto py-2">
           <div className="flex space-x-3">
             <AnimatePresence mode="popLayout">
               {files?.map((file) => (

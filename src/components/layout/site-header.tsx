@@ -16,6 +16,18 @@ interface SiteHeaderProps {
 export function SiteHeader({ isCollapsed, onCollapse }: SiteHeaderProps) {
   const { setTheme, theme } = useTheme()
 
+  // Add debugging for theme changes
+  const safeSetTheme = (newTheme: string) => {
+    console.log(`Manual theme change to: ${newTheme}`, {
+      previousTheme: theme,
+      timestamp: new Date().toISOString(),
+      source: 'site-header'
+    });
+    
+    // Throttle changes to prevent rapid toggling
+    setTheme(newTheme);
+  }
+
   return (
     <header 
       className="sticky top-0 z-30 w-full bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60"
@@ -89,7 +101,10 @@ export function SiteHeader({ isCollapsed, onCollapse }: SiteHeaderProps) {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            onClick={() => {
+              const newTheme = theme === "dark" ? "light" : "dark";
+              safeSetTheme(newTheme);
+            }}
             className="relative h-9 w-9"
             aria-label="Toggle theme"
           >

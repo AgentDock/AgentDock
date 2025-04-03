@@ -67,6 +67,11 @@ export function Chat({
     return messages
   }, [messages])
 
+  // Memoize loading state to ensure it's consistently applied across components
+  const isLoading = React.useMemo(() => {
+    return isGenerating || isTyping;
+  }, [isGenerating, isTyping]);
+
   // Scroll handling functions
   const scrollToBottom = React.useCallback(() => {
     if (scrollContainerRef.current) {
@@ -126,28 +131,6 @@ export function Chat({
 
   return (
     <div className={cn("flex h-full flex-col", className)}>
-      <style jsx global>{`
-        .scrollbar-container::-webkit-scrollbar {
-          width: 8px;
-          height: 100%;
-        }
-        .scrollbar-container::-webkit-scrollbar-track {
-          background: transparent;
-          height: 100%;
-        }
-        .scrollbar-container::-webkit-scrollbar-thumb {
-          background-color: rgba(155, 155, 155, 0.9);
-          border-radius: 20px;
-          height: auto;
-        }
-        .scrollbar-container::-webkit-scrollbar-thumb:hover {
-          background-color: rgba(155, 155, 155, 0.9);
-        }
-        .scrollbar-container::-webkit-scrollbar-thumb:active {
-          background-color: rgba(155, 155, 155, 0.9);
-        }
-      `}</style>
-      
       <div className="flex-none bg-background">
         <div className="mx-auto w-full max-w-4xl px-4 py-3">
           {header}
@@ -157,14 +140,7 @@ export function Chat({
       <div 
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto scrollbar-container h-full min-h-0"
-        style={{
-          scrollbarWidth: 'thin',
-          scrollbarColor: 'rgba(155, 155, 155, 0.9) transparent',
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column'
-        }}
+        className="flex-1 overflow-y-auto flex flex-col bg-background"
         aria-label="Chat conversation"
       >
         <div className="mx-auto w-full max-w-4xl px-4 py-4">
@@ -177,7 +153,7 @@ export function Chat({
               />
             </div>
           ) : (
-            <MessageList messages={processedMessages} isTyping={isTyping} />
+            <MessageList messages={processedMessages} isLoading={isLoading} />
           )}
         </div>
       </div>
@@ -203,7 +179,7 @@ export function Chat({
               value={input}
               onChange={handleInputChange}
               placeholder="Ask Anything"
-              disabled={isGenerating}
+              disabled={isLoading}
               stop={stop}
               isGenerating={isGenerating}
               allowAttachments={true}

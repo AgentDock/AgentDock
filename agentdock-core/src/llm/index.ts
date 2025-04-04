@@ -3,66 +3,87 @@
  * Provides language model interfaces and implementations.
  */
 
+// Consolidated Imports from 'ai' 
 import { 
+  // Functions used internally or re-exported
+  smoothStream,
+  streamText,
+  streamObject,
+  generateText,
+  generateObject,
+  createDataStreamResponse,
+  embed, 
+  embedMany
+} from 'ai';
+
+import type { 
+  // Types used internally or re-exported
   CoreMessage, 
   CoreSystemMessage, 
   CoreUserMessage, 
   CoreAssistantMessage, 
   CoreToolMessage,
+  CoreTool,
   LanguageModel,
   GenerateTextResult,
   GenerateObjectResult,
-  StreamTextResult,
+  StreamTextResult as VercelStreamTextResult,
   StreamObjectResult,
-  smoothStream,
-  streamText,
-  streamObject,
-  generateText,
-  generateObject,
-  createDataStreamResponse
+  LanguageModelUsage, 
+  FinishReason,
+  ToolCallPart,
+  ToolResultPart,
+  TextPart
 } from 'ai';
 
+
+// Internal Module Exports
 // Export the unified LLM implementation
-export { CoreLLM } from './core-llm';
+export { CoreLLM } from './core-llm'; 
+// Export our extended result types with clear, distinct naming
+export type { 
+  AgentDockStreamResult,
+  StreamTextResult  // Backward compatibility type alias
+} from './core-llm';
 export { createLLM } from './create-llm';
 export { createAnthropicModel, createOpenAIModel, createGeminiModel, createDeepSeekModel, createGroqModel } from './model-utils';
-
-// Export model registry and service
 export { ModelRegistry } from './model-registry';
 export { ModelService } from './model-service';
-
-// Export provider adapters
-export * from './providers';
-
-// Export provider-agnostic functions
-export { validateProviderApiKey, fetchProviderModels } from './providers';
-
-// Export all types from types.ts
-export * from './types';
-
-// Export the Provider Registry
+export * from './providers'; // Includes adapters and validation functions
+export * from './types'; // Internal LLM types (LLMConfig, TokenUsage etc.)
 export * from './provider-registry';
+export { LLMOrchestrationService } from './llm-orchestration-service';
 
-// Re-export directly from Vercel AI SDK
-export {
+
+// Re-export AI SDK Functions 
+export { 
   smoothStream,
   streamText,
   streamObject,
   generateText,
   generateObject,
-  createDataStreamResponse
-}
+  createDataStreamResponse,
+  embed, 
+  embedMany
+}; 
 
-// Re-export types from Vercel AI SDK
+
+// Re-export AI SDK Types 
 export type {
   CoreMessage,
   CoreSystemMessage,
   CoreUserMessage,
   CoreAssistantMessage,
   CoreToolMessage,
+  CoreTool,
   LanguageModel,
   GenerateTextResult,
   GenerateObjectResult,
-  StreamTextResult,
-  StreamObjectResult
+  // StreamTextResult, // Removed to avoid conflict with CoreLLMStreamTextResult
+  StreamObjectResult,
+  LanguageModelUsage, 
+  FinishReason,
+  ToolCallPart,
+  ToolResultPart,
+  TextPart
 }; 

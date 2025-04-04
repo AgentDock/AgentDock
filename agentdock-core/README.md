@@ -1,296 +1,180 @@
-# AgentDock Core
+# AgentDock Core Framework
 
-AgentDock Core is the foundation library that powers the AgentDock platform, providing essential functionality for building AI agent applications.
+AgentDock Core is the foundational TypeScript **framework** that powers the AgentDock ecosystem. It provides the essential building blocks for creating sophisticated AI agents and integrating them into any application.
+
+*Note: AgentDock Core is currently under active development (pre-release) and will be published as a versioned NPM package upon reaching a stable release.*
 
 ## Overview
 
-This library provides a set of tools and abstractions for working with Large Language Models (LLMs), managing agent configurations, and building interactive AI experiences. It's designed to be flexible, extensible, and easy to use.
+This **framework** offers a modular, extensible, and type-safe foundation for:
 
-AgentDock Core can be used:
-- As a standalone library in your own projects
-- With any JavaScript framework or runtime environment
-- In both server and client environments (where supported)
+-   Interacting with various Large Language Models (LLMs) through a unified interface.
+-   Defining agent capabilities using a flexible node and tool system.
+-   Managing conversational state and context with robust session management.
+-   Orchestrating complex agent behaviors and tool usage.
+-   Integrating pluggable storage solutions for persistence.
 
-## Key Features
+AgentDock Core is designed to be framework-agnostic and can be used standalone in Node.js, browser, or edge environments.
 
-- **Unified LLM Integration**: Built-in support for multiple LLM providers (Anthropic, OpenAI, Gemini) with a single, consistent interface
-- **Agent Framework**: Tools for building conversational AI agents with memory and context
-- **Tool LLM Integration**: Tools can leverage the agent's LLM capabilities for enhanced functionality
-- **Streaming Support**: First-class support for streaming responses
-- **Type Safety**: Comprehensive TypeScript types for all components
-- **Error Handling**: Robust error handling and logging
-- **Secure Storage**: Utilities for securely storing sensitive information
-- **AI SDK Integration**: Direct integration with Vercel AI SDK for building AI-powered UIs
-- **React Hooks**: Built-in hooks for chat and completion interfaces in React applications
+## Key Features (Core Framework)
 
-## Directory Structure
+-   **Unified LLM Interface (`CoreLLM`)**: Consistent interaction with providers like Anthropic, OpenAI, Gemini, Groq.
+-   **Node System (`BaseNode`, `AgentNode`)**: Modular architecture for defining agent logic and capabilities.
+-   **Tool Integration**: Define and register tools callable by agents.
+-   **Session Management**: Isolated, stateful conversation handling with TTL support.
+-   **Orchestration Framework**: Context-aware control over agent steps and tool availability.
+-   **Storage Abstraction**: Pluggable Key-Value storage (Memory, Redis, Vercel KV) with plans for Vector/Relational.
+-   **Secure Storage**: Client-side encrypted storage utility.
+-   **Structured Logging**: Configurable logging for monitoring and debugging.
+-   **Robust Error Handling**: Standardized error system.
+-   **Type Safety**: Fully written in TypeScript.
 
-```
-agentdock-core/
-├── src/
-│   ├── client/       # Client-side React components and hooks
-│   ├── config/       # Configuration management
-│   ├── errors/       # Error definitions and handling
-│   ├── llm/          # LLM provider integrations
-│   ├── logging/      # Logging utilities
-│   ├── messaging/    # Message handling
-│   ├── nodes/        # Agent node system
-│   ├── storage/      # Storage utilities
-│   ├── types/        # TypeScript type definitions
-│   └── utils/        # Utility functions
-├── index.d.ts        # Type definitions
-└── package.json      # Package configuration
+### Basic Interaction Flow
+
+```mermaid
+graph LR
+    Input[User Input] --> A(AgentNode);
+    A -->|Reasoning| B{Tool Required?};
+    B -- Yes --> C[Tool Execution];
+    C --> A;
+    B -- No --> D[LLM Response Generation];
+    D --> Output[Final Output];
 ```
 
-## Usage
+## Core Architecture & Design
 
-AgentDock Core is designed to be used as a library in your applications. Here are some examples:
+AgentDock Core emphasizes modularity and extensibility:
 
-### Server-Side Usage
+-   **Subsystems:** Key functionalities (LLM, Storage, Sessions, Orchestration, Nodes) are designed as distinct subsystems.
+-   **Adapter Patterns:** Interfaces allow for easy extension and replacement of components (e.g., storage providers).
+-   **Registries:** Centralized registries manage LLM providers and tools.
+
+### Simplified Core Data Relationships
+
+```mermaid
+graph TD
+    subgraph SessionData[Session Scope]
+        S(Session)
+        M(Messages)
+        OS(Orchestration State)
+    end
+    AgentConfig --> AgentNode;
+    AgentNode --> S;
+    S --> M;
+    S --> OS;
+
+    style SessionData fill:#f0f8ff,stroke:#99ccff
+```
+
+For a deeper dive into the architectural concepts, see the [Main Architecture Documentation](../docs/architecture/README.md).
+
+## Directory Structure (`agentdock-core/src`)
+
+```
+/src
+├── config/         # Configuration loading and validation (e.g., agent templates)
+├── errors/         # Custom error types and factory
+├── llm/            # CoreLLM abstraction, provider specifics, model utilities
+├── logging/        # Logging utilities and configuration
+├── messaging/      # Core message types and handling (if applicable standalone)
+├── nodes/          # BaseNode, AgentNode, tool execution logic, registries
+├── orchestration/  # State management, step sequencing, conditions
+├── session/        # SessionManager implementation
+├── storage/        # Storage abstraction, KV providers, SecureStorage
+├── tools/          # (Currently integrated within nodes/llm) Base tool definitions 
+├── types/          # Core TypeScript type definitions shared across the framework
+└── utils/          # General utility functions
+```
+
+## Usage (as a Framework/Library)
+
+Install AgentDock Core (once published) or use it locally:
+
+```bash
+# Using pnpm with local path (as in the main repo)
+pnpm add file:./agentdock-core 
+
+# Or install from NPM (when published)
+# pnpm add agentdock-core 
+```
+
+Example server-side usage:
 
 ```typescript
-import { 
-  AgentNode, 
-  loadAgentConfig, 
-  SecureStorage 
+import {
+  AgentNode,
+  loadAgentConfig, // Assuming you load template JSON
+  getToolRegistry, // For managing tools
+  // ... other necessary imports
 } from 'agentdock-core';
 
-// Load agent configuration
-const config = await loadAgentConfig(templateConfig, apiKey);
+// Example: Registering a simple tool (if not pre-registered)
+// const registry = getToolRegistry();
+// registry.registerTool('my-tool', { /* tool definition */ });
 
-// Create an agent
-const agent = new AgentNode('my-agent', {
-  agentConfig: config,
-  apiKey,
-  provider: 'anthropic'
-});
+async function runAgent() {
+  // 1. Load agent template configuration (replace with your loading logic)
+  const agentTemplate = { 
+      /* ... your template.json content ... */
+      nodes: ["llm.anthropic", "search"], // Ensure nodes are listed
+      nodeConfigurations: { 
+          "llm.anthropic": { model: "claude-3-sonnet-20240229" }
+      }
+  };
+  const apiKey = process.env.ANTHROPIC_API_KEY || '';
 
-// Handle a message
-const result = await agent.handleMessage({
-  messages: [{ role: 'user', content: 'Hello, how can you help me?' }]
-});
+  // 2. Validate and prepare config (includes adding API key)
+  const agentConfig = await loadAgentConfig(agentTemplate, apiKey);
 
-// Process the response
-console.log(result.text);
-
-// Or work with the stream
-const stream = await agent.handleMessageStream({
-  messages: [{ role: 'user', content: 'Tell me a story' }]
-});
-
-for await (const chunk of stream) {
-  console.log(chunk.text);
-}
-```
-
-### Client-Side Usage with React Hooks
-
-AgentDock Core now includes direct integration with Vercel's AI SDK, providing React hooks for building chat interfaces:
-
-```tsx
-import { useChat } from 'agentdock-core/client';
-import { useState } from 'react';
-
-function ChatComponent() {
-  const { 
-    messages, 
-    input, 
-    handleInputChange, 
-    handleSubmit, 
-    isLoading 
-  } = useChat({
-    api: '/api/chat',
-    // Optional configuration for the chat interface
-    initialMessages: [],
-    // Works with server-side streaming
-    streamProtocol: 'data',
-    // Pass additional body data
-    body: {
-      system: "You are a helpful assistant."
-    }
+  // 3. Create an AgentNode instance
+  const agent = new AgentNode('my-agent-instance', {
+    agentConfig: agentConfig,
+    apiKey: apiKey, // Pass API key again (may be refined later)
+    provider: 'anthropic' // Specify the provider
   });
 
-  return (
-    <div>
-      <div className="messages">
-        {messages.map(message => (
-          <div key={message.id} className={message.role}>
-            {message.content}
-          </div>
-        ))}
-        {isLoading && <div className="loading">AI is thinking...</div>}
-      </div>
-      
-      <form onSubmit={handleSubmit}>
-        <input
-          value={input}
-          onChange={e => handleInputChange(e.target.value)}
-          placeholder="Say something..."
-        />
-        <button type="submit" disabled={isLoading}>
-          Send
-        </button>
-      </form>
-    </div>
-  );
-}
-```
+  // 4. Handle a message (requires session management setup externally or basic usage)
+  // Note: Full session/orchestration requires setting up SessionManager/OrchestrationManager
+  const sessionId = `session-${Date.now()}`;
+  const result = await agent.handleMessage({
+    messages: [{ role: 'user', content: 'Hello, how can I help me?' }],
+    sessionId: sessionId
+    // api: '...' // This might be needed depending on external setup
+  });
 
-## Architecture & Design Philosophy
-
-AgentDock Core follows these key architectural principles:
-
-### 1. Environment-Agnostic Design
-
-The core library is designed to work seamlessly in different environments:
-
-- **Framework Independence**: Works with any JavaScript framework
-- **Runtime Flexibility**: Compatible with Node.js, Edge, and browser environments
-- **Deployment Versatility**: Supports various deployment models (serverless, containers, etc.)
-- **Environment Compatibility**: Node metadata tracks compatibility across different environments
-
-### 2. Adapter Pattern for Extensibility
-
-Core functionality is exposed through adapter interfaces that can be extended:
-
-```typescript
-// Example of the adapter pattern in AgentDock Core
-export interface StorageAdapter {
-  get<T>(key: string): Promise<T | null>;
-  set<T>(key: string, value: T, options?: StorageOptions): Promise<void>;
-  delete(key: string): Promise<void>;
-  exists(key: string): Promise<boolean>;
-}
-
-// Implementations can vary while maintaining the same interface
-export class FileStorageAdapter implements StorageAdapter {
-  // File-based implementation
-}
-```
-
-### 3. Provider Registry System
-
-The core includes a provider registry system for managing LLM providers:
-
-```typescript
-// Provider registry manages metadata for different LLM providers
-const DEFAULT_PROVIDERS: Record<LLMProvider, ProviderMetadata> = {
-  'anthropic': {
-    id: 'anthropic',
-    displayName: 'Anthropic',
-    description: 'Claude models by Anthropic',
-    defaultModel: 'claude-3-7-sonnet-20250219',
-    validateApiKey: (key: string) => key.startsWith('sk-ant-')
-  },
-  'openai': {
-    id: 'openai',
-    displayName: 'OpenAI',
-    description: 'GPT models by OpenAI',
-    defaultModel: 'gpt-4',
-    validateApiKey: (key: string) => key.startsWith('sk-') && !key.startsWith('sk-ant-')
+  // 5. Process the response stream or final text
+  // Example: Reading the stream (if result is a stream object)
+  if (result && typeof result.pipe === 'function') { // Basic check for stream
+      // Process stream... 
+  } else if (result && result.text) {
+      console.log("Final Text:", result.text);
+  } else {
+      // Handle potential streaming or other result types
+      console.log("Result:", result);
   }
-};
+}
+
+runAgent().catch(console.error);
 ```
 
-### 4. Progressive Enhancement
-
-Core features are designed with a "progressive enhancement" approach:
-
-- **Basic Functionality**: Always available in the core
-- **Advanced Capabilities**: Available through optional extensions
-- **Graceful Degradation**: Falls back to simpler implementations when needed
-- **Compatibility Tracking**: Node metadata includes environment compatibility information:
-  ```typescript
-  compatibility: {
-    environments: string[];  // List of compatible environments
-    custom: boolean;         // Available for custom implementations
-  }
-  ```
-
-## Current Capabilities
-
-### Node System
-
-The node system is the foundation of AgentDock Core:
-
-- **BaseNode**: Abstract base class for all nodes
-- **AgentNode**: Specialized node for LLM-powered agents
-- **NodeRegistry**: Central registry for node types and metadata
-- **ToolRegistry**: Registry for tools that can be used by agents
-
-### LLM Integration
-
-The LLM system provides a consistent interface for different providers:
-
-- **CoreLLM**: Unified implementation for all LLM providers (Anthropic, OpenAI, Gemini)
-- **Provider-Specific Model Creation**: Functions for creating models from different providers
-- **ProviderRegistry**: Central registry for provider metadata and configuration
-- **Direct SDK Integration**: Direct integration with the Vercel AI SDK
-- **Tool LLM Integration**: Tools can access the agent's LLM instance for enhanced functionality
-- **Extensible Design**: Easy to add new providers (see docs/adding-new-provider.md)
-
-### AI SDK Integration
-
-AgentDock Core now integrates directly with Vercel's AI SDK, offering:
-
-- **Client-Side Hooks**: React hooks for chat and completion interfaces (`useChat`, `useCompletion`)
-- **Streaming Support**: First-class support for streaming responses with various protocols
-- **Type Safety**: Comprehensive TypeScript types for all components
-- **Provider Integration**: Seamless integration with all supported LLM providers
-- **Tool Calling**: Support for tool calling and function invocation
-
-### Storage System
-
-The current storage system focuses on secure data storage:
-
-- **SecureStorage**: Encrypted key-value storage for sensitive data
-- **Web Crypto API**: Uses modern browser crypto for encryption
-- **Namespacing**: Logical separation of stored data
-
-## Storage System Development
-
-We're actively developing enhancements to the storage system, including:
-
-- **Storage Adapter Interface**: A consistent interface for different storage backends
-- **Vector Storage**: Support for embedding-based similarity search
-- **Pluggable Backends**: Easily swap storage implementations
-- **Composable Adapters**: Layer storage capabilities (encryption, compression, etc.)
-- **Working Memory**: Maintain and update contextual information for agents
-
-These enhancements aim to make it easier to build memory-enabled agents while maintaining our pluggable architecture.
+*Note: The example above is simplified. Full usage, especially with sessions and orchestration, requires integrating `SessionManager` and `OrchestrationManager` which depend on the chosen storage provider.*
 
 ## Contributing to AgentDock Core
 
-When contributing to AgentDock Core, please keep these guidelines in mind:
+We welcome contributions specifically to the core **framework**!
 
-### Design Considerations
+-   **Discuss First**: Open an issue in the main repository to discuss significant changes before implementing.
+-   **Follow Standards**: Adhere to the project's coding standards and patterns found within this directory.
+-   **Document Changes**: Update relevant JSDoc comments or documentation.
+-   **Include Tests**: Add unit/integration tests for new functionality within the `agentdock-core` scope.
+-   **Submit PR**: Create a pull request targeting the main repository with changes isolated to `agentdock-core`.
 
-- **Maintain Compatibility**: Ensure changes work in all supported environments
-- **Respect Interfaces**: Extend existing interfaces rather than breaking them
-- **Consider Performance**: Optimize for both speed and resource usage
-- **Test Thoroughly**: Include tests for all new functionality
+See the main [CONTRIBUTING.md](../CONTRIBUTING.md) for general guidelines.
 
-### Contribution Process
+## Status and Development
 
-1. **Discuss First**: Open an issue to discuss significant changes before implementing
-2. **Follow Standards**: Adhere to the project's coding standards and patterns
-3. **Document Changes**: Update documentation to reflect your changes
-4. **Include Tests**: Add tests for new functionality
-5. **Submit PR**: Create a pull request with a clear description of changes
-
-## Versioning and Stability
-
-AgentDock Core follows semantic versioning:
-
-- **Major Versions (x.0.0)**: May include breaking changes
-- **Minor Versions (0.x.0)**: Add new features in a backward-compatible manner
-- **Patch Versions (0.0.x)**: Bug fixes and minor improvements
-
-We maintain stability by:
-- Clearly documenting breaking changes
-- Providing migration guides between major versions
-- Maintaining LTS (Long Term Support) for specific versions
+AgentDock Core is currently under active development (pre-release). APIs may change before the first official stable release (v1.0.0). We follow semantic versioning principles.
 
 ## License
 
-AgentDock Core is licensed under the MIT License. See the LICENSE file in the root directory for details. 
+AgentDock Core is released under the [MIT License](../LICENSE). 

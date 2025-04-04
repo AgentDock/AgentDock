@@ -419,6 +419,13 @@ const ChatContainer = React.forwardRef<
     }
   }, [initialMessages, trimmedInitialMessages, messages.length, setMessages]);
   
+  // Initialize messages count when page loads or refreshes
+  React.useEffect(() => {
+    if (initialMessages.length > 0 && messagesCount === 0) {
+      setMessagesCount(initialMessages.length);
+    }
+  }, [initialMessages.length, messagesCount]);
+  
   // Effect to update orchestration state from streaming data
   React.useEffect(() => {
     if (!data) return;
@@ -559,6 +566,10 @@ const ChatContainer = React.forwardRef<
               temperature={chatSettings?.temperature}
               maxTokens={chatSettings?.maxTokens}
               agentId={agentId}
+              provider={provider}
+              activeStep={orchestrationState.activeStep}
+              currentStepIndex={orchestrationState.currentStepIndex}
+              totalSteps={orchestrationState.totalSteps}
             />
           </div>
         )}

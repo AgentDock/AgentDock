@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { SecureStorage, logger, LogCategory, ProviderRegistry } from 'agentdock-core';
+import { logger, LogCategory, ProviderRegistry } from 'agentdock-core';
+import { SecureStorage } from 'agentdock-core/storage/secure-storage';
 import { templates, TemplateId } from '@/generated/templates';
 import type { GlobalSettings } from '@/lib/types/settings';
 import type { ValidatedPersonality } from 'agentdock-core/types/agent-config';

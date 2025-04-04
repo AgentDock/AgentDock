@@ -3,7 +3,7 @@
 import React, { Suspense, useEffect, useState } from "react"
 import Markdown from "react-markdown"
 import remarkGfm from "remark-gfm"
-import rehypeRaw from "rehype-raw"
+import rehypeSanitize from "rehype-sanitize"
 import type { Components } from "react-markdown"
 import Link from "next/link"
 
@@ -25,7 +25,7 @@ export function MarkdownRenderer({ children }: MarkdownRendererProps) {
   return (
     <Markdown
       remarkPlugins={[remarkGfm]}
-      rehypePlugins={[rehypeRaw]}
+      rehypePlugins={[rehypeSanitize]}
       components={COMPONENTS as Components}
       className="space-y-3"
     >

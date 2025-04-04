@@ -50,6 +50,9 @@ interface ChatDebugProps {
   completionTokens?: number;
   totalTokens?: number;
   provider?: string;
+  activeStep?: string;
+  currentStepIndex?: number;
+  totalSteps?: number;
 }
 
 export function ChatDebug({ 
@@ -64,6 +67,9 @@ export function ChatDebug({
   completionTokens,
   totalTokens,
   provider,
+  activeStep,
+  currentStepIndex,
+  totalSteps,
 }: ChatDebugProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [debugButtonContainer, setDebugButtonContainer] = useState<HTMLElement | null>(null);
@@ -268,11 +274,6 @@ export function ChatDebug({
                         <td className="text-muted-foreground">Total:</td>
                         <td className="text-right font-medium">{fetchedState.cumulativeTokenUsage.totalTokens}</td>
                       </tr>
-                      {/* Add last update time if needed, maybe store fetch time in state? */}
-                      {/* <tr>
-                        <td className="text-muted-foreground text-[10px]">Fetched:</td>
-                        <td className="text-right font-medium text-[10px]">{new Date().toLocaleTimeString()}</td>
-                      </tr> */}
                     </tbody>
                   </table>
                 ) : (
@@ -288,15 +289,25 @@ export function ChatDebug({
               <DebugItem label="Source" value={historySettings.source || 'default'} />
             </DebugSection>
             
-            {/* Orchestration Info */}
+            {/* Orchestration Info - Enhanced to show more details */}
             {orchestrationInfo && (
               <DebugSection title="Agent Orchestration">
-                <p className="text-muted-foreground mb-1">{orchestrationInfo.description}</p>
-                <h4 className="text-[10px] font-medium mt-1 mb-0.5">Steps:</h4>
-                <ul className="list-disc pl-4 space-y-0.5 text-[10px]">
+                <div className="text-[10px] text-muted-foreground mb-1">{orchestrationInfo.description}</div>
+                <h4 className="text-[10px] font-medium mt-1 mb-0.5">Available Steps:</h4>
+                <ul className="list-disc pl-4 space-y-2 text-[10px]">
                   {orchestrationInfo.steps.map((step, index) => (
-                    <li key={index} className={cn(step.isDefault && "font-medium")}>
-                      {step.name} - {step.description}
+                    <li key={index} className={cn("pb-1", step.isDefault && "font-medium")}>
+                      <div className="text-[10px]">{step.name}</div>
+                      <div className="text-[10px] text-muted-foreground ml-2">{step.description}</div>
+                      {step.sequence && step.sequence.length > 0 && (
+                        <div className="ml-2 mt-0.5">
+                          <span className="text-[9px] text-muted-foreground">Sequence: </span>
+                          <span className="text-[9px] font-mono">{step.sequence.join(' → ')}</span>
+                        </div>
+                      )}
+                      {step.isDefault && (
+                        <div className="text-[9px] text-green-600 mt-0.5 ml-2">Default Step</div>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -311,6 +322,26 @@ export function ChatDebug({
                     <li key={index}>{tool}</li>
                   ))}
                 </ul>
+              </DebugSection>
+            )}
+            
+            {/* Active Step - Moved to end of the panel */}
+            {(activeStep || fetchedState?.activeStep) && (
+              <DebugSection title="Current Orchestration Step">
+                <DebugItem label="Active Step" value={activeStep || fetchedState?.activeStep || "N/A"} />
+                {(currentStepIndex !== undefined && totalSteps !== undefined) && (
+                  <DebugItem label="Progress" value={`${currentStepIndex}/${totalSteps}`} />
+                )}
+                {fetchedState?.recentlyUsedTools && fetchedState.recentlyUsedTools.length > 0 && (
+                  <>
+                    <h4 className="text-[10px] font-medium mt-2 mb-0.5">Recent Tools:</h4>
+                    <ul className="list-disc pl-4 space-y-0.5 text-[10px]">
+                      {fetchedState.recentlyUsedTools.map((tool, index) => (
+                        <li key={index}>{tool}</li>
+                      ))}
+                    </ul>
+                  </>
+                )}
               </DebugSection>
             )}
           </div>

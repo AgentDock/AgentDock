@@ -3,7 +3,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import rehypeRaw from "rehype-raw";
+import rehypeSanitize from "rehype-sanitize";
 import type { Components } from "react-markdown";
 import { cn } from "@/lib/utils";
 import { CopyButton } from "@/components/ui/copy-button";
@@ -164,7 +164,7 @@ export function ChatMarkdown({ children, isStreaming = false, messageId }: ChatM
     <div className="leading-normal">
       <Markdown
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeRaw]}
+        rehypePlugins={[rehypeSanitize]}
         components={chatComponents}
       >
         {contentToRender}

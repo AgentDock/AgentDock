@@ -82,7 +82,8 @@ The following components related primarily to Key-Value storage are available:
 - **Memory KV Provider**: In-memory KV store.
 - **Redis KV Provider**: Redis/Upstash KV store.
 - **Vercel KV Provider**: Vercel KV store.
-- **Secure Storage**: Client-side encrypted storage using Web Crypto API, primarily for securing sensitive data like API keys in the browser's `localStorage`. See `agentdock-core/src/storage/secure-storage.ts`.
+- **Secure Storage**: Client-side encrypted storage using Web Crypto API. See `agentdock-core/src/storage/secure-storage.ts`. 
+  - See [Open Source Client Implementation Notes](../oss-client/nextjs-implementation.md#client-side-storage--api-keys-byok) for security considerations regarding its use for API keys.
 - **Storage Factory**: Handles instantiation of configured KV providers.
 - **Namespace & TTL Support**: For KV stores.
 

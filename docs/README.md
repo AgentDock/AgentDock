@@ -4,7 +4,7 @@ AgentDock is a framework for building sophisticated AI agents that deliver compl
 
 1. **AgentDock Core**: An open-source, backend-first framework for building and deploying AI agents. It's designed to be *framework-agnostic* and *provider-independent*, giving you complete control over your agent's implementation.
 
-2. **Open Source Client**: A complete Next.js application that serves as a reference implementation and consumer of the AgentDock Core framework. You can see it in action at [https://hub.agentdock.ai](https://hub.agentdock.ai).
+2. **Open Source Client**: A complete Next.js application that serves as a reference implementation and consumer of the AgentDock Core framework. You can see it in action at [https://hub.agentdock.ai](https://hub.agentdock.ai)
 
 Built with TypeScript, AgentDock emphasizes *simplicity*, *extensibility*, and ***configurable determinism*** - making it ideal for building reliable and predictable AI systems that can operate with minimal supervision.
 
@@ -34,16 +34,16 @@ AgentDock allows you to create fully deterministic processing flows where the ex
 
 ```mermaid
 flowchart LR
-  Input[Data Input] --> Parse[Parse Data Node]
-  Parse --> Process[Process Node]
+  Input[Data Input] --> Prepare[Prepare Data] 
+  Prepare --> Process[Process Node]
   Process --> Database[(Database)]
-  Process --> Format[Format Result Node]
+  Process --> Format[Format Output]
   Format --> Output[Data Output]
   
   style Input fill:#f9f9f9,stroke:#333,stroke-width:1px
   style Output fill:#f9f9f9,stroke:#333,stroke-width:1px
   style Process fill:#d4f1f9,stroke:#333,stroke-width:1px
-  style Parse fill:#d4f1f9,stroke:#333,stroke-width:1px
+  style Prepare fill:#d4f1f9,stroke:#333,stroke-width:1px 
   style Format fill:#d4f1f9,stroke:#333,stroke-width:1px
   style Database fill:#e8e8e8,stroke:#333,stroke-width:1px
 ```
@@ -56,8 +56,8 @@ When using AgentNodes with LLMs, the specific outputs may vary, but the overall 
 flowchart TD
   Input[User Query] --> Agent[AgentNode]
   Agent -->|"LLM Reasoning (Non-Deterministic)"| ToolChoice{Tool Selection}
-  ToolChoice -->|"Option A"| ToolA[Search Tool]
-  ToolChoice -->|"Option B"| ToolB[Calculate Tool]
+  ToolChoice -->|"Option A"| ToolA[Deep Research Tool]
+  ToolChoice -->|"Option B"| ToolB[Data Analysis Tool]
   ToolChoice -->|"Option C"| ToolC[Direct Response]
   ToolA --> Response[Final Response]
   ToolB --> Response
@@ -104,7 +104,11 @@ flowchart TD
 
 This approach enables complex multi-step workflows (with hundreds of deterministic steps) to be invoked by intelligent agent decisions. Each workflow executes predictably despite being triggered by non-deterministic agent reasoning.
 
-For more advanced AI agent workflows and multi-stage processing pipelines, we're building [AgentDock Pro](/docs/agentdock-pro) - a powerful platform for creating, visualizing, and running complex agent systems.
+For more advanced AI agent workflows and multi-stage processing pipelines, we're building [AgentDock Pro](agentdock-pro.md) - a powerful platform for creating, visualizing, and running complex agent systems.
+
+#### TL;DR on Configurable Determinism 
+
+Think of it like driving. Sometimes you need the AI's creativity (like navigating city streets - non-deterministic), and sometimes you need reliable, step-by-step processes (like following highway signs - deterministic). AgentDock lets you build systems that use *both*, choosing the right approach for each part of a task. You get the AI's smarts *and* predictable results where needed.
 
 
 ## Core Architecture
@@ -171,3 +175,9 @@ To start building with AgentDock, check out the [Getting Started](getting-starte
 - Deploying your agents
 
 For detailed documentation on specific aspects of AgentDock, explore the sections available in the documentation.
+
+---
+
+## 🔒 Security
+
+An initial security audit has been performed. See the [Initial Security Audit](./initial-security-audit.md) document for findings and recommendations.

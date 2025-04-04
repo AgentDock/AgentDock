@@ -2,6 +2,13 @@
 
 This reference implementation, built with Next.js and the App Router, serves as a practical example of how to consume and interact with the AgentDock Core framework to build a full-featured web application for conversational AI agents.
 
+**Important Note:**
+*   AgentDock Core is currently in a pre-release stage. We are treating it as a local package (`file:./agentdock-core`) within this repository for now. It will be published as a versioned NPM package once it reaches a stable release.
+*   As Core evolves, the separation of concerns between the framework and this Next.js Client implementation is actively being improved.
+*   If you notice areas where the integration could be cleaner or have suggestions, please don't hesitate to reach out or open an issue on GitHub!
+
+See the main [AgentDock Roadmap](./../roadmap.md) for planned features across both Core and the Client.
+
 ## Core Purpose
 
 -   **Demonstrate Core Integration:** Showcases how to connect a frontend application to AgentDock Core's capabilities (agents, tools, session management, orchestration).
@@ -34,9 +41,12 @@ This reference implementation, built with Next.js and the App Router, serves as 
 -   **State Management (UI):**
     -   Uses standard React state and context management.
     -   May use libraries like Zustand for more complex global UI state if necessary.
--   **Client-Side Storage:**
-    -   Uses `localStorage` or `sessionStorage` to store user preferences, potentially the current `sessionId`, and user-provided API keys (ideally secured using `SecureStorage` from Core).
--   **BYOK (Bring Your Own Key) Mode:** Includes functionality to allow users to input their own LLM API keys, which are then securely stored (using `SecureStorage`) and passed to the backend API routes/AgentDock Core during requests.
+-   **Client-Side Storage & API Keys (BYOK):**
+    -   This open source client uses `localStorage` or `sessionStorage` for user preferences and potentially the session ID.
+    -   For Bring Your Own Key (BYOK) mode, user-provided API keys are stored client-side using the `SecureStorage` utility from `agentdock-core`.
+    -   **Security Considerations (`SecureStorage`):** `SecureStorage` enhances security by encrypting API keys using AES-GCM and adding an HMAC signature to detect tampering before use. However, to decrypt the data, the necessary encryption keys are also stored within the browser's `localStorage`. This is a standard technique for client-side encryption but carries an inherent risk: if a Cross-Site Scripting (XSS) vulnerability exists in *any* part of the application (or potentially a browser extension), malicious JavaScript could gain access to `localStorage`, read the encryption keys, and potentially decrypt the stored API keys.
+    -   **Risk Context:** The practical risk depends on the overall security of the user's browser environment and the application itself against XSS attacks. If the browser and application environment are secure (e.g., up-to-date browser, no malicious extensions, robust application XSS defenses), the likelihood of exploitation is lower. However, the vulnerability exists if an XSS attack *can* be successfully executed.
+    -   **Recommendation:** Users employing BYOK mode should be aware of this XSS risk associated with storing sensitive data like API keys in `localStorage`, even when encrypted. Evaluate this risk based on your specific security requirements and environment. For maximum security, configuring API keys server-side via environment variables is the preferred approach. If using client-side storage, ensuring the application is well-protected against XSS vulnerabilities is crucial.
 -   **Image Generation:** Includes a dedicated page for image generation and editing using Gemini, demonstrating advanced feature integration. Image persistence uses Vercel Blob when deployed and `localStorage` locally. See the [Image Generation docs](./image-generation.md) for details.
 
 ## File Structure (`/src`)

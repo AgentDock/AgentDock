@@ -18,7 +18,7 @@ graph LR
 
 ## Browse RFAs
 
-- [RFA-001: Code Reviewer Agent](/docs/rfa/agents/001-code-reviewer)
+- [RFA-001: Code Reviewer Agent](/docs/rfa/agents/2025/April/001-code-reviewer)
 
 ## Why Build These Agents?
 

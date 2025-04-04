@@ -1,6 +1,6 @@
 # Roadmap
 
-This document outlines the planned features and future direction for AgentDock.
+This document outlines the planned features and future direction for AgentDock. Most improvements target the core AgentDock framework (`agentdock-core`), which is under active development and will be published as a versioned NPM package upon reaching a stable release. Some items may also involve the open-source client.
 
 ## In Progress
 
@@ -32,7 +32,7 @@ This document outlines the planned features and future direction for AgentDock.
 
 | Feature | Description |
 |---------|-------------|
-| [**AgentDock Pro**](/docs/agentdock-pro) | Comprehensive enterprise-grade cloud platform with workflows and autoscaling |
+| [**AgentDock Pro**](/docs/agentdock-pro) | Comprehensive enterprise cloud platform for scaling AI agents & workflows, with visual tools and autoscaling |
 | [**Natural Language AI Agent Builder**](./roadmap/nl-agent-builder.md) | Visual builder + natural language agent and workflow construction |
 | [**Agent Marketplace**](./roadmap/agent-marketplace.md) | Monetizable agent templates |
 ## Open Source Client Enhancements
@@ -49,6 +49,10 @@ This document outlines the planned features and future direction for AgentDock.
 -   Grow the library of community-contributed agents.
 -   Develop more example projects and tutorials.
 -   Establish clearer contribution guidelines.
+
+## AgentDock Repository Improvements
+
+-   Complete test suite (Unit, Integration, E2E).
 
 *This roadmap is indicative and subject to change.*
 

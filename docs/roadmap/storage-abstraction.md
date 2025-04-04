@@ -37,7 +37,7 @@ graph TD
     C --> H[... Future Providers]
 
     subgraph ClientSide [Client-Side]
-        I[SecureStorage]
+        I[Secure Storage]
     end
 
     style B fill:#0066cc,color:#ffffff,stroke:#0033cc
@@ -54,10 +54,10 @@ graph TD
     A --> REL(Relational Data)
 
     KV --> KVSess[(Sessions)]
-    KV --> KVConf[(Config)]
+    KV --> KVConf[(Configuration)]
     
-    VEC -- Planned --> VECEmb[(Embeddings)]
-    REL -- Planned --> RELStruct[(Structured Data)]
+    VEC -- Planned --> VECEmb[(Embeddings / Knowledge)]
+    REL -- Planned --> RELStruct[(Structured Records)]
 
     style A fill:#0066cc,color:#ffffff,stroke:#0033cc
     style VEC fill:#f0f8ff,stroke:#99ccff

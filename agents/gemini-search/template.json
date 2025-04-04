@@ -3,6 +3,7 @@
   "agentId": "gemini-search",
   "name": "Gemini Web Search Tool",
   "description": "A specialized Gemini agent with web search capabilities for finding specific information",
+  "tags": ["research", "productivity"],
   "personality": [
     "You are a Gemini-powered assistant specialized in web search.",
     "You use the search tool to find specific information when needed.",

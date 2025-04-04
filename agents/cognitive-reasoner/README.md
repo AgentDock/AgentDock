@@ -2,6 +2,46 @@
 
 The Cognitive Reasoner is an agent designed to tackle complex problems through a suite of cognitive enhancement tools. It excels at structured reasoning, reflection, comparison, critique, brainstorming, and debate - providing multiple approaches to problem-solving without requiring external data or API calls.
 
+## Orchestration Features
+
+The Cognitive Reasoner now uses advanced orchestration to create optimal tool sequences for different cognitive tasks:
+
+### Research Mode
+Activates when queries contain terms related to research, facts, or information:
+1. **Search** → Gathers factual information
+2. **Think** → Analyzes the information systematically
+3. **Reflect** → Extracts insights and implications
+
+### Problem-Solving Mode
+Activates for questions about calculations, estimations, or solutions:
+1. **Think** → Analyzes the problem structure
+2. **Brainstorm** → Generates potential solutions
+3. **Compare** → Evaluates options against criteria
+
+### Evaluation Mode
+Activates for critiques, assessments, or analyses:
+1. **Critique** → Identifies strengths and weaknesses
+2. **Debate** → Explores multiple perspectives
+3. **Reflect** → Extracts insights and principles
+
+### Comparison Mode
+Activates when comparing options or discussing tradeoffs:
+1. **Search** → Gathers factual information about options
+2. **Compare** → Systematically evaluates against criteria
+3. **Reflect** → Draws conclusions and implications
+
+### Ideation Mode
+Activates for creative challenges and idea generation:
+1. **Think** → Frames the problem clearly
+2. **Brainstorm** → Generates diverse solutions
+3. **Critique** → Evaluates the ideas for feasibility
+
+### Debate Mode
+Activates for controversial topics with multiple viewpoints:
+1. **Search** → Gathers facts about different positions
+2. **Debate** → Presents balanced perspectives
+3. **Reflect** → Extracts principles and insights
+
 ## Strengths
 
 The agent is particularly effective for:
@@ -42,96 +82,50 @@ Explores multiple perspectives on complex or controversial topics, presenting di
 
 ## Example Test Prompts
 
-The Cognitive Reasoner can be tested with these prompts targeting each tool:
+The Cognitive Reasoner can be tested with these prompts targeting each orchestration mode:
 
-### Think Tool (Structured Reasoning)
-- **Fermi Estimation:** "Think through how many piano tuners are there in Chicago?"
-- **Probability Reasoning:** "Think about whether I should switch doors in the Monty Hall problem?"
-- **Causal Analysis:** "Think through what factors explain the global decline in bee populations?"
+### Research Mode
+- **Future Trends:** "How many electric vehicles will be on the road by 2030?"
+- **Historical Analysis:** "What were the major causes of the 2008 financial crisis?"
 
-### Reflect Tool (Retrospective Analysis)
-- **Project Post-mortem:** "Reflect on why most software projects fail to meet their deadlines"
-- **Learning from Experience:** "Reflect on what I could learn from a recent negotiation that didn't go well"
-- **Pattern Recognition:** "Reflect on common traits among successful startup founders"
+### Problem-Solving Mode
+- **Urban Planning:** "How can cities solve traffic congestion problems?"
+- **Business Challenge:** "How can a small retail business compete with large e-commerce platforms?"
 
-### Compare Tool (Systematic Comparison)
-- **Technology Assessment:** "Compare the environmental impact of electric vehicles versus traditional gasoline vehicles"
-- **Policy Evaluation:** "Compare the pros and cons of universal basic income"
-- **Investment Options:** "Compare index funds, individual stocks, and real estate as investment strategies"
+### Evaluation Mode
+- **Work Trends:** "Critique the argument that remote work improves productivity"
+- **Technology Impact:** "Evaluate the impact of social media on teenage mental health"
 
-### Critique Tool (Balanced Evaluation)
-- **Argument Analysis:** "Critique this argument: 'Social media has had an overall positive impact on society'"
-- **Code Review:** "Critique this React component implementation" [followed by code snippet]
-- **Design Feedback:** "Critique this user interface design for a banking app" [followed by description or image]
+### Comparison Mode
+- **Energy Options:** "Compare solar and wind energy for residential power generation"
+- **Education Methods:** "Compare traditional classroom learning with online education"
 
-### Brainstorm Tool (Idea Generation)
-- **Environmental Solutions:** "Brainstorm innovative solutions to reduce plastic waste in urban areas"
-- **Product Innovation:** "Brainstorm novel features for a productivity app aimed at remote workers"
-- **Business Models:** "Brainstorm potential business models for AI-powered education tools"
+### Ideation Mode
+- **Food Waste:** "Brainstorm innovative ways to reduce food waste in restaurants"
+- **Transportation:** "Generate ideas for sustainable last-mile delivery solutions"
 
-### Debate Tool (Multiple Perspectives)
-- **Economic Impact:** "Debate whether artificial intelligence will lead to more jobs being created or lost in the next decade"
-- **Education Policy:** "Debate the merits of standardized testing in education"
-- **Technology Ethics:** "Debate whether social media platforms should be regulated like public utilities"
-
-## Expected Output Patterns
-
-Each cognitive tool produces a distinctly structured output:
-
-### Think Tool Output
-1. **Clarification:** Reformulating the problem to ensure understanding
-2. **Identification:** Determining key variables and constraints
-3. **Approach:** Considering multiple solution methods
-4. **Execution:** Applying the chosen approach step-by-step
-5. **Verification:** Checking results and acknowledging limitations
-6. **Conclusion:** Summarizing findings and providing a clear answer
-
-### Reflect Tool Output
-1. **Context:** Establishing the background and relevant details
-2. **Observation:** Noting patterns, behaviors, and outcomes
-3. **Insight:** Extracting meaningful lessons and principles
-4. **Growth Areas:** Identifying opportunities for improvement
-5. **Connections:** Relating to broader principles or other situations
-6. **Action:** Providing actionable takeaways for future application
-
-### Compare Tool Output
-1. **Framework:** Establishing criteria for comparison
-2. **Evaluation:** Analyzing each option against the criteria
-3. **Contrasts:** Highlighting key differences between options
-4. **Tradeoffs:** Discussing benefits and drawbacks of each option
-5. **Synthesis:** Providing a balanced assessment of the options
-6. **Recommendation:** Offering context-specific guidance (when appropriate)
-
-### Critique Tool Output
-1. **Understanding:** Demonstrating comprehension of the subject
-2. **Strengths:** Identifying positive aspects and effective elements
-3. **Issues:** Highlighting areas of concern or potential problems
-4. **Suggestions:** Providing specific, actionable recommendations
-5. **Assessment:** Offering a balanced overall evaluation
-
-### Brainstorm Tool Output
-1. **Framing:** Establishing the problem or challenge clearly
-2. **Categories:** Organizing ideas into meaningful groups
-3. **Ideas:** Presenting diverse solutions across categories
-4. **Applications:** Suggesting potential implementations
-5. **Insights:** Extracting key principles or patterns
-6. **Next Steps:** Recommending ways to develop the ideas further
-
-### Debate Tool Output
-1. **Positions:** Presenting different viewpoints on the topic
-2. **Evidence:** Providing supporting facts and reasoning for each position
-3. **Counterarguments:** Addressing potential objections to each position
-4. **Nuance:** Exploring complexities and edge cases
-5. **Synthesis:** Offering a balanced consideration of multiple perspectives
+### Debate Mode
+- **Financial Future:** "Debate whether cryptocurrencies will eventually replace traditional banking"
+- **AI Ethics:** "Debate the ethics of using AI in hiring decisions"
 
 ## Implementation Guidance
 
 For optimal results with the Cognitive Reasoner:
 
-1. **Provide Context:** Include relevant details in your query
-2. **Signal the Tool:** Include keywords like "think through," "reflect on," "compare," "critique," "brainstorm," or "debate" to trigger specific tools
-3. **Be Specific:** Clarify what kind of cognitive analysis you're looking for
-4. **Engage Iteratively:** Follow up with clarifying questions if needed
-5. **Test Assumptions:** Ask the agent to reconsider its initial premises
+1. **Trigger Specific Modes:** Use keywords that align with the orchestration mode you want to activate
+2. **Follow the Sequence:** The agent works best when following its orchestrated tool sequences
+3. **Provide Context:** Include relevant details in your query
+4. **Be Specific:** Clarify what kind of cognitive analysis you're looking for
+5. **Engage Iteratively:** Follow up with clarifying questions if needed
 
-The Cognitive Reasoner combines multiple cognitive enhancement tools to provide versatile problem-solving capabilities for a wide range of complex challenges. 
+## Orchestration Benefits
+
+The orchestrated approach provides several advantages:
+
+1. **Optimal Tool Sequencing:** Tools are used in the most effective order for each problem type
+2. **Focused Analysis:** Each mode restricts available tools to those most relevant for the task
+3. **Consistent Structure:** Predictable reasoning patterns make outputs easier to follow
+4. **Resource Efficiency:** Optimized prompts reduce token usage and improve performance
+5. **Task-Specific Processing:** Different cognitive challenges receive specialized treatment
+
+The Cognitive Reasoner combines multiple cognitive enhancement tools in structured sequences to provide versatile problem-solving capabilities for a wide range of complex challenges. 

@@ -3,6 +3,7 @@
   "agentId": "deepseek-agent",
   "name": "DeepSeek Agent",
   "description": "A powerful agent powered by DeepSeek models",
+  "tags": ["technical", "productivity"],
   "personality": [
     "You are a helpful AI assistant powered by DeepSeek.",
     "You should respond to user queries in a clear and concise manner.",

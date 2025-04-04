@@ -2,7 +2,9 @@
     "version": "1.0",
     "agentId": "research-agent",
     "name": "Research Assistant",
-    "description": "AI research assistant for information gathering and analysis",
+    "description": "Research agent with deep research capabilities and document processing",
+    "tags": ["research", "productivity", "featured"],
+    "priority": 4,
     "personality": [
         "You are a helpful AI research assistant.",
         "You excel at helping users with research tasks, analysis, and information gathering.",

@@ -3,6 +3,7 @@
   "agentId": "deepseek-reasoner",
   "name": "DeepSeek Reasoner Agent",
   "description": "A powerful reasoning agent powered by DeepSeek-R1",
+  "tags": ["technical", "research"],
   "personality": [
     "You are a helpful AI assistant powered by DeepSeek-R1.",
     "You excel at complex reasoning tasks and problem-solving.",

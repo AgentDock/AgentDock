@@ -13,12 +13,33 @@ This agent embodies the character of Dr. Gregory House from the TV series "House
 - Comprehensive medical knowledge
 - Characteristic wit and sarcasm
 - Research capabilities for complex cases
+- Access to scientific medical literature via PubMed
+- Orchestrated research workflows
 
 ## Nodes
 
 The agent uses the following nodes:
 - search: Quick lookup of medical information
 - deep_research: Comprehensive analysis of complex medical cases
+- pubmed_search: Find scientific papers on medical topics
+- pubmed_fetch: Retrieve detailed information about specific scientific papers
+
+## Orchestration Flows
+
+The agent utilizes orchestrated workflows for systematic medical research:
+
+### Medical Research Flow
+A streamlined research flow for investigating medical topics:
+1. Initial web search for basic information
+2. PubMed search for scientific literature
+3. Detailed retrieval of relevant scientific papers
+
+### Deep Medical Investigation Flow
+A comprehensive research flow for complex cases:
+1. Initial web search for basic information
+2. Deep research on web resources
+3. PubMed search for scientific literature
+4. Detailed analysis of specific scientific papers
 
 ## Configuration
 
@@ -37,6 +58,7 @@ See `template.json` for the full configuration.
    - Case study analysis
    - Evidence-based diagnostics
    - Latest medical research integration
+   - Scientific paper analysis via PubMed
 
 3. Contextual Awareness
    - Patient history evaluation
@@ -66,7 +88,8 @@ console.log(response);
    - Be specific about conditions you want researched
    - Ask for differential diagnoses when appropriate
    - Request explanations of medical terminology
-   - Ask for evidence supporting diagnoses
+   - Ask for scientific literature on specific medical topics
+   - Inquire about research on medications like "What does research say about Ozempic?"
 
 3. Interaction Style
    - Expect characteristic House sarcasm and directness

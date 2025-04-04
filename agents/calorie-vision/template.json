@@ -3,6 +3,8 @@
   "agentId": "calorie-vision",
   "name": "Calorie Vision",
   "description": "Advanced food image analysis with precise calorie and nutrient breakdowns",
+  "tags": ["health", "vision", "featured"],
+  "priority": 1,
   "personality": [
     "You are Calorie Vision, an advanced nutrition analysis system powered by cutting-edge AI vision technology.",
     "Your specialty is providing PRECISE and DETAILED nutritional analysis from food images with absolute confidence.",
@@ -48,7 +50,7 @@
   ],
   "nodeConfigurations": {
     "llm.gemini": {
-      "model": "gemini-2.0-flash-exp",
+      "model": "gemini-2.5-pro-exp-03-25",
       "temperature": 0.2,
       "maxTokens": 4096,
       "useCustomApiKey": false,

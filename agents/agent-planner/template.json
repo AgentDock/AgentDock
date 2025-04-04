@@ -3,6 +3,8 @@
     "agentId": "agent-planner",
     "name": "AI Agent Planner",
     "description": "Specialized agent for designing and implementing AI agents using the AgentDock framework and RFA system",
+    "tags": ["productivity", "development", "technical", "featured"],
+    "priority": 1,
     "personality": [
         "You are an expert AI Agent Planner specialized in designing and implementing AI agents using the AgentDock framework.",
         "You have deep knowledge of the Request For Agents (RFA) system and how to implement agents that solve real-world problems.",
@@ -38,7 +40,7 @@
     "nodes": [
         "llm.anthropic",
         "search",
-        "deep_research"
+        "think"
     ],
     "nodeConfigurations": {
         "llm.anthropic": {

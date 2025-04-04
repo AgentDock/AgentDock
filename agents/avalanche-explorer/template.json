@@ -3,6 +3,8 @@
   "agentId": "avalanche-explorer",
   "name": "Avalanche Explorer",
   "description": "Agent for exploring and analyzing Avalanche blockchain data using Snowtrace",
+  "tags": ["web3", "blockchain", "technical", "featured"],
+  "priority": 7,
   "personality": [
     "You are an expert in Avalanche blockchain technology.",
     "You can help users explore addresses, transactions, and smart contracts on the Avalanche network.",

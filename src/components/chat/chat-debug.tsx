@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { templates } from "@/generated/templates";
 import { toast } from "sonner";
+import { Separator } from "@/components/ui/separator";
 
 interface OrchestrationStep {
   name: string;
@@ -55,7 +56,8 @@ interface ChatDebugProps {
   totalSteps?: number;
 }
 
-export function ChatDebug({ 
+// Wrap the component definition with React.memo
+export const ChatDebug = React.memo<ChatDebugProps>(({ 
   visible, 
   sessionId = "",
   messagesCount,
@@ -70,7 +72,7 @@ export function ChatDebug({
   activeStep,
   currentStepIndex,
   totalSteps,
-}: ChatDebugProps) {
+}: ChatDebugProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [debugButtonContainer, setDebugButtonContainer] = useState<HTMLElement | null>(null);
   const isMobile = useMediaQuery("(max-width: 640px)");
@@ -349,7 +351,10 @@ export function ChatDebug({
       </Sheet>
     </>
   );
-}
+});
+
+// Assign display name for React DevTools
+ChatDebug.displayName = 'ChatDebug';
 
 // Handle default export for dynamic import
 export default ChatDebug; 

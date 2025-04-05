@@ -198,61 +198,14 @@ const ChatContainer = React.forwardRef<
     },
     onToolCall: async ({ toolCall }) => {
       // Log tool call for debugging
-      await logDebug('ChatContainer', 'Tool call received', undefined, { 
+      await logDebug('ChatContainer', 'Tool call received by client', undefined, { 
         toolName: toolCall.toolName,
-        toolArgs: toolCall.args
+        toolArgs: toolCall.args,
+        toolCallId: toolCall.toolCallId
       });
       
-      try {
-        // Execute tool on the server via the chat API (not a dedicated tool API)
-        // This ensures tools have access to server-side environment variables
-        const agentUrl = `/api/chat/${agentId}`;
-        
-        // Include the tool call in the next message to the agent
-        const response = await fetch(agentUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(apiKey ? { 'x-api-key': apiKey } : {}),
-            'x-byok-mode': byokMode ? 'true' : 'false',
-            ...(orchestrationState.sessionId ? { 'x-session-id': orchestrationState.sessionId } : {})
-          },
-          body: JSON.stringify({
-            messages: [{
-              role: 'user',
-              content: `Execute tool: ${toolCall.toolName}`
-            }],
-            executeToolDirectly: {
-              toolName: toolCall.toolName,
-              toolCallId: toolCall.toolCallId || `tool-${Date.now()}`,
-              args: toolCall.args || {}
-            }
-          })
-        });
-        
-        if (!response.ok) {
-          throw new Error(`Tool execution failed: ${response.status} ${response.statusText}`);
-        }
-        
-        const result = await response.json();
-        
-        await logDebug('ChatContainer', 'Tool result received', undefined, {
-          toolName: toolCall.toolName,
-          resultType: typeof result
-        });
-        
-        // Return the tool result to be rendered
-        return result;
-      } catch (error) {
-        // Log error
-        await logError('ChatContainer', 'Tool execution error', error);
-        
-        // Return an error message
-        return {
-          type: 'error',
-          content: `Error executing ${toolCall.toolName}: ${error instanceof Error ? error.message : String(error)}`
-        };
-      }
+      // Return undefined - the UI should rely on stream parts for updates.
+      return undefined;
     },
     onResponse: async (response) => {
       if (!response.ok) {
@@ -266,20 +219,14 @@ const ChatContainer = React.forwardRef<
       let currentSessionId = orchestrationState.sessionId;
 
       if (sessionIdHeader && sessionIdHeader !== currentSessionId) {
-        // Update React state if different
-        setOrchestrationState(prev => ({
-          ...prev,
-          sessionId: sessionIdHeader
-        }));
+        setOrchestrationState(prev => ({ ...prev, sessionId: sessionIdHeader }));
         currentSessionId = sessionIdHeader;
       }
       
-      // Persist the potentially updated session ID after processing the response header
       if (currentSessionId) {
         saveData({ messages: messages, sessionId: currentSessionId });
       }
       
-      // Extract token usage from header if available (for per-turn display, if needed)
       const tokenUsageHeader = response.headers.get('x-token-usage');
       if (tokenUsageHeader) {
         try {
@@ -290,19 +237,26 @@ const ChatContainer = React.forwardRef<
         }
       }
       
-      // Extract orchestration state from header
+      // --- RESTORED Conditional state update from header --- 
       const orchestrationHeader = response.headers.get('x-orchestration-state');
       if (orchestrationHeader) {
         try {
-          const orchestration = JSON.parse(orchestrationHeader);
-          if (orchestration?.sessionId) {
-            // Simple update with received state - no special logic
-            setOrchestrationState({
-              sessionId: orchestration.sessionId,
-              recentlyUsedTools: Array.isArray(orchestration.recentlyUsedTools) ? 
-                orchestration.recentlyUsedTools : [],
-              activeStep: orchestration.activeStep
-            });
+          const incomingState = JSON.parse(orchestrationHeader) as OrchestrationState;
+          if (incomingState?.sessionId) {
+              const incomingTools = Array.isArray(incomingState.recentlyUsedTools) ? incomingState.recentlyUsedTools : [];
+              // Only update if state actually differs
+              const hasStateChanged = 
+                  incomingState.sessionId !== orchestrationState.sessionId ||
+                  incomingState.activeStep !== orchestrationState.activeStep ||
+                  JSON.stringify(incomingTools) !== JSON.stringify(orchestrationState.recentlyUsedTools);
+                  
+              if (hasStateChanged) {
+                  logDebug('ChatContainer', 'Orchestration state changed (via header), updating UI', undefined, {
+                      from: { step: orchestrationState.activeStep, tools: orchestrationState.recentlyUsedTools },
+                      to: { step: incomingState.activeStep, tools: incomingTools }
+                  });
+                  setOrchestrationState(incomingState);
+              }
           }
         } catch (error) {
           console.error('Failed to parse orchestration state header:', error);
@@ -311,13 +265,14 @@ const ChatContainer = React.forwardRef<
     },
     onFinish: async (message) => {
       try {
-        // Save messages (and session ID via saveData) when streaming finishes
+        // Save final messages (and session ID via saveData)
         saveData({ messages: messages, sessionId: orchestrationState.sessionId });
         
-        await logInfo('ChatContainer', 'Message processing complete', undefined, { 
+        await logInfo('ChatContainer', 'Message processing complete (stream finished)', undefined, { 
           messageId: message.id, 
           messageCount: messages.length 
         });
+
       } catch (error) {
         await logError('ChatContainer', 'Failed to process message onFinish', error);
       }
@@ -430,7 +385,6 @@ const ChatContainer = React.forwardRef<
   React.useEffect(() => {
     if (!data) return;
     
-    // Get orchestration information from stream data
     const streamData = data as unknown as { 
       orchestrationState?: { 
         sessionId: string; 
@@ -466,38 +420,60 @@ const ChatContainer = React.forwardRef<
       // setOverlayError(error);
     }
     
-    // Just pass through the orchestration state from the server
+    // Update orchestration state from data stream, ONLY if changed
     if (streamData?.orchestrationState?.sessionId) {
-      // Log the orchestration state in development
+      // Log the received state
       if (process.env.NODE_ENV === 'development') {
-        console.debug('[ORCHESTRATION DEBUG] Received orchestration state:', 
+        console.debug('[ORCHESTRATION DEBUG] Received orchestration state via data:', 
           JSON.stringify(streamData.orchestrationState, null, 2));
       }
-    
-      const newState: OrchestrationState = {
-        sessionId: streamData.orchestrationState.sessionId,
-        recentlyUsedTools: Array.isArray(streamData.orchestrationState.recentlyUsedTools) ? 
-          streamData.orchestrationState.recentlyUsedTools : [],
-        activeStep: streamData.orchestrationState.activeStep
-      };
       
-      // Add step progress information if available
-      if (streamData.orchestrationState.stepProgress) {
-        newState.currentStepIndex = streamData.orchestrationState.stepProgress.current;
-        newState.totalSteps = streamData.orchestrationState.stepProgress.total;
-      } else if (streamData.orchestrationState.sequenceIndex !== undefined) {
-        // Fallback to sequence index if available
-        newState.currentStepIndex = streamData.orchestrationState.sequenceIndex;
+      const incomingState = streamData.orchestrationState;
+      const incomingTools = Array.isArray(incomingState.recentlyUsedTools) ? incomingState.recentlyUsedTools : [];
+
+      // Check if relevant parts of the state have actually changed
+      const hasStateChanged = 
+        incomingState.sessionId !== orchestrationState.sessionId ||
+        incomingState.activeStep !== orchestrationState.activeStep ||
+        JSON.stringify(incomingTools) !== JSON.stringify(orchestrationState.recentlyUsedTools);
+        // Add checks for stepProgress/sequenceIndex if needed for flicker
+
+      // --- State update from stream data remains enabled --- 
+      if (hasStateChanged) {
+         logDebug('ChatContainer', 'Orchestration state changed (via data), updating UI', undefined, { 
+            from: { step: orchestrationState.activeStep, tools: orchestrationState.recentlyUsedTools },
+            to: { step: incomingState.activeStep, tools: incomingTools }
+         });
+         
+         const newState: OrchestrationState = {
+           sessionId: incomingState.sessionId,
+           recentlyUsedTools: incomingTools,
+           activeStep: incomingState.activeStep
+         };
+         
+         // Add step progress information if available
+         if (incomingState.stepProgress) {
+           newState.currentStepIndex = incomingState.stepProgress.current;
+           newState.totalSteps = incomingState.stepProgress.total;
+         } else if (incomingState.sequenceIndex !== undefined) {
+           newState.currentStepIndex = incomingState.sequenceIndex;
+         }
+         
+         // Update the state
+         setOrchestrationState(newState);
+      } else {
+        // Log if state received but deemed unchanged (for debugging)
+        if (process.env.NODE_ENV === 'development') {
+            console.debug('[ORCHESTRATION DEBUG] Received state via data, but no change detected.');
+        }
       }
-      
-      setOrchestrationState(newState);
     }
     
     // Check for token usage in the stream data
     if (streamData.usage) {
       setTokenUsage(streamData.usage);
     }
-  }, [data]);
+  }, [data, orchestrationState]); // Add orchestrationState to dependency array for comparison
   
   // Fix handleInputChange to match Chat component's expected format (Re-added)
   const handleInputChange = React.useCallback((value: string) => {

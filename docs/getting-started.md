@@ -20,11 +20,11 @@ This repository includes both components, allowing you to use them together or s
 
 ## Installation & Setup
 
-1. **Clone the repository**:
+1. **Clone the Repository**:
 
    ```bash
-   git clone https://github.com/agentdock/agentdock.git
-   cd agentdock
+   git clone https://github.com/AgentDock/AgentDock.git
+   cd AgentDock
    ```
 
 2. **Install pnpm** (if not already installed):
@@ -34,7 +34,7 @@ This repository includes both components, allowing you to use them together or s
    corepack prepare pnpm@latest --activate
    ```
 
-3. **Install dependencies**:
+3. **Install Dependencies**:
 
    ```bash
    pnpm install
@@ -64,13 +64,17 @@ This repository includes both components, allowing you to use them together or s
 
 5. **Configure environment variables**:
 
-   Create a `.env.local` file in the root directory:
+   Create an environment file (`.env` or `.env.local`) in the root directory:
 
    ```bash
+   # Option 1: Create .env.local
    cp .env.example .env.local
+   
+   # Option 2: Create .env
+   cp .env.example .env
    ```
 
-   Edit `.env.local`:
+   Edit your environment file:
    - Add your LLM provider API keys (at least one is required).
    - **(If using Docker/Redis from step 4)** Choose ONE storage configuration option below:
      

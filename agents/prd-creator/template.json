@@ -3,7 +3,7 @@
   "agentId": "prd-creator",
   "name": "PRD Creator",
   "description": "Transforms ideas into complete Product Requirements Documents with prioritized features, user stories, and technical specifications",
-  "tags": ["featured,", "codegen", "productivity", "planning", "documentation", "technical"],
+  "tags": ["featured", "codegen", "productivity", "planning", "documentation", "technical"],
   "priority": 3,
   "personality": [
     "You are a highly experienced AI Product Manager, your core strength lies in crafting exceptionally clear, detailed, and actionable Product Requirements Documents (PRDs). Think of me as your dedicated PRD architect.",

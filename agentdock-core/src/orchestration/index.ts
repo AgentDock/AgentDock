@@ -72,6 +72,26 @@ export class OrchestrationManager {
   }
   
   /**
+   * NEW: Explicitly ensures a session state record exists.
+   * Calls the underlying state manager's getOrCreateState.
+   */
+  public async ensureStateExists(sessionId: SessionId): Promise<OrchestrationState | null> {
+      logger.debug(LogCategory.ORCHESTRATION, 'ensureStateExists', 'Ensuring state exists for session', { sessionId });
+      try {
+          // Directly call the state manager's method that handles creation
+          const state = await this.stateManager.getOrCreateState(sessionId);
+          logger.debug(LogCategory.ORCHESTRATION, 'ensureStateExists', 'State ensured/retrieved', { sessionId, stateExists: !!state });
+          return state;
+      } catch (error) {
+          logger.error(LogCategory.ORCHESTRATION, 'ensureStateExists', 'Error ensuring state exists', { 
+              sessionId,
+              error: error instanceof Error ? error.message : String(error)
+          });
+          return null; // Return null on error
+      }
+  }
+  
+  /**
    * Gets the active step based on conditions
    */
   public async getActiveStep( // Changed to async
@@ -234,103 +254,66 @@ export class OrchestrationManager {
     // Assuming sequencer.processTool remains sync or adapted internally
     await this.sequencer.processTool(activeStep, sessionId, toolName); 
 
-    // --- BEGIN FIX: Re-evaluate active step after tool usage is processed ---
+    // FIX: Re-evaluate active step after tool usage is processed 
     // REMOVED: await this.getActiveStep(orchestration, messages, sessionId);
-    // --- END FIX ---
   }
   
   /**
    * Gets the orchestration state (AI-facing subset)
+   * Does NOT create state if it doesn't exist.
    */
-  public async getState(sessionId: SessionId): Promise<AIOrchestrationState | null> { // Changed to async Promise
-    // Removed lightweight check
-    // Directly use the async state manager method
-    return this.stateManager.toAIOrchestrationState(sessionId); // Changed to await (method is async)
-  }
-  
-  /**
-   * Ensures that a state record exists for the given session ID.
-   * Calls the underlying state manager's method to get or create the state.
-   * Useful for ensuring session presence even for non-orchestrated agents.
-   */
-  public async ensureStateExists(sessionId: SessionId): Promise<void> {
-    if (!sessionId) return;
+  public async getState(sessionId: SessionId): Promise<AIOrchestrationState | null> {
+    // Note: This now strictly uses the stateManager's conversion method,
+    // which relies on the underlying SessionManager's getSession (read-only).
+    logger.debug(LogCategory.ORCHESTRATION, 'getState', 'Getting state for session', { sessionId });
     try {
-      await this.stateManager.getOrCreateState(sessionId);
-      logger.debug(LogCategory.ORCHESTRATION, 'OrchestrationManager', 'Ensured state exists for session', { sessionId: sessionId?.substring(0, 8) + '...' });
+        return await this.stateManager.toAIOrchestrationState(sessionId);
     } catch (error) {
-      logger.error(LogCategory.ORCHESTRATION, 'OrchestrationManager', 'Error ensuring state exists', {
-        sessionId: sessionId?.substring(0, 8) + '...',
-        error: error instanceof Error ? error.message : String(error)
-      });
-      // Decide if we should re-throw or just log
+         logger.error(LogCategory.ORCHESTRATION, 'getState', 'Error getting state', { 
+              sessionId,
+              error: error instanceof Error ? error.message : String(error)
+          });
+          return null;
     }
   }
   
   /**
-   * Updates parts of the orchestration state
-   *
-   * @param sessionId The session ID
-   * @param partial The partial AI-facing state to update (e.g., { cumulativeTokenUsage: ... })
-   * @returns The full updated state (AI-facing subset) or null if update failed
+   * Updates the orchestration state
+   * Assumes state likely exists due to prior ensureStateExists or getActiveStep calls.
    */
-  public async updateState(sessionId: SessionId, partial: Partial<AIOrchestrationState>): Promise<AIOrchestrationState | null> { 
-    if (!sessionId) return null;
-    
-    logger.debug(LogCategory.ORCHESTRATION, 'OrchestrationManager', 'Updating state', { 
-        sessionId: sessionId?.substring(0, 8) + '...', 
-        keysToUpdate: Object.keys(partial) 
-    });
-    
-    // Map the AI-facing partial state to the internal OrchestrationState structure
-    const internalUpdates: Partial<Omit<OrchestrationState, 'sessionId'>> = {};
-    if (partial.activeStep !== undefined) internalUpdates.activeStep = partial.activeStep;
-    if (partial.sequenceIndex !== undefined) internalUpdates.sequenceIndex = partial.sequenceIndex;
-    if (partial.recentlyUsedTools !== undefined) internalUpdates.recentlyUsedTools = partial.recentlyUsedTools;
-    if (partial.cumulativeTokenUsage !== undefined) internalUpdates.cumulativeTokenUsage = partial.cumulativeTokenUsage;
-    
-    // Add lastAccessed timestamp update automatically
-    internalUpdates.lastAccessed = Date.now();
-    
-    try {
-      // Call the underlying state manager's update method
-      const updatedFullState = await this.stateManager.updateState(sessionId, internalUpdates); // Uses the state manager's update method
-
-      // Convert back to AIOrchestrationState for the return type
-      if (updatedFullState) {
-          logger.debug(LogCategory.ORCHESTRATION, 'OrchestrationManager', 'State update successful', { 
-              sessionId: sessionId?.substring(0, 8) + '...', 
-              updatedKeys: Object.keys(partial) 
-          });
-          return {
-              sessionId: updatedFullState.sessionId,
-              recentlyUsedTools: updatedFullState.recentlyUsedTools,
-              activeStep: updatedFullState.activeStep,
-              sequenceIndex: updatedFullState.sequenceIndex,
-              cumulativeTokenUsage: updatedFullState.cumulativeTokenUsage
-          };
-      } else {
-          logger.error(LogCategory.ORCHESTRATION, 'OrchestrationManager', 'State update failed (stateManager.updateState returned null)', { 
-              sessionId: sessionId?.substring(0, 8) + '...'
+  public async updateState(sessionId: SessionId, partialState: Partial<OrchestrationState>): Promise<OrchestrationState | null> {
+      logger.debug(LogCategory.ORCHESTRATION, 'updateState', 'Updating state', { sessionId, keysToUpdate: Object.keys(partialState) });
+      try {
+          const updatedState = await this.stateManager.updateState(sessionId, partialState);
+          if (!updatedState) {
+              // Log if update failed (e.g., session disappeared between check and update)
+              logger.error(LogCategory.ORCHESTRATION, 'updateState', 'State update failed (stateManager.updateState returned null)', { sessionId });
+          }
+          return updatedState;
+      } catch (error) {
+          logger.error(LogCategory.ORCHESTRATION, 'updateState', 'Error updating state', { 
+              sessionId,
+              error: error instanceof Error ? error.message : String(error)
           });
           return null;
       }
-    } catch (error) {
-        logger.error(LogCategory.ORCHESTRATION, 'OrchestrationManager', 'Error during state update', { 
-            sessionId: sessionId?.substring(0, 8) + '...',
-            error: error instanceof Error ? error.message : String(error) 
-        });
-        return null;
-    }
   }
   
   /**
-   * Resets the state for a session
+   * Resets the orchestration state for a session
    */
-  public async resetState(sessionId: SessionId): Promise<void> { // Changed to async Promise<void>
-    // Removed lightweight check
-    await this.stateManager.resetState(sessionId); // Changed to await
-  }
+   public async resetState(sessionId: SessionId): Promise<void> {
+        logger.debug(LogCategory.ORCHESTRATION, 'resetState', 'Resetting state for session', { sessionId });
+        try {
+            // Use resetState, not deleteState
+            await this.stateManager.resetState(sessionId);
+        } catch (error) {
+            logger.error(LogCategory.ORCHESTRATION, 'resetState', 'Error resetting state', { 
+                sessionId,
+                error: error instanceof Error ? error.message : String(error)
+            });
+        }
+   }
   
   /**
    * Removes a session and its state

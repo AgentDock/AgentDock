@@ -26,7 +26,7 @@ This section outlines the current development roadmap for AgentDock, detailing b
 |---------|-------------|--------|---------|
 | **Natural Language AI Agent Builder** | Visual builder + natural language agent and workflow construction | Future | [More Details](./nl-agent-builder.md) |
 | **Agent Marketplace** | Monetizable agent templates and distribution | Future | [More Details](./agent-marketplace.md) |
-| **AgentDock Pro** | Enterprise-grade cloud platform with autoscaling | Future | [More Details](./agentdock-pro.md) |
+| **AgentDock Pro** | Enterprise-grade cloud platform with autoscaling | Future | [More Details](../agentdock-pro.md) |
 
 ## Release Timeline
 

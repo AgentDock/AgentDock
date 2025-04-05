@@ -127,6 +127,10 @@ const config = {
   					height: '0'
   				}
   			},
+  			'fadeIn': {
+  				'from': { opacity: '0' },
+  				'to': { opacity: '1' }
+  			},
   			'typing-dot-bounce': {
   				'0%': {
   					transform: 'translateY(0px)'
@@ -144,26 +148,87 @@ const config = {
   					transform: 'translateY(-0.25rem)'
   				}
   			},
-        'typing-1': {
-          '0%, 100%': { opacity: '0.3', transform: 'translateY(0)' },
-          '50%': { opacity: '0.8', transform: 'translateY(-1px)' }
-        },
-        'typing-2': {
-          '0%, 100%': { opacity: '0.3', transform: 'translateY(0)' },
-          '50%': { opacity: '0.8', transform: 'translateY(-1px)' },
-        },
-        'typing-3': {
-          '0%, 100%': { opacity: '0.3', transform: 'translateY(0)' },
-          '50%': { opacity: '0.8', transform: 'translateY(-1px)' },
-        }
+  			'typing-1': {
+  				'0%, 100%': {
+  					opacity: '0.3',
+  					transform: 'translateY(0)'
+  				},
+  				'50%': {
+  					opacity: '0.8',
+  					transform: 'translateY(-1px)'
+  				}
+  			},
+  			'typing-2': {
+  				'0%, 100%': {
+  					opacity: '0.3',
+  					transform: 'translateY(0)'
+  				},
+  				'50%': {
+  					opacity: '0.8',
+  					transform: 'translateY(-1px)'
+  				}
+  			},
+  			'typing-3': {
+  				'0%, 100%': {
+  					opacity: '0.3',
+  					transform: 'translateY(0)'
+  				},
+  				'50%': {
+  					opacity: '0.8',
+  					transform: 'translateY(-1px)'
+  				}
+  			},
+  			'loadingBar': {
+  				'0%': { width: '0%' },
+  				'50%': { width: '70%' },
+  				'75%': { width: '85%' },
+  				'90%': { width: '95%' },
+  				'100%': { width: '95%' }
+  			},
+  			'loadingDot': {
+  				'0%, 60%, 100%': { opacity: '0.4', transform: 'translateY(0)' },
+  				'30%': { opacity: '1', transform: 'translateY(-2px)' }
+  			},
+  			'diagramFadeIn': {
+  				'from': { opacity: '0', transform: 'translateY(4px)' },
+  				'to': { opacity: '1', transform: 'translateY(0)' }
+  			},
+            'progressBar': {
+                '0%': { width: '0%' },
+                '20%': { width: '35%' },
+                '50%': { width: '65%' },
+                '75%': { width: '85%' },
+                '90%': { width: '95%' },
+                '100%': { width: '100%' }
+            },
+            'arrowPulse': {
+                '0%, 100%': { opacity: '0.6' },
+                '50%': { opacity: '1' }
+            },
+            'diagramPulse': {
+                '0%, 100%': { boxShadow: '0 0 0 rgba(59, 130, 246, 0)' },
+                '50%': { boxShadow: '0 0 6px rgba(59, 130, 246, 0.3)' }
+            },
+            'shimmer': {
+                '0%': { backgroundPosition: '-200% 0' },
+                '100%': { backgroundPosition: '200% 0' }
+            }
   		},
   		animation: {
   			'accordion-down': 'accordion-down 0.2s ease-out',
   			'accordion-up': 'accordion-up 0.2s ease-out',
+  			'fadeIn': 'fadeIn 0.5s ease forwards',
   			'typing-dot-bounce': 'typing-dot-bounce 1.25s ease-out infinite',
-        'typing-1': 'typing-1 1s ease-in-out infinite',
-        'typing-2': 'typing-2 1s ease-in-out infinite 0.2s',
-        'typing-3': 'typing-3 1s ease-in-out infinite 0.4s'
+  			'typing-1': 'typing-1 1s ease-in-out infinite',
+  			'typing-2': 'typing-2 1s ease-in-out infinite 0.2s',
+  			'typing-3': 'typing-3 1s ease-in-out infinite 0.4s',
+  			'loadingBar': 'loadingBar 3s ease-in-out forwards',
+  			'loadingDot': 'loadingDot 1.5s ease-in-out infinite',
+  			'diagramFadeIn': 'diagramFadeIn 0.3s ease-in-out',
+            'progressBar': 'progressBar 3s ease-in-out forwards',
+            'arrowPulse': 'arrowPulse 2s infinite',
+            'diagramPulse': 'diagramPulse 2s infinite',
+            'shimmer': 'shimmer 1s linear infinite'
   		}
   	}
   },

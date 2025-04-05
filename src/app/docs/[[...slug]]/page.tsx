@@ -8,24 +8,53 @@ import { docSections } from '@/lib/docs-config';
 import { getPrevNextPages } from '@/lib/docs-utils';
 import { PrevNextNav } from '@/app/docs/components/prev-next-nav';
 
+// Get the docs directory path that works in both development and production
+function getDocsBasePath(): string {
+  // Next.js will include the docs folder in the serverless function
+  // thanks to our outputFileTracingIncludes config
+  return path.join(process.cwd(), 'docs');
+}
+
+// Helper for case-insensitive file access
+function readFileWithFallback(filePath: string, fallbackPath: string): string {
+  try {
+    return fs.readFileSync(filePath, 'utf8');
+  } catch (e) {
+    return fs.readFileSync(fallbackPath, 'utf8');
+  }
+}
+
 // Simple function to get markdown content directly from docs folder
 function getMarkdownContent(slug: string[] = []): string | null {
-  // For root path, directly return README.md
+  const basePath = getDocsBasePath();
+  
+  // For root path, load README.md
   if (slug.length === 0) {
     try {
-      const readmePath = path.join(process.cwd(), 'docs', 'README.md');
-      if (fs.existsSync(readmePath)) {
-        const content = fs.readFileSync(readmePath, 'utf8');
-        // Prepend /docs/ to relative links in the main docs/README.md
-        const fixedContent = content.replace(/\]\((?!\/|#|http)([^)]+)\)/g, (match, relativePath) => {
-          // Ensure we don't double-prefix
-          if (relativePath.startsWith('docs/')) {
-            return `](/docs/${relativePath.substring(5)})`; // Already has docs/, just fix potential extra
-          }
-          return `](/docs/${relativePath})`; // Prepend /docs/
-        });
-        return fixedContent;
+      const upperReadmePath = path.join(basePath, 'README.md');
+      const lowerReadmePath = path.join(basePath, 'readme.md');
+      
+      let content = null;
+      
+      // Try both README.md and readme.md
+      if (fs.existsSync(upperReadmePath)) {
+        content = fs.readFileSync(upperReadmePath, 'utf8');
+      } else if (fs.existsSync(lowerReadmePath)) {
+        content = fs.readFileSync(lowerReadmePath, 'utf8');
+      } else {
+        return null;
       }
+      
+      // Prepend /docs/ to relative links in the main docs/README.md
+      const fixedContent = content.replace(/\]\((?!\/|#|http)([^)]+)\)/g, (match, relativePath) => {
+        // Ensure we don't double-prefix
+        if (relativePath.startsWith('docs/')) {
+          return `](/docs/${relativePath.substring(5)})`; // Already has docs/, just fix potential extra
+        }
+        return `](/docs/${relativePath})`; // Prepend /docs/
+      });
+      
+      return fixedContent;
     } catch (error) {
       console.error('Error reading root README.md:', error);
       return null;
@@ -36,31 +65,51 @@ function getMarkdownContent(slug: string[] = []): string | null {
   const cleanSlug = slug.map(part => part.replace(/\.md$/, ''));
   
   try {
-    // First try: direct file path
-    const filePath = path.join(process.cwd(), 'docs', ...cleanSlug) + '.md';
-    if (fs.existsSync(filePath)) {
-      const content = fs.readFileSync(filePath, 'utf8');
-      return content;
+    // Try different file paths in a clean, maintainable sequence
+    
+    // 1. Direct .md file
+    const directFilePath = path.join(basePath, ...cleanSlug) + '.md';
+    if (fs.existsSync(directFilePath)) {
+      return fs.readFileSync(directFilePath, 'utf8');
     }
     
-    // Second try: README.md in the directory
-    const readmePath = path.join(process.cwd(), 'docs', ...cleanSlug, 'README.md');
-    if (fs.existsSync(readmePath)) {
-      const content = fs.readFileSync(readmePath, 'utf8');
+    // 2. README.md in a directory
+    const dirPath = path.join(basePath, ...cleanSlug);
+    if (fs.existsSync(dirPath) && fs.statSync(dirPath).isDirectory()) {
+      const upperReadmePath = path.join(dirPath, 'README.md');
+      const lowerReadmePath = path.join(dirPath, 'readme.md');
       
-      // Process the content to fix relative links
-      const fixedContent = content.replace(/\]\(\.\.\//g, `](/docs/`)
-                                  .replace(/\]\(\.\//g, `](/docs/${cleanSlug.join('/')}/`);
+      let content = null;
       
-      return fixedContent;
+      // Try README.md first, then readme.md
+      if (fs.existsSync(upperReadmePath)) {
+        content = fs.readFileSync(upperReadmePath, 'utf8');
+      } else if (fs.existsSync(lowerReadmePath)) {
+        content = fs.readFileSync(lowerReadmePath, 'utf8');
+      }
+      
+      if (content) {
+        // Process the content to fix relative links
+        return content.replace(/\]\(\.\.\//g, `](/docs/`)
+                      .replace(/\]\(\.\//g, `](/docs/${cleanSlug.join('/')}/`);
+      }
+      
+      // 3. First .md file in the directory
+      const dirContents = fs.readdirSync(dirPath);
+      const mdFile = dirContents.find(file => file.toLowerCase().endsWith('.md'));
+      if (mdFile) {
+        content = fs.readFileSync(path.join(dirPath, mdFile), 'utf8');
+        // Fix relative links
+        return content.replace(/\]\(\.\.\//g, `](/docs/`)
+                     .replace(/\]\(\.\//g, `](/docs/${cleanSlug.join('/')}/`);
+      }
     }
     
     // Special case for model-architecture.md
     if (cleanSlug.length === 1 && cleanSlug[0] === 'model-architecture') {
-      const altPath = path.join(process.cwd(), 'docs', 'model-architecture.md');
+      const altPath = path.join(basePath, 'model-architecture.md');
       if (fs.existsSync(altPath)) {
-        const content = fs.readFileSync(altPath, 'utf8');
-        return content;
+        return fs.readFileSync(altPath, 'utf8');
       }
     }
     

@@ -24,7 +24,7 @@ export default function DocsLayout({ children }: DocsLayoutProps) {
     <div className="relative min-h-screen bg-background">
       {/* Mobile header */}
       <header className="sticky top-0 z-50 flex h-14 items-center gap-4 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 sm:static md:hidden">
-        <Link href="/" className="flex items-center gap-2 font-semibold">
+        <Link href={{ pathname: '/docs' }} className="flex items-center gap-2 font-semibold">
           AgentDock Core Documentation
         </Link>
         

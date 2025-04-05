@@ -34,87 +34,93 @@ export function DocsMarkdown({ content }: DocsMarkdownProps) {
   const processedContent = processMarkdownLinks(content);
   
   useEffect(() => {
-    if (!containerRef.current) return;
+    // Defer DOM manipulation slightly to avoid running during theme transitions
+    const timerId = setTimeout(() => {
+      if (!containerRef.current) return;
 
-    // Find all headings in the document container
-    const headings = containerRef.current.querySelectorAll('h1, h2, h3, h4, h5, h6');
-    
-    headings.forEach((heading) => {
-      if (!(heading instanceof HTMLElement)) return;
+      // Find all headings in the document container
+      const headings = containerRef.current.querySelectorAll('h1, h2, h3, h4, h5, h6');
       
-      // Generate ID from heading text if it doesn't exist
-      if (!heading.id) {
-        const headingText = heading.innerText;
-        heading.id = headingText
-          .toLowerCase()
-          .replace(/[^\w\s-]/g, '')
-          .replace(/[\s_-]+/g, '-')
-          .replace(/^-+|-+$/g, '');
-      }
-      
-      // Only wrap the text content in a clickable link, not the entire heading
-      if (!heading.querySelector('.header-link-wrapper')) {
-        // Get the current text content
-        const headingText = heading.textContent || '';
+      headings.forEach((heading) => {
+        if (!(heading instanceof HTMLElement)) return;
         
-        // Create anchor link that wraps just the text
-        const linkWrapper = document.createElement('a');
-        linkWrapper.className = 'header-link-wrapper';
-        linkWrapper.href = `#${heading.id}`;
+        // Generate ID from heading text if it doesn't exist
+        if (!heading.id) {
+          const headingText = heading.innerText;
+          heading.id = headingText
+            .toLowerCase()
+            .replace(/[^\w\s-]/g, '')
+            .replace(/[\s_-]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+        }
         
-        // Create the link icon element (hidden by default, shown on hover)
-        const linkIcon = document.createElement('span');
-        linkIcon.className = 'header-link-icon';
-        linkIcon.innerHTML = '🔗';
-        linkIcon.setAttribute('aria-hidden', 'true');
-        
-        // Clear the heading
-        heading.innerHTML = '';
-        
-        // Add the text directly
-        linkWrapper.textContent = headingText;
-        
-        // Append the icon
-        linkWrapper.appendChild(linkIcon);
-        
-        // Append link wrapper to heading
-        heading.appendChild(linkWrapper);
-        
-        // Add click handler to copy URL to clipboard
-        linkWrapper.addEventListener('click', (e) => {
-          // Don't prevent default to allow normal anchor navigation
+        // Only wrap the text content in a clickable link, not the entire heading
+        if (!heading.querySelector('.header-link-wrapper')) {
+          // Get the current text content
+          const headingText = heading.textContent || '';
           
-          // Get the full URL with the hash
-          const url = window.location.href.split('#')[0] + `#${heading.id}`;
-          navigator.clipboard.writeText(url);
+          // Create anchor link that wraps just the text
+          const linkWrapper = document.createElement('a');
+          linkWrapper.className = 'header-link-wrapper';
+          linkWrapper.href = `#${heading.id}`;
           
-          // Visual feedback
-          const icon = linkWrapper.querySelector('.header-link-icon');
-          if (icon instanceof HTMLElement) {
-            icon.style.opacity = '1';
+          // Create the link icon element (hidden by default, shown on hover)
+          const linkIcon = document.createElement('span');
+          linkIcon.className = 'header-link-icon';
+          linkIcon.innerHTML = '🔗';
+          linkIcon.setAttribute('aria-hidden', 'true');
+          
+          // Clear the heading
+          heading.innerHTML = '';
+          
+          // Add the text directly
+          linkWrapper.textContent = headingText;
+          
+          // Append the icon
+          linkWrapper.appendChild(linkIcon);
+          
+          // Append link wrapper to heading
+          heading.appendChild(linkWrapper);
+          
+          // Add click handler to copy URL to clipboard
+          linkWrapper.addEventListener('click', (e) => {
+            // Don't prevent default to allow normal anchor navigation
             
-            setTimeout(() => {
-              icon.style.opacity = '';
-            }, 500);
-          }
-        });
-      }
-    });
-    
-    // Find all links in the document and process them
-    const links = containerRef.current.querySelectorAll('a');
-    links.forEach((link) => {
-      if (!(link instanceof HTMLAnchorElement)) return;
+            // Get the full URL with the hash
+            const url = window.location.href.split('#')[0] + `#${heading.id}`;
+            navigator.clipboard.writeText(url);
+            
+            // Visual feedback
+            const icon = linkWrapper.querySelector('.header-link-icon');
+            if (icon instanceof HTMLElement) {
+              icon.style.opacity = '1';
+              
+              setTimeout(() => {
+                icon.style.opacity = '';
+              }, 500);
+            }
+          });
+        }
+      });
       
-      // Only process relative links with .md extension
-      if (link.href && 
-          !link.href.startsWith('http') && 
-          !link.href.startsWith('#') && 
-          link.href.endsWith('.md')) {
-        // Clean the URL
-        link.href = link.href.replace(/\.md$/, '');
-      }
-    });
+      // Find all links in the document and process them
+      const links = containerRef.current.querySelectorAll('a');
+      links.forEach((link) => {
+        if (!(link instanceof HTMLAnchorElement)) return;
+        
+        // Only process relative links with .md extension
+        if (link.href && 
+            !link.href.startsWith('http') && 
+            !link.href.startsWith('#') && 
+            link.href.endsWith('.md')) {
+          // Clean the URL
+          link.href = link.href.replace(/\.md$/, '');
+        }
+      });
+    }, 0); // Delay of 0ms pushes to end of event loop
+
+    // Cleanup function to clear the timeout if the component unmounts
+    return () => clearTimeout(timerId);
   }, [processedContent]);
 
   return (

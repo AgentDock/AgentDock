@@ -15,42 +15,42 @@ export function ThemeProvider({
 }: {
   children: React.ReactNode
 } & ThemeProviderProps) {
-  const [mounted, setMounted] = React.useState(false)
-  const mountingRef = React.useRef(false)
+  // const [mounted, setMounted] = React.useState(false)
+  // const mountingRef = React.useRef(false)
 
   // Handle mounting only once to prevent multiple transitions
-  React.useEffect(() => {
-    if (mountingRef.current) return;
-    mountingRef.current = true;
+  // React.useEffect(() => {
+  //   if (mountingRef.current) return;
+  //   mountingRef.current = true;
     
-    // First add class to completely disable all transitions
-    if (typeof document !== 'undefined') {
-      document.documentElement.classList.add('prevent-transition');
-    }
+  //   // First add class to completely disable all transitions
+  //   if (typeof document !== 'undefined') {
+  //     document.documentElement.classList.add('prevent-transition');
+  //   }
     
-    // Delay mounting state to ensure theme is fully loaded
-    const timer = setTimeout(() => {
-      setMounted(true);
+  //   // Delay mounting state to ensure theme is fully loaded
+  //   const timer = setTimeout(() => {
+  //     setMounted(true);
       
-      // Remove transition prevention after theme is stable
-      if (typeof document !== 'undefined') {
-        setTimeout(() => {
-          document.documentElement.classList.remove('prevent-transition');
-        }, 300);
-      }
-    }, 50);
+  //     // Remove transition prevention after theme is stable
+  //     if (typeof document !== 'undefined') {
+  //       setTimeout(() => {
+  //         document.documentElement.classList.remove('prevent-transition');
+  //       }, 300);
+  //     }
+  //   }, 50);
     
-    return () => clearTimeout(timer);
-  }, []);
+  //   return () => clearTimeout(timer);
+  // }, []);
 
   return (
     <NextThemesProvider
       attribute="class"
       defaultTheme="system"
       enableSystem
-      disableTransitionOnChange // Always disable transitions on theme changes
+      disableTransitionOnChange // Rely on this built-in prop
       storageKey="agentdock-theme"
-      forcedTheme={!mounted ? undefined : undefined} // This forces a re-render when mounted changes
+      // forcedTheme={!mounted ? undefined : undefined} // Remove forced theme based on mount state
       {...props}
     >
       {children}

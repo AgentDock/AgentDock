@@ -4,7 +4,8 @@
 
 import { z } from 'zod';
 import { BaseNode, NodeMetadata } from '../nodes/base-node';
-import { CoreLLM } from '../llm';
+import { CoreLLM } from '../llm/core-llm';
+import { TokenUsage } from '../llm/types';
 
 // Tool registration types
 export interface ToolRegistrationOptions {
@@ -61,10 +62,14 @@ export interface LLMContext {
 export interface ToolExecutionOptions {
   /** Tool call ID for tracking */
   toolCallId: string;
+  /** Current session ID */
+  sessionId: string;
   /** Messages in the conversation (optional) */
   messages?: any[];
   /** LLM context for tool execution (optional) */
   llmContext?: LLMContext;
+  /** Optional handler to update cumulative token usage */
+  updateUsageHandler?: (usage: TokenUsage) => Promise<void>;
 }
 
 // Tool interface types

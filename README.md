@@ -196,7 +196,7 @@ The storage system is currently evolving with key-value storage (Memory, Redis, 
 
 ## 📕 Documentation
 
-Documentation for the AgentDock framework is available at [hub.agentdock.a/docs](https://hub.agentdock.ai/docs) and in the `/docs/` folder of this repository. The documentation includes:
+Documentation for the AgentDock framework is available at [hub.agentdock.ai/docs](https://hub.agentdock.ai/docs) and in the `/docs/` folder of this repository. The documentation includes:
 
 - Getting started guides
 - API references
@@ -344,7 +344,7 @@ For detailed technical documentation on these components, see the [Architecture 
 
 Below is our development roadmap for AgentDock. Most improvements listed here relate to the core AgentDock framework (`agentdock-core`), which is currently developed locally and will be published as a versioned NPM package upon reaching a stable release. Some roadmap items may also involve enhancements to the open-source client implementation.
 
-| Feature | Description | Status |
+| Feature | Description | Category |
 |---------|-------------|--------|
 | [**Storage Abstraction Layer**](docs/roadmap/storage-abstraction.md) | Flexible storage system with pluggable providers | **In Progress** |
 | [**Advanced Memory Systems**](docs/roadmap/advanced-memory.md) | Long-term context management | **In Progress** |

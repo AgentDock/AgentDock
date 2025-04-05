@@ -278,14 +278,13 @@ export class CoreLLM {
           options.onFinish!(completion as StreamTextOnFinishResult);
         }
 
-        // --- BEGIN Added Debugging ---
+        // Added Debugging
         logger.debug(LogCategory.LLM, 'CoreLLM', '[streamText] Inside wrappedOnFinish', {
           usageProvided: !!usage,
           usageValue: usage,
           // Remove reference to removed onUsageAvailable
           // onUsageAvailableType: typeof options.onUsageAvailable
         });
-        // --- END Added Debugging ---
       };
       
       // Wrap onStepFinish to standardize tool call format across providers

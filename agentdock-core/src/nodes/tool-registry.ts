@@ -10,6 +10,11 @@ import { logger, LogCategory } from '../logging';
  */
 export interface ToolRegistry {
   /**
+   * Register a tool with the registry
+   */
+  registerTool(name: string, tool: any): void;
+  
+  /**
    * Get tools for a specific agent based on node names
    */
   getToolsForAgent(nodeNames: string[]): Record<string, any>;
@@ -26,12 +31,15 @@ export class DefaultToolRegistry implements ToolRegistry {
    */
   registerTool(name: string, tool: any): void {
     this.tools[name] = tool;
+    // Removed verbose logging for individual tool registration
+    /*
     logger.debug(
       LogCategory.NODE,
       'ToolRegistry',
       'Registered tool',
       { name }
     );
+    */
   }
   
   /**
@@ -41,7 +49,21 @@ export class DefaultToolRegistry implements ToolRegistry {
     const result: Record<string, any> = {};
     nodeNames.forEach(name => {
       if (this.tools[name]) {
-        result[name] = this.tools[name];
+        // Make a copy of the tool and ensure its name matches its registry key
+        const tool = { ...this.tools[name] };
+        if (!tool.name || tool.name !== name) {
+          logger.debug(
+            LogCategory.NODE,
+            'ToolRegistry',
+            'Updating tool name to match registry key',
+            { 
+              registryKey: name,
+              originalName: tool.name || 'undefined'
+            }
+          );
+          tool.name = name;
+        }
+        result[name] = tool;
       }
     });
     
@@ -51,7 +73,8 @@ export class DefaultToolRegistry implements ToolRegistry {
       'Got tools for agent',
       { 
         requestedTools: nodeNames.length,
-        availableTools: Object.keys(result).length
+        availableTools: Object.keys(result).length,
+        tools: Object.keys(result).join(', ')
       }
     );
     

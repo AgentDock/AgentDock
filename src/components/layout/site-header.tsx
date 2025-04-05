@@ -54,7 +54,11 @@ export function SiteHeader({ isCollapsed, onCollapse }: SiteHeaderProps) {
               <SheetHeader className="sr-only">
                 <SheetTitle>Navigation Menu</SheetTitle>
               </SheetHeader>
-              <MobileNav />
+              <MobileNav onNavigate={() => {
+                // Close the sheet when a navigation item is clicked
+                const closeButton = document.querySelector('[data-radix-sheet-close]') as HTMLButtonElement | null;
+                if (closeButton) closeButton.click();
+              }} />
             </SheetContent>
           </Sheet>
 

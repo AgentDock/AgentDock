@@ -57,7 +57,6 @@
   opacity: 0;
   margin-left: 0.5rem;
   font-size: 0.7em;
-  transition: opacity 0.2s ease;
 }
 
 .docs-content h1:hover .header-link-icon,
@@ -119,7 +118,6 @@
 /* Anchor link styles - invisible by default */
 .docs-content .anchor-link {
   opacity: 0.3;
-  transition: opacity 0.2s;
   color: inherit;
   font-weight: normal;
   margin-left: 0.6rem;
@@ -141,7 +139,6 @@
   color: hsl(var(--primary));
   text-decoration: none;
   font-weight: 500;
-  transition: color 0.15s ease;
   white-space: normal;
   word-break: normal;
   overflow-wrap: break-word;

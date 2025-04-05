@@ -200,8 +200,6 @@
   /* Apply fonts properly */
   body {
     font-family: var(--font-primary);
-    transition: background-color var(--transition-duration) var(--transition-timing),
-                color var(--transition-duration) var(--transition-timing);
   }
   
   code, pre, kbd, samp, .font-mono {
@@ -664,6 +662,12 @@ html.prevent-transition body {
 .dark pre[class*="language-"] {
   background-color: #1e1e2e !important;
   color: #e6edf3 !important;
+  transition: none !important;
+}
+
+html.prevent-transition,
+html.prevent-transition *,
+body.prevent-transition * { /* Targeting body as well */
   transition: none !important;
 }
 

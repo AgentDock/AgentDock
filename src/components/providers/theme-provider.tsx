@@ -18,39 +18,34 @@ export function ThemeProvider({
   // const [mounted, setMounted] = React.useState(false)
   // const mountingRef = React.useRef(false)
 
-  // Handle mounting only once to prevent multiple transitions
-  // React.useEffect(() => {
-  //   if (mountingRef.current) return;
-  //   mountingRef.current = true;
-    
-  //   // First add class to completely disable all transitions
-  //   if (typeof document !== 'undefined') {
-  //     document.documentElement.classList.add('prevent-transition');
-  //   }
-    
-  //   // Delay mounting state to ensure theme is fully loaded
-  //   const timer = setTimeout(() => {
-  //     setMounted(true);
-      
-  //     // Remove transition prevention after theme is stable
-  //     if (typeof document !== 'undefined') {
-  //       setTimeout(() => {
-  //         document.documentElement.classList.remove('prevent-transition');
-  //       }, 300);
-  //     }
-  //   }, 50);
-    
-  //   return () => clearTimeout(timer);
-  // }, []);
+  // Minimal effect to prevent initial transition flash
+  React.useEffect(() => {
+    // Add the class immediately on mount
+    document.documentElement.classList.add('prevent-transition');
+
+    // Schedule removal shortly after the first paint
+    // Using requestAnimationFrame ensures it runs after the browser has painted
+    // Alternatively, setTimeout(..., 1) could be used.
+    const animationFrameId = requestAnimationFrame(() => {
+      document.documentElement.classList.remove('prevent-transition');
+    });
+
+    // Cleanup function to cancel the removal if the component unmounts quickly
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      // Optionally, ensure the class is removed on unmount too, though less critical
+      // document.documentElement.classList.remove('prevent-transition');
+    };
+  }, []); // Run only once on mount
 
   return (
     <NextThemesProvider
       attribute="class"
       defaultTheme="system"
       enableSystem
-      disableTransitionOnChange // Rely on this built-in prop
+      disableTransitionOnChange // Keep this for smoother subsequent changes
       storageKey="agentdock-theme"
-      // forcedTheme={!mounted ? undefined : undefined} // Remove forced theme based on mount state
+      // No forcedTheme needed here
       {...props}
     >
       {children}

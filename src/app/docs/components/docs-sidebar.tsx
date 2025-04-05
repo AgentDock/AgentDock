@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
 import { ChevronDown, ChevronRight } from 'lucide-react';
@@ -15,6 +15,7 @@ interface DocsSidebarProps {
 export function DocsSidebar({ sidebarSections }: DocsSidebarProps) {
   const pathname = usePathname();
   const isMainDocsPage = pathname === '/docs' || pathname === '/docs/';
+  const initialized = useRef(false);
   
   // Check if a link should be considered active
   const isLinkActive = (linkHref: string): boolean => {
@@ -43,24 +44,26 @@ export function DocsSidebar({ sidebarSections }: DocsSidebarProps) {
     return null;
   }, [sidebarSections, isMainDocsPage, pathname]);
   
-  // Initialize expanded sections state only once on component mount
-  // This prevents flickering on page refresh
-  const initialExpandedSections = useMemo(() => {
-    const initialState: {[key: string]: boolean} = {};
-    
-    // Always expand Overview section
-    initialState["Overview"] = true;
-    
-    // Expand the section containing the active page
-    if (activeSectionTitle && activeSectionTitle !== "Overview") {
-      initialState[activeSectionTitle] = true;
+  // State for expanded sections
+  const [expandedSections, setExpandedSections] = useState<{[key: string]: boolean}>({});
+
+  // Initialize expanded state ONLY ONCE on mount
+  useEffect(() => {
+    if (!initialized.current) {
+      const initialState: {[key: string]: boolean} = {};
+      
+      // Always expand Overview section
+      initialState["Overview"] = true;
+      
+      // Expand the section containing the active page
+      if (activeSectionTitle && activeSectionTitle !== "Overview") {
+        initialState[activeSectionTitle] = true;
+      }
+      
+      setExpandedSections(initialState);
+      initialized.current = true;
     }
-    
-    return initialState;
   }, [activeSectionTitle]);
-  
-  // Use the pre-calculated initial state
-  const [expandedSections, setExpandedSections] = useState(initialExpandedSections);
 
   // Toggle section expansion
   const toggleSection = (sectionTitle: string) => {

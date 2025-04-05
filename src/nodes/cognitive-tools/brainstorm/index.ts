@@ -7,82 +7,12 @@ import { z } from 'zod';
 import { Tool, ToolExecutionOptions } from '../../types';
 import { ToolResult, formatErrorMessage, createToolResult } from '@/lib/utils/markdown-utils';
 import { logger, LogCategory } from 'agentdock-core';
-
-/**
- * Schema for brainstorm tool parameters
- */
-const brainstormSchema = z.object({
-  challenge: z.string().min(1, "Challenge is required").describe("The problem or topic to brainstorm ideas for"),
-  ideas: z.string().optional().describe("Structured collection of creative ideas with categories and explanations")
-});
+import { BrainstormSchema } from './schema';
 
 /**
  * Type inference from schema
  */
-type BrainstormParams = z.infer<typeof brainstormSchema>;
-
-/**
- * Formats brainstorm ideas with semantic markup
- */
-function formatBrainstormIdeas(ideas: string): string {
-  // Add semantic formatting to different sections
-  return ideas
-    // Format the section headers
-    .replace(/PROBLEM FRAMING:/g, '**PROBLEM FRAMING:**')
-    .replace(/CATEGORY \d+:/g, (match) => `\n\n### ${match}`)
-    .replace(/IDEAS:/g, '**IDEAS:**')
-    .replace(/POTENTIAL APPLICATIONS:/g, '**POTENTIAL APPLICATIONS:**')
-    .replace(/KEY INSIGHTS:/g, '**KEY INSIGHTS:**')
-    .replace(/NEXT STEPS:/g, '\n\n**NEXT STEPS:**');
-}
-
-/**
- * Brainstorm component function
- */
-function BrainstormComponent({ 
-  challenge = "", 
-  ideas = ""
-}: BrainstormParams): ToolResult {
-  // Format title and content
-  const title = `## 💡 Brainstorm: ${challenge}`;
-  const formattedIdeas = formatBrainstormIdeas(ideas);
-  
-  // Return formatted markdown result
-  return createToolResult(
-    'brainstorm_result',
-    `${title}\n\n${formattedIdeas}`
-  );
-}
-
-/**
- * Detailed brainstorm tool description
- */
-const brainstormToolDescription = `
-The 'brainstorm' tool provides a structured approach to creative ideation for problems, challenges, or opportunities.
-
-First, tell the user you'll use a structured brainstorming process to generate ideas for their challenge.
-Then call the brainstorm tool with:
-1. challenge - A brief description of the problem or opportunity to explore
-2. ideas - Your structured collection of creative ideas
-
-For the ideas, use this structure:
-- Begin with "PROBLEM FRAMING:" to reframe the challenge in a way that enables creative solutions
-- Include multiple idea categories using "CATEGORY 1:", "CATEGORY 2:", etc.
-- For each category include:
-  * "IDEAS:" - A list of specific, actionable ideas in this category
-  * "POTENTIAL APPLICATIONS:" - How these ideas might be implemented or used
-- End with "KEY INSIGHTS:" highlighting patterns or particularly promising directions
-- Conclude with "NEXT STEPS:" suggesting how to develop these ideas further
-
-Format your ideas with Markdown for readability:
-- **Bold key concepts** and *italicize important insights* 
-- Use numbered lists (1., 2., etc.) for sequential steps or prioritized ideas
-- Use bullet points for related concepts or variations on an idea
-- Create tables if comparing multiple approaches or ideas
-- Use emoji sparingly to add visual distinction to different idea types
-
-Your brainstorming should be creative, diverse, and push beyond obvious solutions.
-`;
+type BrainstormParams = z.infer<typeof BrainstormSchema>;
 
 /**
  * Handle tool errors safely, ensuring they are always properly formatted strings
@@ -110,10 +40,10 @@ function safelyHandleError(error: unknown, challenge: string): ToolResult {
   logger.error(LogCategory.NODE, '[Brainstorm]', 'Execution error:', { error: errorMessage });
   
   // Return a properly formatted error result
-  return BrainstormComponent({
-    challenge,
-    ideas: `Error: ${errorMessage}`
-  });
+  return createToolResult(
+    'brainstorm_result',
+    `## 💡 Brainstorm: ${challenge}\n\nError: ${errorMessage}`
+  );
 }
 
 /**
@@ -180,6 +110,22 @@ Remember, do not include a title - start directly with your brainstorming conten
       messages
     });
     
+    // --- Add Usage Tracking --- 
+    if (result.usage && options.updateUsageHandler) {
+      logger.debug(LogCategory.NODE, '[Brainstorm]', 'Calling usage handler after generateText', { 
+        usage: result.usage,
+        handlerExists: !!options.updateUsageHandler 
+      });
+      await options.updateUsageHandler(result.usage); // Call the handler passed from AgentNode
+    } else {
+      // Log if handler or usage is missing for debugging
+      logger.warn(LogCategory.NODE, '[Brainstorm]', 'Usage handler or usage data missing, skipping update', { 
+        hasUsage: !!result.usage,
+        handlerExists: !!options.updateUsageHandler 
+      });
+    }
+    // --- End Usage Tracking ---
+
     logger.debug(LogCategory.NODE, '[Brainstorm]', 'Successfully generated dynamic brainstorming with LLM', {
       contentLength: result.text.length
     });
@@ -196,12 +142,42 @@ Remember, do not include a title - start directly with your brainstorming conten
 }
 
 /**
+ * Detailed brainstorm tool description
+ */
+const brainstormToolDescription = `
+The 'brainstorm' tool provides a structured approach to creative ideation for problems, challenges, or opportunities.
+
+First, tell the user you'll use a structured brainstorming process to generate ideas for their challenge.
+Then call the brainstorm tool with:
+1. challenge - A brief description of the problem or opportunity to explore
+2. ideas - Your structured collection of creative ideas
+
+For the ideas, use this structure:
+- Begin with "PROBLEM FRAMING:" to reframe the challenge in a way that enables creative solutions
+- Include multiple idea categories using "CATEGORY 1:", "CATEGORY 2:", etc.
+- For each category include:
+  * "IDEAS:" - A list of specific, actionable ideas in this category
+  * "POTENTIAL APPLICATIONS:" - How these ideas might be implemented or used
+- End with "KEY INSIGHTS:" highlighting patterns or particularly promising directions
+- Conclude with "NEXT STEPS:" suggesting how to develop these ideas further
+
+Format your ideas with Markdown for readability:
+- **Bold key concepts** and *italicize important insights* 
+- Use numbered lists (1., 2., etc.) for sequential steps or prioritized ideas
+- Use bullet points for related concepts or variations on an idea
+- Create tables if comparing multiple approaches or ideas
+- Use emoji sparingly to add visual distinction to different idea types
+
+Your brainstorming should be creative, diverse, and push beyond obvious solutions.
+`;
+
+/**
  * Brainstorm tool implementation
  */
 export const brainstormTool: Tool = {
   name: 'brainstorm',
   description: brainstormToolDescription,
-  parameters: brainstormSchema,
+  parameters: BrainstormSchema,
   execute: async (params: BrainstormParams, options: ToolExecutionOptions): Promise<ToolResult> => {
     try {
       const { challenge, ideas } = params;
@@ -226,17 +202,17 @@ export const brainstormTool: Tool = {
         // Generate dynamic structured brainstorming for the challenge using LLM
         const dynamicIdeas = await generateStructuredBrainstorming(challenge, options);
         
-        return BrainstormComponent({
-          challenge,
-          ideas: dynamicIdeas
-        });
+        return createToolResult(
+          'brainstorm_result',
+          `## 💡 Brainstorm: ${challenge}\n\n${dynamicIdeas}`
+        );
       }
       
       // Create the result with all parameters for complete calls
-      const result = BrainstormComponent({
-        challenge,
-        ideas
-      });
+      const result = createToolResult(
+        'brainstorm_result',
+        `## 💡 Brainstorm: ${challenge}\n\n${ideas}`
+      );
       
       logger.debug(LogCategory.NODE, '[Brainstorm]', 'Returning complete brainstorming session', {
         challenge,

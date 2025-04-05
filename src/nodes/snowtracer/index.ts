@@ -3,7 +3,7 @@
  */
 
 import { z } from 'zod';
-import { Tool, ToolExecutionOptions, ToolRegistry } from '../types';
+import { Tool, ToolExecutionOptions, ToolCollection } from '../types';
 import * as snowtraceAPI from './api';
 import { 
   AddressBalance, 
@@ -146,6 +146,6 @@ async function getGasOracle(apiKey?: string) {
 }
 
 // Export tools for registry
-export const tools: ToolRegistry = {
+export const tools: ToolCollection = {
   snowtracer: snowtracerTool
 }; 

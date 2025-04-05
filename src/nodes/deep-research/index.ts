@@ -57,7 +57,7 @@ export const deepResearchTool: Tool = {
       
       try {
         // Use breadth parameter to determine number of search results (now supports up to 25)
-        searchResult = await performSearch(query, breadth);
+        searchResult = await performSearch(query, breadth, options);
       } catch (error) {
         logger.warn(LogCategory.NODE, '[DeepResearch]', 'Error during initial search', { error });
         searchError = true;
@@ -91,7 +91,7 @@ export const deepResearchTool: Tool = {
         
         try {
           // Use Firecrawl for deeper content retrieval - use all available sources up to breadth
-          const deeperSources = await getDeepContent(sources, Math.min(breadth, sources.length));
+          const deeperSources = await getDeepContent(sources, Math.min(breadth, sources.length), options);
           
           // Add deeper sources to our sources list
           sources.push(...deeperSources.sources);
@@ -154,7 +154,7 @@ export const deepResearchTool: Tool = {
 /**
  * Helper function to perform a search
  */
-async function performSearch(query: string, limit: number): Promise<string> {
+async function performSearch(query: string, limit: number, options: ToolExecutionOptions): Promise<string> {
   try {
     logger.debug(LogCategory.NODE, '[DeepResearch]', `Searching for: ${query} with limit ${limit}`);
     
@@ -170,7 +170,10 @@ async function performSearch(query: string, limit: number): Promise<string> {
     const searchResult = await firecrawlSearchTool.execute({ 
       query, 
       limit: actualLimit 
-    }, { toolCallId: `search-${Date.now()}` });
+    }, { 
+      toolCallId: `search-${Date.now()}`,
+      sessionId: options.sessionId
+    });
     
     return typeof searchResult === 'string' ? searchResult : JSON.stringify(searchResult);
   } catch (error) {
@@ -182,7 +185,7 @@ async function performSearch(query: string, limit: number): Promise<string> {
 /**
  * Helper function to get deeper content using Firecrawl
  */
-async function getDeepContent(sources: Array<{ title: string, url: string }>, limit: number): Promise<{ 
+async function getDeepContent(sources: Array<{ title: string, url: string }>, limit: number, options: ToolExecutionOptions): Promise<{ 
   content: string, 
   sources: Array<{ title: string, url: string }> 
 }> {
@@ -216,7 +219,10 @@ async function getDeepContent(sources: Array<{ title: string, url: string }>, li
         const scrapeResult = await firecrawlScrapeTool.execute({ 
           url: source.url, 
           formats: ['markdown'] 
-        }, { toolCallId: `scrape-${Date.now()}` });
+        }, {
+          toolCallId: `scrape-${Date.now()}`,
+          sessionId: options.sessionId
+        });
         
         // Convert result to string if it's not already
         const scrapeContent = typeof scrapeResult === 'string' ? scrapeResult : JSON.stringify(scrapeResult);

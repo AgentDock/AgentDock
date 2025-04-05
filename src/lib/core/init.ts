@@ -4,59 +4,63 @@
  */
 
 import { logger, LogCategory, LogLevel } from 'agentdock-core';
-import { initToolRegistry } from '@/nodes/init';
 
-// Global initialization flag (will persist across hot reloads)
-/* eslint-disable */
-/* tslint:disable */
-// Required for system initialization
-declare global {
-  var __systemInitialized: boolean;
-}
-/* eslint-enable */
-/* tslint:enable */
+// In server components, we need to be careful about initialization
+// to avoid non-serializable objects being passed to client components
 
-// Initialize the global flag if it doesn't exist
-if (typeof global.__systemInitialized === 'undefined') {
-  global.__systemInitialized = false;
-}
+// Detect if we're running on the server or client
+const isServer = typeof window === 'undefined';
 
-/**
- * Initialize the entire AgentDock system
- * This is the single entry point for all initialization
- */
-export function initSystem(): void {
-  // Skip if already initialized
-  if (global.__systemInitialized) {
-    logger.debug(LogCategory.SYSTEM, 'System', 'System already initialized, skipping');
-    return;
-  }
-
+// Initialize the logger without any side effects that could cause RSC serialization issues
+export function setupLogger() {
   // Set log level to INFO to reduce excessive debug logging
   logger.setLogLevel(LogLevel.INFO);
+  
+  return {
+    info: (message: string) => {
+      logger.info(LogCategory.SYSTEM, 'System', message);
+    },
+    error: (message: string, error?: unknown) => {
+      logger.error(
+        LogCategory.SYSTEM,
+        'System',
+        message,
+        { error: error instanceof Error ? error.message : 'Unknown error' }
+      );
+    }
+  };
+}
 
-  logger.info(LogCategory.SYSTEM, 'System', 'Initializing AgentDock system');
+// This function should only be called from client components
+export function initSystem(): void {
+  // Skip initialization on the server to avoid RSC serialization issues
+  if (isServer) {
+    return;
+  }
+  
+  const log = setupLogger();
   
   try {
-    // 1. Initialize tool registry (custom tools only)
-    initToolRegistry();
+    // Check if the system is already initialized using a simpler approach
+    if (typeof window !== 'undefined' && (window as any).__systemInitialized) {
+      logger.debug(LogCategory.SYSTEM, 'System', 'System already initialized, skipping');
+      return;
+    }
     
-    // 2. Initialize other subsystems here as needed
-    // ...
+    log.info('Initializing AgentDock system');
     
-    // Mark as initialized globally
-    global.__systemInitialized = true;
-    logger.info(LogCategory.SYSTEM, 'System', 'System initialized successfully');
+    // Set global initialization flag on the window object instead of global
+    if (typeof window !== 'undefined') {
+      (window as any).__systemInitialized = true;
+    }
+    
+    // Tool registry initialization will be handled by the client component
+    
+    log.info('System initialized successfully');
   } catch (error) {
-    logger.error(
-      LogCategory.SYSTEM,
-      'System',
-      'Failed to initialize system',
-      { error: error instanceof Error ? error.message : 'Unknown error' }
-    );
+    log.error('Failed to initialize system', error);
   }
 }
 
-// Auto-initialize the system
-// This ensures the system is initialized when this file is imported
-initSystem(); 
+// Do NOT auto-initialize the system here to avoid RSC serialization issues
+// Initialization will be done in client components 

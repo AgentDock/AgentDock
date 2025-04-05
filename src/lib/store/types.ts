@@ -16,7 +16,7 @@ export interface AgentTemplate {
   agentId: string;
   name: string;
   description: string;
-  personality: ValidatedPersonality;
+  personality: string[];
   nodes: string[];
   nodeConfigurations: {
     [providerKey: string]: {
@@ -27,8 +27,16 @@ export interface AgentTemplate {
     };
   };
   tools?: string[];
-  chatSettings: TemplateChatSettings;
+  chatSettings: {
+    historyPolicy?: 'none' | 'lastN' | 'all';
+    historyLength?: number;
+    initialMessages?: string[];
+    chatPrompts?: string[];
+  };
   instructions?: string;
+  tags?: string[];
+  priority?: number;
+  options?: Record<string, unknown>;
 }
 
 export interface AgentRuntimeSettings {

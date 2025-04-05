@@ -1,4 +1,5 @@
 import { logger, LogCategory } from 'agentdock-core';
+import { put } from '@vercel/blob';
 
 // Define interface for stored images
 export interface StoredImage {
@@ -7,6 +8,11 @@ export interface StoredImage {
   prompt: string;     // original prompt
   description: string | null; // optional description
 }
+
+// --- Environment Check ---
+// Use DEPLOYMENT_ENV === 'hub' to determine production environment for Blob storage
+const USE_BLOB_STORAGE = process.env.DEPLOYMENT_ENV === 'hub';
+logger.info(LogCategory.SYSTEM, 'ImageStore', `Blob storage configured: ${USE_BLOB_STORAGE}`);
 
 // Create a more durable store by using Node.js global object
 // This ensures the store persists across API invocations in production
@@ -72,34 +78,84 @@ export function listStoredImages(): string[] {
 }
 
 /**
- * Store a base64 image and return a reference URL
+ * Clears the entire in-memory image store.
+ * Intended for local development/testing use.
  */
-export function storeAndGetImageUrl(
+export function clearMemoryStore(): void {
+  const initialSize = imageStore.size;
+  imageStore.clear();
+  logger.info(
+    LogCategory.SYSTEM,
+    'ImageStore',
+    'Cleared global image store via function call',
+    { initialSize, finalSize: imageStore.size }
+  );
+}
+
+/**
+ * Store an image (conditionally in memory or Vercel Blob) and return a reference URL.
+ * In production ('hub'), uploads to Blob and returns Blob URL.
+ * Locally ('oss' or other), stores in memory and returns relative API path.
+ */
+export async function storeAndGetImageUrl(
   base64Data: string, 
   mimeType: string,
   prompt: string,
   description: string | null,
-  origin: string = ''  // Default to empty string for backward compatibility
-): string {
-  // Extract the base64 data without the prefix
+  origin: string = ''
+): Promise<string> {
+
   const base64Content = base64Data.startsWith('data:') 
     ? base64Data.split(',')[1] 
     : base64Data;
     
-  // Generate a unique ID
   const imageId = generateImageId();
-  
-  // Store the image data
-  storeImage(imageId, {
-    imageData: base64Content,
-    mimeType,
-    prompt,
-    description
-  });
-  
-  // Return a reference URL to the image, use absolute URL if origin is provided
-  const relativePath = `/api/images/store/${imageId}`;
-  return origin ? `${origin}${relativePath}` : relativePath;
+  const fileExtension = mimeType.split('/')[1] || 'png';
+  const blobFilename = `images/${imageId}.${fileExtension}`;
+
+  if (USE_BLOB_STORAGE) {
+    // --- Production/Hub: Use Vercel Blob --- 
+    try {
+      logger.info(LogCategory.SYSTEM, 'ImageStore', `Uploading to Vercel Blob: ${blobFilename}`);
+      const imageBuffer = Buffer.from(base64Content, 'base64');
+
+      const blobResult = await put(
+        blobFilename, 
+        imageBuffer,
+        {
+          access: 'public',
+          contentType: mimeType,
+          // Consider adding cache control headers?
+          // cacheControlMaxAge: 60 * 60 * 24 * 365 // 1 year
+        }
+      );
+      
+      logger.info(LogCategory.SYSTEM, 'ImageStore', `Vercel Blob upload successful`, { url: blobResult.url });
+      
+      // Optional: Store metadata (like prompt/description/imageId) in KV here
+      // await storeBlobMetadata(imageId, blobResult.url, prompt, description);
+      
+      return blobResult.url; // Return the permanent Blob URL
+
+    } catch (error) {
+      logger.error(LogCategory.SYSTEM, 'ImageStore', 'Vercel Blob upload failed', { 
+        filename: blobFilename,
+        error: error instanceof Error ? error.message : String(error) 
+      });
+      throw new Error(`Failed to upload image to Vercel Blob: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  } else {
+    // --- Local/OSS: Use In-Memory Store --- 
+    logger.debug(LogCategory.SYSTEM, 'ImageStore', `Storing image in memory: ${imageId}`);
+    storeImage(imageId, {
+      imageData: base64Content,
+      mimeType,
+      prompt,
+      description
+    });
+    const relativePath = `/api/images/store/${imageId}`;
+    return Promise.resolve(origin ? `${origin}${relativePath}` : relativePath); // Return resolved promise
+  }
 }
 
 /**

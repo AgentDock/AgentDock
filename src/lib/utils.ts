@@ -3,7 +3,17 @@ import { twMerge } from "tailwind-merge"
 import { LLMConfig, LLMProvider, ProviderRegistry } from 'agentdock-core'
 import { ModelRegistry } from './models/registry'
 import { ModelService } from './services/model-service'
+import type { AgentTemplate } from './store/types'
 
+// Re-export AgentTemplate type
+export type { AgentTemplate }
+
+/**
+ * Combines class names with Tailwind CSS optimizations.
+ *
+ * @param inputs - Class names or conditional class objects
+ * @returns Merged and optimized class string
+ */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
@@ -38,6 +48,11 @@ export function getLLMInfo(config: Record<string, any>) {
       : `${providerMetadata.displayName} - ${modelId}`,
     validateApiKey: (key: string) => ProviderRegistry.validateApiKey(provider, key)
   };
+}
+
+// Update hasTag function to be type-safe
+export function hasTag(template: AgentTemplate, tagId: string): boolean {
+  return template.tags?.includes(tagId) ?? false;
 }
 
 // Export provider utilities

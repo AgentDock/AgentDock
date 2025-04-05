@@ -6,7 +6,8 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
-import { SecureStorage, LLMProvider, logger, LogCategory } from 'agentdock-core'
+import { SecureStorage } from 'agentdock-core/storage/secure-storage'
+import { LLMProvider, logger, LogCategory } from 'agentdock-core'
 import { ErrorBoundary } from "@/components/error-boundary"
 import { Skeleton } from "@/components/ui/skeleton"
 import { TooltipProvider } from "@/components/ui/tooltip"
@@ -196,12 +197,7 @@ function SettingsPage() {
 
   // Handle BYOK only mode toggle
   const handleByokOnlyChange = useCallback((checked: boolean) => {
-    // If trying to turn off BYOK mode, prevent it
-    if (!checked) {
-      toast.error("BYOK mode cannot be disabled once enabled")
-      return
-    }
-    
+    // Update the state
     setSettings(prev => ({
       ...prev,
       core: {
@@ -210,6 +206,20 @@ function SettingsPage() {
       }
     }))
     setError(null)
+    
+    // Store BYOK setting in localStorage ONLY
+    try {
+      localStorage.setItem('byokOnly', checked ? 'true' : 'false')
+    } catch (error) {
+      console.warn("Failed to save BYOK setting to localStorage", error)
+    }
+    
+    // Show appropriate toast message
+    if (checked) {
+      toast.info("BYOK Mode enabled - Only user-provided API keys will be used")
+    } else {
+      toast.info("BYOK Mode disabled - System will fall back to environment variables if needed")
+    }
   }, [])
 
   // Handle debug mode toggle

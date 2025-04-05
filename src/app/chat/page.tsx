@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense, useRef, useState } from "react"
+import { Suspense, useRef, useState, useEffect } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { ChatContainer } from "@/components/chat"
 import { logger, LogCategory } from 'agentdock-core'
@@ -12,36 +12,78 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { RefreshCw } from "lucide-react"
 import { templates, TemplateId } from '@/generated/templates'
 import { useChatSettings } from '@/hooks/use-chat-settings'
+import { ChatSkeleton } from "@/components/chat/ChatSkeleton"
+import { useChatProgressiveLoading } from "@/hooks/use-chat-progressive-loading"
+import { useChatFirstLoad } from "@/hooks/use-chat-first-load"
 
 function ChatPageContent() {
-  const searchParams = useSearchParams()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const rawAgentId = searchParams?.get('agent')?.split('?')[0] // Clean agentId
   const agentId = rawAgentId || null // Keep as null for type compatibility
   const chatContainerRef = useRef<{ handleReset: () => Promise<void> }>(null)
   
-  // Use the enhanced useChatSettings hook
+  // Use our progressive loading hook
+  const {
+    isLoading: progressiveLoading,
+    error: progressiveError,
+    layoutReady,
+    isFirstLoad
+  } = useChatProgressiveLoading(agentId);
+  
+  // Get agent name for the skeleton if possible
+  const agentName = agentId ? templates[agentId as TemplateId]?.name : undefined;
+  
+  // Use the enhanced useChatSettings hook - but only after initial verification
   const { 
     chatSettings, 
-    isLoading, 
-    error, 
+    isLoading: settingsLoading, 
+    error: settingsError, 
     debugMode 
-  } = useChatSettings(agentId);
+  } = useChatSettings(layoutReady ? agentId : null);
+  
+  // Log debug mode for troubleshooting
+  useEffect(() => {
+    if (debugMode) {
+      console.log('Debug mode in chat page:', debugMode);
+      console.log('URL debug param:', searchParams?.get('debug'));
+    }
+  }, [debugMode, searchParams]);
   
   // State for debug information only
   const [messagesCount, setMessagesCount] = useState(0);
+  const [orchestrationDebug, setOrchestrationDebug] = useState<{ 
+    sessionId?: string, 
+    activeStep?: string, 
+    recentlyUsedTools?: string[] 
+  }>({});
 
-  // Redirect if no agent or invalid agent
-  if (!agentId || !templates[agentId as TemplateId]) {
-    router.replace('/agents');
-    return null;
-  }
+  // Combine errors
+  const error = progressiveError || settingsError;
+
+  // Handle message count and orchestration state updates from the chat container
+  const handleStateUpdate = (state: {
+    messagesCount?: number;
+    orchestration?: {
+      sessionId?: string;
+      activeStep?: string;
+      recentlyUsedTools?: string[];
+    }
+  }) => {
+    if (state.messagesCount !== undefined) {
+      setMessagesCount(state.messagesCount);
+    }
+    if (state.orchestration) {
+      setOrchestrationDebug(state.orchestration);
+    }
+  };
 
   const handleReset = async () => {
     try {
       if (chatContainerRef.current) {
         await chatContainerRef.current.handleReset();
         setMessagesCount(0); // Reset count for debug display
+        setOrchestrationDebug({}); // Reset orchestration debug info
       }
     } catch (error) {
       toast.error('Failed to reset chat');
@@ -54,17 +96,9 @@ function ChatPageContent() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="container mx-auto p-4">
-        <div className="flex items-center justify-center h-[600px]">
-          <div className="flex items-center gap-2">
-            <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-            <span className="text-sm text-muted-foreground">Loading chat...</span>
-          </div>
-        </div>
-      </div>
-    )
+  // Only show loading state for first load of this agent
+  if (isFirstLoad && (progressiveLoading || settingsLoading)) {
+    return <ChatSkeleton agentName={agentName} />
   }
 
   if (error) {
@@ -83,67 +117,66 @@ function ChatPageContent() {
     )
   }
 
+
+
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] md:h-[calc(100vh-4rem)] md:-mx-8 overflow-hidden">      
-      <ChatContainer
-        ref={chatContainerRef}
-        className="flex-1"
+  <div className="flex flex-col h-[calc(100vh-4rem)] md:h-[calc(100vh-4rem)] md:-mx-8 overflow-hidden">      
+    <ChatContainer
+      ref={chatContainerRef}
+      className="flex-1"
         header={
           <div className="flex items-center gap-3">
             <h1 className="text-xl font-semibold">{chatSettings?.name}</h1>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleReset}
-              className="h-8 w-8"
-              title="Reset Chat"
-            >
-              <RefreshCw className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleReset}
+                className="h-8 w-8"
+                title="Reset Chat"
+              >
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+              {/* Always render the debug button container */}
+              <div id="debug-button-container" className="inline-block"></div>
+            </div>
           </div>
         }
-        agentId={agentId}
+        agentId={agentId || undefined}
+        onStateUpdate={handleStateUpdate}
       />
 
-      {debugMode && chatSettings && (
-        <footer className="flex-none bg-muted/50">
-          <div className="mx-auto max-w-4xl">
-            <ScrollArea className="h-40">
-              <div className="space-y-4 p-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-semibold">Debug Information</h3>
-                  <Badge variant="outline">Debug Mode</Badge>
-                </div>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="font-medium">Model</p>
-                    <p className="text-muted-foreground">{chatSettings.model}</p>
-                  </div>
-                  <div>
-                    <p className="font-medium">Temperature</p>
-                    <p className="text-muted-foreground">{chatSettings.temperature}</p>
-                  </div>
-                  <div>
-                    <p className="font-medium">Max Tokens</p>
-                    <p className="text-muted-foreground">{chatSettings.maxTokens}</p>
-                  </div>
-                  <div>
-                    <p className="font-medium">Message Count</p>
-                    <p className="text-muted-foreground">{messagesCount}</p>
-                  </div>
-                </div>
-              </div>
-            </ScrollArea>
-          </div>
-        </footer>
-      )}
+      {/* Removed the old debug footer panel as it's now replaced by the ChatDebug sheet component */}
     </div>
   )
 }
 
 export default function ChatPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<ChatSkeleton />}>
+      <ChatPageClient />
+    </Suspense>
+  )
+}
+
+function ChatPageClient() {
+  const searchParams = useSearchParams();
+  const rawAgentId = searchParams?.get('agent')?.split('?')[0];
+  const agentId = rawAgentId || null;
+  
+  // Get agent name for the skeleton if possible
+  const agentName = agentId && templates[agentId as TemplateId] ? templates[agentId as TemplateId].name : undefined;
+  
+  // Use our first load hook to determine if we should show the skeleton
+  const { isFirstLoad } = useChatFirstLoad();
+  
+  // Only show skeleton on the very first load of the chat interface
+  const fallback = isFirstLoad ? (
+    <ChatSkeleton agentName={agentName} />
+  ) : null;
+  
+  return (
+    <Suspense fallback={fallback}>
       <ChatPageContent />
     </Suspense>
   )

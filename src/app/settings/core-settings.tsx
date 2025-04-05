@@ -39,14 +39,27 @@ function CoreSettingsComponent({
           <div className="grid gap-2">
             <div className="flex items-center justify-between">
               <div className="space-y-1">
-                <Label>BYOK Only Mode</Label>
+                <Label>Bring Your Own Keys Mode</Label>
                 <p className="text-sm text-muted-foreground">
-                  Only use provided API keys (no fallback to service keys)
+                  Use only user-provided API keys (no fallback to environment variables)
                 </p>
               </div>
               <Switch
                 checked={settings.core.byokOnly}
-                onCheckedChange={onByokChange}
+                onCheckedChange={(checked) => {
+                  // Update localStorage directly in addition to calling the regular handler
+                  try {
+                    localStorage.setItem('byokOnly', checked ? 'true' : 'false');
+                    
+                    // Add info log to show BYOK mode status
+                    console.info(`BYOK mode ${checked ? 'enabled' : 'disabled'} via settings interface`);
+                  } catch (e) {
+                    console.warn('Failed to update localStorage BYOK setting:', e);
+                  }
+                  
+                  // Call the regular handler
+                  onByokChange(checked);
+                }}
               />
             </div>
             
@@ -55,7 +68,7 @@ function CoreSettingsComponent({
                 <div className="flex items-center gap-3">
                   <AlertCircle className="h-5 w-5 text-yellow-500" />
                   <p className="text-sm text-yellow-500">
-                    Warning: With this enabled, agents will fail if you haven&apos;t provided your own API keys.
+                    Warning: With BYOK mode enabled, agents will fail if you haven&apos;t provided your own API keys in settings.
                   </p>
                 </div>
               </div>

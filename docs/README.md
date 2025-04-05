@@ -127,22 +127,22 @@ The framework is built around a powerful node-based system:
 ## What You Can Build
 
 ### 1. AI-Powered Applications
-- Custom chatbots with any frontend
-- Command-line AI assistants
-- *Automated data processing* pipelines
-- Backend service integrations
+   - Custom chatbots with any frontend
+   - Command-line AI assistants
+   - *Automated data processing* pipelines
+   - Backend service integrations
 
 ### 2. Integration Capabilities
-- Any AI provider (OpenAI, Anthropic, etc.)
-- Any frontend framework
-- Any backend service
-- *Custom data sources* and APIs
+   - Any AI provider (OpenAI, Anthropic, etc.)
+   - Any frontend framework
+   - Any backend service
+   - *Custom data sources* and APIs
 
 ### 3. Automation Systems
-- Data processing workflows
-- Document analysis pipelines
-- *Automated reporting* systems
-- Task automation agents
+   - Data processing workflows
+   - Document analysis pipelines
+   - *Automated reporting* systems
+   - Task automation agents
 
 
 ## Key Features

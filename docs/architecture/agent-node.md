@@ -1,20 +1,21 @@
 # Agent Node (`AgentNode`)
 
-The `AgentNode` class (`agentdock-core/src/nodes/agent-node.ts`) is the primary orchestrator for conversational agent interactions within AgentDock Core.
+The `AgentNode` class (`agentdock-core/src/nodes/agent-node.ts`) is the primary orchestrator for conversational agent interactions within AgentDock Core. It leverages the Vercel AI SDK for efficient streaming and multi-step tool execution.
 
 ## Core Responsibilities
 
--   **Message Processing:** Handles incoming message streams (`handleMessage`).
--   **LLM Interaction:** Manages communication with the LLM via `CoreLLM`, including prompt construction, API calls (`streamText`), and response handling.
+-   **Message Processing:** Handles incoming message arrays via its primary `handleMessage` method.
+-   **LLM Interaction:** Manages communication with language models via `CoreLLM`, utilizing the Vercel AI SDK's `streamText` function for generation, streaming, and tool execution.
 -   **Tool Integration:**
-    -   Loads tools specified in the agent template.
-    -   Applies orchestration rules (step-based filtering, sequencing) to determine available tools.
-    -   Formats available tools for the LLM's function/tool calling API.
-    -   Executes tools requested by the LLM.
--   **State Management:** Interacts with `OrchestrationStateManager` to retrieve and update session-specific state (active step, tool usage, token counts).
--   **Configuration Loading:** Reads agent behavior rules from the agent template (`template.json`).
--   **Context Injection:** Adds relevant context (like current time) to the LLM prompt.
--   **Token Usage Coordination:** Sets up the callback mechanism with `CoreLLM` to ensure token usage is reported and accumulated in the session state.
+    -   Determines available tools based on the agent template and current orchestration state (`OrchestrationManager.getAllowedTools`).
+    -   Prepares available tools (including `description`, `parameters`, and `execute` function) for `streamText`, which handles the internal tool execution loop.
+-   **State Management & Orchestration:**
+    -   Receives the `OrchestrationManager` and `sessionId` via `handleMessage`.
+    *   Uses the manager to fetch current state and filter available tools before calling `streamText`.
+    *   Updates orchestration state (`cumulativeTokenUsage`, `recentlyUsedTools`) asynchronously via the `onFinish` callback after the stream completes.
+-   **Configuration:** Reads agent behavior rules (personality, nodes, model config, `maxSteps`) from the `AgentConfig` object and accepts runtime overrides.
+-   **Context Injection:** Adds relevant context (like current time) to the LLM prompt (handled by prompt utils).
+-   **Token Usage Coordination:** Managed through the `onFinish` callback using usage data from generation results.
 
 ## Key Interactions
 
@@ -40,14 +41,13 @@ graph TD
 2.  Consults Orchestration logic (using `OrchestrationStateManager`) to determine the active step and load relevant state.
 3.  Filters available tools based on the active step and any sequence rules.
 4.  Constructs the prompt using message history, system prompt, and context.
-5.  Sets the token usage callback on the `CoreLLM` instance.
-6.  Calls `CoreLLM.streamText`, passing messages, prompt, and filtered tools.
-7.  If the LLM response includes a tool call:
-    a.  `AgentNode` identifies and executes the requested tool.
-    b.  Tool execution might involve its own LLM calls (which also report token usage via the callback) or interact with external services.
-    c.  The tool result is formatted and sent back to the LLM to continue generation (if applicable).
-8.  Streams the final text response back to the caller.
-9.  Ensures the token usage callback is cleared after the interaction.
+5.  Calls `CoreLLM.streamText`, passing messages, prompt, and filtered tools.
+6.  If the LLM response includes a tool call:
+    a.  The SDK identifies and executes the requested tool.
+    b.  Tool execution might involve its own LLM calls or interact with external services.
+    c.  The tool result is formatted and sent back to the LLM to continue generation.
+7.  Streams the final text response back to the caller.
+8.  Updates token usage and state information after the interaction completes.
 
 ## Configuration
 
@@ -140,4 +140,30 @@ graph LR
     D --> B
     E --> B
     B --> F[Display Response]
+```
+
+## Response Streaming
+
+The `AgentNode` returns an `AgentDockStreamResult` (an enhanced version of Vercel AI SDK's `StreamTextResult`) from its `handleMessage` method. This enhanced result provides:
+
+- **Orchestration State Tracking**: Tracks recently used tools and token usage
+- **Error Handling**: Provides better error propagation from LLM providers
+- **Extended Response Types**: Supports different types of response objects
+
+For detailed information about the streaming capabilities, see [Response Streaming Documentation](./core/response-streaming.md).
+
+```typescript
+// Example: Using AgentNode with stream result
+const result = await agentNode.handleMessage({
+  messages,
+  sessionId,
+  orchestrationManager
+});
+
+// Access the stream for direct response
+const response = result.toDataStreamResponse();
+
+// Or access the token usage after completion
+const usage = await result.usage;
+console.log(`Total tokens: ${usage.totalTokens}`);
 ``` 

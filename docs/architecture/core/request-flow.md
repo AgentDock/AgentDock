@@ -149,3 +149,58 @@ The request flow maintains session state across requests:
 - **Conversation History**: Maintains message history
 - **Tool Context**: Preserves state for tools
 - **User Settings**: Retains user preferences
+
+## Enhanced Streaming Flow
+
+AgentDock extends the standard request flow with enhanced streaming capabilities through the `AgentDockStreamResult` type:
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Adapter
+    participant AgentNode
+    participant LLMOrchestrationService
+    participant CoreLLM
+    participant LLM as LLM Provider
+    participant StateManager
+
+    Client->>Adapter: Request
+    Adapter->>AgentNode: handleMessage(messages, sessionId, orchestrationManager)
+    AgentNode->>LLMOrchestrationService: streamWithOrchestration(options)
+    LLMOrchestrationService->>CoreLLM: streamText(options)
+    CoreLLM->>LLM: API Call with Streaming
+    
+    loop For each token/chunk
+        LLM-->>CoreLLM: Token/Chunk
+        CoreLLM-->>LLMOrchestrationService: Enhanced Stream
+        LLMOrchestrationService-->>AgentNode: Stream with Orchestration State
+        AgentNode-->>Adapter: AgentDockStreamResult
+        Adapter-->>Client: Streaming Response
+    end
+
+    LLM-->>CoreLLM: onFinish(result)
+    CoreLLM-->>LLMOrchestrationService: Enhanced finish event
+    LLMOrchestrationService->>StateManager: Update token usage
+    LLMOrchestrationService->>StateManager: Update tools used
+    LLMOrchestrationService-->>AgentNode: Stream completion
+    AgentNode-->>Adapter: Stream completion
+```
+
+This enhanced flow provides:
+
+1. **Orchestration State Tracking**: The `LLMOrchestrationService` automatically:
+   - Updates token usage in the session state
+   - Tracks tools used during the conversation
+   - Provides this state to future requests
+
+2. **Error Propagation**: The `AgentDockStreamResult` includes:
+   - Flags to indicate streaming errors
+   - Error messages from the LLM provider
+   - Custom error handling in `toDataStreamResponse()`
+
+3. **Integrated Tool Management**: The stream handles tool execution and tracking:
+   - Detects tool calls in the `onStepFinish` callback
+   - Updates the `recentlyUsedTools` in session state
+   - Makes this information available to orchestration rules
+
+For more information about the streaming capabilities, see [Response Streaming](./response-streaming.md) and [LLM Orchestration](../orchestration/llm-orchestration.md).

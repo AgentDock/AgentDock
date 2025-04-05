@@ -50,6 +50,23 @@ AgentDock Core comprises several interacting subsystems:
 8.  **Error Handling (`/errors`):**
     -   Provides standardized error types and a factory for consistent error reporting.
 
+## Core Components
+
+AgentDock Core consists of several key components:
+
+- **Node System** - A flexible, modular framework for building AI agents
+- **LLM Providers** - Unified interfaces to multiple LLM providers
+- **Tool Framework** - Standardized way to define and use tools with agents
+- **Orchestration** - Manages multi-step agent workflows
+- **Response Streaming** - Enhanced streaming capabilities built on Vercel AI SDK
+- **LLM Orchestration Service** - Bridges AgentNode and CoreLLM with orchestration capabilities
+
+For more details on specific components:
+
+- [Request Flow](./request-flow.md)
+- [Technology Stack](./technology-stack.md)
+- [Response Streaming](./response-streaming.md)
+
 ## Core Interaction Summary
 
 The subsystems work in concert: An `AgentNode` uses `CoreLLM` for language tasks, relies on `SessionManager` and `OrchestrationStateManager` (backed by `Storage`) to maintain context and control flow, and executes `Tools` as directed by the LLM and permitted by Orchestration rules defined in the agent's `Configuration`.

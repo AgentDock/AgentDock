@@ -80,4 +80,22 @@ This web application demonstrates how to use AgentDock Core.
 ## Optional Backend Services (for Development)
 
 -   **Redis:** (As mentioned in Core) Typically run via Docker Compose (`docker-compose.yaml`) for persistent session/orchestration state during development.
--   **Redis Commander:** A simple web UI (included in `docker-compose.yaml`) for inspecting data stored in the development Redis instance. 
+-   **Redis Commander:** A simple web UI (included in `docker-compose.yaml`) for inspecting data stored in the development Redis instance.
+
+### Extended Vercel AI SDK Capabilities
+
+AgentDock extends the Vercel AI SDK with enhanced capabilities:
+
+- **AgentDockStreamResult**: Extends the standard `StreamTextResult` with:
+  - Orchestration state tracking
+  - Enhanced error handling
+  - Custom response transformations
+
+- **LLMOrchestrationService**: Bridges the SDK's streaming capabilities with orchestration:
+  - Automatically updates token usage in session state
+  - Tracks tools used during conversations
+  - Provides this state to orchestration rules
+
+For more details, see:
+- [Response Streaming](./response-streaming.md)
+- [LLM Orchestration](../orchestration/llm-orchestration.md) 

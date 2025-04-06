@@ -143,9 +143,9 @@ export function Chat({
         className="flex-1 overflow-y-auto flex flex-col bg-background"
         aria-label="Chat conversation"
       >
-        <div className="mx-auto w-full max-w-4xl px-4 py-4">
+        <div className="mx-auto w-full max-w-4xl px-4 py-4 flex-grow flex flex-col">
           {hasSuggestions ? (
-            <div className="flex h-full items-center justify-center py-20">
+            <div className="flex flex-grow items-center justify-center">
               <PromptSuggestions 
                 label="Try these prompts ✨" 
                 suggestions={suggestions!} 

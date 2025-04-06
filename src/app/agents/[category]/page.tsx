@@ -10,14 +10,15 @@ import { use } from "react"
 // Define types for page props
 type CategoryPageProps = {
   params: Promise<{ category: string }>;
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 // Generate dynamic metadata based on the category
 export async function generateMetadata(
-  { params }: CategoryPageProps
+  { params, searchParams }: CategoryPageProps
 ): Promise<Metadata> {
-  const resolvedParams = await params; // Resolve the params promise
+  const resolvedParams = await params;
+  const resolvedSearchParams = await searchParams;
   const category = resolvedParams.category;
 
   // Find the display name for the category
@@ -33,9 +34,11 @@ export async function generateMetadata(
 }
 
 // This is a server component
-export default function CategoryPageServer({ params }: CategoryPageProps) {
+export default function CategoryPageServer({ params, searchParams }: CategoryPageProps) {
   // Unwrap the params Promise
   const resolvedParams = use(params)
+  // Unwrap the searchParams Promise
+  const resolvedSearchParams = use(searchParams)
   const category = resolvedParams.category
   
   // Get all templates

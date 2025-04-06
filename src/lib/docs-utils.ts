@@ -223,6 +223,21 @@ export function generateSidebar(sections: DocSection[]): SidebarSection[] {
 
 // --- NEW getPrevNextPages Function --- 
 
+// Helper to normalize doc paths consistently
+function normalizeDocPath(p: string): string {
+  // Special case for root
+  if (p === '/' || p === 'docs' || p === 'docs/') {
+    return '/docs';
+  }
+  // Ensure it starts with /docs/
+  let normalPath = p.startsWith('/docs/') ? p : `/docs/${p}`;
+  // Remove trailing slash if it exists and isn't the only character after /docs/
+  if (normalPath.endsWith('/') && normalPath.length > 6) { 
+    normalPath = normalPath.slice(0, -1);
+  }
+  return normalPath;
+}
+
 /**
  * Flattens the docSections config into a single list of pages 
  * respecting the defined order of manually specified items.
@@ -232,9 +247,10 @@ function flattenDocSections(sections: DocSection[]): PageLink[] {
   sections.forEach(section => {
     if (section.items) {
       section.items.forEach(item => {
-        const fullPath = item.path.startsWith('docs/') ? item.path : `docs/${item.path}`;
-        if (!flatList.some(p => p.path === fullPath)) {
-           flatList.push({ ...item, path: fullPath });
+        // Normalize the path before adding
+        const normalizedPath = normalizeDocPath(item.path);
+        if (!flatList.some(p => p.path === normalizedPath)) {
+           flatList.push({ title: item.title, path: normalizedPath });
         }
       });
     }
@@ -248,33 +264,40 @@ function flattenDocSections(sections: DocSection[]): PageLink[] {
  *
  * @param currentPathSegments - The slug segments for the current page (e.g., ['architecture', 'state-management'])
  * @param sections - The docSections configuration array.
- * @returns An object with 'prev' and 'next' PageLink objects or null.
  */
 export function getPrevNextPages(currentPathSegments: string[] = [], sections: DocSection[]): PrevNext {
-  const flatPages = flattenDocSections(sections);
-  
-  // Handle the root docs path
-  const normalizedCurrentPath = currentPathSegments.length === 0 
-    ? 'docs' 
-    : `docs/${currentPathSegments.join('/')}`;
-  
-  const currentIndex = flatPages.findIndex(page => page.path === normalizedCurrentPath);
+  // Create the flattened, ordered list of all pages with normalized paths
+  const flatList = flattenDocSections(sections);
 
+  // Construct and normalize the current path from segments
+  const currentPath = normalizeDocPath(currentPathSegments.join('/'));
+
+  // Find the index of the current page in the flattened list
+  const currentIndex = flatList.findIndex(page => page.path === currentPath);
+
+  // If the current page isn't found in the list, return null for both
   if (currentIndex === -1) {
+    console.warn(`[getPrevNextPages] Current path '${currentPath}' not found in flattened list.`);
     return { prev: null, next: null };
   }
 
-  const prev = currentIndex > 0 ? flatPages[currentIndex - 1] : null;
-  const next = currentIndex < flatPages.length - 1 ? flatPages[currentIndex + 1] : null;
+  // Determine previous and next pages
+  const prevPage = currentIndex > 0 ? flatList[currentIndex - 1] : null;
+  const nextPage = currentIndex < flatList.length - 1 ? flatList[currentIndex + 1] : null;
 
+  // Helper to ensure the final path starts with a '/' for Link component
   const formatLink = (page: PageLink | null): PageLink | null => {
-      if (!page) return null;
-      const relativePath = page.path.startsWith('docs/') ? page.path.substring(5) : page.path;
-      return { ...page, path: `/docs/${relativePath}` };
+    if (!page) return null;
+    // Path should already be normalized and start with /docs, 
+    // but ensure it starts with '/' for Link href
+    return {
+      ...page,
+      path: page.path.startsWith('/') ? page.path : `/${page.path}`
+    };
   };
 
   return {
-    prev: formatLink(prev),
-    next: formatLink(next),
+    prev: formatLink(prevPage),
+    next: formatLink(nextPage),
   };
 }

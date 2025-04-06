@@ -22,7 +22,7 @@
               {prev ? (
                 <Link 
                   href={{ pathname: prev.path }}
-                  className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary"
+                  className="inline-flex flex-1 items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary"
                 >
                   <ArrowLeft className="h-4 w-4 flex-shrink-0" />
                   <div className="flex flex-col text-left overflow-hidden">
@@ -31,12 +31,12 @@
                   </div>
                 </Link>
               ) : (
-                <div></div>
+                <div className="flex-1"></div>
               )}
               {next ? (
                 <Link 
                   href={{ pathname: next.path }}
-                  className="inline-flex items-center justify-end gap-2 text-sm font-medium text-muted-foreground hover:text-primary"
+                  className="inline-flex flex-1 items-center justify-end gap-2 text-sm font-medium text-muted-foreground hover:text-primary"
                 >
                   <div className="flex flex-col text-right overflow-hidden">
                      <span className="text-xs">Next</span>
@@ -45,7 +45,7 @@
                   <ArrowRight className="h-4 w-4 flex-shrink-0" />
                 </Link>
               ) : (
-                <div></div>
+                <div className="flex-1"></div>
               )}
             </nav>
           );

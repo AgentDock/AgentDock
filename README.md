@@ -2,7 +2,7 @@
 
 [![GitHub stars](https://img.shields.io/github/stars/agentdock/agentdock?style=social)](https://github.com/agentdock/agentdock/stargazers)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Status: Beta](https://img.shields.io/badge/Status-Beta-blue)](https://github.com/username/AgentDock/releases)
+[![Status: Beta](https://img.shields.io/badge/Status-Beta-blue)](https://github.com/AgentDock/AgentDock/releases)
 [![Documentation](https://img.shields.io/badge/Documentation-📕-blue)](https://hub.agentdock.ai/docs)
 [![Discord](https://img.shields.io/discord/1335979387975110656?color=7289DA&label=Discord&logo=discord&logoColor=white)](https://discord.gg/fDYFFmwuRA)
 [![Cloud](https://img.shields.io/badge/Cloud-☁️-blue)](https://agentdock.ai)
@@ -106,7 +106,7 @@ flowchart TD
   style Response fill:#f9f9f9,stroke:#333,stroke-width:1px
 ```
 
-This approach enables complex multi-step workflows (with hundreds of deterministic steps) to be invoked by intelligent agent decisions. Each workflow executes predictably despite being triggered by non-deterministic agent reasoning.
+This approach enables complex multi-step workflows (potentially involving hundreds of deterministic steps implemented within tools or as connected node sequences) to be invoked by intelligent agent decisions. Each workflow executes predictably despite being triggered by non-deterministic agent reasoning.
 
 For more advanced AI agent workflows and multi-stage processing pipelines, we're building [AgentDock Pro](docs/agentdock-pro.md) - a powerful platform for creating, visualizing, and running complex agent systems.
 

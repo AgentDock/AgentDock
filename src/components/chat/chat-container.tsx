@@ -34,8 +34,8 @@ interface ExtendedError extends Error {
   code?: string;
 }
 
-// Update the orchestrationState interface to match our needs
-interface OrchestrationState {
+// Export the orchestrationState interface so it can be imported elsewhere
+export interface OrchestrationState {
   sessionId: string;
   recentlyUsedTools: string[];
   activeStep?: string;
@@ -59,6 +59,7 @@ export interface ChatContainerProps {
     messagesCount?: number;
     orchestration?: OrchestrationState;
   }) => void;
+  onChatTurnComplete?: () => void;
 }
 
 // Simple function to safely extract agent name
@@ -82,7 +83,7 @@ function getAgentName(agents: any, agentId: string): string {
 const ChatContainer = React.forwardRef<
   { handleReset: () => Promise<void> },
   ChatContainerProps
->(({ className, agentId = 'default', header, onStateUpdate }, ref) => {
+>(({ className, agentId = 'default', header, onStateUpdate, onChatTurnComplete }, ref) => {
   const { agents } = useAgents();
   const searchParams = useSearchParams();
   
@@ -272,6 +273,9 @@ const ChatContainer = React.forwardRef<
           messageId: message.id, 
           messageCount: messages.length 
         });
+
+        // Call the completion callback if provided
+        onChatTurnComplete?.();
 
       } catch (error) {
         await logError('ChatContainer', 'Failed to process message onFinish', error);

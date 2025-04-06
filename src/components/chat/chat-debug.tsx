@@ -3,12 +3,13 @@ import { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { BugIcon, RefreshCwIcon } from "lucide-react";
+import { BugIcon, RefreshCwIcon, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { templates } from "@/generated/templates";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
+import { useSessionInfo, SessionInfoData } from "@/hooks/use-session-info";
 
 interface OrchestrationStep {
   name: string;
@@ -25,18 +26,6 @@ interface Orchestration {
 interface AgentTemplate {
   orchestration?: Orchestration;
   tools?: string[];
-}
-
-// Interface for the data fetched from the API
-interface SessionStateData {
-  sessionId: string;
-  activeStep?: string;
-  recentlyUsedTools?: string[];
-  cumulativeTokenUsage: {
-    promptTokens: number;
-    completionTokens: number;
-    totalTokens: number;
-  };
 }
 
 interface ChatDebugProps {
@@ -77,25 +66,19 @@ export const ChatDebug = React.memo<ChatDebugProps>(({
   const [debugButtonContainer, setDebugButtonContainer] = useState<HTMLElement | null>(null);
   const isMobile = useMediaQuery("(max-width: 640px)");
   
-  // Track history settings
+  // Restore history settings state and effect
   const [historySettings, setHistorySettings] = useState<{
     policy?: string;
     length?: number;
     source?: string;
   }>({});
-  
-  // State for fetched session data, loading, and error
-  const [fetchedState, setFetchedState] = useState<SessionStateData | null>(null);
-  const [isLoadingUsage, setIsLoadingUsage] = useState(false);
-  const [fetchError, setFetchError] = useState<string | null>(null);
-  
+
   // Get history settings from window object
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const policy = (window as any).ENV_HISTORY_POLICY;
       const length = (window as any).ENV_HISTORY_LENGTH;
       
-      // Try to determine source of settings
       let source = 'default';
       
       if (process.env.NEXT_PUBLIC_DEFAULT_HISTORY_POLICY || 
@@ -103,7 +86,6 @@ export const ChatDebug = React.memo<ChatDebugProps>(({
         source = 'environment';
       }
       
-      // Check if URL params exist and match current values (suggesting they came from URL)
       const params = new URLSearchParams(window.location.search);
       const urlPolicy = params.get('historyPolicy');
       const urlLength = params.get('historyLength');
@@ -120,6 +102,15 @@ export const ChatDebug = React.memo<ChatDebugProps>(({
       });
     }
   }, []);
+  // End Restore history settings state and effect
+  
+  // Use the session info hook
+  const { 
+      sessionData: fetchedState,
+      isLoading: isLoadingUsage, 
+      error: fetchError, 
+      refresh: fetchSessionUsage
+  } = useSessionInfo(sessionId);
 
   // Find the debug button container element
   useEffect(() => {
@@ -127,53 +118,21 @@ export const ChatDebug = React.memo<ChatDebugProps>(({
     if (container) {
       setDebugButtonContainer(container);
     }
-    
-    // Clean up
     return () => setDebugButtonContainer(null);
   }, []);
   
-  // If visibility changes, update state (e.g., when URL params change)
+  // If visibility changes, update state
   useEffect(() => {
     if (!visible && isOpen) {
       setIsOpen(false);
     }
   }, [visible, isOpen]);
   
-  // Function to fetch session usage data
-  const fetchSessionUsage = useCallback(async () => {
-    if (!sessionId) {
-      setFetchError("No session ID available.");
-      return;
-    }
-    setIsLoadingUsage(true);
-    setFetchError(null);
-    try {
-      const response = await fetch(`/api/session/${sessionId}`);
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-      }
-      const data: SessionStateData = await response.json();
-      setFetchedState(data);
-    } catch (error) {
-      console.error("Failed to fetch session state:", error);
-      setFetchError(error instanceof Error ? error.message : "Failed to load usage data.");
-      setFetchedState(null); // Clear old data on error
-    } finally {
-      setIsLoadingUsage(false);
-    }
-  }, [sessionId]);
-
   // Fetch data when the sheet opens
   useEffect(() => {
     if (isOpen) {
       fetchSessionUsage();
     }
-    // Optionally clear state when closing to ensure fresh data next time?
-    // else { 
-    //   setFetchedState(null); 
-    //   setFetchError(null); 
-    // }
   }, [isOpen, fetchSessionUsage]);
 
   if (!visible) return null;
@@ -229,7 +188,7 @@ export const ChatDebug = React.memo<ChatDebugProps>(({
           <div className="flex-1 overflow-y-auto space-y-6 p-4">
             {/* Session Info */}
             <DebugSection title="Session">
-              <DebugItem label="Session ID" value={sessionId || "N/A"} />
+              <DebugItem label="Session ID" value={fetchedState?.sessionId || sessionId || "N/A"} />
               <DebugItem label="Messages" value={messagesCount.toString()} />
             </DebugSection>
 
@@ -241,50 +200,40 @@ export const ChatDebug = React.memo<ChatDebugProps>(({
               <DebugItem label="Max Tokens" value={maxTokens?.toString() ?? "N/A"} />
             </DebugSection>
 
-            {/* Cumulative Session Usage (fetched) */}
+            {/* Cumulative Session Usage */}
             <DebugSection title="Cumulative Session Usage">
               <div className="flex justify-between items-center">
                 <h3 className="text-xs font-medium">Session Token Usage</h3>
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  onClick={fetchSessionUsage} 
-                  disabled={isLoadingUsage} 
-                  className="h-6 px-1.5 text-muted-foreground hover:text-foreground disabled:opacity-50"
-                  title="Refresh Usage Data"
+                  onClick={fetchSessionUsage}
+                  disabled={isLoadingUsage || !sessionId}
+                  className="h-7 px-2"
                 >
-                  <RefreshCwIcon className={cn("h-3 w-3", isLoadingUsage && "animate-spin")} />
+                  {isLoadingUsage ? <Loader2 className="h-3 w-3 animate-spin"/> : <RefreshCwIcon className="h-3 w-3"/>}
+                  <span className="ml-1">Refresh</span>
                 </Button>
               </div>
-              <div className="rounded-md bg-amber-50 dark:bg-amber-950 p-2 min-h-[60px] flex items-center justify-center">
-                {isLoadingUsage ? (
-                  <p className="text-xs text-muted-foreground italic">Loading...</p>
-                ) : fetchError ? (
-                  <p className="text-xs text-destructive text-center">Error: {fetchError}</p>
-                ) : fetchedState?.cumulativeTokenUsage ? (
-                  <table className="w-full text-[11px]">
-                    <tbody>
-                      <tr>
-                        <td className="text-muted-foreground">Prompt:</td>
-                        <td className="text-right font-medium">{fetchedState.cumulativeTokenUsage.promptTokens}</td>
-                      </tr>
-                      <tr>
-                        <td className="text-muted-foreground">Completion:</td>
-                        <td className="text-right font-medium">{fetchedState.cumulativeTokenUsage.completionTokens}</td>
-                      </tr>
-                      <tr>
-                        <td className="text-muted-foreground">Total:</td>
-                        <td className="text-right font-medium">{fetchedState.cumulativeTokenUsage.totalTokens}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                ) : (
-                  <p className="text-xs text-muted-foreground italic">No usage data available.</p>
-                )}
-              </div>
+              {isLoadingUsage && (
+                   <div className="text-sm text-muted-foreground italic">Loading usage...</div>
+              )}
+              {fetchError && (
+                  <div className="text-sm text-destructive">Error: {fetchError}</div>
+              )}
+              {!isLoadingUsage && !fetchError && fetchedState?.cumulativeTokenUsage && (
+                  <div className="font-mono text-sm bg-muted p-2 rounded space-y-1">
+                      <div>Prompt Tokens: {fetchedState.cumulativeTokenUsage.promptTokens}</div>
+                      <div>Completion Tokens: {fetchedState.cumulativeTokenUsage.completionTokens}</div>
+                      <div className="font-semibold">Total Tokens: {fetchedState.cumulativeTokenUsage.totalTokens}</div>
+                  </div>
+              )}
+              {!isLoadingUsage && !fetchError && !fetchedState?.cumulativeTokenUsage && (
+                  <div className="text-sm text-muted-foreground italic">No usage data available.</div>
+              )}
             </DebugSection>
-
-            {/* History Settings */}
+            
+            {/* Restore History Settings Section */}
             <DebugSection title="History Settings">
               <DebugItem label="Policy" value={historySettings.policy || 'lastN'} />
               <DebugItem label="Length" value={historySettings.length?.toString() ?? '20'} />

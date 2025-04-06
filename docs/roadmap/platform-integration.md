@@ -19,6 +19,8 @@ The Platform Integration will provide:
 - **Conversation Management**: State tracking across user interactions
 - **HTTP Adapters**: Framework-specific adapters for different deployment environments
 
+Beyond standard messaging apps (Telegram, WhatsApp, Slack), the underlying `PlatformNode` abstraction or custom nodes built on `BaseNode` can be leveraged to create integrations with various other platforms, including social media networks like X (formerly Twitter), TikTok, LinkedIn, etc. Interaction can be achieved either through direct API calls (where available and permitted by the platform's terms of service) or potentially by utilizing browser automation tools for platforms lacking suitable APIs or for more complex interactions.
+
 ## Architecture Diagrams
 
 ### Platform Node Architecture

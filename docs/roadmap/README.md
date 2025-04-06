@@ -14,7 +14,7 @@ This section outlines the current development roadmap for AgentDock, detailing b
 
 | Feature | Description | Status | Details |
 |---------|-------------|--------|---------|
-| **Platform Integration** | Support for Telegram, WhatsApp, and other messaging platforms | Planned | [More Details](./platform-integration.md) |
+| **Platform Integration** | Support for Telegram, WhatsApp, social media (e.g., X/Twitter), etc., via APIs or browser automation | Planned | [More Details](./platform-integration.md) |
 | **Multi-Agent Collaboration** | Enable agents to work together on complex tasks | Planned | [More Details](./multi-agent-collaboration.md) |
 | **Voice AI Agents** | AI agents using voice interfaces and phone numbers | Planned | [More Details](./voice-agents.md) |
 | **Evaluation for AI Agents** | Comprehensive testing and evaluation framework | Planned | [More Details](./evaluation-framework.md) |

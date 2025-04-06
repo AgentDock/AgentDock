@@ -23,14 +23,14 @@ AgentDock is built on these core principles:
 ***Configurable determinism*** is a cornerstone of AgentDock's design philosophy, enabling you to balance creative AI capabilities with predictable system behavior:
 
 - AgentNodes are inherently non-deterministic as LLMs may generate different responses each time
-- Workflows can be made more deterministic through *defined tool execution paths*
-- Developers can **control the level of determinism** by configuring which parts of the system use LLM inference
-- Even with LLM components, the overall system behavior remains **predictable** through structured tool interactions
+- Workflows can be made more deterministic through *defined tool execution paths* or by connecting sequences of deterministic nodes.
+- Developers can **control the level of determinism** by configuring which parts of the system use LLM inference versus defined logic.
+- Even with LLM components, the overall system behavior remains **predictable** through structured interactions and deterministic node execution where specified.
 - This balanced approach enables both *creativity* and **reliability** in your AI applications
 
 #### Deterministic Workflows
 
-AgentDock allows you to create fully deterministic processing flows where the execution path and outcomes are predictable:
+AgentDock allows you to create fully deterministic processing flows where the execution path and outcomes are predictable. This can be achieved by implementing logic within individual tool nodes or by leveraging the core `BaseNode` architecture to connect multiple deterministic nodes (e.g., data processors, platform integrations):
 
 ```mermaid
 flowchart LR
@@ -102,9 +102,7 @@ flowchart TD
   style Response fill:#f9f9f9,stroke:#333,stroke-width:1px
 ```
 
-This approach enables complex multi-step workflows (with hundreds of deterministic steps) to be invoked by intelligent agent decisions. Each workflow executes predictably despite being triggered by non-deterministic agent reasoning.
-
-For more advanced AI agent workflows and multi-stage processing pipelines, we're building [AgentDock Pro](agentdock-pro.md) - a powerful platform for creating, visualizing, and running complex agent systems.
+This approach enables complex multi-step workflows (potentially involving hundreds of deterministic steps implemented within tools or as node sequences) to be invoked by intelligent agent decisions. While the open-source core provides the foundation for these workflows, [AgentDock Pro](agentdock-pro.md) aims to provide advanced tooling, such as visual builders, to simplify their creation and management.
 
 #### TL;DR on Configurable Determinism 
 

@@ -20,8 +20,8 @@ AgentDock Core is composed of several interconnected subsystems:
 2.  **Storage Abstraction Layer (`/storage`):** Offers a pluggable system for Key-Value storage (Memory, Redis, Vercel KV implemented) with plans for Vector and Relational storage. See [Storage Overview](../storage/README.md).
 3.  **Session Management (`/session`):** Manages isolated conversational state using the Storage Abstraction Layer. Ensures context preservation and handles state lifecycle (creation, updates, TTL-based cleanup). See [Session Management](./sessions/session-management.md).
 4.  **Orchestration Framework (`/orchestration`):** Controls agent behavior by managing steps (modes), conditional transitions, tool availability, and optional tool sequencing based on session state. See [Orchestration Overview](./orchestration/orchestration-overview.md).
-5.  **Node System (`/nodes`):** Defines the core execution units. The primary node is `AgentNode`, which integrates LLM interaction, tool usage, session state, and orchestration.
-6.  **Tool System (Integrated within `/nodes` & `/llm`):** Defines tool interfaces and integrates tool execution within the LLM interaction flow (e.g., via function/tool calling APIs). Tools can interact with session state and other core systems.
+5.  **Node System (`/nodes`):** Defines the core execution units and modular architecture. Based on `BaseNode`, it includes the primary `AgentNode` (integrating LLM, tools, session, orchestration), tool nodes, and potentially custom nodes. Managed by `NodeRegistry` (for types) and `ToolRegistry` (for runtime availability). See [Node System Overview](../nodes/README.md).
+6.  **Tool System (Integrated within `/nodes`):** Tools are implemented as specialized nodes. Their definition, registration (`NodeRegistry`), runtime availability (`ToolRegistry`), and execution (triggered by `AgentNode` via LLM function/tool calling) are integral parts of the Node System.
 7.  **Error Handling (`/errors`):** Standardized error types and handling mechanisms.
 8.  **Configuration (`/config`, Agent Templates):** Agent behavior is defined via template files (`template.json`) specifying LLM, tools, prompts, orchestration rules, etc.
 
@@ -63,5 +63,5 @@ See [Request Flow](./core/request-flow.md) for more details.
 ## Further Reading
 
 -   [Core Architecture Overview](./core/overview.md)
--   [Agent Node](./agent-node.md)
+-   [Node System Overview](../nodes/README.md)
 -   [Technology Stack](./core/technology-stack.md) 

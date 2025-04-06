@@ -280,4 +280,37 @@ Now that you have AgentDock running, you can explore:
 
 If you encounter problems not covered here, please:
 - Check existing issues in the GitHub repository
-- Open a new issue with detailed information about your problem 
+- Open a new issue with detailed information about your problem
+
+### Start Development Server
+
+```bash
+pnpm dev
+```
+
+This will start the Next.js reference client application.
+
+### Using AgentDock Core in Other Backends
+
+While this guide focuses on the reference Next.js client, `agentdock-core` is designed as a standalone library for Node.js environments. You can integrate it into any Node.js backend framework (like Express, Fastify, Hono, NestJS, etc.):
+
+1.  **Install:** Add `@agentdock/core` (once published) or link the local `agentdock-core` package to your backend project.
+2.  **Import:** Import necessary classes and functions (e.g., `AgentNode`, `NodeRegistry`, `registerCoreNodes`, configuration loaders).
+3.  **Initialize:** Register core nodes (`registerCoreNodes()`) and any custom nodes/tools.
+4.  **Integrate:** Create API endpoints (e.g., `/api/chat/:agentId`) in your chosen framework.
+5.  **Handle Requests:** Within your endpoint handlers, instantiate `AgentNode`, manage sessions (using core session/storage managers or your own), handle message processing via `agentNode.handleMessage`, and stream responses back to the client.
+
+### Using AgentDock from Other Languages (Python, Rust, etc.)
+
+You cannot directly use the `agentdock-core` TypeScript library in non-JavaScript/TypeScript environments. However, you can interact with AgentDock agents from *any* language or platform:
+
+1.  **Build an API:** Create a backend service using Node.js and `agentdock-core` (as described above) that exposes an HTTP API (e.g., REST).
+2.  **Consume the API:** From your Python, Rust, Java, frontend application, or any other client, make standard HTTP requests to your AgentDock backend API endpoints to interact with your agents.
+
+This API-centric approach allows AgentDock's core capabilities to be leveraged across diverse technology stacks.
+
+## Next Steps
+
+-   Explore the [Agent Templates](agent-templates.md) to understand configuration.
+-   Learn about the [Node System](../nodes/README.md) in detail.
+-   Dive into the [Core Architecture](../architecture/README.md). 

@@ -117,14 +117,15 @@ Think of it like driving. Sometimes you need the AI's creativity (like navigatin
 
 ## 🏗️ Core Architecture
 
-The framework is built around a powerful node-based system:
+The framework is built around a powerful, modular node-based system, serving as the foundation for all agent functionality. This architecture uses distinct node types as building blocks:
 
-- **BaseNode**: Foundation for all nodes, providing core functionality
-- **AgentNode**: Specialized node for LLM-powered agents
-- **Tools as Nodes**: Custom capabilities implemented as specialized nodes
-- **Node Registry**: Central system for managing and connecting nodes
-- **Session Management**: State isolation between concurrent conversations
-- **Orchestration Framework**: Context-aware control of agent behavior
+-   **`BaseNode`**: The fundamental class establishing the core interface and capabilities for all nodes.
+-   **`AgentNode`**: A specialized core node orchestrating LLM interactions, tool usage, and agent logic.
+-   **Tools & Custom Nodes**: Developers implement agent capabilities and custom logic as nodes extending `BaseNode`.
+
+These nodes interact through managed registries and can be connected (leveraging the core architecture's ports and potential message bus) to enable complex, configurable, and potentially deterministic agent behaviors and workflows.
+
+For a detailed explanation of the node system's components and capabilities, please see the [Node System Documentation](docs/nodes/README.md).
 
 ## 🚀 Getting Started
 
@@ -303,38 +304,38 @@ This project *requires* the use of `pnpm` for consistent dependency management. 
 
 ## Key Features
 
-| Feature | Description |
-|---------|-------------|
-| 🔌 **Framework Agnostic** | AgentDock Core works with *any tech stack* |
-| 🧩 **Modular Design** | Build complex systems from simple nodes |
-| 🛠️ **Extensible** | Create custom nodes for any functionality |
-| 🔒 **Secure** | Built-in security features for API keys and data |
-| 🔑 **BYOK** | Use your *own API keys* for LLM providers |
-| 📦 **Self-Contained** | Core framework has minimal dependencies |
-| ⚙️ **Multi-Step Tool Calls** | Support for *complex reasoning chains* |
-| 📊 **Structured Logging** | Detailed insights into agent execution |
-| 🛡️ **Robust Error Handling** | Predictable behavior and simplified debugging |
-| 📝 **TypeScript First** | Type safety and enhanced developer experience |
-| 🌐 **Open Source Client** | Complete Next.js reference implementation included |
-| 🔄 **Orchestration** | *Dynamic control* of agent behavior based on context |
-| 💾 **Session Management** | Isolated state for concurrent conversations |
-| 🎮 **Configurable Determinism** | Precise control over agent predictability |
+| Feature                 | Description                                                               |
+|-------------------------|---------------------------------------------------------------------------|
+| 🔌 **Framework Agnostic (Node.js Backend)** | Core library integrates with Node.js backend stacks.                      |
+| 🧩 **Modular Design**     | Build complex systems from simple nodes                                   |
+| 🛠️ **Extensible**         | Create custom nodes for any functionality                                 |
+| 🔒 **Secure**             | Built-in security features for API keys and data                          |
+| 🔑 **BYOK**               | Use your *own API keys* for LLM providers                                 |
+| 📦 **Self-Contained**     | Core framework has minimal dependencies                                   |
+| ⚙️ **Multi-Step Tool Calls** | Support for *complex reasoning chains*                                    |
+| 📊 **Structured Logging** | Detailed insights into agent execution                                    |
+| 🛡️ **Robust Error Handling**| Predictable behavior and simplified debugging                            |
+| 📝 **TypeScript First**   | Type safety and enhanced developer experience                             |
+| 🌐 **Open Source Client** | Complete Next.js reference implementation included                       |
+| 🔄 **Orchestration**      | *Dynamic control* of agent behavior based on context                      |
+| 💾 **Session Management** | Isolated state for concurrent conversations                               |
+| 🎮 **Configurable Determinism** | Balance AI creativity & predictability via node logic/workflows.        |
 
 ## 🧰 Components
 
 AgentDock's modular architecture is built upon these key components:
 
-* **BaseNode**: The foundation for all nodes in the system
-* **AgentNode**: The primary abstraction for agent functionality
-* **Tools**: Functions callable by an LLM through the AgentNode
-* **Node Registry**: Manages the registration and retrieval of all node types
-* **Tool Registry**: Manages tool availability for agents
-* **CoreLLM**: Unified interface for interacting with LLM providers
-* **Provider Registry**: Manages LLM provider configurations
-* **Error Handling**: System for handling errors and ensuring predictable behavior
-* **Logging**: Structured logging system for monitoring and debugging
-* **Orchestration**: Controls tool availability and behavior based on conversation context
-* **Sessions**: Manages state isolation between concurrent conversations
+*   **BaseNode**: The foundation for all nodes in the system
+*   **AgentNode**: The primary abstraction for agent functionality
+*   **Tools & Custom Nodes**: Callable capabilities and custom logic implemented as nodes.
+*   **Node Registry**: Manages the registration and retrieval of all node types
+*   **Tool Registry**: Manages tool availability for agents
+*   **CoreLLM**: Unified interface for interacting with LLM providers
+*   **Provider Registry**: Manages LLM provider configurations
+*   **Error Handling**: System for handling errors and ensuring predictable behavior
+*   **Logging**: Structured logging system for monitoring and debugging
+*   **Orchestration**: Controls tool availability and behavior based on conversation context
+*   **Sessions**: Manages state isolation between concurrent conversations
 
 For detailed technical documentation on these components, see the [Architecture Overview](docs/architecture/README.md).
 

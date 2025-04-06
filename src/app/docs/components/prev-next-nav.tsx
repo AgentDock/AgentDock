@@ -18,34 +18,34 @@
           }
 
           return (
-            <nav className="mt-12 flex flex-col items-center gap-4 border-t pt-8 sm:flex-row sm:justify-between">
+            <nav className="mt-12 flex w-full items-center justify-between gap-4 border-t border-border pt-8">
               {prev ? (
                 <Link 
                   href={{ pathname: prev.path }}
                   className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary"
                 >
-                  <ArrowLeft className="h-4 w-4" />
-                  <div className="flex flex-col text-left">
-                     <span>Previous</span>
-                     <span className='text-primary'>{prev.title}</span>
+                  <ArrowLeft className="h-4 w-4 flex-shrink-0" />
+                  <div className="flex flex-col text-left overflow-hidden">
+                     <span className="text-xs">Previous</span>
+                     <span className='truncate text-primary font-semibold'>{prev.title}</span>
                   </div>
                 </Link>
               ) : (
-                <div /> // Empty div to maintain spacing with justify-between
+                <div></div>
               )}
               {next ? (
                 <Link 
                   href={{ pathname: next.path }}
-                  className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary"
+                  className="inline-flex items-center justify-end gap-2 text-sm font-medium text-muted-foreground hover:text-primary"
                 >
-                  <div className="flex flex-col text-right">
-                     <span>Next</span>
-                     <span className='text-primary'>{next.title}</span>
+                  <div className="flex flex-col text-right overflow-hidden">
+                     <span className="text-xs">Next</span>
+                     <span className='truncate text-primary font-semibold'>{next.title}</span>
                   </div>
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight className="h-4 w-4 flex-shrink-0" />
                 </Link>
               ) : (
-                <div /> // Empty div to maintain spacing
+                <div></div>
               )}
             </nav>
           );

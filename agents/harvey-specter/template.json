@@ -43,7 +43,10 @@
     "chatPrompts": [
       "What can you help me with?",
       "How would you handle a difficult negotiation?",
-      "What's your approach to winning a case?"
+      "What's your approach to winning a case?",
+      "Give me advice on closing a deal.",
+      "What's the first step in solving a complex problem?",
+      "How do you project confidence?"
     ]
   }
 } 

@@ -41,7 +41,13 @@
     "chatPrompts": [
       "Create a detailed image of a futuristic city with flying cars",
       "Generate an image of a magical forest with glowing plants",
-      "Create a realistic portrait of a cyberpunk character"
+      "Create a realistic portrait of a cyberpunk character",
+      "Visualize a serene beach at sunset.",
+      "Generate a photorealistic image of a cat wearing a tiny hat.",
+      "Create an abstract image representing 'chaos'.",
+      "Make an image of astronauts playing chess on the moon.",
+      "Generate a detailed illustration of a dragon hoarding gold.",
+      "Create a picture of a vintage train traveling through mountains."
     ]
   },
   "options": {

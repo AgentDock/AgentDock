@@ -41,7 +41,10 @@
         "chatPrompts": [
             "What can you help me with?",
             "Tell me your best joke",
-            "How would you handle an awkward situation?"
+            "How would you handle an awkward situation?",
+            "What's the deal with airline food? (Ask ironically)",
+            "Give me some sarcastic advice about work.",
+            "What's the most embarrassing thing that's ever happened to you?"
         ]
     },
     "options": {

@@ -30,7 +30,10 @@
     "chatPrompts": [
       "What can you help me with?",
       "Tell me about the latest advancements in AI",
-      "Explain quantum computing in simple terms"
+      "Explain quantum computing in simple terms",
+      "Summarize the main points of machine learning.",
+      "What are the key features of the DeepSeek models?",
+      "Help me understand the difference between AI and ML."
     ]
   },
   "options": {

@@ -36,7 +36,9 @@
             "What's the current price of Bitcoin?",
             "Show me Apple's stock price",
             "What are the trending cryptocurrencies right now?",
-            "Compare Tesla and Amazon stock prices"
+            "Compare Tesla and Amazon stock prices",
+            "Get the latest price for Ethereum.",
+            "Is the stock market up or down today?"
         ]
     }
 } 

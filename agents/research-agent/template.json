@@ -39,7 +39,10 @@
         "chatPrompts": [
             "What can you help me with?",
             "Can you research this topic for me?",
-            "How do you approach complex research questions?"
+            "How do you approach complex research questions?",
+            "Find recent studies on the effects of remote work.",
+            "Deep dive into the history of blockchain technology.",
+            "Summarize the key findings of a specific research paper (provide details)."
         ]
     }
 } 

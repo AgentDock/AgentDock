@@ -41,7 +41,10 @@
         "chatPrompts": [
             "What can you help me with?",
             "Can you interpret a dream for me?",
-            "Tell me about your psychoanalytic theories"
+            "Tell me about your psychoanalytic theories",
+            "Explain the concept of the Oedipus complex.",
+            "What is the role of the unconscious mind?",
+            "How does psychoanalysis view anxiety?"
         ]
     },
     "options": {

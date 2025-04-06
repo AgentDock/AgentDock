@@ -35,7 +35,10 @@
     "chatPrompts": [
       "What can you help me with?",
       "Explain a complex concept to me",
-      "Help me solve this problem step by step"
+      "Provide a nuanced analysis of a current event.",
+      "What are the limitations of large language models?",
+      "What's the latest news on the stock market?",
+      "What's the meaning of life?"
     ]
   },
   "options": {

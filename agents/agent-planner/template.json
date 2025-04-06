@@ -59,7 +59,10 @@
         "chatPrompts": [
             "Design an agent that can analyze financial data and provide investment recommendations",
             "How do I implement a custom tool that integrates with an external API?",
-            "Create an RFA specification for a voice assistant agent with speech recognition"
+            "Create an RFA specification for a voice assistant agent with speech recognition",
+            "Generate ideas for an AI agent that can automate customer support.",
+            "Explain how to use the 'think' node effectively in an agent's design.",
+            "Show me an example mermaid diagram for a research agent architecture."
         ]
     }
 } 

@@ -33,7 +33,10 @@
     "chatPrompts": [
       "Research the latest advancements in quantum computing",
       "Conduct a deep analysis of climate change solutions",
-      "Provide a comprehensive overview of artificial intelligence ethics"
+      "Provide a comprehensive overview of artificial intelligence ethics",
+      "Explore the history of the internet.",
+      "What are the potential benefits of fusion energy?",
+      "Deep dive into the causes of the Great Depression."
     ]
   },
   "options": {

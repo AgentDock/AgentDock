@@ -33,7 +33,10 @@
     "chatPrompts": [
       "Search for the latest smartphone releases",
       "Find information about upcoming movie premieres",
-      "Look up the current weather in Tokyo"
+      "Look up the current weather in Tokyo",
+      "Find recipes for chocolate chip cookies.",
+      "Search for reviews of the newest laptop models.",
+      "What are some good restaurants near me?"
     ]
   },
   "options": {

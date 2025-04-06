@@ -19,7 +19,9 @@ import {
 } from './index';
 import { logger, LogCategory } from '../logging';
 
-// --- BEGIN TYPE DEFINITIONS from Vercel AI SDK Docs ---
+/**
+ * Type definitions based on Vercel AI SDK documentation
+ */
 
 // Common TokenUsage type (matches LanguageModelUsage)
 type TokenUsage = LanguageModelUsage;
@@ -44,7 +46,7 @@ type OnStepFinishResult = {
   // Represent toolCalls/toolResults based on typical structure
   toolCalls?: Array<ToolCallPart> | undefined;
   toolResults?: Array<ToolResultPart> | undefined;
-  // IMPORTANT: toolNames is added by our CoreLLM wrapper, not native to SDK
+  // Additional property added by our CoreLLM wrapper, not native to SDK
   toolNames?: string[];
 };
 
@@ -54,8 +56,6 @@ type HandleStepFinishEvent = OnStepFinishResult & {
     // Include 'type' as SDK might pass other event types (like 'text-delta') through onStepFinish
     type?: string; 
 };
-
-// --- END TYPE DEFINITIONS ---
 
 /**
  * Options for the streamWithOrchestration method.
@@ -140,7 +140,7 @@ export class LLMOrchestrationService {
               toolNames: event.toolNames!.join(', ') 
             });
 
-            // ---> BEGIN TOOL TRACKING (Revised) <----
+            // Tool tracking logic 
             try {
               // Fetch current state once before the loop
               const currentState = await this.orchestrationManager.getState(this.sessionId);
@@ -176,7 +176,6 @@ export class LLMOrchestrationService {
                 error: error instanceof Error ? error.message : String(error)
               });
             }
-            // ---> END TOOL TRACKING (Revised) <----
         } else {
             // Log other step types if needed for debugging
             logger.debug(LogCategory.LLM, 'LLMOrchestrationService', 'onStepFinish triggered (no toolNames found)', { 
@@ -231,7 +230,6 @@ export class LLMOrchestrationService {
     
     // Logic to get current state and update cumulativeTokenUsage
     // using this.orchestrationManager and this.sessionId
-    // (Moved from AgentNode.handleMessage onFinish)
     try {
       const currentState = await this.orchestrationManager.getState(this.sessionId);
       const currentUsage = currentState?.cumulativeTokenUsage || { promptTokens: 0, completionTokens: 0, totalTokens: 0 };
@@ -257,54 +255,7 @@ export class LLMOrchestrationService {
       });
     }
   }
-
-  // REMOVED: Unreliable tool tracking logic
-  /*
-  private async trackExecutedTools(messages?: CoreMessage[]): Promise<void> {
-    if (!messages || !Array.isArray(messages)) return;
-
-    logger.debug(LogCategory.LLM, 'LLMOrchestrationService', 'trackExecutedTools called', { 
-      sessionId: this.sessionId?.substring(0, 8), 
-      messageCount: messages.length 
-    });
-
-    // Logic to extract tool calls from messages and update recentlyUsedTools
-    // using this.orchestrationManager and this.sessionId
-    // (Moved from AgentNode.handleMessage onFinish)
-    try {
-        const executedToolNames: string[] = [];
-        for (const message of messages) {
-            if (message.role === 'assistant' && Array.isArray(message.content)) {
-                for (const part of message.content) {
-                    if (part.type === 'tool-call') {
-                        executedToolNames.push(part.toolName);
-                    }
-                }
-            }
-        }
-        
-        if (executedToolNames.length > 0) {
-            const currentState = await this.orchestrationManager.getState(this.sessionId);
-            const currentTools = currentState?.recentlyUsedTools || [];
-            const newTools = [...new Set([...currentTools, ...executedToolNames])];
-            await this.orchestrationManager.updateState(this.sessionId, { recentlyUsedTools: newTools });
-            logger.info(LogCategory.LLM, 'LLMOrchestrationService', 'Executed tools tracked', {
-              sessionId: this.sessionId?.substring(0, 8),
-              tools: newTools
-            });
-        }
-    } catch (error) {
-        logger.error(LogCategory.LLM, 'LLMOrchestrationService', 'Error tracking executed tools', { 
-          sessionId: this.sessionId?.substring(0, 8),
-          error: error instanceof Error ? error.message : String(error)
-        });
-    }
-  }
-  */
-  
-  // Potential future method for onStepFinish logic
-  // private async handleStepFinish(event: ToolCallFinishedEvent): Promise<void> { ... }
 }
 
-// Helper types if needed
+// Helper type for streamText options
 type StreamTextOptions = Parameters<typeof CoreLLM.prototype.streamText>[0]; 

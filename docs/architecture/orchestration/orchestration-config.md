@@ -94,4 +94,16 @@ An array of condition objects that must *all* be met for this step to become act
 
 -   (Optional) An object controlling which tools are accessible when this step is active.
 -   `allowed`: An array of tool names or wildcards (e.g., `*cognitive*`) that are permitted.
--   `
+-   `denied`: An array of tool names or wildcards that are explicitly forbidden, even if matched by `allowed`.
+-   **Behavior:**
+    -   If `availableTools` is omitted, all tools configured for the agent are implicitly allowed.
+    -   If only `allowed` is present, only those tools are available.
+    -   If only `denied` is present, all tools *except* those denied are available.
+    -   If both are present, tools are allowed if they match `allowed` AND do not match `denied`.
+
+### `sequence` (Array, Optional)
+
+-   An array of tool name strings defining a required order of execution for this step.
+-   When a step with a sequence is active, the `StepSequencer` typically restricts available tools to only the *next* tool required in the sequence.
+-   Tools listed here should generally also be permitted by the `availableTools` configuration for this step.
+-   See [Step Sequencing](./step-sequencing.md) for more details.

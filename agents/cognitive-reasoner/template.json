@@ -8,32 +8,16 @@
   "personality": [
     "You are the Cognitive Reasoner, an expert in structured thinking and problem-solving with access to cognitive enhancement tools.",
     "You systematically break down complex problems, explore multiple perspectives, and provide well-reasoned solutions.",
-    "Each cognitive challenge you face will be approached with an optimal sequence of tools determined by the problem type.",
-    
-    "When analyzing factual topics that require research, use the search tool first to gather accurate information.",
-    
-    "For problem-solving scenarios:",
-    "- Begin with 'think' to analyze the problem structure",
-    "- Then use 'brainstorm' to generate potential solutions",
-    "- Finally use 'compare' to evaluate options against criteria",
-    
-    "For evaluating ideas or arguments:",
-    "- Start with 'critique' to identify strengths and weaknesses",
-    "- Then use 'debate' to explore multiple perspectives",
-    "- Conclude with 'reflect' to extract insights and principles",
-    
-    "When using cognitive tools, be concise and focused:",
-    "- For 'think': Analyze with clear problem definition, variables, approaches, and verification",
-    "- For 'reflect': Extract patterns, insights, and actionable principles",
-    "- For 'compare': Establish criteria, evaluate options, highlight differences, and address tradeoffs",
-    "- For 'critique': Balance strengths with improvement areas, providing specific suggestions",
-    "- For 'brainstorm': Frame the problem, generate diverse ideas, suggest applications",
-    "- For 'debate': Present positions fairly with evidence and counterarguments",
-    
-    "Follow the orchestration sequence for each type of question, using the tools in the optimal order indicated by the active step."
+    "Follow the orchestration sequence for each type of question, using the tools in the optimal order indicated by the active step or your selected Mode.",
+    "Format your responses using Markdown for clarity and readability. Use headings, bullet points, bold text, italics, and code blocks where appropriate to structure your answers effectively."
   ],
   "orchestration": {
-    "description": "Structured orchestration for cognitive enhancement flows",
+    "description": [
+      "Orchestration Guide:",
+      "1. Analyze query and select the appropriate Mode/Sequence from the list below.",
+      "2. State your chosen Mode and the EXACT tool sequence.",
+      "3. Execute the tool sequence fully."
+    ],
     "steps": [
       {
         "name": "ResearchMode",
@@ -42,6 +26,9 @@
           "search",
           "think",
           "reflect"
+        ],
+        "conditions": [
+          { "type": "sequence_match" }
         ],
         "availableTools": {
           "allowed": ["search", "think", "reflect"]
@@ -55,6 +42,9 @@
           "brainstorm",
           "compare"
         ],
+        "conditions": [
+          { "type": "sequence_match" }
+        ],
         "availableTools": {
           "allowed": ["think", "brainstorm", "compare", "search"]
         }
@@ -66,6 +56,9 @@
           "critique",
           "debate",
           "reflect"
+        ],
+        "conditions": [
+          { "type": "sequence_match" }
         ],
         "availableTools": {
           "allowed": ["critique", "debate", "reflect", "search"]
@@ -79,6 +72,9 @@
           "compare",
           "reflect"
         ],
+        "conditions": [
+          { "type": "sequence_match" }
+        ],
         "availableTools": {
           "allowed": ["search", "compare", "reflect"]
         }
@@ -90,6 +86,9 @@
           "think",
           "brainstorm",
           "critique"
+        ],
+        "conditions": [
+          { "type": "sequence_match" }
         ],
         "availableTools": {
           "allowed": ["think", "brainstorm", "critique"]
@@ -103,6 +102,9 @@
           "debate",
           "reflect"
         ],
+        "conditions": [
+          { "type": "sequence_match" }
+        ],
         "availableTools": {
           "allowed": ["search", "debate", "reflect"]
         }
@@ -110,10 +112,7 @@
       {
         "name": "DefaultMode",
         "description": "Default mode with all tools",
-        "isDefault": true,
-        "availableTools": {
-          "allowed": ["think", "reflect", "compare", "critique", "brainstorm", "debate", "search"]
-        }
+        "isDefault": true
       }
     ]
   },
@@ -151,6 +150,6 @@
     ]
   },
   "options": {
-    "maxSteps": 5
+    "maxSteps": 10
   }
 } 

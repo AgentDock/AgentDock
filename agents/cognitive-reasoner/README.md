@@ -1,131 +1,144 @@
-# Cognitive Reasoner
+# Cognitive Reasoner Agent
 
-The Cognitive Reasoner is an agent designed to tackle complex problems through a suite of cognitive enhancement tools. It excels at structured reasoning, reflection, comparison, critique, brainstorming, and debate - providing multiple approaches to problem-solving without requiring external data or API calls.
+The Cognitive Reasoner is an advanced agent engineered to tackle complex problems by leveraging a suite of specialized cognitive tools. It excels at structured reasoning, reflection, comparison, critique, brainstorming, and debate, providing multifaceted approaches to problem-solving without relying on external data retrieval.
 
-## Orchestration Features
+## Core Value: Structured Cognitive Workflows
 
-The Cognitive Reasoner now uses advanced orchestration to create optimal tool sequences for different cognitive tasks:
+The primary strength of the Cognitive Reasoner lies in its **orchestrated cognitive workflows**. Instead of just having tools available, it automatically activates specific sequences of tools tailored to the type of cognitive task requested. This ensures a systematic, efficient, and contextually appropriate approach to complex reasoning.
 
-### Research Mode
-Activates when queries contain terms related to research, facts, or information:
-1. **Search** → Gathers factual information
-2. **Think** → Analyzes the information systematically
-3. **Reflect** → Extracts insights and implications
+## Orchestration Modes & Tool Sequences
 
-### Problem-Solving Mode
-Activates for questions about calculations, estimations, or solutions:
-1. **Think** → Analyzes the problem structure
-2. **Brainstorm** → Generates potential solutions
-3. **Compare** → Evaluates options against criteria
+The agent dynamically selects an **Orchestration Mode** based on the user's query, activating a predefined sequence of its cognitive tools. This provides structure and ensures the optimal cognitive process is followed for each task type. The available modes are:
 
-### Evaluation Mode
-Activates for critiques, assessments, or analyses:
-1. **Critique** → Identifies strengths and weaknesses
-2. **Debate** → Explores multiple perspectives
-3. **Reflect** → Extracts insights and principles
+### 1. Research Mode
 
-### Comparison Mode
-Activates when comparing options or discussing tradeoffs:
-1. **Search** → Gathers factual information about options
-2. **Compare** → Systematically evaluates against criteria
-3. **Reflect** → Draws conclusions and implications
+*   **Trigger:** Queries involving information gathering, facts, or understanding a topic.
+*   **Goal:** To build factual understanding and extract key insights.
+*   **Sequence:**
+    ```mermaid
+    sequenceDiagram
+        participant User
+        participant Agent
+        User->>Agent: Ask information query
+        Agent->>Agent: Activate ResearchMode
+        Agent->>Agent: Use [Search] Tool
+        Agent->>Agent: Use [Think] Tool
+        Agent->>Agent: Use [Reflect] Tool
+        Agent-->>User: Provide researched insights
+    ```
 
-### Ideation Mode
-Activates for creative challenges and idea generation:
-1. **Think** → Frames the problem clearly
-2. **Brainstorm** → Generates diverse solutions
-3. **Critique** → Evaluates the ideas for feasibility
+### 2. Problem-Solving Mode
 
-### Debate Mode
-Activates for controversial topics with multiple viewpoints:
-1. **Search** → Gathers facts about different positions
-2. **Debate** → Presents balanced perspectives
-3. **Reflect** → Extracts principles and insights
+*   **Trigger:** Questions requiring calculations, estimations, finding solutions, or planning.
+*   **Goal:** To analyze a problem, generate solutions, and evaluate them.
+*   **Sequence:**
+    ```mermaid
+    sequenceDiagram
+        participant User
+        participant Agent
+        User->>Agent: Pose a problem
+        Agent->>Agent: Activate ProblemSolvingMode
+        Agent->>Agent: Use [Think] Tool
+        Agent->>Agent: Use [Brainstorm] Tool
+        Agent->>Agent: Use [Compare] Tool
+        Agent-->>User: Present evaluated solutions
+    ```
 
-## Strengths
+### 3. Evaluation Mode
 
-The agent is particularly effective for:
+*   **Trigger:** Requests for critiques, assessments, analyses, or reviews.
+*   **Goal:** To critically evaluate a subject from multiple angles.
+*   **Sequence:**
+    ```mermaid
+    sequenceDiagram
+        participant User
+        participant Agent
+        User->>Agent: Ask for evaluation/critique
+        Agent->>Agent: Activate EvaluationMode
+        Agent->>Agent: Use [Critique] Tool
+        Agent->>Agent: Use [Debate] Tool
+        Agent->>Agent: Use [Reflect] Tool
+        Agent-->>User: Provide structured evaluation
+    ```
 
-- **Logical Problem-Solving:** Complex puzzles, logic problems, algorithmic challenges
-- **Mathematical Reasoning:** Probability calculations, statistical analyses, numerical estimations
-- **Multi-Perspective Analysis:** Considering multiple viewpoints on complex issues
-- **Decision Analysis:** Weighing options using structured frameworks
-- **Reflection and Insight Extraction:** Analyzing past experiences to derive meaningful lessons
-- **Systematic Comparison:** Evaluating multiple options against clear criteria
-- **Balanced Critique:** Providing constructive feedback on ideas, writing, code, or arguments
-- **Idea Generation:** Creating diverse solutions to challenging problems
-- **Nuanced Debate:** Exploring controversial topics with fair representation of multiple perspectives
-- **Complex Systems Analysis:** Understanding interconnected variables and feedback loops
-- **Conceptual Clarity:** Breaking down abstract concepts into understandable components
+### 4. Comparison Mode
 
-## Cognitive Tools
+*   **Trigger:** Queries involving comparing options, discussing tradeoffs, or choosing between alternatives.
+*   **Goal:** To systematically compare items and determine the best fit or key differences.
+*   **Sequence:**
+    ```mermaid
+    sequenceDiagram
+        participant User
+        participant Agent
+        User->>Agent: Ask to compare options
+        Agent->>Agent: Activate ComparisonMode
+        Agent->>Agent: Use [Search] Tool (if needed for facts)
+        Agent->>Agent: Use [Compare] Tool
+        Agent->>Agent: Use [Reflect] Tool
+        Agent-->>User: Provide comparative analysis
+    ```
 
-The agent has six specialized cognitive tools at its disposal:
+### 5. Ideation Mode
 
-### 1. Think Tool
-Provides structured reasoning for complex problem-solving, breaking down problems into manageable steps with clear logical progression.
+*   **Trigger:** Creative challenges, brainstorming requests, seeking new ideas.
+*   **Goal:** To generate and refine novel solutions or concepts.
+*   **Sequence:**
+    ```mermaid
+    sequenceDiagram
+        participant User
+        participant Agent
+        User->>Agent: Ask for ideas/brainstorming
+        Agent->>Agent: Activate IdeationMode
+        Agent->>Agent: Use [Think] Tool
+        Agent->>Agent: Use [Brainstorm] Tool
+        Agent->>Agent: Use [Critique] Tool
+        Agent-->>User: Present generated & refined ideas
+    ```
 
-### 2. Reflect Tool
-Enables retrospective analysis and insight extraction, examining past experiences to derive meaningful lessons and actionable takeaways.
+### 6. Debate Mode
 
-### 3. Compare Tool
-Facilitates systematic comparison between multiple options based on well-defined criteria, highlighting key differences and tradeoffs.
+*   **Trigger:** Controversial topics, exploring multiple viewpoints, understanding different arguments.
+*   **Goal:** To present a balanced view of a contentious issue.
+*   **Sequence:**
+    ```mermaid
+    sequenceDiagram
+        participant User
+        participant Agent
+        User->>Agent: Ask to debate/explore topic
+        Agent->>Agent: Activate DebateMode
+        Agent->>Agent: Use [Search] Tool (for facts)
+        Agent->>Agent: Use [Debate] Tool
+        Agent->>Agent: Use [Reflect] Tool
+        Agent-->>User: Provide balanced perspectives
+    ```
 
-### 4. Critique Tool
-Offers balanced critical evaluation of arguments, writing, code, or designs, identifying both strengths and areas for improvement.
+## Cognitive Tools Explained
 
-### 5. Brainstorm Tool
-Supports divergent thinking and idea generation, creating diverse solutions across multiple categories for challenging problems.
+The agent utilizes six specialized cognitive tools:
 
-### 6. Debate Tool
-Explores multiple perspectives on complex or controversial topics, presenting different viewpoints with supporting evidence and counterarguments.
+1.  **Think Tool:** Provides structured, step-by-step reasoning for complex problem decomposition and analysis.
+2.  **Reflect Tool:** Enables meta-cognitive analysis, examining past information or experiences (within the conversation) to derive insights, lessons, or summaries.
+3.  **Compare Tool:** Facilitates systematic comparison of multiple items against defined criteria, highlighting differences, similarities, pros, and cons.
+4.  **Critique Tool:** Offers balanced critical evaluation, identifying strengths, weaknesses, and areas for improvement in arguments, proposals, or designs.
+5.  **Brainstorm Tool:** Supports divergent thinking to generate a wide range of ideas or solutions across various categories.
+6.  **Debate Tool:** Explores multiple perspectives on a topic, presenting different viewpoints fairly with supporting arguments.
 
-## Example Test Prompts
+## Example Use Cases & Prompts
 
-The Cognitive Reasoner can be tested with these prompts targeting each orchestration mode:
+Leverage the agent's modes with targeted prompts:
 
-### Research Mode
-- **Future Trends:** "How many electric vehicles will be on the road by 2030?"
-- **Historical Analysis:** "What were the major causes of the 2008 financial crisis?"
+*   **Research Mode:** "Explain the main factors contributing to climate change." / "Summarize the latest advancements in quantum computing."
+*   **Problem-Solving Mode:** "Outline a plan to improve employee retention in a tech startup." / "Calculate the estimated ROI for installing solar panels on a commercial building."
+*   **Evaluation Mode:** "Critique the effectiveness of universal basic income pilot programs." / "Analyze the ethical implications of gene editing."
+*   **Comparison Mode:** "Compare the advantages and disadvantages of Python vs. JavaScript for web development." / "Evaluate iOS vs. Android for a user focused on privacy."
+*   **Ideation Mode:** "Brainstorm novel applications for drone technology in agriculture." / "Generate ideas for reducing plastic waste in urban environments."
+*   **Debate Mode:** "Debate the pros and cons of nuclear energy." / "Explore the arguments for and against stricter regulations on social media platforms."
 
-### Problem-Solving Mode
-- **Urban Planning:** "How can cities solve traffic congestion problems?"
-- **Business Challenge:** "How can a small retail business compete with large e-commerce platforms?"
+## Getting the Most Out of the Cognitive Reasoner
 
-### Evaluation Mode
-- **Work Trends:** "Critique the argument that remote work improves productivity"
-- **Technology Impact:** "Evaluate the impact of social media on teenage mental health"
+1.  **Be Clear About the Task:** Explicitly state if you want a comparison, critique, plan, etc., to help trigger the correct mode.
+2.  **Trust the Process:** Allow the agent to follow its orchestrated sequence for best results.
+3.  **Provide Sufficient Context:** Give the agent the necessary background information within your prompt.
+4.  **Iterate if Needed:** Ask follow-up questions to refine the analysis or explore specific points further.
 
-### Comparison Mode
-- **Energy Options:** "Compare solar and wind energy for residential power generation"
-- **Education Methods:** "Compare traditional classroom learning with online education"
-
-### Ideation Mode
-- **Food Waste:** "Brainstorm innovative ways to reduce food waste in restaurants"
-- **Transportation:** "Generate ideas for sustainable last-mile delivery solutions"
-
-### Debate Mode
-- **Financial Future:** "Debate whether cryptocurrencies will eventually replace traditional banking"
-- **AI Ethics:** "Debate the ethics of using AI in hiring decisions"
-
-## Implementation Guidance
-
-For optimal results with the Cognitive Reasoner:
-
-1. **Trigger Specific Modes:** Use keywords that align with the orchestration mode you want to activate
-2. **Follow the Sequence:** The agent works best when following its orchestrated tool sequences
-3. **Provide Context:** Include relevant details in your query
-4. **Be Specific:** Clarify what kind of cognitive analysis you're looking for
-5. **Engage Iteratively:** Follow up with clarifying questions if needed
-
-## Orchestration Benefits
-
-The orchestrated approach provides several advantages:
-
-1. **Optimal Tool Sequencing:** Tools are used in the most effective order for each problem type
-2. **Focused Analysis:** Each mode restricts available tools to those most relevant for the task
-3. **Consistent Structure:** Predictable reasoning patterns make outputs easier to follow
-4. **Resource Efficiency:** Optimized prompts reduce token usage and improve performance
-5. **Task-Specific Processing:** Different cognitive challenges receive specialized treatment
-
-The Cognitive Reasoner combines multiple cognitive enhancement tools in structured sequences to provide versatile problem-solving capabilities for a wide range of complex challenges. 
+By combining specialized cognitive tools with intelligent orchestration, the Cognitive Reasoner provides a powerful and structured approach to tackling complex cognitive tasks. 

@@ -82,7 +82,7 @@
     "geist": "^1.3.1",
     "input-otp": "^1.4.2",
     "lodash-es": "^4.17.21",
-    "lucide-react": "^0.344.0",
+    "lucide-react": "^0.487.0",
     "mermaid": "^11.6.0",
     "next": "15.2.4",
     "panzoom": "^9.4.3",

@@ -4,14 +4,25 @@
 
 import { OrchestrationConfig, TokenOptimizationOptions } from '../types/orchestration';
 
+// NEW: Interface for dynamic state to inject
+// EXPORT the interface
+export interface DynamicOrchestrationState {
+  activeStepName?: string;
+  recentlyUsedTools?: string[];
+}
+
 /**
  * Creates a complete system prompt string from an agent configuration,
- * including personality and orchestration guidance.
+ * including personality, static orchestration guidance, and dynamic state.
  * 
  * @param agentConfig The agent configuration object
+ * @param dynamicState Optional dynamic state information for the current turn
  * @returns The formatted system prompt string
  */
-export function createSystemPrompt(agentConfig: any): string {
+export function createSystemPrompt(
+  agentConfig: any, 
+  dynamicState?: DynamicOrchestrationState
+): string {
   if (!agentConfig) {
     return '';
   }
@@ -22,22 +33,29 @@ export function createSystemPrompt(agentConfig: any): string {
     ? personality 
     : Array.isArray(personality) ? personality.join('\n') : String(personality || '');
 
-  // Add orchestration guidance if available
+  let finalPrompt = basePrompt;
+
+  // Add static orchestration guidance if available
   if (agentConfig.orchestration) {
     const tokenOptions = agentConfig.options?.tokenOptimization;
-    return addOrchestrationToPrompt(basePrompt, agentConfig.orchestration, tokenOptions);
+    finalPrompt = addOrchestrationToPrompt(finalPrompt, agentConfig.orchestration, tokenOptions);
   }
 
-  return basePrompt;
+  // Add dynamic state information if provided
+  if (dynamicState) {
+    finalPrompt = addDynamicStateToPrompt(finalPrompt, dynamicState);
+  }
+
+  return finalPrompt;
 }
 
 /**
- * Adds orchestration guidance to an existing system prompt
+ * Adds static orchestration guidance (rules, steps) to an existing system prompt
  * 
  * @param systemPrompt The base system prompt
  * @param orchestration The orchestration configuration
  * @param tokenOptions Token optimization options
- * @returns The combined system prompt with orchestration guidance
+ * @returns The combined system prompt with static orchestration guidance
  */
 export function addOrchestrationToPrompt(
   systemPrompt: string, 
@@ -54,8 +72,13 @@ export function addOrchestrationToPrompt(
   let orchestrationText = '\n\n# Orchestration Guide\n';
   
   // Add description if available
+  // MODIFIED: Handle string or array for description
   if (orchestration.description) {
-    orchestrationText += `${orchestration.description}\n\n`;
+    const descriptionContent = typeof orchestration.description === 'string'
+        ? orchestration.description
+        : Array.isArray(orchestration.description) ? orchestration.description.join('\n')
+        : String(orchestration.description || ''); // Fallback just in case
+    orchestrationText += `${descriptionContent}\n\n`;
   } else {
     orchestrationText += 'Follow these steps based on the context of the conversation:\n\n';
   }
@@ -69,6 +92,40 @@ export function addOrchestrationToPrompt(
   }
   
   return systemPrompt + orchestrationText;
+}
+
+// NEW: Function to add dynamic state to the prompt
+/**
+ * Adds dynamic orchestration state (current step, recent tools) to the prompt.
+ * 
+ * @param systemPrompt The prompt built so far (personality + static orchestration)
+ * @param dynamicState The dynamic state information
+ * @returns The prompt with dynamic state appended
+ */
+function addDynamicStateToPrompt(
+  systemPrompt: string,
+  dynamicState: DynamicOrchestrationState
+): string {
+  let stateText = '\n\n---\nCurrent Orchestration Context:\n';
+  let addedState = false;
+
+  if (dynamicState.activeStepName) {
+    stateText += `- Active Step: ${dynamicState.activeStepName}\n`;
+    addedState = true;
+  }
+
+  if (dynamicState.recentlyUsedTools && dynamicState.recentlyUsedTools.length > 0) {
+    stateText += `- Recently Used Tools (this turn): ${dynamicState.recentlyUsedTools.join(', ')}\n`;
+    addedState = true;
+  }
+
+  if (!addedState) {
+    stateText += '- No specific step active or tools used yet.\n';
+  }
+  
+  stateText += '---';
+
+  return systemPrompt + stateText;
 }
 
 /**

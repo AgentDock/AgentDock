@@ -36,7 +36,8 @@ export interface AIOrchestrationState {
  * The LLM understands context naturally without regex or string matching.
  */
 export type OrchestrationConditionType = 
-  | 'tool_used';
+  | 'tool_used'
+  | 'sequence_match';
 
 /**
  * Condition that determines when a step should be activated
@@ -46,7 +47,7 @@ export interface OrchestrationCondition {
   type: OrchestrationConditionType;
   
   /** Value to match against (meaning depends on condition type) */
-  value: string;
+  value?: string;
   
   /** Optional description of the condition */
   description?: string;
@@ -93,17 +94,25 @@ export interface OrchestrationConfig {
   /** Ordered sequence of steps */
   steps: OrchestrationStep[];
   
-  /** Optional description of the overall orchestration */
-  description?: string;
+  /** Optional description of the overall orchestration (string or array of strings) */
+  description?: string | string[];
 }
 
 /**
  * Zod schema for validating the orchestration condition
  */
 export const OrchestrationConditionSchema = z.object({
-  type: z.enum(['tool_used']),
-  value: z.string(),
+  type: z.enum(['tool_used', 'sequence_match']),
+  value: z.string().optional(),
   description: z.string().optional()
+}).refine(data => {
+  if (data.type === 'tool_used' && (typeof data.value !== 'string' || data.value.length === 0)) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Condition value is required when type is 'tool_used'",
+  path: ['value'],
 });
 
 /**
@@ -131,7 +140,7 @@ export const OrchestrationStepSchema = z.object({
  */
 export const OrchestrationSchema = z.object({
   steps: z.array(OrchestrationStepSchema),
-  description: z.string().optional()
+  description: z.union([z.string(), z.array(z.string())]).optional()
 });
 
 /**

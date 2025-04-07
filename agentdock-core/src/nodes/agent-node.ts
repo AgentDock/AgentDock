@@ -21,6 +21,7 @@ import { Tool } from '../types/tools';
 import { CoreMessage, AgentDockStreamResult, LanguageModelUsage, CoreTool, FinishReason } from '../llm';
 import { z } from 'zod';
 import { AgentConfig, PersonalitySchema } from '../types/agent-config';
+import { DynamicOrchestrationState } from '../utils/prompt-utils';
 
 /**
  * Configuration specific to the AgentNode.
@@ -313,14 +314,38 @@ export class AgentNode extends BaseNode<AgentNodeConfig> {
             }, {} as Record<string, CoreTool>)
           : undefined;
 
+      // --- Prepare System Prompt with Dynamic State --- 
       let finalSystemPrompt: string;
+      
+      // 1. Get the current orchestration state (subset needed for prompt)
+      // Use provided state if available, otherwise fetch
+      let currentOrchestrationState: AIOrchestrationState | null = providedState || null;
+      if (!currentOrchestrationState) {
+          logger.debug(LogCategory.NODE, 'AgentNode', 'Fetching orchestration state for prompt', { nodeId: this.id, sessionId: sessionId?.substring(0, 8) });
+          currentOrchestrationState = await orchestrationManager.getState(sessionId);
+      }
+      
+      // 2. Prepare the dynamic state object expected by createSystemPrompt
+      const dynamicStateForPrompt: DynamicOrchestrationState = {
+        activeStepName: currentOrchestrationState?.activeStep,
+        // Only include recentlyUsedTools if they exist and are non-empty
+        recentlyUsedTools: (currentOrchestrationState?.recentlyUsedTools && currentOrchestrationState.recentlyUsedTools.length > 0) 
+                           ? currentOrchestrationState.recentlyUsedTools 
+                           : undefined
+      };
+      logger.debug(LogCategory.NODE, 'AgentNode', 'Dynamic state prepared for prompt', { nodeId: this.id, sessionId: sessionId?.substring(0, 8), dynamicState: dynamicStateForPrompt });
+      
+      // 3. Create the final prompt, passing both config and dynamic state
       if (systemOverride) {
          const baseConfig = this.config.agentConfig || {}; 
          const tempAgentConfig = { ...baseConfig, personality: systemOverride };
-         finalSystemPrompt = createSystemPrompt(tempAgentConfig);
+         // Pass dynamic state as second argument
+         finalSystemPrompt = createSystemPrompt(tempAgentConfig, dynamicStateForPrompt); 
       } else {
-         finalSystemPrompt = createSystemPrompt(this.config.agentConfig); 
+         // Pass dynamic state as second argument
+         finalSystemPrompt = createSystemPrompt(this.config.agentConfig, dynamicStateForPrompt); 
       }
+      // --- System Prompt Preparation End ---
       
       // Inject current date and time information into the system prompt
       const now = new Date();
@@ -331,11 +356,18 @@ Current timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone}
 ISO timestamp: ${now.toISOString()}`;
       finalSystemPrompt = `${finalSystemPrompt}\n\n${dateTimeInfo}`;
       
+      // >>> Debug Log for Final System Prompt <<<
+      logger.debug(LogCategory.NODE, 'AgentNode', 'Final System Prompt before LLM call', { 
+          nodeId: this.id, 
+          sessionId: sessionId?.substring(0, 8), 
+          prompt: finalSystemPrompt 
+      });
+      
       const coreMessages = convertCoreToLLMMessages(messages) as CoreMessage[];
       
       const maxSteps = runtimeOverrides?.maxSteps ?? 
                        (typeof this.config.agentConfig?.options?.maxSteps === 'number' ? this.config.agentConfig.options.maxSteps : undefined) ?? 
-                       3;
+                       5;
                        
       logger.debug(LogCategory.NODE, 'AgentNode', 'Calling LLM Orchestration Service', { 
           nodeId: this.id, 

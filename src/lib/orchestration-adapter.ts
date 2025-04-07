@@ -25,13 +25,14 @@ import {
 
 // Local type for template orchestration config, which may have readonly properties
 export type TemplateOrchestrationConfig = {
+  readonly description?: string | ReadonlyArray<string>;
   readonly steps?: ReadonlyArray<{
     readonly name: string;
     readonly description?: string;
     readonly isDefault?: boolean;
     readonly conditions?: ReadonlyArray<{
       readonly type: string;
-      readonly value: string;
+      readonly value?: string;
     }>;
     readonly sequence?: ReadonlyArray<string>;
     readonly availableTools?: {
@@ -411,6 +412,7 @@ export function toMutableConfig(config: TemplateOrchestrationConfig): any {
   if (!config || !config.steps) return { steps: [] };
   
   return {
+    description: config.description,
     steps: config.steps.map(step => ({
       name: step.name,
       description: step.description,
@@ -418,7 +420,7 @@ export function toMutableConfig(config: TemplateOrchestrationConfig): any {
       conditions: step.conditions ? 
         step.conditions.map(condition => ({ 
           type: condition.type, 
-          value: condition.value 
+          ...(condition.value !== undefined && { value: condition.value })
         })) : [],
       sequence: step.sequence ? [...step.sequence] : [],
       availableTools: step.availableTools ? {

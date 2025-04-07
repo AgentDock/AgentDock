@@ -128,7 +128,8 @@ export class OrchestrationManager {
             logger.debug(LogCategory.ORCHESTRATION, 'getActiveStep', 'Checking conditions for step', { sessionId, stepName: step.name }); // Log checking step
       let allConditionsMet = true;
       for (const condition of step.conditions) {
-                const conditionMet = this.checkCondition(condition, toolContext);
+                // Pass the step to checkCondition
+                const conditionMet = this.checkCondition(condition, toolContext, step); 
                 logger.debug(LogCategory.ORCHESTRATION, 'getActiveStep', 'Condition check result', { sessionId, stepName: step.name, conditionType: condition.type, conditionValue: condition.value, conditionMet }); // Log condition check
                 if (!conditionMet) { 
           allConditionsMet = false;
@@ -141,7 +142,8 @@ export class OrchestrationManager {
                 logger.debug(LogCategory.ORCHESTRATION, 'getActiveStep', 'All conditions met for step', { sessionId, stepName: step.name }); // Log conditions met
                 if (state.activeStep !== step.name) {
                     logger.info(LogCategory.ORCHESTRATION, 'getActiveStep', 'Transitioning active step', { sessionId, fromStep: state.activeStep, toStep: step.name }); // Log transition
-                    await this.stateManager.setActiveStep(sessionId, step.name); // Changed to await
+                    // Also reset sequence index when transitioning to a new step
+                    await this.stateManager.updateState(sessionId, { activeStep: step.name, sequenceIndex: 0 });
                 } else {
                     logger.debug(LogCategory.ORCHESTRATION, 'getActiveStep', 'Conditions met, but step is already active', { sessionId, stepName: step.name }); // Log already active
         }
@@ -165,7 +167,8 @@ export class OrchestrationManager {
     if (defaultStep) {
         logger.debug(LogCategory.ORCHESTRATION, 'getActiveStep', 'Falling back to default step', { sessionId, defaultStepName: defaultStep.name }); // Log falling back to default
         if (state.activeStep !== defaultStep.name) {
-             await this.stateManager.setActiveStep(sessionId, defaultStep.name); // Changed to await
+             // Also reset sequence index when falling back to default
+             await this.stateManager.updateState(sessionId, { activeStep: defaultStep.name, sequenceIndex: 0 });
       }
       return defaultStep;
     }
@@ -179,11 +182,48 @@ export class OrchestrationManager {
    */
   private checkCondition(
     condition: OrchestrationCondition,
-    toolContext?: ToolContext
+    toolContext: ToolContext | undefined, // Made context optional for safety
+    step: OrchestrationStep // Added step parameter
   ): boolean {
+    const history = toolContext?.recentlyUsedTools || [];
+
     switch (condition.type) {
       case 'tool_used':
-        return toolContext?.recentlyUsedTools.includes(condition.value) || false;
+        // Keep original behavior: check if the specified tool exists anywhere in history
+        // Consider changing this later to only check the *last* tool if needed for more precision
+        // Check if condition.value is actually a string before passing to includes()
+        if (typeof condition.value === 'string') {
+          return history.includes(condition.value);
+        }
+        // If value is undefined (which shouldn't happen for tool_used based on Zod schema, 
+        // but TypeScript requires the check), the condition fails.
+        return false;
+
+      case 'sequence_match': {
+        // New condition: check if the end of the history matches the step's sequence
+        const sequence = step.sequence;
+        if (!sequence || sequence.length === 0) {
+          logger.warn(LogCategory.ORCHESTRATION, 'checkCondition', 'sequence_match condition used on step with no sequence', { stepName: step.name });
+          return false; // Cannot match if the step has no sequence defined
+        }
+        if (history.length < sequence.length) {
+          return false; // History is too short to match the sequence
+        }
+        
+        // Get the tail of the history matching the sequence length
+        const historyTail = history.slice(-sequence.length);
+        
+        // Compare the tail with the sequence
+        const match = sequence.every((tool, index) => historyTail[index] === tool);
+        
+        logger.debug(LogCategory.ORCHESTRATION, 'checkCondition', 'Sequence match check', { 
+            stepName: step.name, 
+            sequence, 
+            historyTail, 
+            match 
+        });
+        return match;
+      }
       
       default:
         // Potentially add more condition types here if needed
@@ -254,8 +294,10 @@ export class OrchestrationManager {
     // Assuming sequencer.processTool remains sync or adapted internally
     await this.sequencer.processTool(activeStep, sessionId, toolName); 
 
-    // FIX: Re-evaluate active step after tool usage is processed 
-    // REMOVED: await this.getActiveStep(orchestration, messages, sessionId);
+    // Re-evaluate active step after tool usage is processed 
+    // Explicitly re-evaluate the active step after processing the tool
+    // This ensures transitions happen immediately when a sequence completes
+    await this.getActiveStep(orchestration, messages, sessionId);
   }
   
   /**
@@ -321,6 +363,11 @@ export class OrchestrationManager {
   public async removeSession(sessionId: SessionId): Promise<void> { // Changed to async Promise<void>
     // Removed lightweight check
     await this.stateManager.cleanupSession(sessionId); // Changed to await
+  }
+
+  // NEW: Add getter for the state manager instance
+  public getStateManager(): OrchestrationStateManager {
+    return this.stateManager;
   }
 }
 

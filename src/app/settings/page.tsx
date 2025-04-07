@@ -467,7 +467,6 @@ function SettingsPage() {
           {settings.core.debugMode && (
             <DebugPanel 
               settings={settings} 
-              onRefreshTrigger={handleRefreshTrigger} 
             />
           )}
         </div>

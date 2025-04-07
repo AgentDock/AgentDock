@@ -586,13 +586,7 @@ export async function POST(
         config: runtimeOverrides,
         _fallbackApiKey: fallbackApiKey,
         fullAgentConfig: config,
-        orchestrationState: finalSessionId && template && 'orchestration' in template ? 
-          await import('@/lib/orchestration-adapter').then(module => 
-            module.getOrchestrationState(
-              finalSessionId, 
-              toMutableConfig(template.orchestration)
-            )
-          ) : undefined
+        orchestrationState: orchestrationState
       });
 
       // Create and return the response with proper headers

@@ -43,6 +43,12 @@ const ERROR_PATTERNS: Record<LLMProvider | 'byok', ProviderErrorPattern[]> = {
       userMessage: "You've reached the rate limit for Anthropic API. Please try again later."
     },
     {
+      pattern: /Overloaded/i, 
+      errorCode: ErrorCodes.LLM_RATE_LIMIT, 
+      statusCode: 429, 
+      userMessage: "Anthropic service is temporarily overloaded. Please try again shortly."
+    },
+    {
       pattern: /context\s*window|token\s*limit/i,
       errorCode: ErrorCodes.LLM_EXECUTION,
       statusCode: 400,

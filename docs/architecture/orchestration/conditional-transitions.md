@@ -32,9 +32,13 @@ Conditions are defined within each step in the agent's orchestration configurati
 
 ## Implemented Condition Types
 
-Currently, the following condition type is implemented in `agentdock-core`:
+Currently, the following condition types are implemented in `agentdock-core`:
 
--   **`tool_used`**: Checks if the specified tool name (`value`) exists in the session's `recentlyUsedTools` list (managed by `OrchestrationStateManager`).
+-   **`tool_used`**: Checks if the specified tool name (`value`) exists *anywhere* in the session's `recentlyUsedTools` list.
+    -   Example: `{ "type": "tool_used", "value": "search" }`
+-   **`sequence_match`**: Checks if the *end* of the session's `recentlyUsedTools` list exactly matches the `sequence` array defined for the step being evaluated. This is useful for activating steps only after a specific series of tools has been used in order.
+    -   Does *not* use the `value` field.
+    -   Example: `{ "type": "sequence_match" }` (used on a step that has a `sequence` array defined).
 
 ## Implementation (`OrchestrationManager`)
 
@@ -44,10 +48,11 @@ The logic for evaluating conditions resides within the `OrchestrationManager` (`
 
 -   **Access to State:** The condition evaluation logic needs access to the current `OrchestrationState` for the session (from `OrchestrationStateManager`), specifically the `recentlyUsedTools` list.
 -   **Evaluation Flow:**
-    1.  Triggered typically after a user message is received or *before* determining available tools for the next LLM call.
-    2.  Iterates through all defined orchestration steps in the configuration.
-    3.  For each step, evaluates **all** of its defined `conditions` (currently only `tool_used`) against the current state.
-    4.  If **all** conditions for a step pass, that step is considered a candidate for activation.
+    1.  Triggered typically at the beginning of processing a new user message (before determining available tools for the LLM call).
+    2.  **Additionally**, evaluation is now triggered immediately *after* a tool usage event is processed (`processToolUsage`). This ensures that step transitions based on completed sequences happen within the same turn.
+    3.  Iterates through all defined orchestration steps in the configuration.
+    4.  For each step, evaluates **all** of its defined `conditions` (e.g., `tool_used`, `sequence_match`) against the current state.
+    5.  If **all** conditions for a step pass, that step is considered a candidate for activation.
 -   **Step Activation:**
     -   If one or more steps meet their conditions, a strategy selects the active step (typically the first matching step in the configuration order).
     -   The `OrchestrationStateManager.setActiveStep` method updates the session's state with the name of the newly activated step.

@@ -36,6 +36,28 @@ export function cleanText(text: string): string {
 }
 
 /**
+ * Process HTML elements in markdown content
+ * Converts <br> tags to proper markdown line breaks and handles other common HTML elements
+ */
+export function processHtmlInMarkdown(text: string): string {
+  if (!text) return '';
+  
+  let processed = text;
+  
+  // We'll leave <br> tags intact instead of converting them to markdown line breaks
+  // This allows the react-markdown component to handle them with its own br component
+  // processed = processed.replace(/<br\s*\/?>/gi, '  \n');
+  
+  // Handle other potential HTML elements that might appear in markdown content
+  processed = processed.replace(/<p>(.*?)<\/p>/gi, '$1\n\n');
+  processed = processed.replace(/<strong>(.*?)<\/strong>/gi, '**$1**');
+  processed = processed.replace(/<em>(.*?)<\/em>/gi, '*$1*');
+  processed = processed.replace(/<code>(.*?)<\/code>/gi, '`$1`');
+  
+  return processed;
+}
+
+/**
  * Clean a URL for display
  */
 export function cleanUrl(url: string): string {
@@ -114,9 +136,12 @@ export function formatErrorMessage(type: string, message: string, details?: stri
  * Create a standard tool result object
  */
 export function createToolResult(type: string, content: string): ToolResult {
+  // Process any HTML elements in the content before returning
+  const processedContent = processHtmlInMarkdown(content);
+  
   return {
     type,
-    content
+    content: processedContent
   };
 }
 

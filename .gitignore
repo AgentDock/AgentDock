@@ -66,3 +66,4 @@ Thumbs.db
 
 # Generated files
 /src/generated/
+public/search-index.json

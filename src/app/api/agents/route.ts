@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
-import { SecureStorage } from 'agentdock-core';
+import { SecureStorage } from 'agentdock-core/storage/secure-storage';
 import { Agent, AgentState } from '@/lib/store/types';
 import { z } from 'zod';
 import { PersonalitySchema } from 'agentdock-core/types/agent-config';

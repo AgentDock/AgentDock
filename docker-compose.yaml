@@ -1,0 +1,38 @@
+version: '3.8'
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: dev-redis-backend # Renamed to avoid conflict
+    ports:
+      - "6380:6379" # Use a different host port (e.g., 6380) to avoid clash if needed
+    command: redis-server --save "" --appendonly no # Basic config, no persistence needed for dev
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+
+  redis-http-proxy:
+    image: hiett/serverless-redis-http:latest 
+    container_name: dev-redis-proxy
+    ports:
+      - "8079:80" # SRH image runs HTTP on port 80 by default inside container
+    environment:
+      # SRH Configuration - Use variables expected by hiett/serverless-redis-http
+      SRH_MODE: env 
+      SRH_CONNECTION_STRING: redis://redis:6379 
+      SRH_TOKEN: test_token 
+    depends_on:
+      redis:
+        condition: service_healthy 
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: dev-redis-commander
+    ports:
+      - "8081:8081"
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy 

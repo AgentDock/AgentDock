@@ -26,7 +26,7 @@ export type {
 
 // Core nodes
 export { AgentNode } from './agent-node';
-export type { AgentNodeConfig, AgentNodeOptions } from './agent-node';
+export type { AgentNodeConfig, AgentNodeHandleMessageOptions } from './agent-node';
 
 // Tool registry
 export { 
@@ -34,4 +34,10 @@ export {
   setToolRegistry, 
   DefaultToolRegistry 
 } from './tool-registry';
-export type { ToolRegistry } from './tool-registry'; 
+export type { ToolRegistry } from './tool-registry';
+
+// Register utilities
+export { registerCoreNodes } from './register-core-nodes';
+export { getToolRegistry as registerTool } from './tool-registry';
+export type { ToolRegistrationOptions as ToolMetadata } from './tool';
+export type { Tool as ToolExecutionFunction } from './tool'; 

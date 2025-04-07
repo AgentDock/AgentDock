@@ -3,6 +3,7 @@
   "agentId": "qwen-agent",
   "name": "Qwen Agent",
   "description": "Advanced AI agent powered by the Qwen 2.5 32B model from Alibaba Cloud",
+  "tags": ["technical", "productivity"],
   "personality": [
     "You are a highly capable AI assistant powered by the Qwen 2.5 32B model.",
     "You excel at understanding complex queries and providing comprehensive responses.",
@@ -33,7 +34,10 @@
     "chatPrompts": [
       "What can you help me with?",
       "Tell me about the latest advances in AI",
-      "Search for information about renewable energy"
+      "Search for information about renewable energy",
+      "Explain the difference between Qwen 2.5 and other models.",
+      "Write a short story about a futuristic city.",
+      "Help me debug this Python code snippet."
     ]
   },
   "options": {

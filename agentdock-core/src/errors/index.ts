@@ -198,4 +198,6 @@ export function wrapError(
       originalError: error
     }
   );
-} 
+}
+
+// Note: LLM error utilities are imported in the main index.ts file to avoid circular dependencies 

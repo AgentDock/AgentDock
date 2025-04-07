@@ -1,34 +1,13 @@
 "use client"
 
 import React, { useMemo } from "react"
-import { cva } from "class-variance-authority"
 import { cn } from "@/lib/utils"
-import { MarkdownRenderer } from "@/components/ui/markdown-renderer"
+import { ChatMarkdown } from "@/components/chat/chat-markdown"
 import { FilePreview } from "@/components/chat/file-preview"
 import { ToolCall } from "@/components/chat/tool-call"
 import type { ChatMessageProps, Animation } from "@/components/chat/types"
-import type { Message } from "agentdock-core/client"
 import { CopyButton } from "@/components/ui/copy-button"
 import { motion } from "framer-motion"
-
-// Keep the chat bubble styling
-const chatBubbleVariants = cva(
-  "group/message relative break-words rounded-3xl p-4 text-sm sm:max-w-[70%]",
-  {
-    variants: {
-      isUser: {
-        true: "bg-primary text-primary-foreground",
-        false: "bg-muted text-foreground",
-      },
-      animation: {
-        none: "",
-        fade: "",
-        slideIn: "",
-        bounce: "",
-      },
-    },
-  }
-)
 
 // Animation variants for different animation types
 const messageAnimationVariants = {
@@ -73,12 +52,10 @@ function dataUrlToUint8Array(data: string) {
 // Subcomponent for the timestamp display
 const MessageTimestamp = React.memo(({ 
   createdAt, 
-  isUser, 
-  animation 
+  isUser
 }: { 
   createdAt?: Date | number | string;
   isUser: boolean;
-  animation?: Animation;
 }) => {
   // Skip rendering if no createdAt value
   if (!createdAt) return null;
@@ -93,7 +70,7 @@ const MessageTimestamp = React.memo(({
     return (
       <time
         dateTime={date.toISOString()}
-        className="mt-1 block px-1 text-xs opacity-50"
+        className="mt-1 block px-1 text-xs text-foreground/50"
         aria-label={`Message sent at ${formattedTime}`}
       >
         {formattedTime}
@@ -107,26 +84,52 @@ const MessageTimestamp = React.memo(({
 
 MessageTimestamp.displayName = "MessageTimestamp";
 
-// Actions container component to avoid duplication
-const ActionsContainer = React.memo(({ 
+// Message Bubble component to avoid duplication
+const MessageBubble = React.memo(({ 
+  children, 
   isUser, 
-  content, 
-  children 
+  isStreaming,
+  messageId,
+  content,
+  copyButtonContent
 }: { 
-  isUser: boolean;
-  content?: string;
   children: React.ReactNode;
+  isUser: boolean;
+  isStreaming?: boolean;
+  messageId: string;
+  content: string;
+  copyButtonContent: string;
 }) => {
-  if (isUser) return null;
-  
   return (
-    <div className="absolute -bottom-4 right-2 flex space-x-1 rounded-lg border bg-background p-1 text-foreground opacity-0 transition-opacity group-hover/message:opacity-100">
-      {children}
+    <div
+      className={cn(
+        "relative break-words rounded-3xl p-4 text-sm sm:max-w-[70%] group/message",
+        isUser 
+          ? "bg-primary text-primary-foreground" 
+          : "bg-muted text-foreground"
+      )}
+    >
+      <div>
+        {content && (
+          <ChatMarkdown isStreaming={isStreaming} messageId={messageId}>
+            {content}
+          </ChatMarkdown>
+        )}
+      </div>
+      
+      {!isUser && content && (
+        <div className="absolute -bottom-4 right-2 flex space-x-1 rounded-lg border bg-background p-1 text-foreground opacity-0 transition-opacity group-hover/message:opacity-100">
+          <CopyButton 
+            content={copyButtonContent} 
+            copyMessage="Message copied to clipboard" 
+          />
+        </div>
+      )}
     </div>
   );
 });
 
-ActionsContainer.displayName = "ActionsContainer";
+MessageBubble.displayName = "MessageBubble";
 
 // Main message component
 export const ChatMessage = React.memo(React.forwardRef<HTMLDivElement, ChatMessageProps>(({
@@ -139,7 +142,11 @@ export const ChatMessage = React.memo(React.forwardRef<HTMLDivElement, ChatMessa
   className,
   experimental_attachments,
   toolInvocations,
+  isStreaming = false,
 }, ref) => {
+  // Generate a unique ID for this message for mermaid rendering
+  const messageId = React.useMemo(() => `msg-${Math.random().toString(36).substring(2, 11)}`, []);
+  
   // Convert attachments to File objects
   const files = useMemo(() => {
     if (!experimental_attachments) return undefined;
@@ -169,21 +176,24 @@ export const ChatMessage = React.memo(React.forwardRef<HTMLDivElement, ChatMessa
     }
   }, [animation]);
 
+  // Motion props for consistent animation
+  const motionProps = {
+    ref,
+    className: cn("flex flex-col", isUser ? "items-end" : "items-start", className),
+    role: "group",
+    "aria-label": `${isUser ? "User" : "Assistant"} message${toolInvocations?.length ? " with tool calls" : ""}`,
+    initial: animation !== "none" ? messageAnimationVariants.initial : undefined,
+    animate: animation !== "none" ? animationVariant : undefined,
+  };
+
   // Handle messages with tool calls
   if (role === "assistant" && toolInvocations && toolInvocations.length > 0) {
     // If there's no content, just render the tool calls
     if (!content || !content.trim()) {
       return (
-        <motion.div 
-          ref={ref} 
-          className={cn("flex flex-col", isUser ? "items-end" : "items-start", className)}
-          role="group"
-          aria-label={`${isUser ? "User" : "Assistant"} message with tool calls`}
-          initial={animation !== "none" ? messageAnimationVariants.initial : {}}
-          animate={animation !== "none" ? animationVariant : {}}
-        >
+        <motion.div {...motionProps}>
           <ToolCall toolInvocations={toolInvocations} />
-          {showTimeStamp && <MessageTimestamp createdAt={createdAt} isUser={isUser} animation={animation} />}
+          {showTimeStamp && <MessageTimestamp createdAt={createdAt} isUser={isUser} />}
           {actions && <div className="mr-2 flex justify-end">{actions}</div>}
         </motion.div>
       );
@@ -191,32 +201,24 @@ export const ChatMessage = React.memo(React.forwardRef<HTMLDivElement, ChatMessa
     
     // If there's content, render it as a separate visual element after the tool calls
     return (
-      <motion.div 
-        ref={ref} 
-        className={cn("flex flex-col", isUser ? "items-end" : "items-start", className)}
-        role="group"
-        aria-label={`${isUser ? "User" : "Assistant"} message with tool calls and content`}
-        initial={animation !== "none" ? messageAnimationVariants.initial : {}}
-        animate={animation !== "none" ? animationVariant : {}}
-      >
+      <motion.div {...motionProps}>
         <div className="flex flex-col gap-4 w-full">
           {/* First render the tool calls */}
           <ToolCall toolInvocations={toolInvocations} />
           
           {/* Then render the content */}
-          <div className={cn(chatBubbleVariants({ isUser: false, animation }), "relative")}>
-            <div>
-              <MarkdownRenderer>{content}</MarkdownRenderer>
-            </div>
-            {!isUser && content && (
-              <ActionsContainer isUser={isUser} content={content}>
-                <CopyButton content={copyButtonContent} copyMessage="Message copied to clipboard" />
-              </ActionsContainer>
-            )}
-          </div>
+          <MessageBubble 
+            isUser={false}
+            isStreaming={isStreaming}
+            messageId={messageId}
+            content={content}
+            copyButtonContent={copyButtonContent}
+          >
+            <ChatMarkdown isStreaming={isStreaming} messageId={messageId}>{content}</ChatMarkdown>
+          </MessageBubble>
         </div>
         
-        {showTimeStamp && <MessageTimestamp createdAt={createdAt} isUser={isUser} animation={animation} />}
+        {showTimeStamp && <MessageTimestamp createdAt={createdAt} isUser={isUser} />}
         {actions && <div className="mr-2 flex justify-end">{actions}</div>}
       </motion.div>
     );
@@ -224,14 +226,7 @@ export const ChatMessage = React.memo(React.forwardRef<HTMLDivElement, ChatMessa
 
   // Standard message rendering
   return (
-    <motion.div 
-      ref={ref} 
-      className={cn("flex flex-col", isUser ? "items-end" : "items-start", className)}
-      role="group"
-      aria-label={`${isUser ? "User" : "Assistant"} message`}
-      initial={animation !== "none" ? messageAnimationVariants.initial : {}}
-      animate={animation !== "none" ? animationVariant : {}}
-    >
+    <motion.div {...motionProps}>
       {/* Render file previews if attachments are present */}
       {files && files.length > 0 && (
         <div className="mb-1 flex flex-wrap gap-2">
@@ -243,13 +238,8 @@ export const ChatMessage = React.memo(React.forwardRef<HTMLDivElement, ChatMessa
                   <img
                     src={URL.createObjectURL(file)}
                     alt="Uploaded image"
-                    className="max-w-full h-auto rounded-lg border border-border"
-                    style={{ 
-                      maxHeight: "400px", // Allow large images but cap the maximum height
-                      minWidth: "200px"   // Ensure small images are still reasonably sized
-                    }}
+                    className="max-h-[400px] min-w-[200px] max-w-full h-auto rounded-lg border border-border"
                   />
-                  {/* We don't show a filename for the larger images */}
                 </div>
               );
             }
@@ -259,25 +249,18 @@ export const ChatMessage = React.memo(React.forwardRef<HTMLDivElement, ChatMessa
         </div>
       )}
       
-      <div
-        className={cn(chatBubbleVariants({
-          isUser,
-          animation,
-        }), "relative")}
+      {/* Main message bubble */}
+      <MessageBubble 
+        isUser={isUser}
+        isStreaming={isStreaming}
+        messageId={messageId}
+        content={content || ""}
+        copyButtonContent={copyButtonContent}
       >
-        <div className="[&::-webkit-details-marker]:hidden">
-          {content ? (
-            <MarkdownRenderer>{content}</MarkdownRenderer>
-          ) : null}
-        </div>
-        {!isUser && content && (
-          <ActionsContainer isUser={isUser} content={content}>
-            <CopyButton content={copyButtonContent} copyMessage="Message copied to clipboard" />
-          </ActionsContainer>
-        )}
-      </div>
+        <ChatMarkdown isStreaming={isStreaming} messageId={messageId}>{content || ""}</ChatMarkdown>
+      </MessageBubble>
       
-      {showTimeStamp && <MessageTimestamp createdAt={createdAt} isUser={isUser} animation={animation} />}
+      {showTimeStamp && <MessageTimestamp createdAt={createdAt} isUser={isUser} />}
       {actions && <div className="mr-2 flex justify-end">{actions}</div>}
     </motion.div>
   )

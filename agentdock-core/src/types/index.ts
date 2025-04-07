@@ -6,6 +6,7 @@ export * from '../llm/types';
 export * from './storage';
 export * from './messages';
 export * from './node-category';
+export * from './orchestration';
 
 export interface AgentDockConfig {
   /** Whether to only use BYOK (no fallback to service key) */

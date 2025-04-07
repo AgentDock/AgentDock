@@ -1,216 +1,272 @@
-# Token Usage Tracking in AgentDock
+# Token Usage Tracking & Smart Context Management
 
-This document explains how token usage tracking is implemented in AgentDock and how to implement it in your own server backend.
+AgentDock Core provides mechanisms for tracking LLM token usage and plans for advanced features to manage the context window intelligently.
 
-## Overview
+## Current Implementation: Tracking Actual Usage
 
-Token usage tracking in AgentDock follows a three-layer architecture:
+The current system focuses on tracking the **actual tokens consumed** during an LLM call and accumulating this count within the session state.
 
-1. **Capture Layer (CoreLLM)**: Captures token usage from LLM responses
-2. **Logging Layer (AgentNode)**: Logs token usage for debugging and monitoring
-3. **API Response Layer (Route Handler)**: Adds token usage to response headers
+### 1. `CoreLLM`: Reporting Usage from AI SDK
 
-The first two layers are framework-agnostic and part of the `agentdock-core` package. Only the third layer is specific to your server implementation (NextJS in the reference implementation).
+The `CoreLLM` class interfaces with the Vercel AI SDK.
 
-## Implementation Details
+-   **Callback Mechanism:** Methods like `streamText` accept an `onUsageAvailable` callback.
+-   **Extraction:** After an LLM interaction completes, `CoreLLM` extracts the `usage` data (`promptTokens`, `completionTokens`) provided by the AI SDK (if available).
+-   **Invocation:** `CoreLLM` invokes the `onUsageAvailable` callback passed to it (typically by `AgentNode`), providing the `TokenUsage` for that specific turn.
 
-### 1. Capture Layer (CoreLLM)
+```mermaid
+sequenceDiagram
+    participant AN as AgentNode
+    participant CL as CoreLLM
+    participant AISDK as Vercel AI SDK
+    participant Callback as "onUsageAvailable (in AN)"
 
-The `CoreLLM` class in `agentdock-core/src/llm/core-llm.ts` captures token usage in the `onFinish` callback of both `streamText` and `streamObject` methods:
+    AN->>+CL: streamText(..., onUsageAvailable)
+    CL->>+AISDK: streamText(...)
+    AISDK-->>-CL: Stream Events & Final Completion (with usage)
+    CL-->>CL: Internal onFinish triggered
+    CL-->>CL: Extracts TokenUsage (Actual)
+    CL-->>Callback: Invoke Callback(actualUsage)
+    Callback-->>AN: (Updates State)
+    Note over AN,CL: CoreLLM reports actual usage via callback
+    CL-->>-AN: Returns Stream Result
+```
+
+### 2. `AgentNode` & State: Storing Cumulative Usage
+
+`AgentNode` receives the actual usage report from `CoreLLM` and updates the session state.
+
+-   **Handling Callback:** `AgentNode` provides an internal method to `CoreLLM` as the `onUsageAvailable` callback.
+-   **State Update:** When the callback is invoked with the actual `TokenUsage` for the turn:
+    1.  `AgentNode` retrieves the current `AIOrchestrationState` via the `OrchestrationManager`.
+    2.  It reads the existing `cumulativeTokenUsage`.
+    3.  It adds the received actual usage to the cumulative totals.
+    4.  It saves the updated state using `OrchestrationManager.updateState()`.
+-   **Stored Data:** The `cumulativeTokenUsage: { promptTokens: number, completionTokens: number, totalTokens: number }` is persisted in the `AIOrchestrationState` (e.g., Redis).
+
+```mermaid
+sequenceDiagram
+    participant Callback as "_handleUsageCallback (in AN)"
+    participant OM as OrchestrationManager
+    participant Store as "State Store"
+
+    Callback->>+OM: getState(sessionId)
+    OM->>+Store: GET state
+    Store-->>-OM: Return state
+    OM-->>-Callback: Return state (with current total)
+    Callback->>Callback: Add current turn usage to total
+    Callback->>+OM: updateState(sessionId, newTotal)
+    OM->>+Store: SET state
+    Store-->>-OM: Confirm update
+    OM-->>-Callback: Confirm update
+```
+
+### 3. OSS Client Integration (Current Status)
+
+-   **Debug Panel Display:** The Open Source client **currently displays** the cumulative token usage (`promptTokens`, `completionTokens`, `totalTokens`) for the active session, typically within a **debug panel** or similar diagnostic view.
+-   **Data Fetching:** This is achieved by the client making an API call (likely similar to a conceptual `GET /api/session/[sessionId]/state`) to the backend. The backend retrieves the `AIOrchestrationState` using the `OrchestrationManager` and returns it, including the `cumulativeTokenUsage` field, which the client then renders.
+
+```mermaid
+graph LR
+    A[Client UI Debug Panel] -- Fetch State --> B("GET /api/.../state");
+    B --> C{API Handler};
+    C -- Get State --> D[OrchestrationManager];
+    D -- Retrieve --> E[State Store];
+    E -- State --> D;
+    D -- State --> C;
+    C -- JSON (incl. usage) --> B;
+    B -- Data --> A;
+    style A fill:#ccf,stroke:#333
+```
+
+## Planned Enhancements: Smart Context Management
+
+Building upon the actual usage tracking, the **primary future goal** is to proactively manage context size *before* sending requests to the LLM.
+
+### 1. Token Estimation Strategy (Planned/Conceptual)
+
+Accurate token *estimates* are needed for pre-computation *before* an LLM call. Since the AI SDK only provides *actual* usage *after* a call, AgentDock Core must implement its own estimation logic.
+
+-   **Custom Estimation:** Relies on utilities (like a conceptual `TokenCounter`) to estimate token counts.
+-   **Methods:** This involves:
+    -   Using official standalone tokenizers like `tiktoken` (for OpenAI/DeepSeek compatible models) or `@anthropic-ai/tokenizer` when available and applicable.
+    -   Employing heuristic methods (based on character/word counts, script analysis for different languages like CJK, etc.) as a fallback or for unsupported models/content (e.g., code snippets, specific data formats).
+-   **Goal:** Get the best possible *estimate* for the prompt payload *before* sending it.
+
+```mermaid
+graph TD
+    A["Need Token Estimate (Before Send)"] --> B{"Use Custom Estimation Logic"};
+    B -- "Official Tokenizer Available (tiktoken/Anthropic)?" --> C["Use Official Tokenizer Estimate"];
+    B -- "No Applicable Official Tokenizer" --> D["Use Heuristic Estimate (Chars/Words/Scripts)"];
+    C --> E["Estimated Token Count"];
+    D --> E;
+    E --> F["Inform AgentNode Context Assembly"];
+
+    style C fill:#eef,stroke:#333
+    style D fill:#eee,stroke:#333
+```
+
+### 2. `AgentNode`: Smart Context Assembly Logic (Planned)
+
+`AgentNode` would use these custom token *estimates* to manage the *entire context payload* (including message history, injected memory, etc.) before calling `CoreLLM`.
+
+-   **Configuration:** Use `ContextManagementOptions` (`maxTokens`, `reserveTokens`, etc.).
+-   **Pre-computation & Pruning:** Before generating a response:
+    1.  Assemble the potential context payload (system prompt, message history, relevant memory chunks, summaries, etc.).
+    2.  Estimate the total tokens for this payload using the custom estimation logic.
+    3.  Calculate the available budget (`maxTokens - reserveTokens`).
+    4.  If `estimatedTokens > budget`:
+        *   **Summarization:** Optionally summarize older parts of the history or less critical memory elements (may require internal LLM call).
+        *   **Truncation:** Remove the least relevant elements (e.g., oldest messages, lowest priority memory items) until the estimate fits the budget.
+-   **LLM Call:** Send only the managed, fitted context payload to `CoreLLM`.
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant AN as AgentNode
+    participant TE as "Custom Token Estimator"
+    participant LLM as CoreLLM
+
+    User->>+AN: handleMessage(newMessage)
+    AN->>AN: Assemble context (History + Memory + NewMsg)
+    AN->>+TE: estimateTokens(fullContextPayload)
+    TE-->>-AN: estimatedTokens
+    AN->>AN: Check budget
+    alt Exceeds Budget
+        AN->>AN: Summarize or Truncate Payload (History/Memory)
+    end
+    AN->>+LLM: streamText(managedContextPayload)
+    LLM-->>-AN: Stream Response (Actual usage reported via callback)
+    AN-->>-User: Stream Response
+```
+
+## Downstream Applications (Enabled by Actual Usage Tracking)
+
+While smart context management is the core driver for future development, the **current** persistent tracking of *actual* cumulative usage enables:
+
+-   **Reporting:** Displaying usage in the client debug panel (as currently implemented).
+-   **Future Cost Estimation:** Mapping actual cumulative tokens to costs.
+-   **Future Budgeting/Limits:** Enforcing limits based on actual cumulative usage.
+-   **Future Analytics:** Aggregating actual usage data.
+
+*(Conceptual diagrams for Cost Estimation, Budgeting, Reporting UI remain valid for these applications based on tracked actual usage).* 
+
+## Summary
+
+AgentDock currently tracks **actual** LLM token usage post-call (reported by `CoreLLM` via SDK data) and accumulates it in the session state, visible in the client's debug panel. The **planned enhancements** focus on using **custom token estimation** logic (like `tiktoken` or heuristics) *before* LLM calls for smart context assembly within `AgentNode`, managing message history and memory to fit model limits. The tracked actual usage provides the data foundation for monitoring and future features like cost tracking and budgeting. 
+-   **Internal Callback:** `CoreLLM` now maintains an internal callback (`_onUsageDataAvailable`). This callback can be set by consuming code (like `AgentNode`).
+-   **`generateText` & `streamText` Integration:** Both methods, upon completion (in `onFinish` for streaming or after the call for non-streaming), extract the `usage` data (containing `promptTokens`, `completionTokens`, `totalTokens`) provided by the underlying LLM provider (e.g., OpenAI, Anthropic via Vercel AI SDK).
+-   **Callback Invocation:** If the internal callback is set, `CoreLLM` invokes it immediately after processing a response, passing the `TokenUsage` object.
 
 ```typescript
-// In streamText method
-const wrappedOnFinish = options.onFinish 
-  ? (completion: any) => {
-      if (completion.usage) {
-        this.lastTokenUsage = {
-          promptTokens: completion.usage.prompt_tokens || completion.usage.promptTokens,
-          completionTokens: completion.usage.completion_tokens || completion.usage.completionTokens,
-          totalTokens: completion.usage.total_tokens || completion.usage.totalTokens,
-          provider: this.getProvider()
-        };
-      }
-      options.onFinish!(completion.text || completion);
+// Simplified example from CoreLLM
+private async _handleCompletion(completionResult: any, options: any) {
+  // ... extract usage data ...
+  const usageData: TokenUsage = { /* ... extracted tokens ... */ };
+
+  // Invoke the internal callback if it exists
+  if (this._onUsageDataAvailable) {
+    try {
+      await this._onUsageDataAvailable(usageData);
+    } catch (error) {
+      logger.error(/* ... */);
     }
-  : (completion: any) => {
-      // Even if no onFinish is provided, we still want to capture token usage
-      if (completion.usage) {
-        this.lastTokenUsage = {
-          promptTokens: completion.usage.prompt_tokens || completion.usage.promptTokens,
-          completionTokens: completion.usage.completion_tokens || completion.usage.completionTokens,
-          totalTokens: completion.usage.total_tokens || completion.usage.totalTokens,
-          provider: this.getProvider()
-        };
-      }
+  }
+  
+  // ... handle original onFinish or return result ...
+}
+
+// Method to set the internal callback
+public setOnUsageDataAvailable(handler: ((usage: TokenUsage) => Promise<void>) | null): void {
+  this._onUsageDataAvailable = handler;
+}
+```
+
+## Session Persistence: `OrchestrationStateManager`
+
+While `CoreLLM` *reports* usage per call, persistent tracking across a session is handled by the `OrchestrationStateManager`.
+
+-   **`OrchestrationState`:** The state object managed per session includes an optional `cumulativeTokenUsage` field:
+
+```typescript
+    interface OrchestrationState extends SessionState {
+      // ... other fields
+      cumulativeTokenUsage?: {
+        promptTokens: number;
+        completionTokens: number;
+        totalTokens: number;
+      };
+    }
+    ```
+
+-   **Update Handler:** Components like `AgentNode` are responsible for coordinating usage updates. They typically:
+    1.  Define an `updateUsageHandler` function.
+    2.  Set this handler on the `CoreLLM` instance using `setOnUsageDataAvailable` before making an LLM call.
+    3.  The `updateUsageHandler` receives `TokenUsage` data via the callback.
+    4.  Inside the handler, it retrieves the current `OrchestrationState` using `OrchestrationStateManager.getState`.
+    5.  It calculates the *new* cumulative totals by adding the received usage to the existing totals in the state.
+    6.  It calls `OrchestrationStateManager.updateState` to save the updated `cumulativeTokenUsage` back to the session state.
+    7.  Clear the handler from `CoreLLM` after the call using `setOnUsageDataAvailable(null)`.
+
+```typescript
+// Simplified example from AgentNode or similar
+async handleInteraction(...) {
+  const stateManager = createOrchestrationStateManager(); // Get configured manager
+  const llm = this.llm; // Get CoreLLM instance
+  const sessionId = /* ... get session ID ... */;
+
+  const updateUsageHandler = async (usage: TokenUsage) => {
+    const currentState = await stateManager.getState(sessionId);
+    const currentUsage = currentState?.cumulativeTokenUsage || { promptTokens: 0, completionTokens: 0, totalTokens: 0 };
+
+    const newCumulativeUsage = {
+      promptTokens: currentUsage.promptTokens + (usage.promptTokens || 0),
+      completionTokens: currentUsage.completionTokens + (usage.completionTokens || 0),
+      totalTokens: currentUsage.totalTokens + (usage.totalTokens || 0),
     };
-```
 
-The `CoreLLM` class provides a `getLastTokenUsage()` method to retrieve the captured token usage:
-
-```typescript
-getLastTokenUsage(): TokenUsage | null {
-  return this.lastTokenUsage;
-}
-```
-
-### 2. Logging Layer (AgentNode)
-
-The `AgentNode` class in `agentdock-core/src/nodes/agent-node.ts` logs token usage at INFO level in the `onFinish` callback after the stream completes:
-
-```typescript
-onFinish: (completion: any) => {
-  // Ensure token usage is captured when the stream is complete
-  if (completion && typeof completion === 'object' && completion.usage) {
-    // The token usage will be captured by the CoreLLM class
-  }
-  
-  // Log token usage after the stream completes and CoreLLM has had a chance to update it
-  const tokenUsage = activeLlm.getLastTokenUsage();
-  if (tokenUsage) {
-    logger.info(
-      LogCategory.NODE,
-      'AgentNode',
-      'Token usage',
-      {
-        nodeId: this.id,
-        provider: tokenUsage.provider,
-        promptTokens: tokenUsage.promptTokens,
-        completionTokens: tokenUsage.completionTokens,
-        totalTokens: tokenUsage.totalTokens,
-        usedFallback: useFallback && !!this.fallbackLlm
-      }
+    await stateManager.updateState(sessionId, { cumulativeTokenUsage: newCumulativeUsage });
+    logger.debug(
+        LogCategory.USAGE, 
+        'UsageUpdateHandler', 
+        'Updated cumulative session usage', 
+        { sessionId, newTotal: newCumulativeUsage.totalTokens }
     );
-  } else {
-    logger.warn(
-      LogCategory.NODE,
-      'AgentNode',
-      'No token usage available after completion',
-      {
-        nodeId: this.id,
-        provider: activeLlm.getProvider(),
-        model: activeLlm.getModelId()
-      }
-    );
+  };
+
+  // Set handler before LLM call
+  llm.setOnUsageDataAvailable(updateUsageHandler);
+
+  try {
+    // Make the LLM call (e.g., streamText)
+    const result = await llm.streamText(/* ... */);
+    // Process result
+  } finally {
+    // IMPORTANT: Clear the handler afterwards
+    llm.setOnUsageDataAvailable(null);
   }
 }
 ```
 
-The `AgentNode` class provides a `getLastTokenUsage()` method that returns token usage from the primary or fallback LLM:
+## Tool Usage Tracking
 
-```typescript
-getLastTokenUsage(): TokenUsage | null {
-  const primaryTokenUsage = this.llm.getLastTokenUsage();
-  if (primaryTokenUsage) {
-    return primaryTokenUsage;
-  }
-  
-  // If no primary token usage, try fallback
-  if (this.fallbackLlm) {
-    return this.fallbackLlm.getLastTokenUsage();
-  }
-  
-  return null;
-}
-```
+This callback mechanism works seamlessly with tools that internally use `CoreLLM` (like `ReflectTool`):
 
-### 3. API Response Layer (Route Handler)
+1.  The tool execution logic obtains the `CoreLLM` instance and the `updateUsageHandler` (passed down through context or parameters).
+2.  It sets the handler on its `CoreLLM` instance before making its internal `generateText` or `streamText` call.
+3.  When the tool's LLM call finishes, the handler updates the *same* session's `cumulativeTokenUsage` via the `OrchestrationStateManager`.
+4.  The handler is cleared within the tool's scope.
 
-In the NextJS reference implementation, the chat route in `src/app/api/chat/[agentId]/route.ts` adds token usage to response headers:
+This ensures that token usage from both direct agent interactions and tool-invoked LLM calls are aggregated into the session's total.
 
-```typescript
-// Get token usage directly from the agent
-const tokenUsage = agent.getLastTokenUsage();
+## Accessing Usage Data
 
-if (tokenUsage) {
-  await logger.info(
-    LogCategory.API,
-    'ChatRoute',
-    'Token usage for request',
-    {
-      agentId,
-      ...tokenUsage // Spread the token usage object for cleaner logging
-    }
-  );
-  
-  // Add token usage to response headers
-  const headers = new Headers(response.headers);
-  headers.set('x-token-usage', JSON.stringify(tokenUsage));
-  
-  // Create a new response with the updated headers
-  return new Response(response.body, {
-    status: response.status,
-    statusText: response.statusText,
-    headers
-  });
-}
-```
+-   **Session State:** The primary way to access the *cumulative* usage for a session is by retrieving the `OrchestrationState` via `OrchestrationStateManager.getState(sessionId)` and accessing the `cumulativeTokenUsage` property.
+-   **Debugging:**
+    -   The `updateUsageHandler` typically logs the incremental updates.
+    -   Individual LLM call usage might still be logged by components like `AgentNode` for immediate debugging, but this reflects only the *last* call, not the session total.
+-   **API Responses:** While the previous implementation added usage for the *last* LLM call to headers (`x-token-usage`), a more accurate approach for billing or display would be to retrieve the `cumulativeTokenUsage` from the session state at the end of the request in the API route handler and potentially return *that* value (e.g., in the response body or a different header like `x-session-cumulative-token-usage`).
 
-## Implementing Token Usage Tracking in Your Backend
+## Summary
 
-To implement token usage tracking in your own server backend, you only need to implement the third layer (API Response Layer) in your route handlers. The first two layers are already provided by `agentdock-core`.
-
-Here's an example of how to implement token usage tracking in a generic API backend:
-
-```typescript
-// Using a generic backend framework
-import { AgentNode } from 'agentdock-core';
-import { logger, LogCategory } from 'agentdock-core';
-
-// Define your route handler (framework-specific)
-async function handleChatRequest(request, agentId) {
-  // Create agent and handle message (implementation details omitted)
-  const agent = new AgentNode(/* ... */);
-  const result = await agent.handleMessage(/* ... */);
-  
-  // Get token usage directly from the agent
-  const tokenUsage = agent.getLastTokenUsage();
-  
-  // Create the response (framework-specific)
-  const response = createResponse(result); // Convert your stream result to a response
-  
-  if (tokenUsage) {
-    await logger.info(
-      LogCategory.API,
-      'ChatRoute',
-      'Token usage for request',
-      {
-        agentId,
-        ...tokenUsage
-      }
-    );
-    
-    // Add token usage to response headers (framework-specific)
-    setResponseHeader(response, 'x-token-usage', JSON.stringify(tokenUsage));
-  }
-  
-  return response;
-}
-
-// Example helper functions (implement based on your framework)
-function createResponse(result) {
-  // Implementation depends on your backend framework
-  // This would convert your result to the appropriate response type
-}
-
-function setResponseHeader(response, name, value) {
-  // Implementation depends on your backend framework
-  // This would set a header on your response object
-}
-```
-
-## Benefits of This Architecture
-
-1. **Separation of Concerns**: Each layer has a clear responsibility
-2. **Framework Agnostic Core**: The core functionality is in `agentdock-core` and works with any backend
-3. **Consistent Logging**: Token usage is logged consistently at the AgentNode level
-4. **Client Access**: Client applications can access token usage via response headers
-5. **Extensibility**: Easy to add additional token usage tracking features
-
-## Troubleshooting
-
-If token usage is not being captured or logged:
-
-1. Check that the LLM provider is returning token usage in the completion object
-2. Ensure that the `onFinish` callback is being called after the stream completes
-3. Verify that the token usage property names match what's expected (`prompt_tokens`/`promptTokens`, etc.)
-4. Check the logs for any warnings about missing token usage 
+Token usage tracking relies on `CoreLLM` callbacks to report usage per LLM call and the `OrchestrationStateManager` to persist the cumulative total for the entire session within the `OrchestrationState`. This provides a robust way to track usage across complex interactions involving multiple LLM calls and tool executions. 

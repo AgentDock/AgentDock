@@ -2,22 +2,14 @@
 
 import * as React from "react"
 import { cn } from "@/lib/utils"
-import { Code2, Loader2, Terminal, ChevronDown, ChevronUp, ImageIcon } from "lucide-react"
-import { MarkdownRenderer } from "@/components/ui/markdown-renderer"
+import { Code2, ImageIcon, ChevronDown, ChevronUp, Terminal } from "lucide-react"
+import { ChatMarkdown } from "@/components/chat/chat-markdown"
 import type { ToolState } from 'agentdock-core'
 import type { ToolInvocation } from "@/components/chat/types"
 import { ImageResultDisplay } from "@/components/chat/image-result"
 import { CognitiveToolLoadingIndicator, getToolLoadingUI } from "@/nodes/cognitive-tools/components/loading"
 import { CopyButton } from "@/components/ui/copy-button"
-
-const chatBubbleVariants = "group/message relative break-words rounded-2xl p-4 text-sm sm:max-w-[70%] bg-muted text-foreground";
-
-// Special class for the most recent tool
-const recentToolClass = "border-l-2 border-primary transition-all duration-300";
-
-interface ToolCallProps {
-  toolInvocations: ToolInvocation[];
-}
+import { useElapsedTime, heartbeatGradientProps, timerDisplayProps } from "@/lib/heartbeat"
 
 // Function to get high-precision timestamp
 function getClientTimestamp(): string {
@@ -30,8 +22,15 @@ function logToolVisibility(toolName: string, toolId: string, state: string) {
   console.log(`[CLIENT][TOOL-TIMING] Tool "${toolName}" (${toolId}) ${state} at ${getClientTimestamp()}`);
 }
 
+interface ToolCallProps {
+  toolInvocations: ToolInvocation[];
+}
+
 // Separate components for different tool states
 const LoadingToolCall = React.memo(({ toolName, toolId }: { toolName: string, toolId: string }) => {
+  // Use the shared elapsed time hook
+  const [formattedTime] = useElapsedTime();
+  
   // Log when this component is rendered
   React.useEffect(() => {
     logToolVisibility(toolName, toolId, "LOADING STATE RENDERED");
@@ -47,22 +46,44 @@ const LoadingToolCall = React.memo(({ toolName, toolId }: { toolName: string, to
   
   if (toolLoadingUI) {
     return (
-      <CognitiveToolLoadingIndicator
-        toolName={toolName}
-        iconName={toolLoadingUI.icon}
-        loadingText={toolLoadingUI.loadingText}
-        animationClass={toolLoadingUI.animationClass}
-        toolId={toolId}
-      />
+      <div className="relative" aria-live="polite" aria-busy="true">
+        <CognitiveToolLoadingIndicator
+          toolName={toolName}
+          iconName={toolLoadingUI.icon}
+          loadingText={toolLoadingUI.loadingText}
+          animationClass={toolLoadingUI.animationClass}
+          toolId={toolId}
+        />
+      </div>
     );
   }
   
-  // Default loading UI for non-cognitive tools
+  // Default loading UI for non-cognitive tools with heartbeat animation
   return (
-    <div className={cn(chatBubbleVariants, "flex items-center gap-2 text-muted-foreground")}>
-      <Terminal className="h-4 w-4" aria-hidden="true" />
-      <span>Calling {toolName}...</span>
-      <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
+    <div 
+      className={cn(
+        "group/message relative break-words rounded-2xl p-4 text-sm",
+        "sm:max-w-[70%] bg-muted text-foreground",
+        "flex items-center gap-3 relative overflow-hidden"
+      )}
+      aria-live="polite" 
+      aria-busy="true"
+    >
+      {/* Heartbeat gradient animation */}
+      <div className={heartbeatGradientProps.className} style={heartbeatGradientProps.style} />
+      
+      <Terminal className="h-4 w-4 text-primary animate-pulse" aria-hidden="true" />
+      
+      <div className="flex-1 flex items-center">
+        <span className="font-medium animate-[text-pulse_1.5s_ease-in-out_infinite] text-primary">
+          Calling {toolName}<span className="dots-loader inline-block w-[20px]"></span>
+        </span>
+      </div>
+      
+      {/* Timer */}
+      <div className={timerDisplayProps.className} style={timerDisplayProps.style}>
+        {formattedTime}
+      </div>
     </div>
   );
 });
@@ -81,41 +102,56 @@ const ToolHeader = React.memo(({
   isExpanded: boolean;
   isImage?: boolean;
   isNewest?: boolean;
-  toggleExpanded: (e: React.MouseEvent) => void;
-}) => (
-  <div 
-    className={cn(
-      "flex items-center justify-between text-muted-foreground cursor-pointer w-full",
-      "transition-all duration-300",
-      isNewest && "text-foreground font-medium" 
-    )}
-    onClick={toggleExpanded}
-  >
-    <div className="flex items-center gap-2">
-      {isImage ? (
-        <ImageIcon className={cn("h-4 w-4", isNewest && "text-primary")} aria-hidden="true" />
-      ) : (
-        <Code2 className={cn("h-4 w-4", isNewest && "text-primary")} aria-hidden="true" />
-      )}
-      <span>{isImage ? "Image from " : "Result from "}{toolName}</span>
-      {isNewest && (
-        <span className="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">
-          newest
-        </span>
-      )}
-    </div>
+  toggleExpanded: (e: React.MouseEvent<Element, MouseEvent>) => void;
+}) => {
+  // Generate a safe ID for ARIA controls
+  const contentId = `tool-content-${toolName.replace(/\W/g, '-')}`;
+  
+  return (
     <div 
-      className="p-1 hover:bg-background/50 rounded-md ml-4"
-      aria-label={isExpanded ? "Collapse" : "Expand"}
-    >
-      {isExpanded ? (
-        <ChevronUp className="h-4 w-4" aria-hidden="true" />
-      ) : (
-        <ChevronDown className="h-4 w-4" aria-hidden="true" />
+      className={cn(
+        "flex items-center justify-between w-full rounded-md hover:bg-muted/50 py-1 px-1",
+        "text-muted-foreground transition-colors duration-200",
+        isNewest && "text-foreground font-medium" 
       )}
+      onClick={toggleExpanded}
+      role="button"
+      aria-expanded={isExpanded}
+      aria-controls={contentId}
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          toggleExpanded(e as unknown as React.MouseEvent<Element, MouseEvent>);
+        }
+      }}
+    >
+      <div className="flex items-center gap-2">
+        {isImage ? (
+          <ImageIcon className={cn("h-4 w-4", isNewest && "text-primary")} aria-hidden="true" />
+        ) : (
+          <Code2 className={cn("h-4 w-4", isNewest && "text-primary")} aria-hidden="true" />
+        )}
+        <span>{isImage ? "Image from " : "Result from "}{toolName}</span>
+        {isNewest && (
+          <span className="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">
+            newest
+          </span>
+        )}
+      </div>
+      <div 
+        className="p-1 hover:bg-background/50 rounded-md"
+        aria-hidden="true"
+      >
+        {isExpanded ? (
+          <ChevronUp className="h-4 w-4" />
+        ) : (
+          <ChevronDown className="h-4 w-4" />
+        )}
+      </div>
     </div>
-  </div>
-));
+  );
+});
 
 ToolHeader.displayName = "ToolHeader";
 
@@ -178,17 +214,20 @@ export function ToolCall({ toolInvocations }: ToolCallProps) {
       prevToolCount.current = toolInvocations.length;
     }
   }, [toolInvocations]);
-
+  
+  // Function to toggle expanded state for a tool
   const toggleExpanded = React.useCallback((toolId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    setExpandedTools(prev => ({
-      ...prev,
-      [toolId]: !prev[toolId]
+    setExpandedTools((prevState) => ({
+      ...prevState,
+      [toolId]: !prevState[toolId],
     }));
   }, []);
-
-  if (!toolInvocations?.length) return null;
-
+  
+  if (!toolInvocations || toolInvocations.length === 0) {
+    return null;
+  }
+  
   return (
     <div 
       className="flex flex-col gap-3 w-full"
@@ -196,81 +235,21 @@ export function ToolCall({ toolInvocations }: ToolCallProps) {
       aria-label="Tool invocation results"
     >
       {toolInvocations.map((invocation, index) => {
-        const toolId = `${invocation.toolName}-${index}`;
+        // Generate a reliable unique ID for this tool invocation
+        const toolId = `${invocation.toolName.replace(/\W/g, '-')}-${index}`;
         const isExpanded = expandedTools[toolId] !== false;
-        const isImageGeneration = invocation.toolName === 'generate_image';
         const isNewestTool = index === toolInvocations.length - 1;
-
+        
+        logToolVisibility(invocation.toolName, toolId, `RENDERING TOOL`);
+        
         // Handle loading state
         if (invocation.state === "partial-call" || invocation.state === "call") {
           return <LoadingToolCall key={toolId} toolName={invocation.toolName} toolId={toolId} />;
         }
-
-        // Handle result state
-        if (invocation.state === "result") {
-          // Process image generation results
-          if (isImageGeneration && invocation.result) {
-            const result = invocation.result;
-            const isErrorMessage = typeof result === 'string' && !result.startsWith('http') && !result.startsWith('data:');
-            
-            let imageData = null;
-            let prompt = "";
-            let description = null;
-            
-            if (!isErrorMessage) {
-              // Extract image data based on format
-              if (typeof result === 'object') {
-                if ('url' in result) {
-                  imageData = result.url;
-                  prompt = result.prompt || '';
-                  description = result.description || null;
-                } else if ('image' in result) {
-                  imageData = result.image;
-                  description = result.description || null;
-                } else {
-                  imageData = result;
-                }
-              } else {
-                imageData = result;
-              }
-            }
-            
-            return (
-              <div
-                key={toolId}
-                className={cn(
-                  chatBubbleVariants,
-                  isNewestTool && recentToolClass,
-                  "transition-all duration-300"
-                )}
-              >
-                <ToolHeader 
-                  toolName={invocation.toolName}
-                  isExpanded={isExpanded}
-                  isImage={true}
-                  isNewest={isNewestTool}
-                  toggleExpanded={(e) => toggleExpanded(toolId, e)}
-                />
-                
-                {isExpanded && (
-                  <div className="text-foreground mt-2 transition-all duration-300">
-                    {isErrorMessage ? (
-                      <p className="text-sm text-red-500">{result}</p>
-                    ) : (
-                      <ImageResultDisplay 
-                        imageData={imageData} 
-                        prompt={prompt} 
-                        description={description}
-                      />
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          }
-          
-          // For all other tools with results
-          let content = '';
+        
+        // Handle result
+        if (invocation.state === "result" && invocation.result !== undefined) {
+          let content: any = '';
           let toolType = '';
           let isCognitiveTool = false;
           let isEmptyResult = false;
@@ -278,10 +257,10 @@ export function ToolCall({ toolInvocations }: ToolCallProps) {
           // Extract content and type from result
           if (typeof invocation.result === 'object' && invocation.result) {
             if ('content' in invocation.result) {
-              content = invocation.result.content;
+              content = invocation.result.content as string;
             }
             if ('type' in invocation.result) {
-              toolType = invocation.result.type;
+              toolType = invocation.result.type as string;
               
               // Check if this is a cognitive tool (think or reflect)
               isCognitiveTool = toolType === 'think_result' || toolType === 'reflect_result';
@@ -327,12 +306,88 @@ export function ToolCall({ toolInvocations }: ToolCallProps) {
             return <LoadingToolCall key={toolId} toolName={invocation.toolName} toolId={toolId} />;
           }
           
+          // If this is an image generation tool, handle specially
+          const isImageGeneration = invocation.toolName === 'generate_image';
+          if (isImageGeneration && invocation.result) {
+            const result = invocation.result;
+            const isErrorMessage = typeof result === 'string' && !result.startsWith('http') && !result.startsWith('data:');
+            
+            let imageData = null;
+            let prompt = "";
+            let description = null;
+            
+            if (!isErrorMessage) {
+              // Extract image data based on format
+              if (typeof result === 'object') {
+                if ('url' in result) {
+                  imageData = result.url;
+                  prompt = result.prompt || '';
+                  description = result.description || null;
+                } else if ('image' in result) {
+                  imageData = result.image;
+                  description = result.description || null;
+                } else {
+                  imageData = result;
+                }
+              } else {
+                imageData = result;
+              }
+            }
+            
+            // Generate a safe ID for content
+            const contentId = `tool-content-${invocation.toolName.replace(/\W/g, '-')}-${index}`;
+            
+            return (
+              <div
+                key={toolId}
+                className={cn(
+                  "group/message relative break-words rounded-2xl p-4 text-sm",
+                  "sm:max-w-[70%] bg-muted text-foreground",
+                  isNewestTool && "border-l-2 border-primary",
+                  "transition-all duration-300"
+                )}
+              >
+                <ToolHeader 
+                  toolName={invocation.toolName}
+                  isExpanded={isExpanded}
+                  isImage={true}
+                  isNewest={isNewestTool}
+                  toggleExpanded={(e) => toggleExpanded(toolId, e)}
+                />
+                
+                {isExpanded && (
+                  <div 
+                    id={contentId}
+                    className="text-foreground mt-3 pt-2 border-t border-border/30 transition-all duration-300"
+                  >
+                    {isErrorMessage ? (
+                      <p className="text-sm text-red-500">{result}</p>
+                    ) : (
+                      <ImageResultDisplay 
+                        imageData={imageData} 
+                        prompt={prompt} 
+                        description={description}
+                      />
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          }
+          
+          // Ensure content is a string for rendering in markdown
+          const contentToRender = typeof content === 'string' ? content : JSON.stringify(content, null, 2);
+          
+          // Generate a safe ID for content
+          const contentId = `tool-content-${invocation.toolName.replace(/\W/g, '-')}-${index}`;
+          
           return (
             <div
               key={toolId}
               className={cn(
-                chatBubbleVariants,
-                isNewestTool && recentToolClass,
+                "group/message relative break-words rounded-2xl p-4 text-sm",
+                "sm:max-w-[70%] bg-muted text-foreground",
+                isNewestTool && "border-l-2 border-primary",
                 "transition-all duration-300"
               )}
             >
@@ -344,10 +399,13 @@ export function ToolCall({ toolInvocations }: ToolCallProps) {
               />
               
               {isExpanded && (
-                <div className="mt-3 relative group/tool-content">
-                  <MarkdownRenderer>{content}</MarkdownRenderer>
-                  <div className="invisible absolute bottom-0 right-0 -mb-2.5 -mr-2 opacity-0 transition-all duration-200 group-hover/tool-content:visible group-hover/tool-content:opacity-100">
-                    <CopyButton content={content} copyMessage="Copied tool result to clipboard" size="small" />
+                <div 
+                  id={contentId}
+                  className="mt-3 pt-2 border-t border-border/30 relative group/tool-content"
+                >
+                  <ChatMarkdown messageId={toolId}>{contentToRender}</ChatMarkdown>
+                  <div className="invisible absolute bottom-0 right-0 -mb-2.5 -mr-2 opacity-0 transition-opacity duration-200 group-hover/tool-content:visible group-hover/tool-content:opacity-100">
+                    <CopyButton content={contentToRender} copyMessage="Copied tool result to clipboard" size="small" />
                   </div>
                 </div>
               )}
@@ -355,9 +413,9 @@ export function ToolCall({ toolInvocations }: ToolCallProps) {
           );
         }
         
-        // Fallback for unknown states
-        return null;
+        // Fallback for unknown states - add key to prevent React warning
+        return <div key={toolId} className="hidden"></div>;
       })}
     </div>
   );
-} 
+}

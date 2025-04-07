@@ -16,6 +16,7 @@
  */
 
 import { LLMProvider } from 'agentdock-core';
+import { SecureStorage } from 'agentdock-core/storage/secure-storage';
 import { z } from 'zod';
 
 // Define schema for validating environment variables
@@ -92,17 +93,49 @@ export function getEnvConfig(): EnvConfig {
 }
 
 /**
- * Get LLM provider API key from environment variables
+ * Get provider API key from environment variables or local storage
  * 
  * This function centralizes access to LLM provider API keys, making it the
- * preferred way to access these keys throughout the application. It ensures
- * consistent access patterns and will make future enhancements easier.
+ * preferred way to access these keys throughout the application.
  * 
  * @param provider LLM provider ID (e.g., 'anthropic', 'openai', 'gemini')
+ * @param options Optional configuration
  * @returns The API key string or null if not found
  */
-export function getProviderApiKey(provider: LLMProvider): string | null {
-  // Direct access to environment variables for maximum reliability
+export function getProviderApiKey(
+  provider: LLMProvider,
+  options?: { byokOnly?: boolean }
+): string | null {
+  // If BYOK mode is explicitly enabled via options, don't use environment variables
+  if (options?.byokOnly === true) {
+    return null;
+  }
+  
+  // Try to get API key from localStorage if available
+  try {
+    if (typeof window !== 'undefined' || typeof globalThis.localStorage !== 'undefined') {
+      // Use localStorage directly
+      const globalSettingsJson = localStorage.getItem('agentdock:global_settings');
+      
+      if (globalSettingsJson) {
+        try {
+          const globalSettings = JSON.parse(globalSettingsJson);
+          
+          // If we have API keys in settings
+          if (globalSettings?.apiKeys && globalSettings.apiKeys[provider]) {
+            return globalSettings.apiKeys[provider];
+          }
+        } catch (e) {
+          // Error parsing the JSON
+          console.log('Error parsing global settings:', e);
+        }
+      }
+    }
+  } catch (error) {
+    // localStorage not available
+  }
+  
+  // Direct access to environment variables as fallback
   const envVarMap: Record<string, string | undefined> = {
     'anthropic': process.env.ANTHROPIC_API_KEY,
     'openai': process.env.OPENAI_API_KEY, 
@@ -115,6 +148,13 @@ export function getProviderApiKey(provider: LLMProvider): string | null {
 }
 
 /**
+ * !! WARNING: LOCAL DEVELOPMENT ONLY !!
+ * This function is intended *only* for local debugging purposes to bypass standard
+ * API key resolution and directly access environment variables.
+ * DO NOT use this function in production environments or any publicly accessible code paths.
+ * Exposing environment variables directly poses a significant security risk.
+ * Use `getProviderApiKey` for standard API key retrieval.
+ *
  * Special debugging function to directly access API keys from environment
  * This bypasses validation and is useful for troubleshooting
  */

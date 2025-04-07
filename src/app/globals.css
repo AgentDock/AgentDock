@@ -88,9 +88,23 @@
 
     /* Syntax Highlighting */
     --shiki-light: #24292e;
-    --shiki-light-bg: #f6f8fa;
+    --shiki-light-bg: #f6f8fa0b;
     --shiki-dark: #e1e4e8;
-    --shiki-dark-bg: #24292e;
+    --shiki-dark-bg: #24292e00;
+
+    /* Make sure SVG diagrams are properly styled */
+    --diagram-fill: #f8f8fa;
+    --diagram-stroke: #24292e;
+    --diagram-label: #24292e;
+
+    /* Add theme transition prevention class */
+    --prevent-transition: none !important;
+
+    /* Ensure transitions on theme properties are smooth */
+    --transition-duration: 200ms;
+    --transition-timing: ease-in-out;
+
+    color-scheme: light;
   }
  
   .dark {
@@ -174,6 +188,13 @@
     --shiki-light-bg: #24292e00;
     --shiki-dark: #e1e4e8;
     --shiki-dark-bg: #24292e00;
+    
+    /* Dark theme SVG */
+    --diagram-fill: #272b33;
+    --diagram-stroke: #e1e4e8;
+    --diagram-label: #e1e4e8;
+
+    color-scheme: dark;
   }
   
   /* Apply fonts properly */
@@ -195,6 +216,72 @@
   }
 }
 
+/* Custom animations */
+@keyframes pulse-gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes thinking {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes thinking-progress {
+  0% {
+    width: 0%;
+  }
+  50% {
+    width: 75%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+@keyframes text-pulse {
+  0%, 100% {
+    color: hsl(var(--primary));
+    transform: scale(1);
+  }
+  50% {
+    color: hsl(var(--primary)/0.7);
+    transform: scale(1.03);
+  }
+}
+
+@keyframes dots-animation {
+  0% { content: "."; }
+  33% { content: ".."; }
+  66% { content: "..."; }
+  100% { content: "..."; }
+}
+
+/* Dots Loader */
+.dots-loader::after {
+  content: "";
+  animation: typing 1.5s infinite;
+  display: inline-block;
+}
+
+@keyframes typing {
+  0% { content: ""; }
+  25% { content: "."; }
+  50% { content: ".."; }
+  75% { content: "..."; }
+}
+
 /* Make sure markdown code blocks use monospace font */
 .markdown pre, 
 .markdown code,
@@ -205,3 +292,382 @@ pre[data-language],
 code[data-language] {
   font-family: var(--font-mono) !important;
 }
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Markdown Rendering */
+.line-break {
+  display: block;
+  height: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Mermaid Diagram Styling */
+.mermaid-diagram {
+  overflow: hidden;
+  border-radius: 0.5rem;
+  background-color: white;
+  border: 1px solid #e2e8f0;
+  margin: 1.5rem 0;
+}
+
+.dark .mermaid-diagram {
+  background-color: #1e1e2e;
+  border: 1px solid #383850;
+}
+
+.mermaid-diagram svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Ensure SVG text is visible in dark mode */
+.dark .mermaid-diagram text {
+  fill: #e0e0e0;
+}
+
+/* Set default cursor properties for SVG to avoid cursor jumping */
+.mermaid-diagram svg, 
+.mermaid-container svg {
+  cursor: default;
+}
+
+/* Mermaid diagram styles - updated to support panzoom */
+.mermaid-container {
+  position: relative;
+  width: 100%;
+  border-radius: 0.5rem;
+  contain: layout;
+  isolation: isolate;
+  z-index: 0;
+  overflow: hidden !important;
+}
+
+/* Style the SVG container */
+.mermaid-content {
+  min-height: 50px;
+  width: 100%;
+  position: relative;
+  overflow: visible !important; /* Ensure content can be dragged outside container */
+}
+
+/* Style the SVG for panzoom */
+.mermaid-content svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  transform-origin: center !important;
+  transition: transform 0.1s ease;
+  cursor: grab !important; /* Always show grab cursor */
+}
+
+/* Style for grabbing cursor during pan */
+.mermaid-content svg:active {
+  cursor: grabbing !important;
+}
+
+/* Hide mermaid error messages in the body */
+body > [id*="mermaid-err"],
+body > div[id*="d3tooltip"] {
+  display: none !important;
+}
+
+/* Prevent scrolling issues in markdown components */
+.chat-markdown, .chat-pre-wrapper, .chat-code-wrapper {
+  contain: paint;
+}
+
+/* Hide any error spans */
+span.error {
+  display: none !important;
+}
+
+/* Animation for diagram fade-in */
+@keyframes diagramFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Animation for progress bar */
+@keyframes progressBar {
+  0% { width: 0%; }
+  20% { width: 35%; }
+  50% { width: 65%; }
+  75% { width: 85%; }
+  90% { width: 95%; }
+  100% { width: 100%; }
+}
+
+/* Animation for loading dots */
+@keyframes loadingDot {
+  0%, 60%, 100% { opacity: 0.4; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-2px); }
+}
+
+/* Animation for arrow pulse */
+@keyframes arrowPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* Animation for diagram pulse */
+@keyframes diagramPulse {
+  0%, 100% { box-shadow: 0 0 0 rgba(59, 130, 246, 0); }
+  50% { box-shadow: 0 0 6px rgba(59, 130, 246, 0.3); }
+}
+
+/* Animation for fade in */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Animation for shimmer effect */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Utility classes for animations */
+.animate-diagramPulse {
+  animation: diagramPulse 2s infinite;
+}
+
+.animate-diagramFadeIn {
+  animation: diagramFadeIn 0.8s ease forwards;
+}
+
+.animate-progressBar {
+  animation: progressBar 3s ease-in-out forwards;
+}
+
+.animate-loadingDot {
+  animation: loadingDot 1.5s infinite;
+}
+
+.animate-arrowPulse {
+  animation: arrowPulse 2s infinite;
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+.animate-shimmer {
+  animation: shimmer 2.5s infinite;
+}
+
+/* Animation delay utilities */
+.delay-0 {
+  animation-delay: 0s;
+}
+
+.delay-100 {
+  animation-delay: 0.1s;
+}
+
+.delay-200 {
+  animation-delay: 0.2s;
+}
+
+.delay-300 {
+  animation-delay: 0.3s;
+}
+
+.delay-400 {
+  animation-delay: 0.4s;
+}
+
+.delay-500 {
+  animation-delay: 0.5s;
+}
+
+.delay-600 {
+  animation-delay: 0.6s;
+}
+
+.delay-800 {
+  animation-delay: 0.8s;
+}
+
+.delay-1000 {
+  animation-delay: 1s;
+}
+
+.delay-1200 {
+  animation-delay: 1.2s;
+}
+
+.delay-1400 {
+  animation-delay: 1.4s;
+}
+
+.fill-forward {
+  animation-fill-mode: forwards;
+}
+
+/* For vertical diagrams */
+.mermaid-container.vertical svg {
+  max-height: 70vh;
+  width: auto;
+  margin: 0 auto;
+}
+
+/* Reset button styles for improved interaction */
+.mermaid-container button {
+  cursor: pointer !important;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  transition: transform 0.1s ease;
+}
+
+.mermaid-container button:active {
+  transform: scale(0.95);
+}
+
+/* Make sure the button is clickable */
+.mermaid-container button:hover {
+  cursor: pointer !important;
+}
+
+/* Dark background for multi-line code blocks */
+pre, 
+.CodeBlock,
+.shiki,
+div[data-rehype-pretty-code-fragment],
+pre code,
+pre[class*="language-"] {
+  background-color: #1e1e2e !important;
+  color: #e6edf3 !important;
+  border-radius: 0.25rem !important;
+  margin-top: 1rem !important;
+  margin-bottom: 1rem !important;
+}
+
+/* Light background ONLY for truly inline code */
+p > code,
+li > code,
+h1 > code,
+h2 > code,
+h3 > code,
+h4 > code,
+h5 > code,
+h6 > code,
+a > code,
+span > code,
+td > code,
+th > code,
+div > code:not(.CodeBlock code):not(pre code):not([class*="language-"]) {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+  border-radius: 0.25rem !important;
+  padding: 0.125rem 0.25rem !important;
+  font-size: 0.875em !important;
+}
+
+/* Make sure command blocks like pnpm always have dark background */
+.command-line,
+code.command,
+code[class*="language-bash"],
+code[class*="language-sh"],
+code[class*="language-shell"],
+code[class*="language-zsh"],
+code[class*="language-terminal"] {
+  background-color: #1e1e2e !important;
+  color: #e6edf3 !important;
+}
+
+/* Prevent theme transition on code blocks to avoid flickering */
+pre, 
+.shiki,
+.CodeBlock,
+code {
+  transition: none !important;
+}
+
+/* Fix spacing between code blocks */
+pre + pre,
+.shiki + .shiki,
+div[data-rehype-pretty-code-fragment] + div[data-rehype-pretty-code-fragment],
+pre[class*="language-"] + pre[class*="language-"],
+.CodeBlock + .CodeBlock {
+  margin-top: 1rem !important;
+}
+
+html.light {
+  color-scheme: light;
+}
+
+/* Completely prevent all transitions while initialization or theme switching */
+.prevent-transition * {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Explicitly target theme-related properties for smooth transitions */
+body, 
+.bg-background, 
+.text-foreground,
+.bg-card,
+.bg-popover,
+.border-border,
+[class*='border-'] {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Ensure these specific elements never use transitions to prevent flickering */
+html, 
+:root,
+pre, 
+.shiki,
+.CodeBlock,
+code {
+  transition: none !important;
+}
+
+/* Further prevent theme flickering with more specific rules */
+html.dark {
+  background-color: hsl(240 10% 3.9%);
+  color: hsl(0 0% 98%);
+}
+
+html.light {
+  background-color: hsl(0 0% 100%);
+  color: hsl(240 10% 3.9%);
+}
+
+/* Force immediate application of theme while loading */
+html.prevent-transition, 
+html.prevent-transition body {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Override dark mode flashing */
+.dark .markdown pre, 
+.dark .shiki,
+.dark .CodeBlock,
+.dark code[class*="language-"],
+.dark pre[class*="language-"] {
+  background-color: #1e1e2e !important;
+  color: #e6edf3 !important;
+  transition: none !important;
+}
+
+html.prevent-transition,
+html.prevent-transition *,
+body.prevent-transition * { /* Targeting body as well */
+  transition: none !important;
+}
+

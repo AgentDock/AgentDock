@@ -2,5 +2,10 @@
   "buildCommand": "pnpm run prebuild && pnpm run build",
   "installCommand": "pnpm install --no-frozen-lockfile",
   "framework": "nextjs",
-  "outputDirectory": ".next"
+  "outputDirectory": ".next",
+  "functions": {
+    "app/**/*": {
+      "includeFiles": "docs/**/*"
+    }
+  }
 } 

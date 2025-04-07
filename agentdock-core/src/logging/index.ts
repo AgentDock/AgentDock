@@ -16,7 +16,9 @@ export enum LogCategory {
   LLM = 'llm',
   API = 'api',
   STORAGE = 'storage',
-  SYSTEM = 'system'
+  SYSTEM = 'system',
+  ORCHESTRATION = 'orchestration',
+  SESSION = 'session'
 }
 
 export interface LogEntry {

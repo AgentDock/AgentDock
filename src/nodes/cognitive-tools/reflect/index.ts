@@ -13,7 +13,7 @@ import { logger, LogCategory } from 'agentdock-core';
  * Reflect tool schema
  */
 export const reflectSchema = z.object({
-  adTopic: z.string().min(1, "A topic is required for reflection"),
+  adTopic: z.string().min(1, "Topic must not be empty"),
   reflection: z.string().optional()
 });
 
@@ -39,14 +39,6 @@ Examples:
 
 The tool will generate comprehensive, structured reflection on any topic provided.
 `;
-
-/**
- * Default Reflect parameters
- */
-export const defaultReflectParams: ReflectParams = {
-  adTopic: "",
-  reflection: ""
-};
 
 /**
  * Handle tool errors safely, ensuring they are always properly formatted strings
@@ -85,7 +77,15 @@ function safelyHandleError(error: unknown, topic: string): ToolResult {
  */
 async function generateStructuredReflection(topic: string, options: ToolExecutionOptions): Promise<string> {
   try {
-    // Access LLM the same way as deep-research, this property was added in the agentdock-core context
+    // --- Added Direct Options Logging ---
+    logger.debug(LogCategory.NODE, '[Reflect]', 'generateStructuredReflection received options:', {
+      keys: Object.keys(options),
+      hasLLMContext: !!options.llmContext,
+      hasLLM: !!options.llmContext?.llm
+    });
+    // --- End Direct Options Logging ---
+    
+    // Check for LLM context - use proper property path based on how it's passed from agent-node.ts
     if (!options.llmContext?.llm) {
       logger.warn(LogCategory.NODE, '[Reflect]', 'No LLM available for generating dynamic reflection');
       return `Reflecting on ${topic}...`;
@@ -93,49 +93,67 @@ async function generateStructuredReflection(topic: string, options: ToolExecutio
 
     logger.debug(LogCategory.NODE, '[Reflect]', 'Generating dynamic structured reflection with LLM');
     
-    // Prepare LLM prompt - following deep-research implementation style
+    // Add explicit debugging to verify LLM context
+    logger.debug(LogCategory.NODE, '[Reflect]', 'LLM context check', {
+      hasLLM: !!options.llmContext?.llm,
+      provider: options.llmContext?.provider,
+      model: options.llmContext?.model
+    });
+    
+    // Prepare LLM prompt
     const messages = [
       {
         role: 'system',
-        content: `You are an expert at retrospective analysis and reflection. Generate a detailed, structured reflection for the topic provided.
+        content: `You are an expert in reflective analysis. Generate a thoughtful, comprehensive reflection on the topic provided.
 
-Apply these reflection principles to your analysis:
-- Begin by establishing relevant context and background
-- Identify key patterns, observations, and notable elements
-- Extract meaningful insights and lessons from the observations
-- Consider opportunities for improvement and growth
-- Make connections to broader principles or related domains
-- Synthesize everything into a cohesive understanding
-
-Choose a structure that makes the most sense for this specific topic. Not all topics require the same reflection structure - adapt your approach to what will produce the most meaningful insights for this particular topic.
+Your reflection should include these elements, structured appropriately for the specific topic:
+- Context and background understanding
+- Identification of key patterns and insights
+- Analysis of what worked well and what didn't
+- Valuable lessons and principles extracted
+- Considerations for applying these insights going forward
 
 Use rich Markdown formatting:
 - Create appropriate section headings that reflect your chosen structure
 - Bold (~15% of text) for key insights and conclusions
-- Italics (~10% of text) for important lessons and perspectives
-- Create tables when comparing multiple elements
+- Italics (~10% of text) for important observations
 - Use blockquotes for profound realizations
-- Include numbered lists for sequential points
-- Use bullet points for related patterns
+- Include numbered lists for sequential processes
+- Use bullet points for related items
 
 IMPORTANT: Do not include a title or heading at the beginning of your response.
 Do not repeat the topic as a title. The application will add an appropriate title for your reflection.
-
-Your reflection should be insightful, well-structured, and demonstrate clear retrospective thinking.`
+Your reflection should be comprehensive, insightful, and demonstrate deep analysis.`
       },
       {
         role: 'user',
         content: `Generate a comprehensive structured reflection on this topic: "${topic}". 
         
-Make your reflection thorough, well-formatted with Markdown, and extract meaningful insights.
+Make your reflection thorough, well-formatted with Markdown, and demonstrate deep introspective analysis.
 Remember, do not include a title - start directly with your reflection.`
       }
     ];
-
-    // Generate reflection with LLM - this matches how deep-research does it
-    const result = await options.llmContext.llm.generateText({ 
+    
+    // Generate reflection with LLM
+    const result = await options.llmContext.llm.generateText({
       messages
     });
+    
+    // --- Add Usage Tracking --- 
+    if (result.usage && options.updateUsageHandler) {
+      logger.debug(LogCategory.NODE, '[Reflect]', 'Calling usage handler after generateText', { 
+        usage: result.usage,
+        handlerExists: !!options.updateUsageHandler 
+      });
+      await options.updateUsageHandler(result.usage); // Call the handler passed from AgentNode
+    } else {
+      // Log if handler or usage is missing for debugging
+      logger.warn(LogCategory.NODE, '[Reflect]', 'Usage handler or usage data missing, skipping update', { 
+        hasUsage: !!result.usage,
+        handlerExists: !!options.updateUsageHandler 
+      });
+    }
+    // --- End Usage Tracking ---
     
     logger.debug(LogCategory.NODE, '[Reflect]', 'Successfully generated dynamic reflection with LLM', {
       contentLength: result.text.length
@@ -144,7 +162,11 @@ Remember, do not include a title - start directly with your reflection.`
     return result.text;
   } catch (error) {
     logger.error(LogCategory.NODE, '[Reflect]', 'Error generating dynamic reflection', {
-      error: error instanceof Error ? error.message : String(error)
+      error: error instanceof Error ? error.message : String(error),
+      options: JSON.stringify({
+        hasLLMContext: !!options.llmContext,
+        optionsKeys: Object.keys(options)
+      })
     });
     
     // If LLM generation fails, return a simple message
@@ -153,7 +175,7 @@ Remember, do not include a title - start directly with your reflection.`
 }
 
 /**
- * Reflect tool implementation
+ * Reflect tool implementation - using direct approach without enhancer
  */
 export const reflectTool: Tool = {
   name: 'reflect',
@@ -163,7 +185,7 @@ export const reflectTool: Tool = {
     try {
       const { adTopic, reflection = '' } = params;
       
-      logger.debug(LogCategory.NODE, '[Reflect]', `Processing reflection for: "${adTopic}"`, { 
+      logger.debug(LogCategory.NODE, '[Reflect]', `Processing reflection for: "${adTopic}"`, {
         toolCallId: options.toolCallId,
         hasReflection: !!reflection,
         reflectionLength: reflection?.length || 0,
@@ -192,7 +214,7 @@ export const reflectTool: Tool = {
       // Create the result with all parameters for complete calls
       const result = ReflectComponent({
         topic: adTopic,
-        reflection: reflection
+        reflection
       });
       
       logger.debug(LogCategory.NODE, '[Reflect]', 'Returning complete reflection', {

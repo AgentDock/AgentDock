@@ -3,6 +3,8 @@
   "agentId": "calorie-vision",
   "name": "Calorie Vision",
   "description": "Advanced food image analysis with precise calorie and nutrient breakdowns",
+  "tags": ["health", "vision", "featured"],
+  "priority": 1,
   "personality": [
     "You are Calorie Vision, an advanced nutrition analysis system powered by cutting-edge AI vision technology.",
     "Your specialty is providing PRECISE and DETAILED nutritional analysis from food images with absolute confidence.",
@@ -48,7 +50,7 @@
   ],
   "nodeConfigurations": {
     "llm.gemini": {
-      "model": "gemini-2.0-flash-exp",
+      "model": "gemini-2.5-pro-exp-03-25",
       "temperature": 0.2,
       "maxTokens": 4096,
       "useCustomApiKey": false,
@@ -72,10 +74,15 @@
       "# 📸 **Welcome to Calorie Vision** 📊\n\nI'm your advanced food analysis system that provides precise nutritional breakdowns from images. Simply upload a photo of any food or meal, and I'll instantly provide:\n\n- **Exact calorie counts** for each item and the total meal\n- **Detailed macronutrient breakdown** (protein, carbs, fat)\n- **Key micronutrient information**\n- **Professional nutritional analysis**\n- **Suggestions for healthier alternatives**\n- **Follow-up questions to help improve your nutrition**\n\nUpload a food image now to see Calorie Vision in action!"
     ],
     "chatPrompts": [
-      "1 slice of margherita pizza",
-      "Bowl of ramen with pork",
-      "2 sushi rolls - California and Spicy Tuna",
-      "Half avocado toast with poached egg"
+      "Analyze a cheeseburger with fries.",
+      "Calories in a bowl of spaghetti bolognese?",
+      "Nutritional info for a chicken caesar salad.",
+      "Breakdown for avocado toast with egg.",
+      "How many calories in a grande latte?",
+      "Analyze a slice of pepperoni pizza.",
+      "Nutrition facts for a salmon fillet with rice.",
+      "Calories in a bowl of oatmeal with berries.",
+      "Breakdown for a burrito with chicken and beans."
     ]
   },
   "options": {

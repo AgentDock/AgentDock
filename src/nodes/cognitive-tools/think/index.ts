@@ -5,15 +5,15 @@
 
 import { z } from 'zod';
 import { Tool, ToolExecutionOptions } from '../../types';
+import { logger, LogCategory } from 'agentdock-core';
 import { ThinkComponent } from './components';
 import { ToolResult } from '@/lib/utils/markdown-utils';
-import { logger, LogCategory } from 'agentdock-core';
 
 /**
  * Think tool schema
  */
 export const thinkSchema = z.object({
-  adTopic: z.string().min(1, "A topic is required for structured thinking"),
+  adTopic: z.string().min(1, "Topic must not be empty"),
   reasoning: z.string().optional()
 });
 
@@ -85,7 +85,7 @@ function safelyHandleError(error: unknown, topic: string): ToolResult {
  */
 async function generateStructuredReasoning(topic: string, options: ToolExecutionOptions): Promise<string> {
   try {
-    // Access LLM the same way as deep-research, this property was added in the agentdock-core context
+    // Check for LLM context - use proper property path based on how it's passed from agent-node.ts
     if (!options.llmContext?.llm) {
       logger.warn(LogCategory.NODE, '[Think]', 'No LLM available for generating dynamic reasoning');
       return `Analyzing ${topic}...`;
@@ -131,10 +131,33 @@ Remember, do not include a title - start directly with your analysis.`
       }
     ];
 
-    // Generate reasoning with LLM - this matches how deep-research does it
+    // Add explicit debugging to verify LLM context
+    logger.debug(LogCategory.NODE, '[Think]', 'LLM context check', {
+      hasLLM: !!options.llmContext?.llm,
+      provider: options.llmContext?.provider,
+      model: options.llmContext?.model
+    });
+
+    // Generate reasoning with LLM
     const result = await options.llmContext.llm.generateText({ 
       messages
     });
+    
+    // --- Add Usage Tracking --- 
+    if (result.usage && options.updateUsageHandler) {
+      logger.debug(LogCategory.NODE, '[Think]', 'Calling usage handler after generateText', { 
+        usage: result.usage,
+        handlerExists: !!options.updateUsageHandler 
+      });
+      await options.updateUsageHandler(result.usage); // Call the handler passed from AgentNode
+    } else {
+      // Log if handler or usage is missing for debugging
+      logger.warn(LogCategory.NODE, '[Think]', 'Usage handler or usage data missing, skipping update', { 
+        hasUsage: !!result.usage,
+        handlerExists: !!options.updateUsageHandler 
+      });
+    }
+    // --- End Usage Tracking ---
     
     logger.debug(LogCategory.NODE, '[Think]', 'Successfully generated dynamic reasoning with LLM', {
       contentLength: result.text.length
@@ -143,7 +166,11 @@ Remember, do not include a title - start directly with your analysis.`
     return result.text;
   } catch (error) {
     logger.error(LogCategory.NODE, '[Think]', 'Error generating dynamic reasoning', {
-      error: error instanceof Error ? error.message : String(error)
+      error: error instanceof Error ? error.message : String(error),
+      options: JSON.stringify({
+        hasLLMContext: !!options.llmContext,
+        optionsKeys: Object.keys(options)
+      })
     });
     
     // If LLM generation fails, return a simple message
@@ -152,7 +179,7 @@ Remember, do not include a title - start directly with your analysis.`
 }
 
 /**
- * Think tool implementation
+ * Think tool implementation - refactored to match the compare tool's direct approach
  */
 export const thinkTool: Tool = {
   name: 'think',
@@ -162,7 +189,7 @@ export const thinkTool: Tool = {
     try {
       const { adTopic, reasoning = '' } = params;
       
-      logger.debug(LogCategory.NODE, '[Think]', `Processing reasoning for: "${adTopic}"`, { 
+      logger.debug(LogCategory.NODE, '[Think]', `Processing reasoning for: "${adTopic}"`, {
         toolCallId: options.toolCallId,
         hasReasoning: !!reasoning,
         reasoningLength: reasoning?.length || 0,
@@ -191,7 +218,7 @@ export const thinkTool: Tool = {
       // Create the result with all parameters for complete calls
       const result = ThinkComponent({
         topic: adTopic,
-        reasoning: reasoning
+        reasoning
       });
       
       logger.debug(LogCategory.NODE, '[Think]', 'Returning complete reasoning', {

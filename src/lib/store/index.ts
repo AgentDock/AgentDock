@@ -3,10 +3,18 @@
 /**
  * @fileoverview Core state management implementation for AgentDock.
  * Uses Zustand for state management.
+ * 
+ * OPTIMIZATION OPPORTUNITIES:
+ * 1. Move template validation to server components instead of client-side
+ * 2. Use Zustand middleware for storage persistence instead of manual operations
+ * 3. Split store into smaller, more targeted slices
+ * 4. Implement proper hydration pattern for server/client consistency
+ * 5. Add selectors for more granular component updates
  */
 
 import { create } from 'zustand';
-import { SecureStorage, logger, LogCategory } from 'agentdock-core';
+import { logger, LogCategory } from 'agentdock-core';
+import { SecureStorage } from 'agentdock-core/storage/secure-storage';
 import { templates } from '@/generated/templates';
 import { Store, Agent, AgentState, AgentRuntimeSettings } from './types';
 import { toast } from 'sonner';
@@ -16,6 +24,7 @@ import { getLLMInfo } from '@/lib/utils';
 // Create a single instance for the store
 const storage = SecureStorage.getInstance('agentdock');
 
+// OPTIMIZATION: Consider using Zustand's persist middleware instead of manual storage
 export const useAgents = create<Store>((set) => ({
   // State
   agents: [],
@@ -30,6 +39,7 @@ export const useAgents = create<Store>((set) => ({
       // Node registration is now centralized in src/nodes/init.ts
       // registerCoreNodes();
 
+      // OPTIMIZATION: This template validation could be done server-side
       // 2. Validate templates
       const templateArray = Object.values(templates);
       if (templateArray.length === 0) {
@@ -43,6 +53,7 @@ export const useAgents = create<Store>((set) => ({
         { count: templateArray.length }
       );
 
+      // OPTIMIZATION: Use middleware for storage operations
       // 3. Load runtime settings from storage
       const storedSettings = await storage.get<Record<string, AgentRuntimeSettings>>('agent_runtime_settings') || {};
 
@@ -125,6 +136,7 @@ export const useAgents = create<Store>((set) => ({
     });
   },
 
+  // OPTIMIZATION: Use middleware for persistence instead of manual operations
   updateAgentRuntime: async (agentId, settings) => {
     try {
       // 1. Load current settings

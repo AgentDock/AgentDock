@@ -7,6 +7,8 @@
  */
 
 import { z } from 'zod';
+// Import the proper ToolRegistry interface from agentdock-core
+import type { ToolRegistry } from 'agentdock-core';
 
 /**
  * LLM context for tool execution
@@ -21,6 +23,8 @@ export interface LLMContext {
   model: string;
   /** LLM instance (if available) */
   llm?: any;
+  /** Optional callback for reporting token usage */
+  onUsageAvailable?: (usage: import('agentdock-core').TokenUsage) => void;
 }
 
 /**
@@ -28,11 +32,14 @@ export interface LLMContext {
  */
 export interface ToolExecutionOptions {
   toolCallId: string;
+  sessionId: string;
   messages?: any[];
   /** API key for LLM access (optional, provided by agent) */
   apiKey?: string;
   /** LLM context for tool execution (optional) */
   llmContext?: LLMContext;
+  /** Optional handler from AgentNode to update cumulative token usage */
+  updateUsageHandler?: (usage: import('agentdock-core').TokenUsage) => Promise<void>;
 }
 
 /**
@@ -46,9 +53,12 @@ export interface Tool<TParams = any, TResult = any> {
 }
 
 /**
- * Registry for managing tool availability and execution
+ * Collection of tools indexed by name
  */
-export type ToolRegistry = Record<string, Tool>;
+export type ToolCollection = Record<string, Tool>;
+
+// Re-export the ToolRegistry interface for use in this package
+export type { ToolRegistry };
 
 /**
  * Error handler function type

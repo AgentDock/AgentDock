@@ -1,36 +1,154 @@
 "use client"
 
 import * as React from "react"
-import { useChat, type Message } from 'agentdock-core/client'
-import { useAgents } from "@/lib/store"
+import { useChat } from 'agentdock-core/client'
+import { toast } from 'sonner'
+import { useSearchParams } from "next/navigation"
+import dynamic from 'next/dynamic'
+import { cn } from '@/lib/utils'
+
 import { Chat } from "@/components/chat/chat"
-import { toast } from "sonner"
-import { APIError, ErrorCode } from 'agentdock-core'
 import { ErrorBoundary } from "@/components/error-boundary"
-import { templates, TemplateId } from '@/generated/templates'
-import { useChatSettings } from '@/hooks/use-chat-settings'
+import { useAgents, Agent } from '@/lib/store'
+import { APIError, ErrorCode, Message, applyHistoryPolicy } from 'agentdock-core'
 import { useChatInitialization } from '@/hooks/use-chat-initialization'
+import { useChatSettings } from '@/hooks/use-chat-settings'
 import { useChatStorage } from '@/hooks/use-chat-storage'
 import { ChatError, ChatLoading } from './chat-status'
 import { logError, logInfo, logDebug } from '@/lib/utils/logger-utils'
 
-interface ChatContainerProps {
-  className?: string
-  agentId?: string
-  header?: React.ReactNode
+// Lazy load the debug component
+const ChatDebug = dynamic(() => import("@/components/chat/chat-debug").then((mod) => mod.ChatDebug), {
+  ssr: false,
+  loading: () => null
+})
+
+// Add typed interfaces for API error responses
+interface ErrorResponse {
+  error: string;
+  code?: string;
+  details?: Record<string, unknown>;
 }
 
-const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, ChatContainerProps>(({ className, agentId = 'default', header }, ref) => {
-  const { agents } = useAgents()
+interface ExtendedError extends Error {
+  code?: string;
+}
+
+// Export the orchestrationState interface so it can be imported elsewhere
+export interface OrchestrationState {
+  sessionId: string;
+  recentlyUsedTools: string[];
+  activeStep?: string;
+  currentStepIndex?: number;
+  totalSteps?: number;
+}
+
+// Add interface for session token usage
+interface SessionTokenUsage {
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+  lastUpdateTime: number;
+}
+
+export interface ChatContainerProps {
+  agentId?: string;
+  className?: string;
+  header?: React.ReactNode;
+  onStateUpdate?: (state: {
+    messagesCount?: number;
+    orchestration?: OrchestrationState;
+  }) => void;
+  onChatTurnComplete?: () => void;
+}
+
+// Simple function to safely extract agent name
+function getAgentName(agents: any, agentId: string): string {
+  if (!agents) return 'AI Agent';
   
-  // Use our custom hooks
-  const { chatSettings, isLoading: isSettingsLoading, error: settingsError } = useChatSettings(agentId);
-  const { isInitializing, provider, apiKey, initError } = useChatInitialization(agentId);
-  const { getInitialMessages, saveMessages, clearMessages } = useChatStorage(agentId);
+  try {
+    // The agents object structure can vary, so we use a try-catch
+    // to safely extract the name if it exists
+    const agent = agents[agentId];
+    if (agent && typeof agent === 'object' && agent.name) {
+      return String(agent.name);
+    }
+  } catch (err) {
+    console.warn('Error getting agent name:', err);
+  }
+  
+  return 'AI Agent';
+}
 
-  // Get initial messages
-  const initialMessages = React.useMemo(() => getInitialMessages(), [getInitialMessages]);
+const ChatContainer = React.forwardRef<
+  { handleReset: () => Promise<void> },
+  ChatContainerProps
+>(({ className, agentId = 'default', header, onStateUpdate, onChatTurnComplete }, ref) => {
+  const { agents } = useAgents();
+  const searchParams = useSearchParams();
+  
+  // Custom hooks
+  const { chatSettings, isLoading: isSettingsLoading, error: settingsError, debugMode } = useChatSettings(agentId);
+  const { isInitializing, provider, apiKey, initError, reload: reloadApiKey } = useChatInitialization(agentId);
+  const {
+    loadSavedData,
+    saveData,
+    clearSavedData,
+    trimMessages,
+    getHistorySettings,
+    initialMessagesLoadedRef
+  } = useChatStorage(agentId);
 
+  // Load initial messages and session ID
+  const { messages: initialMessages, sessionId: initialSessionId } = React.useMemo(
+    () => loadSavedData(),
+    [loadSavedData]
+  );
+  
+  // Get BYOK setting from localStorage for API headers (Re-added)
+  const byokMode = React.useMemo(() => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const byokSetting = localStorage.getItem('byokOnly');
+        return byokSetting === 'true';
+      }
+    } catch (e) {
+      console.warn('Error accessing localStorage:', e);
+    }
+    return false;
+  }, []);
+  
+  // Check if debug mode is enabled via URL parameter or settings
+  const isDebugEnabled = React.useMemo(() => {
+    // Get debug mode from URL or from settings
+    const urlDebug = searchParams?.get('debug') === 'true';
+    // Use URL parameter or debug mode from settings
+    return urlDebug || debugMode;
+  }, [searchParams, debugMode]);
+  
+  // Basic orchestration state initialized with loaded session ID
+  const [orchestrationState, setOrchestrationState] = React.useState<OrchestrationState>({
+    sessionId: initialSessionId,
+    recentlyUsedTools: []
+  });
+  
+  // Track messages count for debug display
+  const [messagesCount, setMessagesCount] = React.useState(0);
+  
+  // Simplified token usage state - only for potential future use, not passed to debug
+  const [tokenUsage, setTokenUsage] = React.useState<{
+    promptTokens?: number;
+    completionTokens?: number;
+    totalTokens?: number;
+    provider?: string;
+  } | null>(null);
+  
+  // Get trimmed messages for sending to LLM
+  const trimmedInitialMessages = React.useMemo(() => {
+    return trimMessages(initialMessages);
+  }, [initialMessages, trimMessages]);
+  
+  // useChat hook with our configuration
   const {
     messages,
     input,
@@ -42,66 +160,157 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
     append,
     setMessages,
     reload,
+    data
   } = useChat({
     id: agentId,
     api: `/api/chat/${agentId}`,
-    initialMessages,
+    initialMessages: trimmedInitialMessages,
     streamProtocol: 'data',
-    headers: apiKey ? {
-      'x-api-key': apiKey
-    } : undefined,
+    headers: {
+      ...(apiKey ? { 'x-api-key': apiKey } : {}),
+      'x-byok-mode': byokMode ? 'true' : 'false',
+      ...(orchestrationState.sessionId ? { 'x-session-id': orchestrationState.sessionId } : {})
+    },
     body: {
       system: chatSettings?.personality,
       temperature: chatSettings?.temperature,
-      maxTokens: chatSettings?.maxTokens
+      maxTokens: chatSettings?.maxTokens,
+      sessionId: orchestrationState.sessionId || undefined
     },
     maxSteps: 10,
     sendExtraMessageFields: true,
     experimental_throttle: 50,
-    onToolCall: async ({ toolCall }) => {
-      // Log tool call for debugging
-      await logDebug('ChatContainer', 'Tool call received', undefined, { 
-        toolName: toolCall.toolName,
-        toolArgs: toolCall.args
+    experimental_prepareRequestBody: ({ messages: requestMessages, ...otherProps }) => {
+      // Get history settings from the local hook right before use
+      const historySettings = getHistorySettings();
+      
+      // Apply message trimming policy to request messages using agentdock-core's function directly
+      const trimmedMessages = applyHistoryPolicy(requestMessages, {
+        historyPolicy: historySettings.historyPolicy,
+        historyLength: historySettings.historyLength,
+        preserveSystemMessages: true
       });
       
-      // Return null to let the server handle the tool call
-      return null;
+      // Return in the format expected by Vercel AI SDK
+      return {
+        messages: trimmedMessages,
+        ...otherProps
+      };
+    },
+    onToolCall: async ({ toolCall }) => {
+      // Log tool call for debugging
+      await logDebug('ChatContainer', 'Tool call received by client', undefined, { 
+        toolName: toolCall.toolName,
+        toolArgs: toolCall.args,
+        toolCallId: toolCall.toolCallId
+      });
+      
+      // Return undefined - the UI should rely on stream parts for updates.
+      return undefined;
     },
     onResponse: async (response) => {
       if (!response.ok) {
         await logError('ChatContainer', 'Failed to send message', `Status: ${response.status}`);
         toast.error('Failed to send message');
+        return;
+      }
+      
+      // Extract session ID from header
+      const sessionIdHeader = response.headers.get('x-session-id');
+      let currentSessionId = orchestrationState.sessionId;
+
+      if (sessionIdHeader && sessionIdHeader !== currentSessionId) {
+        setOrchestrationState(prev => ({ ...prev, sessionId: sessionIdHeader }));
+        currentSessionId = sessionIdHeader;
+      }
+      
+      if (currentSessionId) {
+        saveData({ messages: messages, sessionId: currentSessionId });
+      }
+      
+      const tokenUsageHeader = response.headers.get('x-token-usage');
+      if (tokenUsageHeader) {
+        try {
+          const usageData = JSON.parse(tokenUsageHeader);
+          setTokenUsage(usageData);
+        } catch (error) {
+          console.error('Failed to parse token usage header:', error);
+        }
+      }
+      
+      // --- RESTORED Conditional state update from header --- 
+      const orchestrationHeader = response.headers.get('x-orchestration-state');
+      if (orchestrationHeader) {
+        try {
+          const incomingState = JSON.parse(orchestrationHeader) as OrchestrationState;
+          if (incomingState?.sessionId) {
+              const incomingTools = Array.isArray(incomingState.recentlyUsedTools) ? incomingState.recentlyUsedTools : [];
+              // Only update if state actually differs
+              const hasStateChanged = 
+                  incomingState.sessionId !== orchestrationState.sessionId ||
+                  incomingState.activeStep !== orchestrationState.activeStep ||
+                  JSON.stringify(incomingTools) !== JSON.stringify(orchestrationState.recentlyUsedTools);
+                  
+              if (hasStateChanged) {
+                  logDebug('ChatContainer', 'Orchestration state changed (via header), updating UI', undefined, {
+                      from: { step: orchestrationState.activeStep, tools: orchestrationState.recentlyUsedTools },
+                      to: { step: incomingState.activeStep, tools: incomingTools }
+                  });
+                  setOrchestrationState(incomingState);
+              }
+          }
+        } catch (error) {
+          console.error('Failed to parse orchestration state header:', error);
+        }
       }
     },
     onFinish: async (message) => {
       try {
-        // Save completed messages to local storage once the stream is fully complete
-        // This ensures we only save the final state, not partial streaming states
-        saveMessages(messages);
+        // Save final messages (and session ID via saveData)
+        saveData({ messages: messages, sessionId: orchestrationState.sessionId });
         
-        // Log success
-        await logInfo('ChatContainer', 'Message processing complete', undefined, { 
+        await logInfo('ChatContainer', 'Message processing complete (stream finished)', undefined, { 
           messageId: message.id, 
           messageCount: messages.length 
         });
+
+        // Call the completion callback if provided
+        onChatTurnComplete?.();
+
       } catch (error) {
-        await logError('ChatContainer', 'Failed to process message', error);
+        await logError('ChatContainer', 'Failed to process message onFinish', error);
       }
     },
     onError: async (error: Error) => {
+      // Log the error for debugging
       await logError('ChatContainer', 'Chat error occurred', error);
       console.error('Chat error:', error);
-      toast.error(error.message);
+      
+      // Create a new error with the message from Vercel AI SDK
+      // This should now contain the detailed error from our getErrorMessage
+      const displayError = new Error(error.message);
+      
+      // Copy over the error code if available
+      if ('code' in error && typeof (error as any).code === 'string') {
+        (displayError as any).code = (error as any).code;
+      }
+      
+      // Set the error for display in the overlay
+      // setOverlayError(displayError);
+      
+      // Show toast in development
+      if (process.env.NODE_ENV === 'development') {
+        toast.error(error.message);
+      }
     }
   });
-
+  
   // Only show typing indicator when we're loading but no streaming has started yet
   const showTypingIndicator = React.useMemo(() => {
     const lastMessageIsUser = messages.length > 0 && messages[messages.length - 1]?.role === 'user';
     return isLoading && lastMessageIsUser;
   }, [isLoading, messages]);
-
+  
   // Handle chat reset
   const handleReset = React.useCallback(async () => {
     try {
@@ -111,11 +320,18 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
       
       // Clear React state
       setMessages([]);
+      setTokenUsage(null);
       
-      // Clear local storage
-      clearMessages();
+      // Clear persisted messages AND session ID
+      clearSavedData();
       
-      // Reload the chat
+      // Reset orchestration state in React
+      setOrchestrationState({
+        sessionId: '',
+        recentlyUsedTools: []
+      });
+      
+      // Reload the chat hook (will start fresh without a session ID)
       await reload();
       
       toast.success('Chat session reset successfully');
@@ -123,61 +339,174 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
       console.error('Failed to reset chat:', error);
       toast.error('Failed to reset chat session. Please try reloading the page.');
     }
-  }, [isLoading, stop, setMessages, clearMessages, reload]);
-
+  }, [isLoading, stop, setMessages, clearSavedData, reload]);
+  
   // Expose handleReset through ref
   React.useImperativeHandle(ref, () => ({
     handleReset
   }), [handleReset]);
-
-  // Save messages to local storage when they change (including during streaming)
+  
+  // Save messages to local storage when they change and update orchestration info
   React.useEffect(() => {
     if (messages.length === 0) return;
     
-    // Only save messages when not in the middle of streaming
-    // This prevents potentially causing issues during fast streams
+    // Only save data when not in the middle of streaming
     if (!isLoading) {
-      saveMessages(messages);
+      // Debounce localStorage writes to prevent excessive updates
+      const savedMessagesJSON = localStorage.getItem(`chat-${agentId}`);
+      const currentMessagesJSON = JSON.stringify(messages);
       
-      // Add debug log to track message saves
+      // Only save if the messages have actually changed
+      if (savedMessagesJSON !== currentMessagesJSON) {
+        // Use saveData to persist both messages and current session ID
+        saveData({ messages: messages, sessionId: orchestrationState.sessionId });
+        setMessagesCount(messages.length);
+        
+        // Call onStateUpdate with message count and orchestration state
+        onStateUpdate?.({
+          messagesCount: messages.length,
+          orchestration: orchestrationState
+        });
+      }
+    }
+  }, [messages, saveData, isLoading, onStateUpdate, orchestrationState.sessionId, agentId]);
+  
+  // Set initial full history after initialization if needed
+  React.useEffect(() => {
+    if (initialMessages.length > trimmedInitialMessages.length && messages.length === trimmedInitialMessages.length) {
+      setMessages(initialMessages);
+    }
+  }, [initialMessages, trimmedInitialMessages, messages.length, setMessages]);
+  
+  // Initialize messages count when page loads or refreshes
+  React.useEffect(() => {
+    if (initialMessages.length > 0 && messagesCount === 0) {
+      setMessagesCount(initialMessages.length);
+    }
+  }, [initialMessages.length, messagesCount]);
+  
+  // Effect to update orchestration state from streaming data
+  React.useEffect(() => {
+    if (!data) return;
+    
+    const streamData = data as unknown as { 
+      orchestrationState?: { 
+        sessionId: string; 
+        recentlyUsedTools: string[]; 
+        activeStep?: string;
+        // Additional orchestration information
+        sequenceIndex?: number;
+        stepProgress?: {
+          current: number;
+          total: number;
+        };
+      };
+      // Check for streaming errors in the data object
+      _hasStreamingError?: boolean;
+      _streamingErrorMessage?: string;
+      _streamingErrorCode?: string;
+      // Token usage data might be in the stream data
+      usage?: { 
+        promptTokens: number; 
+        completionTokens: number;
+        totalTokens: number;
+        provider?: string;
+      };
+    };
+    
+    // Check for streaming errors
+    if (streamData._hasStreamingError && streamData._streamingErrorMessage) {
+      const errorMessage = streamData._streamingErrorMessage;
+      const error = new Error(errorMessage);
+      if (streamData._streamingErrorCode) {
+        (error as any).code = streamData._streamingErrorCode;
+      }
+      // setOverlayError(error);
+    }
+    
+    // Update orchestration state from data stream, ONLY if changed
+    if (streamData?.orchestrationState?.sessionId) {
+      // Log the received state
       if (process.env.NODE_ENV === 'development') {
-        console.debug(`Saving ${messages.length} messages after stream completed`);
+        console.debug('[ORCHESTRATION DEBUG] Received orchestration state via data:', 
+          JSON.stringify(streamData.orchestrationState, null, 2));
+      }
+      
+      const incomingState = streamData.orchestrationState;
+      const incomingTools = Array.isArray(incomingState.recentlyUsedTools) ? incomingState.recentlyUsedTools : [];
+
+      // Check if relevant parts of the state have actually changed
+      const hasStateChanged = 
+        incomingState.sessionId !== orchestrationState.sessionId ||
+        incomingState.activeStep !== orchestrationState.activeStep ||
+        JSON.stringify(incomingTools) !== JSON.stringify(orchestrationState.recentlyUsedTools);
+        // Add checks for stepProgress/sequenceIndex if needed for flicker
+
+      // --- State update from stream data remains enabled --- 
+      if (hasStateChanged) {
+         logDebug('ChatContainer', 'Orchestration state changed (via data), updating UI', undefined, { 
+            from: { step: orchestrationState.activeStep, tools: orchestrationState.recentlyUsedTools },
+            to: { step: incomingState.activeStep, tools: incomingTools }
+         });
+         
+         const newState: OrchestrationState = {
+           sessionId: incomingState.sessionId,
+           recentlyUsedTools: incomingTools,
+           activeStep: incomingState.activeStep
+         };
+         
+         // Add step progress information if available
+         if (incomingState.stepProgress) {
+           newState.currentStepIndex = incomingState.stepProgress.current;
+           newState.totalSteps = incomingState.stepProgress.total;
+         } else if (incomingState.sequenceIndex !== undefined) {
+           newState.currentStepIndex = incomingState.sequenceIndex;
+         }
+         
+         // Update the state
+         setOrchestrationState(newState);
+      } else {
+        // Log if state received but deemed unchanged (for debugging)
+        if (process.env.NODE_ENV === 'development') {
+            console.debug('[ORCHESTRATION DEBUG] Received state via data, but no change detected.');
+        }
       }
     }
-  }, [messages, saveMessages, isLoading]);
-
-  // Handle user message submission
-  const handleUserSubmit = React.useCallback(async (event?: { preventDefault?: () => void }, options?: { experimental_attachments?: FileList }) => {
-    try {
-      if (event?.preventDefault) {
-        event.preventDefault();
-      }
-      return await handleSubmit(event, options);
-    } catch (error) {
-      logError('ChatContainer', 'Failed to submit message', error);
-      throw error;
+    
+    // Check for token usage in the stream data
+    if (streamData.usage) {
+      setTokenUsage(streamData.usage);
     }
-  }, [handleSubmit]);
+  }, [data, orchestrationState]); // Add orchestrationState to dependency array for comparison
+  
+  // Fix handleInputChange to match Chat component's expected format (Re-added)
+  const handleInputChange = React.useCallback((value: string) => {
+    // Create a synthetic event object expected by the useChat hook's setInput
+    setInput({ target: { value } } as React.ChangeEvent<HTMLTextAreaElement>);
+  }, [setInput]);
 
-  // Get suggestions from chatSettings
+  // Restore suggestions calculation from chatSettings
   const suggestions = React.useMemo(() => {
     return chatSettings?.chatPrompts as string[] || [];
   }, [chatSettings]);
 
-  // Handle loading states
+  // Restore direct error/loading rendering logic
   if (isInitializing || isSettingsLoading) {
     return <ChatLoading />;
   }
 
   if (initError) {
+    // Using window.location.reload() for initError as per the provided correct code
     return <ChatError error={initError} onRetry={() => window.location.reload()} />;
   }
 
   if (chatError) {
+    // Using reload from useChat for chatError
     return <ChatError error={chatError} onRetry={reload} />;
   }
 
   if (settingsError) {
+    // Using window.location.reload() for settingsError
     return (
       <ChatError 
         error={new Error(settingsError)} 
@@ -186,41 +515,49 @@ const ChatContainer = React.forwardRef<{ handleReset: () => Promise<void> }, Cha
     );
   }
 
-  // Wrap chat in error boundary
   return (
     <ErrorBoundary
-      fallback={
-        <ChatError 
-          error={new Error("Chat error occurred")} 
-          onRetry={reload} 
-        />
-      }
-      onError={(error) => {
-        console.error("Chat error:", error);
-      }}
-      resetOnPropsChange={true}
+      onError={(err) => logError('ChatContainer', 'Global Error Boundary Caught:', err)}
+      fallback={<p>Something went wrong rendering the chat.</p>}
     >
-      <div className="flex h-full flex-col">
+      <div className={cn("relative flex flex-col h-full", className)}>
         <Chat
-          messages={messages}
+          agent={agentId}
+          agentName={getAgentName(agents, agentId)}
+          header={header}
+          messages={messages} 
           input={input}
-          handleInputChange={(value: string) => setInput({ target: { value } } as React.ChangeEvent<HTMLTextAreaElement>)}
-          handleSubmit={handleUserSubmit}
+          handleInputChange={handleInputChange}
+          handleSubmit={handleSubmit}
           isGenerating={isLoading}
-          isTyping={showTypingIndicator}
+          isTyping={false}
           stop={stop}
           append={append}
           suggestions={suggestions}
-          className={className || "flex-1"}
-          header={header}
-          agentName={typeof agents === 'object' && agentId in agents ? (agents as any)[agentId]?.name : agentId}
-          agent={agentId}
         />
+        
+        {isDebugEnabled && (
+          <div data-test-id="chat-debug-panel">
+            <ChatDebug
+              visible={isDebugEnabled}
+              sessionId={orchestrationState.sessionId}
+              messagesCount={messagesCount}
+              model={chatSettings?.model}
+              temperature={chatSettings?.temperature}
+              maxTokens={chatSettings?.maxTokens}
+              agentId={agentId}
+              provider={provider}
+              activeStep={orchestrationState.activeStep}
+              currentStepIndex={orchestrationState.currentStepIndex}
+              totalSteps={orchestrationState.totalSteps}
+            />
+          </div>
+        )}
       </div>
     </ErrorBoundary>
   );
 });
 
-ChatContainer.displayName = 'ChatContainer';
+ChatContainer.displayName = "ChatContainer";
 
 export { ChatContainer }; 

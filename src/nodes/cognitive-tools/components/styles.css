@@ -74,8 +74,8 @@
 
 /* Brainstorm Tool */
 .brainstorm-idea {
-  font-weight: 600;
-  color: #f59e0b;
+  color: var(--green-500);
+  font-weight: 500;
 }
 
 .brainstorm-theme {
@@ -84,6 +84,18 @@
 
 .brainstorm-application {
   color: #10b981;
+}
+
+/* Styles for brainstorm insights */
+.brainstorm-insight {
+  color: var(--blue-500);
+  font-weight: 500;
+}
+
+/* Styles for brainstorm next steps */
+.brainstorm-next-step {
+  color: var(--purple-500);
+  font-weight: 500;
 }
 
 /* Debate Tool */
@@ -132,8 +144,8 @@
   animation: thinking-progress 3s ease-in-out infinite;
 }
 
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
+/* Dark mode support - Disabled to prevent flickering with Next.js theme system */
+/* @media (prefers-color-scheme: dark) {
   .cognitive-tool-container {
     border-color: #374151;
     background-color: #1f2937;
@@ -204,4 +216,76 @@
     background-color: #111827;
     color: #d1d5db;
   }
+} */
+
+/* Dark mode styles applied using .dark class for better integration with Next.js themes */
+.dark .cognitive-tool-container {
+  border-color: #374151;
+  background-color: #1f2937;
+}
+
+.dark .cognitive-tool-header {
+  background-color: #111827;
+  border-color: #374151;
+}
+
+.dark .cognitive-tool-title {
+  color: #e5e7eb;
+}
+
+.dark .think-step-number {
+  color: #818cf8;
+}
+
+.dark .think-conclusion {
+  color: #34d399;
+}
+
+.dark .reflect-insight {
+  color: #c4b5fd;
+}
+
+.dark .reflect-observation {
+  color: #38bdf8;
+}
+
+.dark .critique-issue {
+  color: #f87171;
+}
+
+.dark .critique-suggestion {
+  color: #34d399;
+}
+
+.dark .critique-strength {
+  color: #38bdf8;
+}
+
+.dark .brainstorm-idea {
+  color: #fbbf24;
+}
+
+.dark .brainstorm-theme {
+  color: #c4b5fd;
+}
+
+.dark .brainstorm-application {
+  color: #34d399;
+}
+
+.dark .debate-position {
+  color: #f87171;
+}
+
+.dark .debate-counter {
+  color: #60a5fa;
+}
+
+.dark .debate-synthesis {
+  color: #c4b5fd;
+}
+
+.dark .confidence-indicator {
+  background-color: #111827;
+  color: #d1d5db;
 } 

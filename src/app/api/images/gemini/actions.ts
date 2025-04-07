@@ -120,8 +120,8 @@ export async function generateImageAction(
       throw new Error("Empty image data in response");
     }
 
-    // Store the image and get a reference URL with the origin if available
-    const imageUrl = storeAndGetImageUrl(
+    // Store the image and get a reference URL (now async)
+    const imageUrl = await storeAndGetImageUrl(
       data,
       mimeType,
       prompt,

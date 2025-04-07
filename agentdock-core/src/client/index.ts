@@ -15,3 +15,9 @@ export type {
   Message,
   CreateMessage
 } from 'ai/react'; 
+
+// Re-export message utilities
+export { 
+  isSystemMessage, 
+  isToolMessage 
+} from '../types/messages'; 

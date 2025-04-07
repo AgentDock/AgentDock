@@ -3,31 +3,65 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { Bot, Settings, Image, LucideIcon } from "lucide-react"
+import { Bot, Settings, Image, ChevronRight, ChevronDown, LucideIcon, FileText } from "lucide-react"
 import { Logo } from "@/components/ui/logo"
+import { AGENT_TAGS } from "@/config/agent-tags"
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
 
-interface NavigationItem {
+interface NavigationItemData {
   name: string;
   href: string;
-  icon: LucideIcon;
+  icon?: LucideIcon;
+  children?: NavigationItemData[];
+  autoCollapse?: boolean;
 }
 
 // Core navigation items (main platform features)
-const coreNavigationItems: NavigationItem[] = [
+const coreNavigationItems: NavigationItemData[] = [
   {
     name: "Agents",
     href: "/agents",
-    icon: Bot
+    icon: Bot,
+    children: [
+      {
+        name: "Featured",
+        href: "/agents",
+      },
+      {
+        name: "All Agents",
+        href: "/agents/all",
+      }
+      // Main categories will be added here
+    ]
   },
   {
     name: "Settings",
     href: "/settings",
     icon: Settings
+  },
+  {
+    name: "Docs",
+    href: "/docs",
+    icon: FileText
   }
 ];
 
+// Populate only the main categories (from AGENT_TAGS)
+AGENT_TAGS
+  .sort((a, b) => a.order - b.order)
+  .filter(tag => tag.id !== 'featured') // Skip featured since we added it manually
+  .forEach(tag => {
+    if (coreNavigationItems[0].children) {
+      coreNavigationItems[0].children.push({
+        name: tag.name,
+        href: `/agents/${tag.id}`,
+      });
+    }
+  });
+
 // Additional platform features
-const additionalNavigationItems: NavigationItem[] = [
+const additionalNavigationItems: NavigationItemData[] = [
   {
     name: "Image Generation",
     href: "/image-generation",
@@ -35,61 +69,168 @@ const additionalNavigationItems: NavigationItem[] = [
   }
 ];
 
-export function MobileNav() {
-  const pathname = usePathname()
+export function MobileNav({ onNavigate }: { onNavigate?: () => void }) {
+  const pathname = usePathname();
+  const [expandedItems, setExpandedItems] = useState<string[]>(["Agents"]);
+
+  const toggleExpanded = (name: string) => {
+    setExpandedItems(prev =>
+      prev.includes(name)
+        ? prev.filter(item => item !== name)
+        : [...prev, name]
+    );
+  };
+
+  // Simplified isActive check directly using pathname
+  const isActive = (itemPath: string, itemName?: string): boolean => {
+    // Special case for Featured
+    if (itemName === "Featured" && itemPath === "/agents") {
+      return pathname === "/agents";
+    }
+    // Exact match
+    if (pathname === itemPath) {
+      return true;
+    }
+    // Child path match (handles /agents/category correctly)
+    if (itemPath !== '/' && pathname.startsWith(itemPath + (itemPath.endsWith('/') ? '' : '/')) && itemPath.length > 1) {
+      // Ensure it's not just a partial match for non-category paths
+       if (!itemPath.startsWith('/agents/')) {
+         const pathSegments = pathname.split('/');
+         const itemSegments = itemPath.split('/');
+         // Only active if the segment count matches or the next segment starts the child path
+         return pathSegments.length === itemSegments.length || (pathSegments.length > itemSegments.length)
+       }
+       return true
+    }
+     // Handle /agents/all specifically
+     if (itemPath === '/agents/all' && pathname === '/agents/all'){
+       return true
+     }
+
+    return false;
+  };
+
+  const renderItem = (item: NavigationItemData) => {
+    const isItemActive = isActive(item.href, item.name);
+    const isExpanded = expandedItems.includes(item.name);
+
+    if (item.children) {
+      return (
+        <div key={item.name} className="space-y-1">
+          <div
+            className={cn(
+              "flex w-full items-center justify-between rounded-lg px-3 py-2",
+              isItemActive 
+                ? "bg-primary/10 text-primary" 
+                : "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground"
+            )}
+          >
+            <Link
+              href={{ pathname: item.href }}
+              className="flex flex-1 items-center gap-3"
+              onClick={(e) => {
+                if (!isExpanded) {
+                  e.preventDefault();
+                  toggleExpanded(item.name);
+                } else if (onNavigate) {
+                  onNavigate();
+                }
+              }}
+            >
+              {item.icon && <item.icon className="h-5 w-5 flex-shrink-0" />}
+              <span className="text-sm font-medium">{item.name}</span>
+            </Link>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => { 
+                e.stopPropagation();
+                toggleExpanded(item.name); 
+              }}
+              className="h-auto p-1 opacity-70 hover:opacity-100 bg-transparent hover:bg-transparent"
+              aria-label={isExpanded ? `Collapse ${item.name}` : `Expand ${item.name}`}
+            >
+              {isExpanded ?
+                <ChevronDown className="h-4 w-4" /> :
+                <ChevronRight className="h-4 w-4" />
+              }
+            </Button>
+          </div>
+          
+          {isExpanded && (
+            <div className="mt-1 space-y-1 pl-5 border-l border-border/40 ml-5">
+              {item.children.map(child => (
+                <Link
+                  key={child.name}
+                  href={{ pathname: child.href }}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                    isActive(child.href, child.name)
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground"
+                  )}
+                  onClick={() => {
+                    if (onNavigate) {
+                      onNavigate();
+                    }
+                  }}
+                >
+                  <span>{child.name}</span>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <Link
+        key={item.name}
+        href={{ pathname: item.href }}
+        className={cn(
+          "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+          isItemActive
+            ? "bg-primary/10 text-primary"
+            : "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground"
+        )}
+        onClick={() => {
+          if (onNavigate) {
+            onNavigate();
+          }
+        }}
+      >
+        {item.icon && <item.icon className="h-5 w-5 flex-shrink-0" />}
+        <span>{item.name}</span>
+      </Link>
+    );
+  };
   
   return (
     <div className="flex flex-col h-full">
-      <div className="flex h-14 items-center border-b px-4">
+      <div className="flex h-14 items-center border-b border-border/40 px-4">
         <Logo showText={true} />
       </div>
       <div className="flex-1 overflow-y-auto py-4">
         <div className="space-y-6">
           {/* Core Platform Section */}
           <div className="px-4">
-            <h2 className="mb-2 text-xs font-semibold text-muted-foreground">
+            <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Core
             </h2>
-            <nav className="flex flex-col gap-2">
-              {coreNavigationItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href as any}
-                  className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                    pathname === item.href
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  )}
-                >
-                  <item.icon className="h-5 w-5 flex-shrink-0" />
-                  <span>{item.name}</span>
-                </Link>
-              ))}
+            <nav className="flex flex-col gap-1">
+              {coreNavigationItems.map(renderItem)}
             </nav>
           </div>
 
           {/* Additional Features Section */}
           <div className="px-4">
-            <h2 className="mb-2 text-xs font-semibold text-muted-foreground">
+            <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Features
             </h2>
-            <nav className="flex flex-col gap-2">
-              {additionalNavigationItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href as any}
-                  className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                    pathname === item.href
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  )}
-                >
-                  <item.icon className="h-5 w-5 flex-shrink-0" />
-                  <span>{item.name}</span>
-                </Link>
-              ))}
+            <nav className="flex flex-col gap-1">
+              {additionalNavigationItems.map(renderItem)}
             </nav>
           </div>
         </div>

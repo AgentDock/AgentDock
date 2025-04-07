@@ -12,6 +12,32 @@ The framework is built around a powerful node-based system:
 - **Tool Registry**: Focused abstraction for managing tool availability for agents, working with the Node Registry
 - **Custom Tools**: Specialized nodes that can be called by LLMs to perform specific tasks
 - **Configuration**: Simple JSON-based agent definitions
+- **Orchestration Framework**: Dynamic control of agent behavior based on conversation context
+- **Session Management**: Isolated state management for concurrent conversations
+
+### Advanced Subsystems
+
+#### Session Management
+
+The [session management system](./sessions/README.md) provides isolation between concurrent conversations and maintains state across multiple requests. Key capabilities include:
+
+- **Stateful Conversations**: Maintain conversation context and history
+- **Tool Context Persistence**: Enable tools to store and access stateful information
+- **Memory Efficiency**: Optimized storage with automatic cleanup
+- **Single Source of Truth**: Consistent session state across components
+
+For more details, see the [Session Management Overview](./sessions/session-overview.md).
+
+#### Orchestration Framework
+
+The [orchestration framework](./orchestration/README.md) enables dynamic control of agent behavior and tool availability based on conversation context:
+
+- **Context-Aware Steps**: Transition between different modes based on conversation content
+- **Dynamic Tool Availability**: Control which tools are available in different steps
+- **Conditional Logic**: Activate steps based on message content or previous tool usage
+- **Tool Sequences**: Define specific tool ordering for complex workflows
+
+For more details, see the [Orchestration Framework Overview](./orchestration/orchestration-overview.md).
 
 ### Registry Relationship
 
@@ -49,6 +75,20 @@ The Node Registry and Tool Registry work together to provide a comprehensive sys
 - 🛠️ **Extensible**: Create custom nodes for any functionality
 - 🔒 **Secure**: Built-in security features for API keys and data
 - 📦 **Self-Contained**: Core framework has minimal dependencies
+- 🔄 **Orchestration**: Control agent behavior dynamically
+- 💾 **Session Management**: Support concurrent conversations
+
+## Architecture Documentation
+
+For more detailed documentation on specific architecture components:
+
+| Component | Documentation |
+|-----------|---------------|
+| Agent Node | [Agent Node Architecture](./agent_node.md) |
+| Error Handling | [Core Error Handling](./core-error-handling.md) |
+| Provider Abstraction | [Provider-Agnostic API](./provider-agnostic-api.md) |
+| Orchestration | [Orchestration Framework](./orchestration/README.md) |
+| Sessions | [Session Management](./sessions/README.md) |
 
 ## Getting Started
 

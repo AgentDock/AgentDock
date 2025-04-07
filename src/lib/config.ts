@@ -3,7 +3,7 @@
  */
 
 export const siteConfig = {
-  name: 'AgentDock',
+  name: 'AgentDock Hub',
   url: process.env.NEXT_PUBLIC_APP_URL || 'https://hub.agentdock.ai',
   ogImage: 'https://hub.agentdock.ai/og.jpg',
   description: 'Your AI Agent Hub - Build, Deploy, and Manage AI Agents',

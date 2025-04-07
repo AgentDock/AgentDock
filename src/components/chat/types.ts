@@ -25,9 +25,10 @@ export type ToolInvocation = Omit<BaseToolInvocation, 'state'> & {
 /**
  * Properties for ChatMessage component
  */
-export interface ChatMessageProps extends Message {
+export interface ChatMessageProps extends Pick<Message, "role" | "content" | "createdAt" | "experimental_attachments" | "toolInvocations"> {
   showTimeStamp?: boolean
   animation?: Animation
-  actions?: React.ReactNode
   className?: string
+  actions?: React.ReactNode
+  isStreaming?: boolean
 } 

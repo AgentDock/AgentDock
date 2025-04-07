@@ -6,12 +6,58 @@
  * This file initializes the registry for these custom tools.
  */
 
-import { logger, LogCategory } from 'agentdock-core';
+import { logger, LogCategory, getToolRegistry, ToolRegistry } from 'agentdock-core';
+
+// Import the registry file that registers all the tools
+import { allTools, getToolsForAgent } from './registry';
 
 // Global flag to persist across hot reloads
 declare global {
   // eslint-disable-next-line no-var
   var __toolRegistryInitialized: boolean;
+}
+
+/**
+ * Validate tool structure
+ * Ensures tools have required properties before registration
+ */
+function validateTool(name: string, tool: any): boolean {
+  if (!tool) {
+    logger.error(LogCategory.NODE, '[NodeRegistry]', `Tool ${name} is undefined or null`);
+    return false;
+  }
+  
+  // Check for required properties
+  const requiredProps = ['description', 'parameters', 'execute'];
+  const missingProps = requiredProps.filter(prop => !(prop in tool));
+  
+  if (missingProps.length > 0) {
+    logger.error(
+      LogCategory.NODE, 
+      '[NodeRegistry]', 
+      `Tool ${name} is missing required properties: ${missingProps.join(', ')}`
+    );
+    return false;
+  }
+  
+  // Ensure tool.name matches the registry key
+  if (!tool.name || tool.name !== name) {
+    logger.warn(
+      LogCategory.NODE,
+      '[NodeRegistry]',
+      `Tool name mismatch: registry key is "${name}" but tool.name is "${tool.name || 'undefined'}"`
+    );
+    
+    // Important: Force the name to match the registry key
+    logger.info(
+      LogCategory.NODE,
+      '[NodeRegistry]',
+      `Setting tool.name to "${name}" to match registry key`
+    );
+    tool.name = name;
+  }
+  
+  return true;
 }
 
 /**
@@ -28,15 +74,60 @@ export function initToolRegistry() {
   try {
     logger.debug(LogCategory.NODE, '[NodeRegistry]', 'Initializing tool registry...');
     
-    // Custom tools are registered in registry.ts when it's imported
+    // Get the core tool registry
+    const registry = getToolRegistry();
+
+    // For each tool in allTools, register it with the core registry
+    Object.entries(allTools).forEach(([name, tool]) => {
+      // Validate tool before registration
+      if (!validateTool(name, tool)) {
+        logger.warn(
+          LogCategory.NODE,
+          '[NodeRegistry]',
+          `Skipping registration of invalid tool: ${name}`
+        );
+        return;
+      }
+      
+      // Register the tool with the core registry
+      registry.registerTool(name, tool);
+      
+      // Removed redundant log - summary log is added after the loop
+      /*
+      logger.debug(
+        LogCategory.NODE, 
+        '[NodeRegistry]', 
+        `Registered tool ${name} with core registry`,
+        {
+          toolName: tool.name,
+          hasExecute: typeof tool.execute === 'function'
+        }
+      );
+      */
+    });
     
     // Mark as initialized globally
     global.__toolRegistryInitialized = true;
+    
+    // Verify registration by retrieving tools
+    const registeredTools = registry.getToolsForAgent(Object.keys(allTools));
+    
+    // Log completion
+    logger.info(
+      LogCategory.NODE, 
+      '[NodeRegistry]', 
+      'Tool registry initialization complete', 
+      { 
+        toolCount: Object.keys(allTools).length,
+        registeredCount: Object.keys(registeredTools).length,
+        toolNames: Object.keys(allTools).join(', ')
+      }
+    );
   } catch (error) {
     logger.error(LogCategory.NODE, '[NodeRegistry]', 'Failed to initialize tool registry:', { error });
     throw error;
   }
 }
 
-// Auto-initialization removed to prevent duplicate registrations
-// initToolRegistry();
+// Initialize the tool registry when this module is loaded
+initToolRegistry();

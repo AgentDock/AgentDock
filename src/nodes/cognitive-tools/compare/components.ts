@@ -26,6 +26,10 @@ function formatComparisonContent(text: string): string {
   
   let formatted = text;
   
+  // Fix <br> tags - convert them to actual newlines in markdown
+  // This addresses the issue where <br> tags are shown as text instead of creating line breaks
+  formatted = formatted.replace(/<br>/gi, '  \n');
+  
   // Ensure proper spacing for list items (both numbered and bullet points)
   formatted = formatted.replace(/^(\d+\.\s)/gm, '\n$1');
   formatted = formatted.replace(/^([-*]\s)/gm, '\n$1');
@@ -44,6 +48,9 @@ function formatComparisonContent(text: string): string {
     formatted = formatted.replace(tablePattern, (tableMatch) => {
       // Process each table
       let processedTable = tableMatch;
+      
+      // Fix <br> tags in tables (in case they weren't caught by the earlier replacement)
+      processedTable = processedTable.replace(/<br>/gi, '  \n');
       
       // Ensure proper pipe character formatting (ensure spaces around content)
       processedTable = processedTable.replace(/\|([^|\n\r]+?)\|/g, '| $1 |');

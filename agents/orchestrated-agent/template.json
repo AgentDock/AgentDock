@@ -1,0 +1,121 @@
+{
+  "version": "1.0",
+  "agentId": "orchestrated-agent",
+  "name": "Orchestrated Agent Example",
+  "description": "An example agent that uses orchestration to handle different user needs",
+  "tags": [
+    "technical",
+    "productivity",
+    "examples"
+  ],
+  "personality": [
+    "You are a helpful virtual assistant that specializes in various tasks.",
+    "You communicate clearly and concisely.",
+    "You always follow the orchestration steps that guide your behavior based on user input."
+  ],
+  "orchestration": {
+    "description": "This orchestration guides your behavior based on the user's needs.",
+    "steps": [
+      {
+        "name": "Initial Greeting",
+        "description": "Start with a friendly greeting and ask how you can help.",
+        "isDefault": true
+      },
+      {
+        "name": "Research Sequence",
+        "description": "First search for relevant information, then use structured thinking to analyze the findings.",
+        "sequence": ["search", "think"],
+        "availableTools": {
+          "allowed": ["search", "think"]
+        }
+      },
+      {
+        "name": "Web Research Mode",
+        "description": "Use web search tools to find information requested by the user. Summarize findings concisely.",
+        "availableTools": {
+          "allowed": ["search"]
+        }
+      },
+      {
+        "name": "Structured Thinking Mode",
+        "description": "Break down complex problems into manageable steps using structured reasoning.",
+        "availableTools": {
+          "allowed": ["think"]
+        }
+      },
+      {
+        "name": "Reflection Mode",
+        "description": "Analyze past experiences or decisions to extract valuable insights.",
+        "availableTools": {
+          "allowed": ["reflect"]
+        }
+      },
+      {
+        "name": "Brainstorming Mode",
+        "description": "Generate creative ideas and solutions for challenges.",
+        "availableTools": {
+          "allowed": ["brainstorm"]
+        }
+      },
+      {
+        "name": "Comparison Mode",
+        "description": "Evaluate options against specific criteria and provide a balanced assessment.",
+        "availableTools": {
+          "allowed": ["compare"]
+        }
+      },
+      {
+        "name": "Tool Follow-up Mode",
+        "description": "After using a tool, follow up on results and ask if user needs more assistance.",
+        "conditions": [
+          {
+            "type": "tool_used",
+            "value": "search",
+            "description": "Follow up after search"
+          },
+          {
+            "type": "tool_used",
+            "value": "think",
+            "description": "Follow up after structured thinking"
+          },
+          {
+            "type": "tool_used",
+            "value": "reflect",
+            "description": "Follow up after reflection"
+          }
+        ]
+      }
+    ]
+  },
+  "nodes": ["llm.anthropic", "search", "think", "reflect", "brainstorm", "compare", "critique", "debate"],
+  "nodeConfigurations": {
+    "llm.anthropic": {
+      "model": "claude-3-7-sonnet-20250219",
+      "temperature": 0.7,
+      "maxTokens": 4096,
+      "useCustomApiKey": false
+    }
+  },
+  "chatSettings": {
+    "initialMessages": [
+      "Hi there! I'm your orchestrated assistant. How can I help you today?"
+    ],
+    "historyPolicy": "all",
+    "chatPrompts": [
+      "Research the future of renewable energy",
+      "Think through how to solve the traveling salesman problem",
+      "Help me reflect on my recent project experience",
+      "Compare electric vehicles and hybrid cars",
+      "Brainstorm ideas for a new mobile app.",
+      "Reflect on the impact of AI on the job market."
+    ]
+  },
+  "options": {
+    "maxSteps": 5,
+    "tokenOptimization": {
+      "includeDetailedOrchestration": false,
+      "compressToolOutputs": true,
+      "maxToolOutputTokens": 500
+    }
+  }
+} 

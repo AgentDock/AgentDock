@@ -1,10 +1,15 @@
+"use client";
+
 import React, { Suspense, useEffect, useState } from "react"
 import Markdown from "react-markdown"
 import remarkGfm from "remark-gfm"
+import rehypeSanitize from "rehype-sanitize"
 import type { Components } from "react-markdown"
+import Link from "next/link"
 
 import { cn } from "@/lib/utils"
 import { CopyButton } from "@/components/ui/copy-button"
+import { MermaidDiagram } from "./mermaid-diagram"
 
 interface MarkdownRendererProps {
   children: string
@@ -15,10 +20,12 @@ interface ComponentProps {
   [key: string]: any;
 }
 
+// The original, simple markdown renderer - no special styling
 export function MarkdownRenderer({ children }: MarkdownRendererProps) {
   return (
     <Markdown
       remarkPlugins={[remarkGfm]}
+      rehypePlugins={[rehypeSanitize]}
       components={COMPONENTS as Components}
       className="space-y-3"
     >
@@ -38,64 +45,64 @@ const HighlightedPre = React.memo(
   ({ children, language, ...props }: HighlightedPreProps) => {
     const [tokens, setTokens] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    // No theme state, use fixed dark theme for code blocks
 
     useEffect(() => {
+      let isMounted = true;
+      
       const loadHighlighter = async () => {
         try {
           const { codeToTokens, bundledLanguages } = await import("shiki");
 
-          // For directory structures or plain text, we don't need complex syntax highlighting
+          // Skip complex highlighting for directory structures
           const isDirectoryStructure = children.split('\n').some(line => 
             line.trim().startsWith('├──') || 
             line.trim().startsWith('└──') || 
             line.trim().startsWith('│')
           );
 
-          // If it's a directory structure or the language isn't supported, use plaintext
           if (isDirectoryStructure || !(language in bundledLanguages)) {
-            setTokens([]);
-            setIsLoading(false);
+            if (isMounted) {
+              setTokens([]);
+              setIsLoading(false);
+            }
             return;
           }
 
+          // Always use dark theme for code blocks, no theme detection
           const result = await codeToTokens(children, {
             lang: language as keyof typeof bundledLanguages,
-            defaultColor: false,
-            themes: {
-              light: "github-light",
-              dark: "github-dark",
-            },
+            theme: 'github-dark' // Always dark theme, no switching
           });
 
-          setTokens(result.tokens);
-          setIsLoading(false);
+          if (isMounted) {
+            setTokens(result.tokens);
+            setIsLoading(false);
+          }
         } catch (error) {
           console.error("Error loading syntax highlighter:", error);
-          setTokens([]);
-          setIsLoading(false);
+          if (isMounted) {
+            setTokens([]);
+            setIsLoading(false);
+          }
         }
       };
 
       loadHighlighter();
+      
+      return () => {
+        isMounted = false;
+      };
     }, [children, language]);
 
-    // For directory structures or when highlighting fails, render with preserved whitespace
     if (isLoading || tokens.length === 0) {
-      const isDirectoryStructure = children.split('\n').some(line => 
-        line.trim().startsWith('├──') || 
-        line.trim().startsWith('└──') || 
-        line.trim().startsWith('│')
+      return (
+        <pre {...props}>
+          <code className="whitespace-pre">
+            {children}
+          </code>
+        </pre>
       );
-
-      if (isDirectoryStructure) {
-        return (
-          <pre {...props} className={`${props.className || ''} whitespace-pre font-mono`}>
-            <code className="whitespace-pre">{children}</code>
-          </pre>
-        );
-      }
-      
-      return <pre {...props}><code className="whitespace-pre">{children}</code></pre>;
     }
 
     return (
@@ -104,22 +111,14 @@ const HighlightedPre = React.memo(
           {tokens.map((line, lineIndex) => (
             <React.Fragment key={lineIndex}>
               <span>
-                {line.map((token: any, tokenIndex: number) => {
-                  const style =
-                    typeof token.htmlStyle === "string"
-                      ? undefined
-                      : token.htmlStyle;
-
-                  return (
-                    <span
-                      key={tokenIndex}
-                      className="text-shiki-light bg-shiki-light-bg dark:text-shiki-dark dark:bg-shiki-dark-bg"
-                      style={style}
-                    >
-                      {token.content}
-                    </span>
-                  );
-                })}
+                {line.map((token: any, tokenIndex: number) => (
+                  <span
+                    key={tokenIndex}
+                    style={{ color: token.color }}
+                  >
+                    {token.content}
+                  </span>
+                ))}
               </span>
               {lineIndex !== tokens.length - 1 && "\n"}
             </React.Fragment>
@@ -132,13 +131,13 @@ const HighlightedPre = React.memo(
 
 HighlightedPre.displayName = 'HighlightedPre';
 
-interface CodeBlockProps extends React.HTMLAttributes<HTMLPreElement> {
+export interface CodeBlockProps extends React.HTMLAttributes<HTMLPreElement> {
   children: React.ReactNode
   className?: string
   language: string
 }
 
-const CodeBlock = ({
+export const CodeBlock = ({
   children,
   className,
   language,
@@ -159,7 +158,7 @@ const CodeBlock = ({
   );
 
   const preClass = cn(
-    "overflow-x-scroll rounded-md border bg-muted/50 p-4 font-mono text-sm [scrollbar-width:none]",
+    "overflow-x-scroll rounded-md border bg-muted/80 dark:bg-slate-900 p-4 font-mono text-sm [scrollbar-width:none]",
     className
   )
 
@@ -177,7 +176,7 @@ const CodeBlock = ({
         </HighlightedPre>
       </Suspense>
 
-      <div className="invisible absolute right-2 top-2 opacity-0 transition-all duration-200 group-hover/code:visible group-hover/code:opacity-100">
+      <div className="absolute right-2 top-2 opacity-80 transition-opacity duration-200 group-hover/code:opacity-100">
         <CopyButton content={code} copyMessage="Copied code to clipboard" size="small" />
       </div>
     </div>
@@ -186,7 +185,7 @@ const CodeBlock = ({
 
 CodeBlock.displayName = 'CodeBlock';
 
-function childrenTakeAllStringContents(element: any): string {
+export function childrenTakeAllStringContents(element: any): string {
   if (typeof element === "string") {
     return element
   }
@@ -206,6 +205,22 @@ function childrenTakeAllStringContents(element: any): string {
   return ""
 }
 
+// Helper function to format link text
+function formatLinkText(text: string): string {
+  // Remove .md extension if present
+  let formattedText = text.replace(/\.md$/, '');
+  
+  // Handle kebab-case: replace hyphens with spaces and capitalize each word
+  if (formattedText.includes('-')) {
+    formattedText = formattedText
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
+  
+  return formattedText;
+}
+
 const COMPONENTS = {
   h1: withClass("h1", "text-2xl font-semibold"),
   h2: withClass("h2", "font-semibold text-xl"),
@@ -213,17 +228,72 @@ const COMPONENTS = {
   h4: withClass("h4", "font-semibold text-base"),
   h5: withClass("h5", "font-medium"),
   strong: withClass("strong", "font-semibold"),
-  a: withClass("a", "text-primary underline underline-offset-2"),
-  blockquote: withClass("blockquote", "border-l-2 border-primary pl-4"),
-  code: ({ children, className, node, ...rest }: any) => {
-    const match = /language-(\w+)/.exec(className || "")
+  // Use actual BR element with improved styling
+  br: () => <br style={{ marginBottom: '0.75rem' }} />,
+  a: ({ node, href, children, ...props }: ComponentProps) => {
+    const messageClasses = "text-blue-600 dark:text-blue-400 font-medium underline underline-offset-2 break-all hover:text-blue-800 dark:hover:text-blue-300 [.bg-primary_&]:text-blue-100 [.bg-primary_&]:hover:text-white [.bg-primary_&]:font-semibold [.bg-muted_&]:text-blue-600";
+    
+    // Format link text for .md files
+    let linkContent = children;
+    let processedHref = href;
+    
+    if (typeof href === 'string') {
+      // Handle README.md links - remove README.md and just use directory path
+      if (href.toLowerCase().endsWith('/readme.md')) {
+        processedHref = href.replace(/\/readme\.md$/i, '');
+      }
+      
+      // Handle other .md links by removing the extension
+      else if (href.endsWith('.md')) {
+        processedHref = href.replace(/\.md$/, '');
+      }
+    }
+    
+    if (typeof children === 'string' && href?.endsWith('.md')) {
+      linkContent = formatLinkText(children as string);
+    }
+    
+    // Check if this is an internal link (starts with /)
+    const isInternalLink = typeof processedHref === 'string' && processedHref.startsWith('/');
+    
+    if (isInternalLink) {
+      return (
+        <Link href={processedHref} className={messageClasses} {...props}>
+          {linkContent}
+        </Link>
+      );
+    }
+    
+    return (
+      <a href={processedHref} className={messageClasses} {...props}>
+        {linkContent}
+      </a>
+    );
+  },
+  pre: ({ children }: any) => children,
+  code: ({ node, className, children, ...props }: ComponentProps) => {
+    const match = /language-(\w+)/.exec(className || '')
+    const language = match ? match[1] : ''
     
     // Check if this is a code block (inside a pre) or an inline code element
     const isCodeBlock = node?.position?.start?.line !== node?.position?.end?.line || 
-                        (node?.parent?.type === 'element' && node?.parent?.tagName === 'pre');
+                      (node?.parent?.type === 'element' && node?.parent?.tagName === 'pre');
     
-    return match || isCodeBlock ? (
-      <CodeBlock className={className} language={match ? match[1] : ""} {...rest}>
+    // If it's a mermaid diagram, use the MermaidDiagram component
+    if (language === 'mermaid') {
+      let content = '';
+      if (typeof children === 'string') {
+        content = children;
+      } else {
+        content = childrenTakeAllStringContents(children);
+      }
+      // Return the MermaidDiagram directly without the wrapper div that was causing issues
+      return <MermaidDiagram content={content} />;
+    }
+    
+    // For code blocks vs inline code
+    return isCodeBlock ? (
+      <CodeBlock className={className} language={language} {...props}>
         {children}
       </CodeBlock>
     ) : (
@@ -231,45 +301,36 @@ const COMPONENTS = {
         className={cn(
           "font-mono [:not(pre)>&]:rounded-md [:not(pre)>&]:bg-background/50 [:not(pre)>&]:px-1 [:not(pre)>&]:py-0.5"
         )}
-        {...rest}
+        {...props}
       >
         {children}
       </code>
     )
   },
-  pre: ({ children }: any) => children,
-  ol: withClass("ol", "list-decimal space-y-2 pl-6"),
-  ul: withClass("ul", "list-disc space-y-2 pl-6"),
-  li: withClass("li", "my-1.5"),
-  table: withClass(
-    "table",
-    "w-full border-collapse overflow-y-auto rounded-md border border-foreground/20"
-  ),
-  th: withClass(
-    "th",
-    "border border-foreground/20 px-4 py-2 text-left font-bold [&[align=center]]:text-center [&[align=right]]:text-right"
-  ),
-  td: withClass(
-    "td",
-    "border border-foreground/20 px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right"
-  ),
-  tr: withClass("tr", "m-0 border-t p-0 even:bg-muted"),
-  p: ({ node, children, ...props }: ComponentProps) => {
-    // Check if this paragraph contains a code block or is part of a code block
-    const containsCodeBlock = React.Children.toArray(children).some(
-      (child) => 
-        React.isValidElement(child) && 
-        (child.type === CodeBlock || 
-         (typeof child.type === 'string' && child.type === 'code'))
-    );
-    
-    // If it contains a code block, don't apply whitespace-pre-wrap
-    const className = containsCodeBlock ? "" : "whitespace-pre-wrap";
-    
+  ol: ({ children, ...props }: ComponentProps) => {
     return (
-      <p className={className} {...props}>
+      <ol className="list-decimal pl-6 marker:text-neutral-700" {...props}>
         {children}
-      </p>
+      </ol>
+    );
+  },
+  ul: ({ children, ...props }: ComponentProps) => {
+    return (
+      <ul className="list-disc pl-6 marker:text-neutral-700" {...props}>
+        {children}
+      </ul>
+    );
+  },
+  li: ({ children, ...props }: ComponentProps) => {
+    return (
+      <li className="my-1" {...props}>
+        {children}
+      </li>
+    );
+  },
+  p: ({ children, ...props }: ComponentProps) => {
+    return (
+      <p {...props}>{children}</p>
     );
   },
   hr: withClass("hr", "border-foreground/20"),

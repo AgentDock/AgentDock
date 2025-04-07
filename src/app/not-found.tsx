@@ -1,3 +1,5 @@
+"use client";
+
 import Link from 'next/link';
 
 export default function NotFound() {
@@ -6,10 +8,10 @@ export default function NotFound() {
       <h2 className="text-2xl font-bold">Page Not Found</h2>
       <p className="text-muted-foreground">Could not find the requested page</p>
       <Link 
-        href="/"
+        href="/agents"
         className="text-primary hover:underline"
       >
-        Return Home
+        Return to Agents
       </Link>
     </div>
   );

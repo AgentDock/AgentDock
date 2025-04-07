@@ -4,61 +4,155 @@
 
 import { CoreMessage } from 'ai';
 import { LLMMessage } from '../llm/types';
+import { Message, MessageContent, formatContentForDisplay } from '../types/messages';
+
+// Type for extended properties we need to handle
+type ExtendedMessageProps = {
+  id?: string;
+  createdAt?: number | Date;
+  experimental_attachments?: unknown[];
+};
+
+// Type for content parts with text
+interface TextPart {
+  type: 'text';
+  text: string;
+}
 
 /**
- * Convert CoreMessage to LLMMessage
- * This is needed because CoreMessage can contain complex content like images,
- * but LLMMessage expects string content.
+ * Convert Message to LLMMessage for sending to LLM providers
+ * This preserves all properties while formatting content appropriately
  */
-export function convertCoreToLLMMessage(message: CoreMessage): LLMMessage {
-  // Handle user messages with complex content
-  if (message.role === 'user') {
-    // Check if message has experimental_attachments
-    if ((message as any).experimental_attachments) {
-      // Keep the attachments in the message
-      return {
-        role: message.role,
-        content: typeof message.content === 'string' ? message.content : '',
-        id: (message as any).id,
-        createdAt: (message as any).createdAt,
-        experimental_attachments: (message as any).experimental_attachments
-      };
-    }
-    
-    if (typeof message.content !== 'string') {
-      // Extract text content from user message parts
-      const textContent = Array.isArray(message.content) 
-        ? message.content
-            .filter(part => typeof part === 'object' && 'type' in part && part.type === 'text')
-            .map(part => (part as any).text || '')
-            .join(' ')
-        : '';
-      
-      return {
-        role: message.role,
-        content: textContent,
-        id: (message as any).id,
-        createdAt: (message as any).createdAt
-      };
-    }
+export function convertCoreToLLMMessage(message: Message): LLMMessage {
+  // Preserve all additional properties by default
+  const baseProps = {
+    id: message.id,
+    createdAt: message.createdAt instanceof Date ? 
+               message.createdAt.getTime() : 
+               typeof message.createdAt === 'number' ? message.createdAt : undefined
+  };
+  
+  // Special handling for tool messages
+  if (message.role === 'data' || message.isToolMessage === true) {
+    return {
+      ...baseProps,
+      role: 'assistant', // Convert to assistant for LLM compatibility
+      content: message.content
+    };
   }
   
-  // For tool messages, convert to assistant role (LLMMessage doesn't support tool role)
-  const role = message.role === 'tool' ? 'assistant' : message.role;
+  // Handle message with contentParts (our structured content) 
+  if (message.contentParts?.length) {
+    const textContent = message.contentParts
+      .map(part => formatContentForDisplay(part))
+      .join('\n');
+    
+    return {
+      ...baseProps,
+      role: message.role,
+      content: textContent || message.content // Fall back to string content if needed
+    };
+  }
   
-  // Handle assistant and system messages (which should already have string content)
+  // Standard case - just pass through the content
   return {
-    role: role as 'user' | 'assistant' | 'system',
-    content: message.content as string,
-    // id and createdAt are optional in LLMMessage
-    id: (message as any).id,
-    createdAt: (message as any).createdAt ? new Date((message as any).createdAt).getTime() : undefined
+    ...baseProps,
+    role: message.role,
+    content: message.content,
+    experimental_attachments: (message as any).experimental_attachments
   };
 }
 
 /**
- * Convert an array of CoreMessages to LLMMessages
+ * Convert an array of Messages to LLMMessages
  */
-export function convertCoreToLLMMessages(messages: CoreMessage[]): LLMMessage[] {
+export function convertCoreToLLMMessages(messages: Message[]): LLMMessage[] {
   return messages.map(convertCoreToLLMMessage);
+}
+
+/**
+ * Apply history policy to messages based on settings
+ * This trims the conversation history according to the specified policy
+ * 
+ * @param messages Array of messages to apply policy to
+ * @param options Configuration options for history policy
+ * @returns Filtered message array based on policy
+ */
+export function applyHistoryPolicy(
+  messages: Message[], 
+  options: { 
+    historyPolicy?: 'none' | 'lastN' | 'all',
+    historyLength?: number,
+    preserveSystemMessages?: boolean
+  }
+): Message[] {
+  const { 
+    historyPolicy = 'lastN', 
+    historyLength = 50, // Default remains high if not specified
+    preserveSystemMessages = true
+  } = options;
+  
+  if (!messages || !Array.isArray(messages) || messages.length === 0) {
+    return [];
+  }
+  
+  // Extract system messages if needed
+  const systemMessages = preserveSystemMessages 
+    ? messages.filter(msg => msg.role === 'system')
+    : [];
+  
+  // Handle the simple cases first
+  if (historyPolicy === 'none') {
+    // Return only system messages (or empty if preserveSystemMessages is false)
+    return systemMessages;
+  }
+  
+  if (historyPolicy === 'all') {
+    // Return all original messages
+    return messages;
+  }
+  
+  // For lastN policy, apply the corrected logic
+  if (historyPolicy === 'lastN') {
+    // Handle edge case: historyLength <= 0 should behave like historyLength = 1
+    // to prevent errors from sending only system messages.
+    const effectiveHistoryLength = Math.max(1, historyLength);
+    
+    // Get non-system messages for easier pair identification
+    const conversationMessages = messages.filter(msg => msg.role !== 'system');
+    
+    // If there are no conversation messages, just return system messages
+    if (conversationMessages.length === 0) {
+        return systemMessages;
+    }
+    
+    // Find the indices of the user messages within the conversationMessages array
+    const userMessageIndicesInConversation: number[] = [];
+    conversationMessages.forEach((msg, index) => {
+      if (msg.role === 'user') {
+        userMessageIndicesInConversation.push(index);
+      }
+    });
+    
+    // Determine the starting index in conversationMessages for the slice
+    // based on the *effective* history length.
+    let startIndex = 0;
+    if (userMessageIndicesInConversation.length > effectiveHistoryLength) {
+      // Get the index of the Nth-to-last user message (using effective length)
+      const firstUserIndexToKeep = userMessageIndicesInConversation[userMessageIndicesInConversation.length - effectiveHistoryLength];
+      startIndex = firstUserIndexToKeep;
+    }
+    
+    // Slice the conversationMessages to get the relevant part
+    const relevantConversation = conversationMessages.slice(startIndex);
+    
+    // Combine system messages with the relevant conversation part
+    const resultMessages: Message[] = [...systemMessages, ...relevantConversation];
+    
+    return resultMessages;
+  }
+  
+  // Default fallback: return all original messages if policy is unrecognized
+  console.warn(`[applyHistoryPolicy] Unrecognized historyPolicy: ${historyPolicy}. Returning all messages.`);
+  return messages;
 } 

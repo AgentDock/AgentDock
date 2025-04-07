@@ -13,6 +13,8 @@
 export * from './types/agent-config';  // Agent configuration
 export * from './types/messages';      // Message types
 export * from './types/node-category';
+export * from './types/orchestration'; // Orchestration system
+export * from './types/session';       // Session management
 export type {
   ToolState,
   BaseToolInvocation,
@@ -43,6 +45,10 @@ export * from './nodes';
  */
 export * from './errors';
 
+// LLM error utilities are imported directly to avoid circular dependencies
+import { parseProviderError, normalizeError } from './errors/llm-errors';
+export { parseProviderError, normalizeError };
+
 //=============================================================================
 // Configuration
 //=============================================================================
@@ -60,6 +66,7 @@ export { loadAgentConfig } from './config/agent-config';
  * Storage system for persisting data
  */
 export * from './storage';
+export { RedisStorageProvider } from './storage/providers/redis-provider';
 
 //=============================================================================
 // Logging
@@ -81,6 +88,44 @@ export * from './logging';
 export * from './llm';
 
 //=============================================================================
+// Session management
+//=============================================================================
+
+/**
+ * Session management system
+ * For managing isolated state across concurrent users
+ */
+export * from './session';
+
+//=============================================================================
+// Orchestration system
+//=============================================================================
+
+/**
+ * Orchestration system
+ * For controlling agent behavior in a step-based workflow
+ */
+import { 
+  OrchestrationManager,
+  createOrchestrationManager,
+  OrchestrationStateManager,
+  StepSequencer
+} from './orchestration/index';
+
+// Export all orchestration components explicitly
+export {
+  // From orchestration/index.ts
+  OrchestrationManager,
+  createOrchestrationManager,
+  
+  OrchestrationStateManager,
+  StepSequencer
+};
+
+// Re-export the orchestration types
+// export * from './orchestration/index'; // This might be redundant or cause issues if index also exports types
+
+//=============================================================================
 // Provider-specific imports for re-export
 //=============================================================================
 
@@ -89,6 +134,29 @@ export * from './llm';
  */
 import { GoogleGenerativeAI } from '@google/generative-ai';
 export { GoogleGenerativeAI };
+
+//=============================================================================
+// Utility functions
+//=============================================================================
+
+/**
+ * Message utility functions
+ * For converting, processing, and managing messages
+ */
+export { 
+  convertCoreToLLMMessage,
+  convertCoreToLLMMessages,
+  applyHistoryPolicy
+} from './utils/message-utils';
+
+/**
+ * Prompt utility functions
+ * For generating system prompts from agent configs
+ */
+export {
+  createSystemPrompt,
+  addOrchestrationToPrompt
+} from './utils/prompt-utils';
 
 //=============================================================================
 // Client components (Re-exported from AI SDK)
@@ -101,13 +169,11 @@ export { GoogleGenerativeAI };
 import type {
   UseChatOptions,
   UseChatHelpers,
-  Message as AISdkMessage,
   CreateMessage
 } from 'ai/react';
 
 // Re-export AI SDK base types
 export type { 
-  AISdkMessage, // Re-export as AISdkMessage to avoid naming conflicts
   UseChatOptions,
   UseChatHelpers,
   CreateMessage

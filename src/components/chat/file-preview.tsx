@@ -75,6 +75,7 @@ const BaseFilePreview = React.forwardRef<
       initial={{ opacity: 0, y: "100%" }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: "100%" }}
+      aria-label={`${getFileTypeName(file)} attachment: ${file.name}`}
     >
       <div className="flex w-full items-center space-x-2">
         {children}
@@ -86,12 +87,12 @@ const BaseFilePreview = React.forwardRef<
 
       {onRemove ? (
         <button
-          className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full border bg-background hover:bg-destructive hover:text-destructive-foreground"
+          className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full border bg-background text-muted-foreground hover:bg-destructive hover:text-destructive-foreground focus:outline-none focus:ring-2 focus:ring-offset-1"
           type="button"
           onClick={onRemove}
-          aria-label="Remove attachment"
+          aria-label={`Remove ${file.name} attachment`}
         >
-          <X className="h-2.5 w-2.5" />
+          <X className="h-3 w-3" />
         </button>
       ) : null}
     </motion.div>
@@ -99,13 +100,22 @@ const BaseFilePreview = React.forwardRef<
 })
 BaseFilePreview.displayName = "BaseFilePreview"
 
+// Function to get human-readable file type name
+function getFileTypeName(file: File): string {
+  if (isImage(file)) return "Image";
+  if (isPDF(file)) return "PDF";
+  if (isText(file)) return "Text";
+  if (isCode(file)) return "Code";
+  return "File";
+}
+
 const ImageFilePreview = React.forwardRef<HTMLDivElement, FilePreviewProps>(
   (props, ref) => {
     return (
       <BaseFilePreview {...props} ref={ref}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          alt={`Attachment ${props.file.name}`}
+          alt={`Attachment preview: ${props.file.name}`}
           className="grid h-10 w-10 shrink-0 place-items-center rounded-sm border bg-muted object-cover"
           src={URL.createObjectURL(props.file)}
         />

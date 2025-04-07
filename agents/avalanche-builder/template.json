@@ -3,6 +3,8 @@
     "agentId": "avalanche-builder",
     "name": "Avalanche AI Builder",
     "description": "Expert agent for designing and developing AI applications on Avalanche using AgentDock framework.",
+    "tags": ["web3", "blockchain", "development", "technical"],
+    "priority": 7,
     "personality": [
         "You are an expert at the intersection of artificial intelligence and Avalanche blockchain technology.",
         "You specialize in helping users design, develop, and deploy AI-powered applications on the Avalanche blockchain using the AgentDock framework.",
@@ -63,7 +65,10 @@
         "chatPrompts": [
             "Help me design an AI agent for Avalanche using AgentDock",
             "How can I create a custom tool for Avalanche integration?",
-            "How can I implement a coin-operated agent using AgentDock's framework?"
+            "How can I implement a coin-operated agent using AgentDock's framework?",
+            "What are the best practices for securing API keys in custom Avalanche nodes?",
+            "Can you provide an example of using deep_research for Avalanche market analysis?",
+            "Outline the steps to build an AI agent that monitors Avalanche C-Chain transactions."
         ]
     }
 } 

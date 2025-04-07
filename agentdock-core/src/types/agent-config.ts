@@ -5,6 +5,7 @@
  */
 
 import { z } from 'zod';
+import { OrchestrationConfig, OrchestrationSchema } from './orchestration';
 
 /**
  * Personality schema with validation and transformation
@@ -73,6 +74,9 @@ export interface AgentConfig {
     chatPrompts?: string[];
   };
   
+  /** Agent orchestration configuration for structured tool usage */
+  orchestration?: OrchestrationConfig;
+  
   /** Maximum concurrent node executions */
   maxConcurrency?: number;
   
@@ -97,6 +101,7 @@ export const AgentConfigSchema = z.object({
     historyLength: z.number().optional(),
     chatPrompts: z.array(z.string()).optional(),
   }),
+  orchestration: OrchestrationSchema.optional(),
   maxConcurrency: z.number().optional(),
   options: z.record(z.unknown()).optional()
 });

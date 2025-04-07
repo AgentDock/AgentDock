@@ -29,8 +29,12 @@ export interface LLMConfig extends Record<string, unknown> {
   temperature?: number;
   maxTokens?: number;
   topP?: number;
+  topK?: number;
   frequencyPenalty?: number;
   presencePenalty?: number;
+  maxRetries?: number;
+  repeatPenalty?: number;
+  stopSequences?: string[];
 }
 
 /**

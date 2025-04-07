@@ -4,6 +4,7 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 import { Brain, Sparkles, RefreshCcw, Zap, Lightbulb, Scale } from "lucide-react"
 import { logger, LogCategory } from "agentdock-core"
+import { heartbeatGradientProps, useElapsedTime } from "@/lib/heartbeat"
 
 // Base styles for cognitive tool loading indicators
 const chatBubbleVariants = "group/message relative break-words rounded-lg p-3 text-sm sm:max-w-[70%] bg-muted text-foreground";
@@ -56,6 +57,9 @@ export const CognitiveToolLoadingIndicator = React.memo(({
   animationClass: string;
   toolId: string;
 }) => {
+  // Use shared elapsed time hook
+  const [formattedTime] = useElapsedTime();
+  
   React.useEffect(() => {
     logToolVisibility(toolName, toolId, "LOADING STATE RENDERED");
     return () => {
@@ -67,12 +71,23 @@ export const CognitiveToolLoadingIndicator = React.memo(({
   const IconComponent = iconMap[iconName] || Brain;
   
   return (
-    <div className={cn(chatBubbleVariants, "transition-all")}>
-      <div className="flex flex-col gap-3">
+    <div className={cn(chatBubbleVariants, "transition-all relative overflow-hidden")}>
+      {/* Heartbeat gradient animation */}
+      <div className={heartbeatGradientProps.className} style={heartbeatGradientProps.style} />
+      
+      {/* Timer display */}
+      <div className="absolute top-2 right-3 text-xs font-mono bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+        {formattedTime}
+      </div>
+      
+      <div className="flex flex-col gap-3 relative z-10">
         <div className="flex items-center gap-2 text-foreground">
           <IconComponent className="h-5 w-5 text-primary animate-pulse" aria-hidden="true" />
           <div className="font-medium">
-            <span className={`inline-block animate-${animationClass}`}>{loadingText}</span>
+            <span className={`inline-block animate-${animationClass}`}>
+              {loadingText.replace('...', '')}
+              <span className="dots-loader inline-block w-[20px]"></span>
+            </span>
           </div>
         </div>
         

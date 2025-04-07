@@ -1,24 +1,24 @@
 /**
  * @fileoverview Core message type definitions for AgentDock
  * 
- * These types are aligned with AI SDK 4.2.0's message architecture while
- * maintaining our enhanced content structure.
+ * This module defines a unified message type that extends the Vercel AI SDK
+ * message type while adding our rendering properties. This eliminates the need
+ * for conversion functions that could cause property loss.
  */
 
 // Import AI SDK types for proper alignment
 import type { Message as AIMessage } from 'ai';
 
-// Core message roles - aligned with AI SDK but with our 'tool' role
-export const MessageRole = Object.freeze({
+// Re-export AI SDK message roles for consistent usage
+export const MessageRole = {
   USER: 'user',
   ASSISTANT: 'assistant',
   SYSTEM: 'system',
-  TOOL: 'tool',  // Maps to 'data' in AI SDK
-  DATA: 'data'   // Added for direct AI SDK compatibility
-} as const);
+  DATA: 'data',
+} as const;
 
-// Type derived from the const object
-export type MessageRole = typeof MessageRole[keyof typeof MessageRole];
+// The role type must match AI SDK exactly for type compatibility
+export type MessageRole = 'user' | 'assistant' | 'system' | 'data';
 
 // Message content types - these map to AI SDK 4.2.0 part types
 export interface TextContent {
@@ -48,100 +48,59 @@ export interface ToolResultContent {
 // Union type for all content types
 export type MessageContent = TextContent | ImageContent | ToolCallContent | ToolResultContent;
 
-// Base message interface
-export interface BaseMessage {
-  id: string;
+// Additional rendering properties that extend the AI SDK message
+export interface MessageRenderingProps {
+  // UI-specific properties for rendering
+  isStreaming?: boolean;
+  isLoading?: boolean;
+  isError?: boolean;
+  isTyping?: boolean;
+  isPending?: boolean;
+  isComplete?: boolean;
+  showToolCall?: boolean;
+  // Custom content storage - preserves multipart content when sending to AI SDK
+  contentParts?: MessageContent[];
+  // For marking tool messages internally (since we'll store as 'data' in AI SDK)
+  isToolMessage?: boolean;
+}
+
+/**
+ * Unified Message type that extends AI SDK Message while adding our rendering properties
+ * This eliminates the need for conversion between different message types
+ */
+export interface Message extends Omit<AIMessage, 'role'> {
+  // We need to redefine role here to match our extended MessageRole
   role: MessageRole;
-  content: string | MessageContent[];
-  createdAt?: Date;
-  // Support for AI SDK 4.2.0 parts array
-  parts?: MessageContent[];
+  // Additional properties from our rendering needs
+  isStreaming?: boolean;
+  isLoading?: boolean;
+  isError?: boolean;
+  isTyping?: boolean;
+  isPending?: boolean; 
+  isComplete?: boolean;
+  showToolCall?: boolean;
+  contentParts?: MessageContent[];
+  isToolMessage?: boolean;
+  // Tool-specific properties
+  toolCallId?: string;
+  toolName?: string;
 }
 
-// Specific message types
-export interface UserMessage extends BaseMessage {
-  role: 'user';
-  content: string | (TextContent | ImageContent)[];
-}
+// Specific message type guards that check role property
+export const isUserMessage = (message: Message): boolean => 
+  message.role === 'user';
 
-export interface AssistantMessage extends BaseMessage {
-  role: 'assistant';
-  content: string | (TextContent | ToolCallContent)[];
-}
+export const isAssistantMessage = (message: Message): boolean => 
+  message.role === 'assistant';
 
-export interface SystemMessage extends BaseMessage {
-  role: 'system';
-  content: string;
-}
+export const isSystemMessage = (message: Message): boolean => 
+  message.role === 'system';
 
-export interface ToolMessage extends BaseMessage {
-  role: 'tool' | 'data'; // Support both our role and AI SDK's role
-  content: ToolResultContent[];
-  toolCallId: string;
-  toolName: string;
-}
+export const isToolMessage = (message: Message): boolean => 
+  message.role === 'data' && message.isToolMessage === true;
 
-// Union type for all message types
-export type Message = UserMessage | AssistantMessage | SystemMessage | ToolMessage;
-
-// AI SDK compatibility - define explicit map functions
-export function toAIMessage(message: Message): AIMessage {
-  // Convert content to string as required by AI SDK
-  const content = isMultipartContent(message.content)
-    ? message.content.map(formatContent).join('\n')
-    : message.content;
-
-  // Map our roles to AI SDK roles
-  const aiRole = message.role === 'tool' ? 'data' : message.role;
-
-  return {
-    id: message.id,
-    createdAt: message.createdAt,
-    role: aiRole as AIMessage['role'],
-    content: String(content)
-  };
-}
-
-export function fromAIMessage(aiMessage: AIMessage): Message {
-  const base = {
-    id: aiMessage.id,
-    createdAt: aiMessage.createdAt,
-    content: aiMessage.content
-  };
-
-  // Convert AI SDK message to our format
-  switch(aiMessage.role) {
-    case 'system':
-      return { ...base, role: 'system' } as SystemMessage;
-    
-    case 'user':
-      return { ...base, role: 'user' } as UserMessage;
-    
-    case 'assistant':
-      return { ...base, role: 'assistant' } as AssistantMessage;
-    
-    case 'data':
-      const toolResult: ToolResultContent = {
-        type: 'tool_result',
-        toolCallId: aiMessage.id,
-        result: aiMessage.content
-      };
-      
-      return {
-        ...base,
-        role: 'tool',
-        content: [toolResult] as ToolResultContent[],
-        toolCallId: toolResult.toolCallId,
-        toolName: 'data'
-      } as ToolMessage;
-      
-    default:
-      return { ...base, role: 'assistant' } as AssistantMessage;
-  }
-}
-
-// Format a message content part to string
-function formatContent(content: MessageContent): string {
+// Content utility function
+export function formatContentForDisplay(content: MessageContent): string {
   switch (content.type) {
     case 'text':
       return content.text;
@@ -156,18 +115,55 @@ function formatContent(content: MessageContent): string {
   }
 }
 
-// Type guards
-export const isUserMessage = (message: Message): message is UserMessage => 
-  message.role === 'user';
+/**
+ * Create a standard message
+ */
+export function createMessage(params: Partial<Message> & Pick<Message, 'content'> & {
+  role: MessageRole;
+}): Message {
+  return {
+    id: params.id || crypto.randomUUID(),
+    createdAt: params.createdAt || new Date(),
+    ...params
+  };
+}
 
-export const isAssistantMessage = (message: Message): message is AssistantMessage => 
-  message.role === 'assistant';
+/**
+ * Create a tool message (represented as 'data' role for AI SDK compatibility)
+ */
+export function createToolMessage(params: Partial<Message> & Pick<Message, 'content'> & {
+  toolCallId: string;
+  toolName: string;
+}): Message {
+  return {
+    id: params.id || crypto.randomUUID(),
+    createdAt: params.createdAt || new Date(),
+    role: 'data',
+    isToolMessage: true,
+    ...params
+  };
+}
 
-export const isSystemMessage = (message: Message): message is SystemMessage => 
-  message.role === 'system';
+// AI SDK compatibility - define explicit map functions
+export function toAIMessage(message: Message): AIMessage {
+  // Convert content to string if needed
+  const content = typeof message.content === 'string' 
+    ? message.content 
+    : JSON.stringify(message.content);
 
-export const isToolMessage = (message: Message): message is ToolMessage => 
-  message.role === 'tool' || message.role === 'data';
+  return {
+    id: message.id,
+    createdAt: message.createdAt,
+    role: message.role as AIMessage['role'],
+    content
+  };
+}
 
-export const isMultipartContent = (content: string | MessageContent[]): content is MessageContent[] => 
-  Array.isArray(content); 
+export function fromAIMessage(aiMessage: AIMessage): Message {
+  return {
+    id: aiMessage.id,
+    createdAt: aiMessage.createdAt,
+    role: aiMessage.role as MessageRole,
+    content: aiMessage.content
+  };
+} 

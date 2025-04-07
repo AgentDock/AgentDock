@@ -78,15 +78,15 @@ export function createGeminiModel(config: LLMConfig): LanguageModel {
       LogCategory.LLM,
       'createGeminiModel',
       'Enabling search grounding for Gemini model',
-      { model: config.model }
+      { model: config.model, useSearchGrounding: geminiConfig.useSearchGrounding }
     );
     modelOptions.useSearchGrounding = true;
   } else {
     logger.debug(
       LogCategory.LLM,
       'createGeminiModel',
-      'Search grounding disabled for Gemini model',
-      { model: config.model, useSearchGrounding: geminiConfig.useSearchGrounding }
+      `Search grounding explicitly set to: ${geminiConfig.useSearchGrounding} for Gemini model`,
+      { model: config.model, useSearchGrounding: geminiConfig.useSearchGrounding ?? 'Not Set (defaulting to SDK behavior)' }
     );
   }
   

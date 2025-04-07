@@ -4,10 +4,14 @@ import { useState, useEffect, useCallback, memo } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
-import { logger, LogCategory, ModelMetadata, SecureStorage } from 'agentdock-core'
+import { logger, LogCategory, ModelMetadata } from 'agentdock-core'
 import { ModelService } from '@/lib/services/model-service'
 import { RefreshCw, Database } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import Image from "next/image"
+import { Input } from "@/components/ui/input"
+import { Switch } from "@/components/ui/switch"
+import { SecureStorage } from 'agentdock-core/storage/secure-storage'
 
 // Create a single instance for settings
 const storage = SecureStorage.getInstance('agentdock');

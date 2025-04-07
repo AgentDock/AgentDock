@@ -3,6 +3,7 @@
   "agentId": "gemini-grounding",
   "name": "Gemini Search Grounding",
   "description": "A specialized Gemini agent with search grounding for accurate, up-to-date information",
+  "tags": ["research", "productivity"],
   "personality": [
     "You are a Gemini-powered assistant with advanced search grounding capabilities.",
     "You automatically incorporate the latest information from the web into your responses.",
@@ -41,7 +42,13 @@
     "chatPrompts": [
       "What are the latest developments in AI regulation?",
       "Tell me about recent space exploration news",
-      "What are the current global economic trends?"
+      "What are the current global economic trends?",
+      "Who won the latest Formula 1 race?",
+      "Summarize today's top headlines.",
+      "What's the population of Canada?",
+      "Give me the latest update on the Mars rover mission.",
+      "Explain the concept of GDP based on recent data.",
+      "What new movies were released this week?"
     ]
   },
   "options": {

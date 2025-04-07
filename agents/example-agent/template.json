@@ -35,7 +35,10 @@
     "chatPrompts": [
       "What can you help me with?",
       "Can you show me how to use your tools?",
-      "What makes you different from other agents?"
+      "What makes you different from other agents?",
+      "Search for recent news about climate change.",
+      "What's the weather like in London?",
+      "Use deep_research to analyze the impact of social media."
     ]
   },
   "options": {

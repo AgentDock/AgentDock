@@ -11,8 +11,7 @@ export const TypingIndicator = React.memo(() => {
   return (
     <div 
       className={cn(
-        "group/message relative break-words rounded-2xl p-4 text-sm sm:max-w-[70%]",
-        "bg-muted text-foreground"
+        "inline-flex items-center rounded-3xl p-4 bg-muted text-foreground max-w-fit"
       )}
       role="status"
       aria-label="Assistant is typing"
@@ -21,7 +20,7 @@ export const TypingIndicator = React.memo(() => {
         <div className="h-1.5 w-1.5 rounded-full bg-current opacity-80 animate-typing-1"></div>
         <div className="h-1.5 w-1.5 rounded-full bg-current opacity-80 animate-typing-2"></div>
         <div className="h-1.5 w-1.5 rounded-full bg-current opacity-80 animate-typing-3"></div>
-        <span className="sr-only">Assistant is typing...</span>
+        <span className="sr-only">Agent is typing...</span>
       </div>
     </div>
   )

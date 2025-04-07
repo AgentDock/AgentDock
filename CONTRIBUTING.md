@@ -1,5 +1,7 @@
 # Contributing to AgentDock
 
+Thank you for your interest in contributing to AgentDock! This document provides guidelines for contributions to help maintain code quality and project consistency.
+
 ## Development Setup
 
 1. **Requirements**
@@ -58,4 +60,54 @@ Before submitting a PR:
 
 The pre-push hook will run these automatically, but it's good practice to check them manually during development.
 
-[Rest of the existing CONTRIBUTING.md content...] 
+## Documentation Guidelines
+
+When adding or modifying features, please follow these documentation guidelines:
+
+1. **Code Documentation**
+   - Document all public APIs with JSDoc/TSDoc comments
+   - Include examples where appropriate
+   - Explain complex algorithms or non-obvious design decisions
+
+2. **README Updates**
+   - Update the relevant README.md files when adding new features
+   - Ensure examples and usage instructions are current
+
+3. **Feature Documentation**
+   - For significant features, add documentation to the `/docs/` folder
+   - Follow the established format of existing documentation
+   - Include usage examples, configuration options, and edge cases
+
+## Pull Request Process
+
+1. **Fork the Repository**
+   - Create a fork of the repository to make your changes
+
+2. **Create a Branch**
+   - Create a branch with a descriptive name (e.g., `feature/add-vector-support`)
+
+3. **Make Your Changes**
+   - Follow the coding standards and documentation guidelines
+   - Ensure all tests pass and add new tests for your changes
+
+4. **Submit a Pull Request**
+   - Provide a clear description of your changes
+   - Reference any related issues
+   - Complete the PR template with all required information
+
+5. **Code Review**
+   - Be responsive to feedback and make requested changes
+   - Ensure CI checks pass before requesting review
+
+## Code of Conduct
+
+Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before contributing to ensure a positive and inclusive community experience.
+
+## Questions or Help?
+
+If you have questions or need help with the contribution process, please reach out through:
+- GitHub Issues
+- Community Discord
+- Email at [oguz@agentdock.ai](mailto:oguz@agentdock.ai)
+
+Thank you for contributing to AgentDock!

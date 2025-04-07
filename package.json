@@ -110,7 +110,7 @@
     "@types/react": "19.0.10",
     "@types/react-dom": "19.0.4",
     "@types/react-dropzone": "^5.1.0",
-    "@types/semver": "^7.5.8",
+    "@types/semver": "^7.7.0",
     "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^8.24.1",
     "@typescript-eslint/parser": "^8.24.1",

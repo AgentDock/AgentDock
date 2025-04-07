@@ -127,7 +127,7 @@
     "shadcn": "^2.3.0",
     "sharp": "^0.33.5",
     "tr46": "5.1.0",
-    "ts-jest": "^29.2.5",
+    "ts-jest": "^29.3.1",
     "ts-node": "^10.9.2",
     "web-streams-polyfill": "^4.1.0"
   },

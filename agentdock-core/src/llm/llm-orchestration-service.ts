@@ -115,12 +115,17 @@ export class LLMOrchestrationService {
         usage: !!usage // Log if usage object is present
       });
       
-      // Update orchestration state using the usage object from the event
+      // Ensure the state update is initiated and potentially completed
+      // before proceeding or calling the original onFinish.
       await this.updateTokenUsage(usage);
       
       // Call original onFinish if provided
       if (options.onFinish) {
-        try { await options.onFinish(event); } catch (callbackError) {
+        try {
+          // Note: Original onFinish might still run concurrently if it's async
+          // but at least the KV update has been awaited.
+          await options.onFinish(event);
+        } catch (callbackError) {
             logger.error(LogCategory.LLM, 'LLMOrchestrationService', 'Error in provided onFinish callback', { 
               sessionId: this.sessionId?.substring(0, 8),
               error: callbackError instanceof Error ? callbackError.message : String(callbackError)

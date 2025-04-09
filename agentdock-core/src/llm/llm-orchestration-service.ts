@@ -199,11 +199,53 @@ export class LLMOrchestrationService {
 
     // Call the CoreLLM streamText method with injected callbacks
     try {
+      // Clone options to avoid modifying the original
+      const enhancedOptions = { ...options };
+      
+      // Add LLM context to tools if they exist
+      if (enhancedOptions.tools && typeof enhancedOptions.tools === 'object') {
+        // Create a new tools object to avoid modifying the original
+        const wrappedTools: Record<string, any> = {};
+        
+        // Process each tool
+        Object.entries(enhancedOptions.tools).forEach(([name, tool]) => {
+          if (tool) {
+            // Create wrapped tool with enhanced execute function
+            wrappedTools[name] = {
+              ...tool,
+              execute: async (params: any, execOptions: any) => {
+                // Add LLM context to execution options
+                const enhancedExecOptions = {
+                  ...execOptions,
+                  llmContext: {
+                    ...(execOptions.llmContext || {}),
+                    llm: this.llm, // Provide the CoreLLM instance
+                    provider: this.llm.getProvider(),
+                    model: this.llm.getModelId()
+                  }
+                };
+                
+                // Call original execute with enhanced options
+                // Add type guard to ensure execute exists and is a function
+                if (tool.execute && typeof tool.execute === 'function') {
+                  return tool.execute(params, enhancedExecOptions);
+                }
+                
+                // Fallback in case execute is not a function
+                throw new Error(`Tool ${name} does not have a valid execute function`);
+              }
+            };
+          }
+        });
+        
+        // Replace tools with wrapped version
+        enhancedOptions.tools = wrappedTools;
+      }
+      
       const result = await this.llm.streamText({
-        ...options,
-        // Remove model property - CoreLLM knows its model
+        ...enhancedOptions,
         onFinish: handleFinish,
-        onStepFinish: handleStepFinish, 
+        onStepFinish: handleStepFinish,
       });
       // Keep cast to any for the return type for now, as StreamTextResult structure is complex
       return result as any; 

@@ -7,6 +7,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { cn } from "@/lib/utils"
 
 // Define interface for errors with code property
 interface ExtendedError extends Error {
@@ -22,7 +23,7 @@ export function ChatLoading() {
   );
 }
 
-export function ChatError({ error, onRetry }: { error: Error, onRetry: () => void }) {
+export function ChatError({ error, onRetry, isOverlay = false }: { error: Error, onRetry: () => void, isOverlay?: boolean }) {
   const router = useRouter();
   
   // Cast error to ExtendedError to access code property safely
@@ -163,17 +164,22 @@ export function ChatError({ error, onRetry }: { error: Error, onRetry: () => voi
     'Error';
 
   return (
-    <div className="p-4 h-full flex items-center justify-center">
-      <Card className="max-w-md w-full shadow-lg">
-        <CardHeader className="pb-2">
-          <CardTitle className="flex items-center text-destructive gap-2">
-            <AlertCircle className="h-5 w-5" />
-            {errorTitle}
+    <div className={cn(
+      "flex items-center justify-center p-4",
+      isOverlay 
+        ? "absolute inset-0 z-50 bg-background/80 backdrop-blur-sm" 
+        : "h-full"
+    )}>
+      <Card className="max-w-md w-full shadow-lg border border-border/50">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center text-destructive gap-3">
+            <AlertCircle className="h-6 w-6" />
+            <span className="text-lg font-semibold">{errorTitle}</span>
           </CardTitle>
         </CardHeader>
         
-        <CardContent>
-          <p className="text-sm text-card-foreground mb-2">
+        <CardContent className="pt-0 pb-4">
+          <p className="text-sm text-card-foreground leading-relaxed">
             {friendlyMessage}
           </p>
           
@@ -184,7 +190,7 @@ export function ChatError({ error, onRetry }: { error: Error, onRetry: () => voi
           )}
         </CardContent>
         
-        <CardFooter className="flex-col items-start pt-0">
+        <CardFooter className="flex-col items-start pt-4">
           {getActionContent()}
         </CardFooter>
       </Card>

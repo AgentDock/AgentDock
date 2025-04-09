@@ -135,6 +135,9 @@ const ChatContainer = React.forwardRef<
   // Track messages count for debug display
   const [messagesCount, setMessagesCount] = React.useState(0);
   
+  // State for errors detected within the data stream
+  const [streamError, setStreamError] = React.useState<Error | null>(null);
+  
   // Simplified token usage state - only for potential future use, not passed to debug
   const [tokenUsage, setTokenUsage] = React.useState<{
     promptTokens?: number;
@@ -387,6 +390,9 @@ const ChatContainer = React.forwardRef<
   
   // Effect to update orchestration state from streaming data
   React.useEffect(() => {
+    // Reset stream error at the beginning of processing new data
+    setStreamError(null);
+    
     if (!data) return;
     
     const streamData = data as unknown as { 
@@ -421,7 +427,9 @@ const ChatContainer = React.forwardRef<
       if (streamData._streamingErrorCode) {
         (error as any).code = streamData._streamingErrorCode;
       }
-      // setOverlayError(error);
+      setStreamError(error); // <-- Set the streamError state
+      // Prevent further processing of this data chunk if an error was found
+      return; 
     }
     
     // Update orchestration state from data stream, ONLY if changed
@@ -497,22 +505,41 @@ const ChatContainer = React.forwardRef<
 
   if (initError) {
     // Using window.location.reload() for initError as per the provided correct code
-    return <ChatError error={initError} onRetry={() => window.location.reload()} />;
-  }
-
-  if (chatError) {
-    // Using reload from useChat for chatError
-    return <ChatError error={chatError} onRetry={reload} />;
+    return <ChatError error={initError} onRetry={() => window.location.reload()} isOverlay={false} />;
   }
 
   if (settingsError) {
-    // Using window.location.reload() for settingsError
+    // Settings error still replaces the whole screen as it prevents chat loading
     return (
       <ChatError 
         error={new Error(settingsError)} 
         onRetry={() => window.location.reload()} 
+        isOverlay={false} // Explicitly not an overlay
       />
     );
+  }
+
+  // Prepare error for overlay, checking both chatError and streamError
+  // chatError comes from useChat hook (more generic), streamError from data stream (potentially more specific)
+  const overlayErrorSource = streamError || chatError; // Prioritize streamError if both exist
+  let overlayErrorToDisplay: Error | null = null;
+
+  if (overlayErrorSource) {
+    let displayMessage = overlayErrorSource.message; // Default to original message
+    // Customize message for specific error codes or content
+    if (displayMessage?.includes('Overloaded') || (overlayErrorSource as any).code === 'LLM_OVERLOADED_ERROR') {
+      displayMessage = 'The AI model is currently overloaded. Please try again shortly.';
+    }
+    // Add other specific error messages here if needed, e.g.:
+    // else if ((overlayErrorSource as any).code === 'LLM_RATE_LIMIT_ERROR') { ... }
+
+    // DEBUG: Log the actual error details
+    console.error('[ChatContainer Error Debug] Raw error source:', overlayErrorSource);
+    console.error(`[ChatContainer Error Debug] Message: "${overlayErrorSource.message}", Code: "${(overlayErrorSource as any).code}"`);
+
+    overlayErrorToDisplay = new Error(displayMessage);
+    // Preserve original code if possible for debugging or more specific handling
+    (overlayErrorToDisplay as any).code = (overlayErrorSource as any).code; 
   }
 
   return (
@@ -535,6 +562,10 @@ const ChatContainer = React.forwardRef<
           append={append}
           suggestions={suggestions}
         />
+        
+        {overlayErrorToDisplay && (
+          <ChatError error={overlayErrorToDisplay} onRetry={reload} isOverlay={true} />
+        )}
         
         {isDebugEnabled && (
           <div data-test-id="chat-debug-panel">

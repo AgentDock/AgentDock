@@ -80,6 +80,8 @@ export function normalizeError(error: unknown): ErrorResponse {
     errorMessage = 'Rate limit exceeded. Please try again later.';
   } else if (errorCode === ErrorCode.SERVICE_UNAVAILABLE) {
     errorMessage = 'Service currently unavailable. Please try again later.';
+  } else if (errorCode === ErrorCode.LLM_OVERLOADED) {
+    errorMessage = 'The AI model is currently overloaded. Please try again shortly.';
   }
   
   // Always ensure the error is a string to prevent "error parts expect a string value"

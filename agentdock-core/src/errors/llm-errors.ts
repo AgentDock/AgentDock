@@ -15,6 +15,7 @@ const ErrorCodes = {
   LLM_RATE_LIMIT: 'LLM_RATE_LIMIT_ERROR',
   LLM_EXECUTION: 'LLM_EXECUTION_ERROR',
   LLM_API_KEY: 'LLM_API_KEY_ERROR',
+  LLM_OVERLOADED: 'LLM_OVERLOADED_ERROR',
   SERVICE_UNAVAILABLE: 'SERVICE_UNAVAILABLE',
   UNKNOWN: 'UNKNOWN_ERROR'
 };
@@ -43,9 +44,9 @@ const ERROR_PATTERNS: Record<LLMProvider | 'byok', ProviderErrorPattern[]> = {
       userMessage: "You've reached the rate limit for Anthropic API. Please try again later."
     },
     {
-      pattern: /Overloaded/i, 
-      errorCode: ErrorCodes.LLM_RATE_LIMIT, 
-      statusCode: 429, 
+      pattern: 'Overloaded',
+      errorCode: ErrorCodes.LLM_OVERLOADED,
+      statusCode: 529,
       userMessage: "Anthropic service is temporarily overloaded. Please try again shortly."
     },
     {
@@ -191,30 +192,80 @@ export function parseProviderError(
   provider: LLMProvider,
   isByokMode: boolean = false
 ): AgentError {
-  // Get error message as string
-  let errorMessage = '';
-  if (error instanceof Error) {
-    errorMessage = error.message;
-  } else if (typeof error === 'string') {
-    errorMessage = error;
-  } else if (error && typeof error === 'object') {
-    if ('message' in error && error.message) {
-      errorMessage = String(error.message);
-    } else if ('error' in error && error.error) {
-      errorMessage = String(error.error);
-    } else {
-      errorMessage = JSON.stringify(error);
+  // === START DEBUG LOGGING ===
+  logger.debug(
+    LogCategory.LLM,
+    'parseProviderError',
+    'Raw error object received',
+    { 
+      rawError: JSON.stringify(error, Object.getOwnPropertyNames(error)), // Log all properties
+      errorType: typeof error,
+      isErrorInstance: error instanceof Error
     }
-    
-    // Extract from nested error objects (like Axios errors)
-    if ('response' in error && error.response) {
-      const response = (error as any).response;
-      if (response.data?.error?.message) {
-        errorMessage = String(response.data.error.message);
-      } else if (response.data?.error) {
-        errorMessage = String(response.data.error);
+  );
+  // === END DEBUG LOGGING ===
+
+  // Get error message as string - REVISED EXTRACTION LOGIC
+  let errorMessage = 'Unknown error';
+  let parsedErrorObj: any = null;
+
+  try {
+    if (error instanceof Error) {
+      errorMessage = error.message;
+      parsedErrorObj = error; // Keep the original error object
+    } else if (typeof error === 'string') {
+      // Try to parse if it looks like JSON
+      if (error.trim().startsWith('{') && error.trim().endsWith('}')) {
+        try {
+          parsedErrorObj = JSON.parse(error);
+          if (parsedErrorObj && typeof parsedErrorObj === 'object' && parsedErrorObj.message) {
+            errorMessage = String(parsedErrorObj.message);
+          } else {
+            errorMessage = error; // Fallback to original string if parse/extraction fails
+          }
+        } catch (e) {
+          errorMessage = error; // Fallback if JSON parsing fails
+        }
+      } else {
+        errorMessage = error; // It's just a plain string
+        parsedErrorObj = { message: error };
+      }
+    } else if (error && typeof error === 'object') {
+      // Handle plain objects or nested errors
+      parsedErrorObj = error;
+      // Check if message property exists and is string-like before accessing
+      if ('message' in error && typeof (error as any).message === 'string' && (error as any).message) {
+        errorMessage = String((error as any).message);
+      } else if ('error' in error && error.error) {
+         // Handle cases where error is nested like { error: { message: ... } } or { error: "..." }
+         const nestedError = error.error;
+         // Check if nested message exists and is string-like
+         if (nestedError && typeof nestedError === 'object' && 'message' in nestedError && typeof (nestedError as any).message === 'string' && (nestedError as any).message) {
+            errorMessage = String((nestedError as any).message);
+         } else if (typeof nestedError === 'string') {
+            errorMessage = nestedError;
+         } else {
+            errorMessage = JSON.stringify(error); // Fallback for complex objects
+         }
+      } else if ('response' in error && error.response) { // Axios-like errors
+        const response = (error as any).response;
+        if (response.data?.error?.message) {
+          errorMessage = String(response.data.error.message);
+        } else if (response.data?.error) {
+          errorMessage = String(response.data.error);
+        } else if (response.data) {
+           errorMessage = typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
+        } else {
+           errorMessage = `HTTP Error ${response.status}`; 
+        }
+      } else {
+        errorMessage = JSON.stringify(error); // Fallback stringify
       }
     }
+  } catch (extractionError) {
+     // Fallback in case the extraction logic itself throws an error
+     errorMessage = 'Failed to process error details.';
+     logger.warn(LogCategory.LLM, 'parseProviderError', 'Error during error message extraction', { extractionError });
   }
   
   // Handle missing API key in BYOK mode first
@@ -239,10 +290,14 @@ export function parseProviderError(
   
   // Check provider-specific patterns
   const providerPatterns = ERROR_PATTERNS[provider] || [];
+  
+  // Trim the errorMessage before matching to handle potential hidden whitespace/characters
+  const trimmedErrorMessage = errorMessage.trim();
+  
   const matchingPattern = providerPatterns.find(pattern => 
     (pattern.pattern instanceof RegExp) 
-      ? pattern.pattern.test(errorMessage)
-      : errorMessage.includes(pattern.pattern)
+      ? pattern.pattern.test(trimmedErrorMessage)
+      : trimmedErrorMessage.includes(pattern.pattern)
   );
   
   // Log the error for debugging
@@ -252,7 +307,8 @@ export function parseProviderError(
     'Parsing provider error',
     { 
       provider,
-      errorMessage,
+      originalErrorMessage: errorMessage,
+      trimmedErrorMessage: trimmedErrorMessage,
       matchedPattern: matchingPattern?.pattern.toString() || 'none'
     }
   );

@@ -13,6 +13,7 @@
   ],
   "nodes": [
     "llm.gemini",
+    "think",
     "search"
   ],
   "nodeConfigurations": {

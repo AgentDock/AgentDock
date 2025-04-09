@@ -1,14 +1,15 @@
 # Deep Research Tool
 
-The Deep Research tool provides in-depth research capabilities with search and content extraction. It leverages Firecrawl for search and content retrieval, and uses the agentdock-core LLM for generating comprehensive research reports.
+The Deep Research tool provides in-depth research capabilities with search and content extraction. It leverages Firecrawl for search and content retrieval, and uses LLM for generating comprehensive research reports.
 
 ## Features
 
 - **Web Search**: Performs web searches using Firecrawl to find relevant information
 - **Content Extraction**: Extracts detailed content from the most relevant sources
-- **Key Findings Extraction**: Identifies the most informative paragraphs from search results
-- **Structured Report Generation**: Creates well-organized research reports with key findings and methodology
+- **Key Findings Extraction**: Identifies the most important insights from search results
+- **Structured Report Generation**: Creates well-organized research reports with key findings and sources
 - **Source Tracking**: Maintains a list of all sources used in the research
+- **Research Statistics**: Provides metadata about the research process
 
 ## Parameters
 
@@ -26,11 +27,12 @@ The Deep Research tool provides in-depth research capabilities with search and c
 2. **Source Extraction**: Extracts sources from the search results
 3. **Deep Content Retrieval**: If depth > 1, retrieves detailed content from the top sources
 4. **Key Findings Extraction**: Identifies the most informative paragraphs from all content
-5. **Report Generation**: Formats the findings into a structured report with clear sections
+5. **LLM Enhancement**: Uses LLM to improve the findings (when available)
+6. **Report Generation**: Formats the findings into a structured report
 
 ## LLM Integration
 
-The tool uses the agentdock-core LLM for enhancing the research report:
+The tool uses LLM for enhancing the research report:
 
 - **Improved Findings**: Uses LLM to generate more coherent and informative key findings
 - **Context-Aware Analysis**: The LLM analyzes the content to extract the most relevant information
@@ -42,27 +44,55 @@ The tool uses the agentdock-core LLM for enhancing the research report:
 const result = await deepResearchTool.execute({
   query: "Latest advancements in quantum computing",
   depth: 2,
-  breadth: 4
+  breadth: 5
 }, options);
 ```
-
-## Implementation Details
-
-- **KISS Principle**: Keeps the implementation simple and focused on core functionality
-- **DRY Principle**: Avoids code duplication by using helper functions
-- **First Principles**: Designed to be modular and extensible
-- **Framework Agnostic**: Core functionality is independent of the UI framework
 
 ## Report Structure
 
 The generated research report includes:
 
 1. **Title**: Clear identification of the research topic
-2. **Research Status**: Indication if the research is complete or needs further investigation
-3. **Key Findings**: Concise list of the most important discoveries
-4. **Detailed Findings**: Comprehensive list of all relevant information
-5. **Research Methodology**: Description of the approach used, including depth and breadth
-6. **Sources**: List of all sources referenced in the research
+2. **Status Notes**: Optional notices about rate limits or processing issues
+3. **Research Statistics**: Metadata about depth, breadth, sources analyzed, and findings extracted
+4. **Key Findings**: Numbered list of significant discoveries, presented in order of relevance
+5. **Sources**: List of all sources referenced in the research, with domains displayed
+
+## Implementation Details
+
+The implementation follows several principles:
+
+- **Modular Design**: Uses separate components for report generation and data processing
+- **Graceful Degradation**: Falls back to basic extraction if advanced features fail
+- **Robust Error Handling**: Catches and reports errors at each stage of the process
+- **Clear Output Formatting**: Presents findings in a clean, numbered format for easy consumption
+- **Source Deduplication**: Ensures each source is only listed once in the final report
+
+## Flow Diagram
+
+```mermaid
+graph TD
+    A[Query Input] --> B[Initial Search]
+    B --> C[Extract Sources]
+    C --> D{Depth > 1?}
+    D -->|Yes| E[Deep Content Extraction]
+    D -->|No| F[Basic Content]
+    E --> G[Combined Content]
+    F --> G
+    G --> H{LLM Available?}
+    H -->|Yes| I[LLM Analysis]
+    H -->|No| J[Basic Extraction]
+    I --> K[Final Report]
+    J --> K
+```
+
+## Recent Updates
+
+- Improved report formatting with numbered key findings
+- Added research statistics section with metadata
+- Enhanced source display with domain information
+- Consolidated findings into a single, well-organized section
+- Better error handling and status reporting
 
 ## Integration with Agent
 

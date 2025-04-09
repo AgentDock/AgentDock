@@ -26,130 +26,65 @@ const deepResearchParamsSchema = z.object({
 type _DeepResearchParams = z.infer<typeof deepResearchParamsSchema>;
 
 /**
- * Deep Research tool implementation
+ * Helper function to safely handle errors
  */
-export const deepResearchTool: Tool = {
-  name: 'deep_research',
-  description: 'Perform in-depth research on a topic with search and content extraction',
-  parameters: deepResearchParamsSchema,
-  async execute({ query, depth = 2, breadth = 5 }, options) {
-    logger.debug(LogCategory.NODE, '[DeepResearch]', `Executing research for query: ${query}`, { toolCallId: options.toolCallId });
-    
-    try {
-      // Ensure parameters are within reasonable ranges
-      depth = Math.max(1, Math.min(3, depth));
-      breadth = Math.max(3, Math.min(15, breadth));
-      
-      // Validate input
-      if (!query.trim()) {
-        logger.warn(LogCategory.NODE, '[DeepResearch]', 'Empty research query provided');
-        return createToolResult(
-          'deep_research_error',
-          formatErrorMessage('Error', 'Please provide a non-empty research query.')
-        );
-      }
-      
-      logger.info(LogCategory.NODE, '[DeepResearch]', `Starting research on "${query}" with depth=${depth}, breadth=${breadth}`);
-      
-      // Step 1: Initial search - use breadth parameter to determine number of results
-      let searchResult = '';
-      let searchError = false;
-      
-      try {
-        // Use breadth parameter to determine number of search results (now supports up to 25)
-        searchResult = await performSearch(query, breadth, options);
-      } catch (error) {
-        logger.warn(LogCategory.NODE, '[DeepResearch]', 'Error during initial search', { error });
-        searchError = true;
-        searchResult = `Error during search: ${error instanceof Error ? error.message : String(error)}`;
-      }
-      
-      // Step 2: Extract sources from search results using regex
-      const sources: Array<{ title: string, url: string }> = [];
-      const urlRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
-      let match;
-      
-      while ((match = urlRegex.exec(searchResult)) !== null) {
-        // Avoid duplicate sources
-        const url = match[2];
-        if (!sources.some(source => source.url === url)) {
-          sources.push({
-            title: match[1],
-            url: url
-          });
-        }
-      }
-      
-      logger.debug(LogCategory.NODE, '[DeepResearch]', `Found ${sources.length} initial sources`);
-      
-      // Step 3: Perform deeper content extraction if depth > 1
-      let deepContent = '';
-      let deepContentError = false;
-      
-      if (depth > 1 && sources.length > 0) {
-        logger.info(LogCategory.NODE, '[DeepResearch]', `Performing deeper content extraction (depth=${depth})`);
-        
-        try {
-          // Use Firecrawl for deeper content retrieval - use all available sources up to breadth
-          const deeperSources = await getDeepContent(sources, Math.min(breadth, sources.length), options);
-          
-          // Add deeper sources to our sources list
-          sources.push(...deeperSources.sources);
-          
-          // Add the deeper content to our research
-          deepContent = deeperSources.content;
-        } catch (error) {
-          logger.warn(LogCategory.NODE, '[DeepResearch]', 'Error during deeper content extraction', { error });
-          deepContentError = true;
-          deepContent = `Error during content extraction: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      }
-      
-      // If both search and deep content failed, return an error
-      if (searchError && deepContentError && sources.length === 0) {
-        return createToolResult(
-          'deep_research_error',
-          formatErrorMessage('Research Error', 
-            `Unable to complete research for "${query}": Both search and content extraction failed.`,
-            'Please try again with a different query or check the tool configuration.')
-        );
-      }
-      
-      // Step 4: Extract key findings from the content
-      const findings = extractKeyFindings(searchResult + deepContent);
-      
-      // Step 5: Format the research data - pass options to access LLM
-      const summary = await formatResearchData(query, findings, searchResult, deepContent, depth, breadth, options, sources.length);
-      
-      // Step 6: Create the result object
-      const result: DeepResearchResult = {
-        query,
-        summary,
-        sources,
-        depth,
-        breadth,
-        findings // Add findings to the result
-      };
-      
-      logger.info(LogCategory.NODE, '[DeepResearch]', `Completed research on "${query}" with ${sources.length} sources`);
-      
-      // Return the formatted research report
-      return DeepResearchReport(result);
-    } catch (error: unknown) {
-      logger.error(LogCategory.NODE, '[DeepResearch]', 'Research execution error:', { error });
-      
-      // Return a formatted error message
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      const errorContent = formatErrorMessage(
-        'Research Error',
-        `Unable to complete research for "${query}": ${errorMessage}`,
-        'Please try again with a different query or check the tool configuration.'
-      );
-      
-      return createToolResult('deep_research_error', errorContent);
-    }
+function safelyHandleError(error: unknown, context: string): void {
+  logger.error(LogCategory.NODE, '[DeepResearch]', `Error in ${context}:`, { error });
+  throw new Error(`Error in ${context}: ${error instanceof Error ? error.message : String(error)}`);
+}
+
+/**
+ * Extract key findings from content
+ */
+function extractKeyFindings(content: string): string[] {
+  // Clean the content first - remove any error messages or formatting
+  content = content
+    .replace(/\{"type":"firecrawl_error"[^}]*\}/g, '')
+    .replace(/## API Error[^\n]*\n[^\n]*/g, '')
+    .replace(/## Content from[^\n]*\n/g, '\n\n')
+    .replace(/## Metadata[^\n]*\n[^\n]*/g, '')
+    .replace(/## Content Preview[^\n]*\n/g, '\n\n');
+  
+  // Split content into paragraphs
+  const paragraphs = content
+    .split(/\n\n+/)
+    .map(p => p.trim())
+    .filter(p => p.length > 30 && p.length < 500);
+  
+  // Filter out error messages and headers
+  const cleanedParagraphs = paragraphs.filter(p => 
+    !p.includes('firecrawl_error') && 
+    !p.includes('API Error') && 
+    !p.includes('error:') &&
+    !p.includes('Firecrawl') &&
+    !p.match(/^Content from/) &&
+    !p.match(/^Metadata$/) &&
+    !p.match(/^Content Preview$/)
+  );
+  
+  // If we have enough paragraphs, return them
+  if (cleanedParagraphs.length >= 8) {
+    return cleanedParagraphs.slice(0, 15);
   }
-};
+  
+  // Otherwise, extract sentences
+  const sentences = content
+    .split(/[.!?]+/)
+    .map(s => s.trim())
+    .filter(s => 
+      s.length > 30 && 
+      s.length < 300 && 
+      !s.includes('firecrawl_error') && 
+      !s.includes('API Error') && 
+      !s.includes('error:')
+    );
+  
+  // Combine paragraphs and sentences
+  const findings = [...cleanedParagraphs, ...sentences];
+  
+  // Return up to 15 findings
+  return findings.slice(0, 15);
+}
 
 /**
  * Helper function to perform a search
@@ -303,156 +238,229 @@ async function getDeepContent(sources: Array<{ title: string, url: string }>, li
 }
 
 /**
- * Extract key findings from content
+ * Processes research content to generate findings using LLM.
+ * Adds more explicit checks and logging for missing LLM context.
+ * Returns the findings array and a status message.
  */
-function extractKeyFindings(content: string): string[] {
-  // Clean the content first - remove any error messages or formatting
-  content = content
+async function generateLLMAnalysis(
+  query: string,
+  initialFindings: string[], 
+  searchResult: string,
+  deepContent: string,
+  options: ToolExecutionOptions, 
+  scrapingRateLimited: boolean,
+  scrapingFailed: boolean
+): Promise<{ findings: string[], status: string }> {
+  let finalFindings: string[] = [];
+  let analysisFailed = false;
+  let llmSkipped = false;
+  let status = ""; 
+  
+  // --- Determine initial status based on scraping --- 
+  if (scrapingRateLimited) { status = `**Note: Deep content analysis may be incomplete due to Firecrawl rate limits.** Findings based on available data.\n`; }
+  else if (scrapingFailed) { 
+      status = `**Note: Deep content analysis failed due to errors fetching sources.**\n`; 
+      analysisFailed = true; // Mark analysis as failed if scraping failed
+  }
+
+  // --- Attempt LLM Summarization --- 
+  // Explicitly check for llmContext and the llm instance itself
+  if (!options.llmContext?.llm) {
+      logger.error(LogCategory.NODE, '[DeepResearch]', 'LLM analysis step skipped: llmContext or llm instance not provided in ToolExecutionOptions.');
+      status += `**Note: LLM analysis step skipped (LLM context unavailable).** Findings based on basic extraction.\n`;
+      analysisFailed = true; // Mark as failed if LLM context is missing
+      llmSkipped = true;
+  } else if (analysisFailed) {
+      // If scraping already failed, don't attempt LLM call
+      logger.warn(LogCategory.NODE, '[DeepResearch]', 'Skipping LLM analysis because content scraping failed.');
+      llmSkipped = true;
+  } else {
+      // LLM context exists and scraping didn't fail, proceed with try/catch
+      try {
+          logger.info(LogCategory.NODE, '[DeepResearch]', 'Using LLM via generateText to generate final findings');
+          
+          let cleanContent = searchResult + '\n\n' + deepContent;
+          // Basic cleaning + link stripping
+          cleanContent = cleanContent
     .replace(/\{"type":"firecrawl_error"[^}]*\}/g, '')
     .replace(/## API Error[^\n]*\n[^\n]*/g, '')
-    .replace(/## Content from[^\n]*\n/g, '\n\n')
-    .replace(/## Metadata[^\n]*\n[^\n]*/g, '')
-    .replace(/## Content Preview[^\n]*\n/g, '\n\n');
-  
-  // Split content into paragraphs
-  const paragraphs = content
-    .split(/\n\n+/)
-    .map(p => p.trim())
-    .filter(p => p.length > 30 && p.length < 500);
-  
-  // Filter out error messages and headers
-  const cleanedParagraphs = paragraphs.filter(p => 
-    !p.includes('firecrawl_error') && 
-    !p.includes('API Error') && 
-    !p.includes('error:') &&
-    !p.includes('Firecrawl') &&
-    !p.match(/^Content from/) &&
-    !p.match(/^Metadata$/) &&
-    !p.match(/^Content Preview$/)
-  );
-  
-  // If we have enough paragraphs, return them
-  if (cleanedParagraphs.length >= 8) {
-    return cleanedParagraphs.slice(0, 15);
+            .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1'); 
+
+          const userPrompt = `Analyze the following RESEARCH CONTENT regarding "${query}". 
+          
+Extract 10-15 key factual findings about this topic. Focus on the most significant information including:
+- Important facts, statistics, and data points
+- Key concepts, theories, or methodologies 
+- Significant developments, trends, or innovations
+- Expert opinions or consensus views
+- Challenges, limitations, or controversies
+
+IMPORTANT INSTRUCTIONS:
+- Present each finding as a complete, standalone sentence with specific information
+- Start each finding directly with the actual information (no titles or labels)
+- DO NOT include headings like "Key Findings" or "Factual Findings" in your response
+- DO NOT number your findings - I will add the numbers later
+- DO NOT include introductory text like "Here are the findings" or "Based on the research"
+- Each finding should be on its own line
+
+RESEARCH CONTENT:
+${cleanContent.substring(0, 18000)}`;
+
+          const messages: CoreMessage[] = [
+              { role: 'system', content: 'You are an expert research analyst who extracts and presents key factual findings from provided content. Your job is to find the most important, specific information and present each finding as a clear, direct statement. Avoid introductions, conclusions, categorization, or headings. Just provide the actual findings as standalone statements.' },
+              { role: 'user', content: userPrompt }
+          ];
+
+          const result = await options.llmContext.llm.generateText({ messages });
+          
+          // Even more aggressive cleaning of LLM output:
+          const llmFindings = result.text
+            // Remove any known header patterns
+            .replace(/^(key findings|findings|research findings|summary|analysis):?\s*/i, '')
+            .replace(/^(here are|the following are|based on the research)\s+.*?:\s*/i, '')
+            // Split by lines
+            .split('\n')
+            // Clean each line
+            .map(l => 
+              l.replace(/^[-•*#]+\s*/, '')  // Remove bullet markers
+               .replace(/^\d+[.):]-?\s*/, '') // Remove numbering
+               .trim()
+            )
+            // Filter invalid lines
+            .filter(l => 
+              l.length > 15 && 
+              !l.toLowerCase().match(/^key\s+(factual\s+)?findings/) && 
+              !l.toLowerCase().includes('following are') &&
+              !l.toLowerCase().includes('research content') &&
+              !l.toLowerCase().match(/^here are/i)
+            );
+
+          if (llmFindings.length > 0) {
+              finalFindings = llmFindings;
+              analysisFailed = false; // Explicitly mark success
+              logger.info(LogCategory.NODE, '[DeepResearch]', `Successfully generated ${llmFindings.length} findings via LLM`);
+          } else {
+              logger.warn(LogCategory.NODE, '[DeepResearch]', 'LLM generateText returned empty/unusable findings', { rawText: result.text });
+              analysisFailed = true; 
+              status += '**Note: LLM analysis could not extract key findings.**\n';
+          }
+      } catch (error) {
+          logger.error(LogCategory.NODE, '[DeepResearch]', 'Error during LLM generateText call for findings', { error });
+          analysisFailed = true; 
+          status += `**Note: LLM analysis failed with error:** ${error instanceof Error ? error.message : 'Unknown error'}\n`;
+      }
   }
-  
-  // Otherwise, extract sentences
-  const sentences = content
-    .split(/[.!?]+/)
-    .map(s => s.trim())
-    .filter(s => 
-      s.length > 30 && 
-      s.length < 300 && 
-      !s.includes('firecrawl_error') && 
-      !s.includes('API Error') && 
-      !s.includes('error:')
-    );
-  
-  // Combine paragraphs and sentences
-  const findings = [...cleanedParagraphs, ...sentences];
-  
-  // Return up to 15 findings
-  return findings.slice(0, 15);
+
+  // --- Fallback Logic --- 
+  // Use initialFindings ONLY if LLM was skipped OR failed AND initialFindings exist
+  if ((llmSkipped || analysisFailed) && finalFindings.length === 0 && initialFindings.length > 0) {
+      logger.warn(LogCategory.NODE, '[DeepResearch]', 'Using basic extracted findings as fallback because LLM step failed or was skipped.');
+      // Apply basic link stripping to fallback findings
+      finalFindings = initialFindings.map(f => f.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')).filter(f => f.trim().length > 0);
+      
+      // Add specific fallback note if not already covered by other status messages
+      if (!status.includes('Findings based on basic extraction') && !status.includes('LLM analysis failed')) {
+          status += '**Note: Findings based on basic extraction.**\n';
+      }
+  } else if ((llmSkipped || analysisFailed) && finalFindings.length === 0) {
+      // If still no findings after attempting LLM/fallback
+       if (!status.includes('Analysis could not be completed')) {
+           status += '**Note: Analysis could not be completed due to errors or lack of usable content.**\n';
+       }
+       analysisFailed = true; // Ensure failure state is set
+  }
+
+  return { findings: finalFindings, status: status.trim() }; // Trim final status
 }
 
 /**
- * Format research data into a structured report
+ * Deep Research tool implementation
+ * - Refactored to use component for final formatting
  */
-async function formatResearchData(
-  query: string, 
-  findings: string[], 
-  searchResult: string, 
-  deepContent: string, 
-  depth: number, 
-  breadth: number,
-  options: ToolExecutionOptions,
-  sourceCount: number
-): Promise<string> {
-  // Step 1: Create a structured report from the raw research data
-  const title = `# Deep Research Report: "${query}"\n\n`;
-  
-  // Step 2: Use LLM to generate findings if we have access
-  if (options.llmContext?.llm) {
+export const deepResearchTool: Tool = {
+  name: 'deep_research',
+  description: 'Perform in-depth research on a topic with search and content extraction',
+  parameters: deepResearchParamsSchema,
+  async execute({ query, depth = 2, breadth = 5 }, options) {
+    logger.debug(LogCategory.NODE, '[DeepResearch]', `Executing research for query: ${query}`, { toolCallId: options.toolCallId });
+    
+    let searchResult = '';
+    let deepContent = '';
+    let sources: Array<{ title: string, url: string }> = [];
+    let scrapingWasRateLimited = false;
+    let scrapingFailedCompletely = false;
+
     try {
-      logger.info(LogCategory.NODE, '[DeepResearch]', 'Using LLM to generate findings');
+      depth = Math.max(1, Math.min(3, depth));
+      breadth = Math.max(3, Math.min(15, breadth));
       
-      // Prepare content for LLM
-      let cleanContent = searchResult + '\n\n' + deepContent;
-      cleanContent = cleanContent
-        .replace(/\{"type":"firecrawl_error"[^}]*\}/g, '')
-        .replace(/## API Error[^\n]*\n[^\n]*/g, '')
-        .replace(/## Content from[^\n]*\n/g, '\n\n')
-        .replace(/## Metadata[^\n]*\n[^\n]*/g, '')
-        .replace(/## Content Preview[^\n]*\n/g, '\n\n');
-      
-      const messages: CoreMessage[] = [
-        {
-          role: 'system',
-          content: 'You are a research assistant that extracts key findings from content. Extract factual, informative points from the provided research content.'
-        },
-        {
-          role: 'user',
-          content: `Extract 8-10 key findings from this research content about "${query}". 
-          Each finding should be a single sentence or short paragraph that contains factual information.
-          Focus on dates, names, events, and statistics when available.
-          
-          RESEARCH CONTENT:
-          ${cleanContent.substring(0, 10000)}`
-        }
-      ];
-      
-      // Add a context flag to indicate this is a tool-internal LLM call
-      const result = await options.llmContext.llm.generateText({ 
-        messages
-      });
-      
-      // Parse the result to extract findings
-      const llmFindings = result.text
-        .split('\n')
-        .filter(line => line.trim().length > 0)
-        .filter(line => 
-          line.trim().startsWith('-') || 
-          line.trim().match(/^\d+\./) || 
-          line.trim().startsWith('•')
-        )
-        .map(line => line.replace(/^[-•\d.]+\s*/, '').trim())
-        .filter(line => line.length > 0);
-      
-      // If we got findings from the LLM, use those
-      if (llmFindings.length > 0) {
-        logger.debug(LogCategory.NODE, '[DeepResearch]', `Generated ${llmFindings.length} findings with LLM`);
-        findings = llmFindings;
+      if (!query.trim()) {
+        safelyHandleError('Empty research query provided', 'input validation');
       }
-    } catch (error) {
-      logger.warn(LogCategory.NODE, '[DeepResearch]', 'Error generating findings with LLM', { error });
-      // Continue with existing findings
+      
+      logger.info(LogCategory.NODE, '[DeepResearch]', `Starting research: "${query}" (Depth: ${depth}, Breadth: ${breadth})`);
+      
+      // Step 1: Initial Search
+      try {
+        searchResult = await performSearch(query, breadth, options);
+      } catch (error) {
+        safelyHandleError(error instanceof Error ? error : new Error(String(error)), 'initial search');
+      }
+      
+      // Step 2: Extract Sources from Search
+      const urlRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+      let match;
+      while ((match = urlRegex.exec(searchResult)) !== null) {
+        const url = match[2];
+        if (!sources.some(source => source.url === url)) { sources.push({ title: match[1], url: url }); }
+      }
+      const initialSources = [...sources]; // Keep a copy before adding scraped ones
+      logger.debug(LogCategory.NODE, '[DeepResearch]', `Found ${initialSources.length} initial sources from search`);
+      
+      // Step 3: Scrape Content (if depth > 1)
+      if (depth > 1 && initialSources.length > 0) {
+        logger.info(LogCategory.NODE, '[DeepResearch]', `Performing content extraction (Depth: ${depth})`);
+        try {
+          const deeperSourcesResult = await getDeepContent(initialSources, Math.min(breadth, initialSources.length), options);
+          sources.push(...deeperSourcesResult.sources); // Add successfully scraped sources
+          deepContent = deeperSourcesResult.content;
+        } catch (error: any) {
+           logger.warn(LogCategory.NODE, '[DeepResearch]', `Content extraction issue: ${error.message}`);
+           if (error.message?.includes('rate limit')) { scrapingWasRateLimited = true; }
+           else if (error.message?.includes('Failed to scrape')) { scrapingFailedCompletely = true; }
+           // Store error message in deepContent only if scraping failed/rate limited
+           if (scrapingWasRateLimited || scrapingFailedCompletely) {
+               deepContent = `Error during content extraction: ${error.message}`; 
+           }
+        }
+      }
+      
+      // Step 4: Basic Findings Extraction (for fallback)
+      const initialFindings = extractKeyFindings(searchResult + deepContent);
+      
+      // Step 5: Generate LLM Analysis 
+      const { findings: llmAnalyzedFindings, status: analysisStatus } = await generateLLMAnalysis(
+          query, initialFindings, searchResult, deepContent, options, 
+          scrapingWasRateLimited, scrapingFailedCompletely
+      );
+      
+      // Step 6: Prepare result for the component
+      const resultForComponent: DeepResearchResult = { 
+          query, sources, depth, breadth, 
+          findings: llmAnalyzedFindings, // Use the result from generateLLMAnalysis
+          status: analysisStatus // Pass the status note from generateLLMAnalysis
+      };
+      
+      logger.info(LogCategory.NODE, '[DeepResearch]', `Completed research on "${query}"`);
+      
+      // Step 7: Return the report using the component for final formatting
+      return DeepResearchReport(resultForComponent);
+      
+    } catch (error: unknown) {
+      safelyHandleError(error, 'main execution');
     }
   }
-  
-  // Step 3: Add a clear "research incomplete" message if we don't have enough sources or findings
-  let researchStatus = "";
-  if (sourceCount < 12 || findings.length < 8) {
-    researchStatus = `**Note: This research is incomplete.** Additional research is recommended to develop a more comprehensive understanding.\n\n`;
-  }
-  
-  // Step 4: Format key findings section - always include this
-  const keyFindings = `## Key Findings\n\n${findings.slice(0, 8).map(finding => `- ${finding}`).join('\n')}\n\n`;
-  
-  // Step 5: Format detailed findings section - only include if there are more than 8 findings
-  let detailedFindings = "";
-  if (findings.length > 8) {
-    detailedFindings = `## Detailed Findings\n\n${findings.map(finding => `- ${finding}`).join('\n')}\n\n`;
-  }
-  
-  // Step 6: Format research methodology section - simplified
-  const methodology = `## Research Methodology\n\n- Conducted research with depth=${depth} and breadth=${breadth}
-- Analyzed ${findings.length} key findings across ${sourceCount} sources
-- Used Firecrawl for search and content extraction
-- Analyzed approximately ${Math.round((searchResult.length + deepContent.length) / 1000)}KB of content\n\n`;
-  
-  // Step 7: Combine all sections without any follow-up questions
-  return `${title}${researchStatus}${keyFindings}${detailedFindings}${methodology}`;
-}
+};
 
 /**
  * Export tools for registry

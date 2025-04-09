@@ -57,6 +57,25 @@ function validateTool(name: string, tool: any): boolean {
     tool.name = name;
   }
   
+  // Enhanced validation: Log whether tool's execution function directly accesses LLM context
+  // This is just informational and doesn't affect validation result
+  if (typeof tool.execute === 'function') {
+    const fnStr = tool.execute.toString();
+    const usesLLMContext = fnStr.includes('llmContext') || fnStr.includes('LLMContext');
+    const requiresLLM = fnStr.includes('llmContext?.llm') || fnStr.includes('!options.llmContext?.llm');
+    
+    logger.debug(
+      LogCategory.NODE,
+      '[NodeRegistry]',
+      `Tool ${name} LLM usage analysis:`,
+      {
+        usesLLMContext,
+        requiresLLM,
+        hasFallback: usesLLMContext && !requiresLLM
+      }
+    );
+  }
+  
   return true;
 }
 

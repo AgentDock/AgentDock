@@ -118,6 +118,17 @@ export function debugToolWithLLMContext(toolName: string, context: any) {
         availableKeys: Object.keys(context).join(', ')
       }
     );
+    
+    // Add fix suggestion
+    logger.info(
+      LogCategory.NODE,
+      `[${toolName}]`,
+      'Hint: LLM context is missing. This can happen when the tool is called directly without being invoked through the AI agent framework.',
+      {
+        solution: 'Ensure the tool is registered correctly in registry.ts and being called via an agent with LLM access.'
+      }
+    );
+    
     return;
   }
   
@@ -132,6 +143,18 @@ export function debugToolWithLLMContext(toolName: string, context: any) {
         contextKeys: Object.keys(context.llmContext).join(', ')
       }
     );
+    
+    // Add fix suggestion
+    logger.info(
+      LogCategory.NODE,
+      `[${toolName}]`,
+      'Hint: llmContext.llm is missing. This likely means the agent is not properly passing the LLM to the tool.',
+      {
+        contextAvailable: Object.keys(context.llmContext).join(', '),
+        solution: 'Check that LLMOrchestrationService is properly passing the LLM instance when executing tools.'
+      }
+    );
+    
     return;
   }
   

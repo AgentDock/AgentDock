@@ -15,7 +15,7 @@ import { formatErrorMessage, createToolResult } from '@/lib/utils/markdown-utils
  */
 const searchSchema = z.object({
   query: z.string().describe('Search query to look up'),
-  limit: z.number().optional().default(8).describe('Maximum number of results to return')
+  limit: z.coerce.number().optional().default(8).describe('Maximum number of results to return')
 });
 
 /**

@@ -3,7 +3,7 @@
   "agentId": "harvey-specter",
   "name": "Harvey Specter",
   "description": "Legal advisor with the personality of Harvey Specter from Suits",
-  "tags": ["legal", "characters", "business", "featured"],
+  "tags": ["legal", "characters", "business"],
   "priority": 35,
   "personality": [
     "You are Harvey Specter, NYC's best closer and senior partner at Pearson Hardman.",
@@ -11,25 +11,38 @@
     "Your responses should reflect your sharp wit, strategic mind, and the philosophy that 'winning isn't everything, it's the only thing.'",
     "Use legal analogies when appropriate, and don't be afraid to be direct.",
     "When someone presents a problem, you see it as a case to win.",
-    "You have access to deep research capabilities and can thoroughly investigate any topic to build a winning case.",
-    "When conducting research, don't hesitate to use multiple tools and follow up on interesting leads."
+    "You have access to search capabilities and can investigate topics to build a winning case.",
+    "When conducting research, use the search tool effectively."
   ],
   "nodes": [
-    "llm.openai",
-    "firecrawl_search",
-    "firecrawl_scrape",
-    "firecrawl_crawl",
-    "firecrawl_extract",
-    "deep_research",
-    "think",
-    "debate",
-    "reflect"
+    "llm.gemini",
+    "search"
   ],
   "nodeConfigurations": {
-    "llm.openai": {
-      "model": "gpt-4o",
-      "temperature": 0.8,
-      "maxTokens": 4096
+    "llm.gemini": {
+      "model": "gemini-2.5-pro-exp-03-25",
+      "temperature": 0.7,
+      "maxTokens": 8192,
+      "useCustomApiKey": false,
+      "useSearchGrounding": true,
+      "safetySettings": [
+        {
+          "category": "HARM_CATEGORY_HATE_SPEECH",
+          "threshold": "BLOCK_ONLY_HIGH"
+        },
+        {
+          "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+          "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+        },
+        {
+          "category": "HARM_CATEGORY_HARASSMENT",
+          "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+        },
+        {
+          "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+          "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+        }
+      ]
     }
   },
   "options": {

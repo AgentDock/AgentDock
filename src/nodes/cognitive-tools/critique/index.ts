@@ -5,15 +5,16 @@
 
 import { z } from 'zod';
 import { Tool, ToolExecutionOptions } from '../../types';
-import { ToolResult, formatErrorMessage, createToolResult } from '@/lib/utils/markdown-utils';
+import { ToolResult, createToolResult } from '@/lib/utils/markdown-utils';
 import { logger, LogCategory } from 'agentdock-core';
+import { CritiqueSchema, CritiqueParameters } from './schema';
 
 /**
  * Schema for critique tool parameters
  */
 const critiqueSchema = z.object({
   subject: z.string().min(1, "Subject is required").describe("What is being critiqued"),
-  analysis: z.string().optional().describe("Detailed critique analysis with understanding, strengths, issues, suggestions, and assessment")
+  analysis: z.string().min(1, "Analysis content must be provided.").describe("Detailed critique analysis with understanding, strengths, issues, suggestions, and assessment")
 });
 
 /**
@@ -25,14 +26,8 @@ type CritiqueParams = z.infer<typeof critiqueSchema>;
  * Formats critique analysis with semantic markup
  */
 function formatCritiqueAnalysis(analysis: string): string {
-  // Add semantic formatting to different sections
-  return analysis
-    // Format the section headers
-    .replace(/UNDERSTANDING:/g, '**UNDERSTANDING:**')
-    .replace(/STRENGTHS:/g, '**STRENGTHS:**')
-    .replace(/ISSUES:/g, '**ISSUES:**')
-    .replace(/SUGGESTIONS:/g, '**SUGGESTIONS:**')
-    .replace(/OVERALL ASSESSMENT:/g, '**OVERALL ASSESSMENT:**');
+  if (!analysis || typeof analysis !== 'string') return '';
+  return analysis.trim();
 }
 
 /**
@@ -42,15 +37,10 @@ function CritiqueComponent({
   subject = "", 
   analysis = ""
 }: CritiqueParams): ToolResult {
-  // Format title and content
-  const title = `## 🔍 Critique of: ${subject}`;
   const formattedAnalysis = formatCritiqueAnalysis(analysis);
-  
-  // Return formatted markdown result
-  return createToolResult(
-    'critique_result',
-    `${title}\n\n${formattedAnalysis}`
-  );
+  const title = `## 🔍 Critique of: ${subject}`;
+  const markdownContent = `${title}\n\n${formattedAnalysis}`;
+  return createToolResult('critique_result', markdownContent);
 }
 
 /**
@@ -81,10 +71,9 @@ Your critique should be constructive, specific, and provide clear guidance for i
 `;
 
 /**
- * Handle tool errors safely, ensuring they are always properly formatted strings
+ * Handle tool errors by throwing a standard Error.
  */
-function safelyHandleError(error: unknown, subject: string): ToolResult {
-  // Ensure error is properly converted to string in all cases
+function safelyHandleError(error: unknown, subject: string): never {
   let errorMessage: string;
   
   if (error instanceof Error) {
@@ -95,154 +84,53 @@ function safelyHandleError(error: unknown, subject: string): ToolResult {
     errorMessage = 'Unknown error occurred (null or undefined)';
   } else {
     try {
-      // Try to stringify the error if it's an object
       errorMessage = JSON.stringify(error);
     } catch {
-      // If JSON stringify fails, provide a fallback
       errorMessage = 'Error: Could not format error details';
     }
   }
   
-  logger.error(LogCategory.NODE, '[Critique]', 'Execution error:', { error: errorMessage });
+  logger.error(LogCategory.NODE, '[Critique]', 'Execution error (throwing):', { error: errorMessage });
   
-  // Return a properly formatted error result
-  return CritiqueComponent({
-    subject,
-    analysis: `Error: ${errorMessage}`
-  });
+  throw new Error(`Error during critique of "${subject}": ${errorMessage}`);
 }
 
 /**
- * Generate dynamic critique analysis for a subject using the LLM
- */
-async function generateStructuredCritique(subject: string, options: ToolExecutionOptions): Promise<string> {
-  try {
-    // Access LLM from the context
-    if (!options.llmContext?.llm) {
-      logger.warn(LogCategory.NODE, '[Critique]', 'No LLM available for generating dynamic critique');
-      return `Analyzing ${subject}...`;
-    }
-
-    logger.debug(LogCategory.NODE, '[Critique]', 'Generating dynamic structured critique with LLM');
-    
-    // Prepare LLM prompt
-    const messages = [
-      {
-        role: 'system',
-        content: `You are an expert critic with deep analytical abilities across multiple domains. Generate a detailed, structured critique for the subject provided.
-        
-Your goal is to provide a comprehensive, balanced analysis that identifies both strengths and areas for improvement. Choose a structure that makes the most sense for this specific subject - not all subjects require the same critique format.
-
-Apply these critical analysis principles:
-- Begin by demonstrating your understanding of the subject
-- Identify notable strengths and positive aspects
-- Pinpoint issues, weaknesses, or limitations
-- Provide constructive, actionable suggestions for improvement
-- Conclude with a balanced overall assessment
-
-Select a critique approach that fits the specific subject type:
-- For code: Focus on functionality, efficiency, readability, and best practices
-- For writing: Analyze clarity, structure, argumentation, and stylistic elements
-- For arguments: Evaluate logical consistency, evidence quality, and persuasiveness
-- For designs: Consider usability, aesthetics, functionality, and target audience
-- For concepts: Assess feasibility, originality, coherence, and potential impact
-
-Use rich Markdown formatting:
-- Create appropriate section headings that reflect your chosen structure
-- Bold (~15% of text) for key insights and important elements
-- Italics (~10% of text) for nuanced observations or contextual details
-- Create tables when comparing multiple elements or versions
-- Use blockquotes for highlighting exceptional points or concerns
-- Include numbered lists for prioritized recommendations
-- Use bullet points for related observations
-
-IMPORTANT: Do not include a title or heading at the beginning of your response.
-Do not repeat the subject as a title. The application will add an appropriate title for your critique.
-
-Your critique should be thorough, balanced, and provide clear guidance for improvement.`
-      },
-      {
-        role: 'user',
-        content: `Generate a comprehensive structured critique for: "${subject}".
-        
-Make your analysis balanced, specific, and actionable with clear strengths and areas for improvement.
-Remember, do not include a title - start directly with your analysis.`
-      }
-    ];
-
-    // Generate critique with LLM
-    const result = await options.llmContext.llm.generateText({ 
-      messages
-    });
-    
-    logger.debug(LogCategory.NODE, '[Critique]', 'Successfully generated dynamic critique with LLM', {
-      contentLength: result.text.length
-    });
-    
-    return result.text;
-  } catch (error) {
-    logger.error(LogCategory.NODE, '[Critique]', 'Error generating dynamic critique', {
-      error: error instanceof Error ? error.message : String(error)
-    });
-    
-    // If LLM generation fails, return a simple message
-    return `Analyzing ${subject}...`;
-  }
-}
-
-/**
- * Critique tool implementation
+ * Critique tool implementation - Uses local CritiqueComponent for SUCCESS results only.
  */
 export const critiqueTool: Tool = {
   name: 'critique',
   description: critiqueToolDescription,
-  parameters: critiqueSchema,
-  execute: async (params: CritiqueParams, options: ToolExecutionOptions): Promise<ToolResult> => {
+  parameters: CritiqueSchema,
+  execute: async (params: CritiqueParameters, options: ToolExecutionOptions): Promise<ToolResult> => {
     try {
-      const { subject, analysis } = params;
+      const validation = CritiqueSchema.safeParse(params);
+      if (!validation.success) {
+        const errorMsg = validation.error.errors.map(e => `${e.path.join('.')} - ${e.message}`).join(', ');
+        logger.warn(LogCategory.NODE, '[Critique]', 'Invalid parameters received (throwing)', { errors: errorMsg });
+        safelyHandleError(`Invalid parameters: ${errorMsg}`, params.subject || 'Unknown Subject');
+      }
       
-      logger.debug(LogCategory.NODE, '[Critique]', `Processing critique for: "${subject}"`, { 
+      const { subject, analysis } = validation.data;
+      
+      logger.debug(LogCategory.NODE, '[Critique]', `Formatting critique for: "${subject}"`, { 
         toolCallId: options.toolCallId,
-        hasAnalysis: !!analysis,
-        analysisLength: analysis?.length || 0,
+        analysisLength: analysis.length,
         timestamp: new Date().toISOString()
       });
       
-      // Add a minimal artificial delay to allow the loading animation to be visible
-      await new Promise(resolve => setTimeout(resolve, 100));
+      const result = CritiqueComponent({ subject, analysis });
       
-      // Handle partial calls (when only subject is provided)
-      if (!analysis || analysis.trim() === '') {
-        logger.debug(LogCategory.NODE, '[Critique]', 'Partial call detected - generating dynamic structured critique', {
-          subject,
-          timestamp: new Date().toISOString()
-        });
-        
-        // Generate dynamic structured critique for the subject using LLM
-        const dynamicAnalysis = await generateStructuredCritique(subject, options);
-        
-        return CritiqueComponent({
-          subject,
-          analysis: dynamicAnalysis
-        });
-      }
-      
-      // Create the result with all parameters for complete calls
-      const result = CritiqueComponent({
+      logger.debug(LogCategory.NODE, '[Critique]', 'Returning formatted critique via local Component', {
         subject,
-        analysis
-      });
-      
-      logger.debug(LogCategory.NODE, '[Critique]', 'Returning complete critique', {
-        subject,
-        analysisLength: analysis.length,
+        analysisLength: analysis.length, 
         timestamp: new Date().toISOString()
       });
       
       return result;
     } catch (error) {
-      // Use the safe error handler to ensure proper formatting
-      return safelyHandleError(error, params?.subject || 'Unknown Subject');
+      const subject = typeof params?.subject === 'string' ? params.subject : 'Unknown Subject';
+      safelyHandleError(error, subject);
     }
   }
 };

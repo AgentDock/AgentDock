@@ -1,54 +1,68 @@
 # Brainstorm Tool
 
-The Brainstorm Tool is a specialized cognitive enhancement that facilitates creative idea generation and structured brainstorming sessions. Unlike tools that rely on external APIs or data retrieval, the Brainstorm Tool operates entirely within the agent's reasoning capabilities, enabling diverse idea generation for any challenge or topic.
+The Brainstorm Tool is a cognitive enhancement tool designed to **format** structured brainstorming and creative idea generation performed by an agent. It provides a consistent presentation for ideation sessions.
 
 ## Overview
 
-The Brainstorm Tool creates a dedicated workspace for the model to:
+The Brainstorm Tool receives pre-generated brainstorming content from the agent and formats it for display. It expects the agent to have already performed the ideation, such as:
 
-1. Define and contextualize the challenge
-2. Apply creative thinking techniques
-3. Generate diverse ideas and approaches
-4. Organize ideas into logical categories
-5. Identify the most promising concepts
-6. Suggest next steps or implementation options
+1. Defining or reframing the challenge
+2. Generating diverse ideas and approaches
+3. Organizing ideas into categories
+4. Identifying promising concepts
+5. Suggesting next steps
+
+The tool itself primarily adds a standard title and ensures the content is ready for Markdown rendering.
 
 ## Usage
 
-The Brainstorm Tool can be added to any agent by including `brainstorm` in the agent's tool list:
+Include `brainstorm` in the agent's tool list (`template.json`):
 
 ```json
 {
-  "tools": ["brainstorm", "think", "search"]
+  "nodes": ["brainstorm", "think", "compare"]
 }
 ```
 
-Once configured, the agent can use the Brainstorm Tool to generate ideas for any challenge, with output formatted in a visually distinct component.
+When the agent decides to present its brainstorming results, it should call the `brainstorm` tool with the following parameters:
+
+- `challenge`: A brief description of the problem or opportunity explored.
+- `ideas`: The **complete, pre-generated brainstorming content** in Markdown format (including categories, lists, etc.).
 
 ### Example Agent Prompt
 
-When using an agent with the Brainstorm Tool, you can explicitly instruct it to use structured brainstorming:
+Instruct the agent to generate the ideas and then call the tool:
 
 ```
-When I ask for ideas or need creative solutions, use the 'brainstorm' tool to generate 
-diverse approaches and categorize them by theme, implementation difficulty, or impact.
+Brainstorm innovative ways to [solve problem/achieve goal]. Categorize the ideas and identify the most promising ones.
+Once you have formulated your brainstorming session, call the 'brainstorm' tool, providing the challenge and your full list of ideas and categories as parameters.
 ```
 
 ## Implementation Details
 
-The Brainstorm Tool is implemented with these key components:
+1.  **Schema (`schema.ts`)**: Defines the required `challenge` and `ideas` parameters (`BrainstormSchema`, `BrainstormParameters`).
+2.  **Execution Logic (`index.ts`)**: Validates parameters. On success, it takes the `ideas` text, trims it, adds a standard title (`## 💡 Brainstorm: [challenge]`), and wraps it in a `ToolResult`.
+3.  **Formatting (`index.ts`)**: Formatting is done directly within the `execute` function using `createToolResult`.
+4.  **Error Handling (`index.ts`)**: If validation fails or an error occurs, it throws a standard `Error`.
 
-1. **Core Schema**: Structured parameter definition for the challenge and generated ideas
-2. **Execution Logic**: Processing the brainstorming with immediate feedback for partial parameters
-3. **Component Rendering**: Visual presentation with enhanced Markdown formatting
-4. **Loading Animation**: Visual indicator during processing
+## Data Flow
+
+```mermaid
+graph TD
+    A[Agent LLM] -- Generates ideas --> B(Brainstorming Content - Markdown);
+    A -- Calls brainstorm tool --> C{brainstorm Tool};
+    B -- Passed as 'ideas' param --> C;
+    A -- 'challenge' param --> C;
+    C -- Formats (adds title, trims) --> D[Formatted Markdown ToolResult];
+    D -- Sent in stream --> E(Chat UI / ChatMarkdown);
+```
 
 ## Output Example
 
-When the Brainstorm Tool is used, it produces output like this:
+The `brainstorm` tool itself produces a `ToolResult` containing Markdown like this, which is then rendered by `ChatMarkdown`:
 
-```
-💡 Brainstorming: Ways to Improve Remote Team Collaboration
+```markdown
+## 💡 Brainstorm: Ways to Improve Remote Team Collaboration
 
 **CHALLENGE:**
 Generate innovative approaches to enhance collaboration, communication, and team cohesion for distributed teams working across multiple time zones.
@@ -95,51 +109,8 @@ Generate innovative approaches to enhance collaboration, communication, and team
 4. Implement 2-3 team building activities before expanding to more ambitious solutions
 ```
 
-## Flexible Structure
-
-The Brainstorm Tool adapts its approach based on the challenge type, allowing for:
-
-- **Product ideation**: Focus on feature concepts, user needs, and innovation opportunities
-- **Process improvement**: Generate efficiency enhancements, automation opportunities, and workflow optimizations
-- **Problem solving**: Develop multiple approaches to overcome specific obstacles or challenges
-- **Creative content**: Design content structures, themes, and presentation approaches
-- **Strategic planning**: Explore directional options, market approaches, and competitive positioning
-
-This flexibility ensures the brainstorming output matches the specific requirements of the challenge rather than forcing every ideation session into the same rigid template.
-
-## Styling
-
-The Brainstorm Tool uses shared CSS styles that provide:
-
-- Visual distinction for the brainstorming component
-- Categorized idea presentation with icon indicators
-- Highlighting for the most promising ideas
-- Support for bulleted and numbered lists
-- Dark mode support
-
-## Prompting Patterns
-
-These patterns work well with the Brainstorm Tool:
-
-### Standard Brainstorming Framework
-"Generate ideas for [challenge/problem], including diverse approaches and the most promising options."
-
-### Quantity-Focused Pattern
-"Brainstorm at least 20 different ways to [accomplish goal], organized into logical categories."
-
-### Constraint-Based Pattern
-"Develop innovative solutions for [challenge] that require minimal budget and can be implemented within 30 days."
-
-### Innovation Pattern
-"Brainstorm disruptive approaches to [industry/process] that challenge traditional assumptions and leverage new technologies."
+(The actual rendering depends on the styles defined in `ChatMarkdown`.)
 
 ## Cognitive Tools Suite
 
-This tool is part of the cognitive tools suite that includes:
-
-- **Think Tool**: Structured reasoning for complex problem-solving
-- **Reflect Tool**: Retrospective analysis and insight extraction
-- **Compare Tool**: Systematic comparison between options
-- **Critique Tool**: Critical evaluation with actionable suggestions
-- **Debate Tool**: Multi-perspective reasoning with opposing viewpoints
-- **Brainstorm Tool**: Creative ideation with structured categorization
+Part of a suite including: Think, Reflect, Compare, Critique, Debate.

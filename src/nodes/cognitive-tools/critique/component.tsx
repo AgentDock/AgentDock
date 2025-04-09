@@ -6,61 +6,45 @@ import "../components/styles.css"
 import type { CritiqueParameters } from "./schema"
 
 /**
- * Formats critique analysis with semantic markup
+ * Minimal formatting function - primarily ensures the text is trimmed.
+ * Removed complex formatting logic.
  */
 const formatCritique = (analysis: string): string => {
-  // Add semantic class names to different sections
-  return analysis
-    // Format the section headers
-    .replace(/UNDERSTANDING:/g, '<span class="font-semibold text-foreground">UNDERSTANDING:</span>')
-    .replace(/STRENGTHS:/g, '<span class="font-semibold text-foreground">STRENGTHS:</span>')
-    .replace(/ISSUES:/g, '<span class="font-semibold text-foreground">ISSUES:</span>')
-    .replace(/SUGGESTIONS:/g, '<span class="font-semibold text-foreground">SUGGESTIONS:</span>')
-    .replace(/OVERALL ASSESSMENT:/g, '<span class="font-semibold text-foreground">OVERALL ASSESSMENT:</span>')
-    
-    // Format numbered items
-    .replace(/(\d+\.\s)([^:\n]+)(?=\n|$)/g, (match, number, content) => {
-      if (match.includes("STRENGTHS:")) return match;
-      
-      // Different styling based on the section
-      if (analysis.indexOf("STRENGTHS:") !== -1 && 
-          analysis.indexOf("STRENGTHS:") < analysis.indexOf(match) && 
-          (analysis.indexOf("ISSUES:") === -1 || analysis.indexOf("ISSUES:") > analysis.indexOf(match))) {
-        return `${number}<span class="critique-strength">${content}</span>`;
-      } else if (analysis.indexOf("ISSUES:") !== -1 && 
-                analysis.indexOf("ISSUES:") < analysis.indexOf(match) && 
-                (analysis.indexOf("SUGGESTIONS:") === -1 || analysis.indexOf("SUGGESTIONS:") > analysis.indexOf(match))) {
-        return `${number}<span class="critique-issue">${content}</span>`;
-      } else if (analysis.indexOf("SUGGESTIONS:") !== -1 && 
-                analysis.indexOf("SUGGESTIONS:") < analysis.indexOf(match)) {
-        return `${number}<span class="critique-suggestion">${content}</span>`;
-      }
-      
-      return match;
-    });
+  if (!analysis || typeof analysis !== 'string') return '';
+  // Trim whitespace, but avoid other modifications.
+  return analysis.trim();
 };
 
 /**
  * Critique Tool Component
+ * Updated to work directly with ChatMarkdown - no dangerous HTML.
  */
 export const CritiqueComponent: React.FC<CritiqueParameters> = ({ 
-  subject, 
+  subject,
   analysis
 }) => {
-  const formattedAnalysis = React.useMemo(() => {
-    return formatCritique(analysis);
-  }, [analysis]);
+  // Apply minimal formatting (just trimming)
+  const formattedAnalysis = formatCritique(analysis);
 
+  // Construct the title
+  const title = `## 🔍 Critique of: ${subject}`;
+
+  // Combine title and analysis into a single Markdown string
+  const markdownContent = `${title}\n\n${formattedAnalysis}`;
+
+  // This component now expects its output to be rendered by ChatMarkdown.
+  // We return the raw markdown string, typically wrapped by a ToolResult elsewhere.
+  // For direct usage in React, you would pass markdownContent to <ChatMarkdown>
+  
+  // In the context of the tool's execute function, this should be wrapped:
+  // return createToolResult('critique_result', markdownContent);
+  
+  // Placeholder: Returning JSX for clarity, but the tool should return a ToolResult
+  // with the markdownContent string.
   return (
-    <div className="cognitive-tool-container">
-      <div className="cognitive-tool-header">
-        <Sparkles className="cognitive-tool-icon text-primary" />
-        <span className="cognitive-tool-title">🔍 Critique of: {subject}</span>
-      </div>
-      <div 
-        className="cognitive-tool-content"
-        dangerouslySetInnerHTML={{ __html: formattedAnalysis }}
-      />
+    <div className="cognitive-tool-placeholder">
+      {/* This is just a representation. The actual output is markdownContent */}
+      {markdownContent}
     </div>
   );
 };

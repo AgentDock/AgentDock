@@ -5,19 +5,14 @@
 
 import { z } from 'zod';
 import { Tool, ToolExecutionOptions } from '../../types';
-import { ToolResult, formatErrorMessage, createToolResult } from '@/lib/utils/markdown-utils';
+import { ToolResult, createToolResult } from '@/lib/utils/markdown-utils';
 import { logger, LogCategory } from 'agentdock-core';
-import { BrainstormSchema } from './schema';
+import { BrainstormSchema, BrainstormParameters } from './schema';
 
 /**
- * Type inference from schema
+ * Handle tool errors by throwing a standard Error.
  */
-type BrainstormParams = z.infer<typeof BrainstormSchema>;
-
-/**
- * Handle tool errors safely, ensuring they are always properly formatted strings
- */
-function safelyHandleError(error: unknown, challenge: string): ToolResult {
+function safelyHandleError(error: unknown, challenge: string): never {
   // Ensure error is properly converted to string in all cases
   let errorMessage: string;
   
@@ -29,116 +24,16 @@ function safelyHandleError(error: unknown, challenge: string): ToolResult {
     errorMessage = 'Unknown error occurred (null or undefined)';
   } else {
     try {
-      // Try to stringify the error if it's an object
       errorMessage = JSON.stringify(error);
     } catch {
-      // If JSON stringify fails, provide a fallback
       errorMessage = 'Error: Could not format error details';
     }
   }
   
-  logger.error(LogCategory.NODE, '[Brainstorm]', 'Execution error:', { error: errorMessage });
+  logger.error(LogCategory.NODE, '[Brainstorm]', 'Execution error (throwing):', { error: errorMessage });
   
-  // Return a properly formatted error result
-  return createToolResult(
-    'brainstorm_result',
-    `## 💡 Brainstorm: ${challenge}\n\nError: ${errorMessage}`
-  );
-}
-
-/**
- * Generate dynamic brainstorming ideas for a challenge using the LLM
- */
-async function generateStructuredBrainstorming(challenge: string, options: ToolExecutionOptions): Promise<string> {
-  try {
-    // Access LLM from the context
-    if (!options.llmContext?.llm) {
-      logger.warn(LogCategory.NODE, '[Brainstorm]', 'No LLM available for generating dynamic brainstorming');
-      return `Generating ideas for ${challenge}...`;
-    }
-
-    logger.debug(LogCategory.NODE, '[Brainstorm]', 'Generating dynamic structured brainstorming with LLM');
-    
-    // Prepare LLM prompt
-    const messages = [
-      {
-        role: 'system',
-        content: `You are an expert in creative thinking and innovation. Generate a detailed, structured brainstorming output for the challenge provided.
-        
-Your goal is to generate diverse, creative ideas that address the challenge from multiple angles. Choose a structure that makes the most sense for this specific challenge - not all challenges require the same brainstorming approach.
-
-Apply these creative thinking principles:
-- Begin by reframing the problem to unlock new perspectives
-- Generate a diverse range of ideas across different domains and approaches
-- Include unconventional or non-obvious solutions
-- Consider both practical and ambitious ideas
-- Organize ideas in a way that highlights patterns and themes
-- Identify potential applications or implementations
-- Extract key insights and suggest productive next steps
-
-You have flexibility in how you structure your brainstorming based on what works best for the specific challenge. Some possible approaches:
-- For product challenges: Explore features, user needs, technology applications, and business models
-- For process improvements: Consider efficiency, automation, reorganization, and paradigm shifts
-- For creative problems: Use analogies, constraint removal, reversal, and combination techniques
-- For strategic questions: Analyze trends, stakeholder perspectives, and scenario planning
-- For social challenges: Examine behavioral, systemic, and community-based approaches
-
-Use rich Markdown formatting:
-- Create appropriate section headings that reflect your chosen structure
-- Bold (~15% of text) for key ideas and breakthrough concepts
-- Italics (~10% of text) for contextual insights or qualifying statements
-- Use emoji sparingly for visual categorization of different idea types
-- Include numbered lists for prioritized ideas or sequential processes
-- Use bullet points for idea variations or quick explorations
-
-IMPORTANT: Do not include a title or heading at the beginning of your response.
-Do not repeat the challenge as a title. The application will add an appropriate title for your brainstorming session.
-
-Your brainstorming should be creative, diverse, and push beyond obvious solutions.`
-      },
-      {
-        role: 'user',
-        content: `Generate a comprehensive structured brainstorming session for this challenge: "${challenge}".
-        
-Be creative and diverse in your ideas, exploring multiple angles and approaches.
-Remember, do not include a title - start directly with your brainstorming content.`
-      }
-    ];
-
-    // Generate brainstorming with LLM
-    const result = await options.llmContext.llm.generateText({ 
-      messages
-    });
-    
-    // --- Add Usage Tracking --- 
-    if (result.usage && options.updateUsageHandler) {
-      logger.debug(LogCategory.NODE, '[Brainstorm]', 'Calling usage handler after generateText', { 
-        usage: result.usage,
-        handlerExists: !!options.updateUsageHandler 
-      });
-      await options.updateUsageHandler(result.usage); // Call the handler passed from AgentNode
-    } else {
-      // Log if handler or usage is missing for debugging
-      logger.warn(LogCategory.NODE, '[Brainstorm]', 'Usage handler or usage data missing, skipping update', { 
-        hasUsage: !!result.usage,
-        handlerExists: !!options.updateUsageHandler 
-      });
-    }
-    // --- End Usage Tracking ---
-
-    logger.debug(LogCategory.NODE, '[Brainstorm]', 'Successfully generated dynamic brainstorming with LLM', {
-      contentLength: result.text.length
-    });
-    
-    return result.text;
-  } catch (error) {
-    logger.error(LogCategory.NODE, '[Brainstorm]', 'Error generating dynamic brainstorming', {
-      error: error instanceof Error ? error.message : String(error)
-    });
-    
-    // If LLM generation fails, return a simple message
-    return `Generating ideas for ${challenge}...`;
-  }
+  // Throw a standard Error instead of returning a ToolResult
+  throw new Error(`Error during brainstorm on "${challenge}": ${errorMessage}`);
 }
 
 /**
@@ -172,58 +67,47 @@ Your brainstorming should be creative, diverse, and push beyond obvious solution
 `;
 
 /**
- * Brainstorm tool implementation
+ * Brainstorm tool implementation - Formats SUCCESS results directly.
  */
 export const brainstormTool: Tool = {
   name: 'brainstorm',
   description: brainstormToolDescription,
   parameters: BrainstormSchema,
-  execute: async (params: BrainstormParams, options: ToolExecutionOptions): Promise<ToolResult> => {
+  execute: async (params: BrainstormParameters, options: ToolExecutionOptions): Promise<ToolResult> => {
     try {
-      const { challenge, ideas } = params;
+      const validation = BrainstormSchema.safeParse(params);
+      if (!validation.success) {
+        const errorMsg = validation.error.errors.map(e => `${e.path.join('.')} - ${e.message}`).join(', ');
+        logger.warn(LogCategory.NODE, '[Brainstorm]', 'Invalid parameters received (throwing)', { errors: errorMsg });
+        // Throw the validation error using the helper
+        safelyHandleError(`Invalid parameters: ${errorMsg}`, params.challenge || 'Unknown Challenge');
+      }
       
-      logger.debug(LogCategory.NODE, '[Brainstorm]', `Processing brainstorming for: "${challenge}"`, { 
+      const { challenge, ideas } = validation.data;
+      
+      logger.debug(LogCategory.NODE, '[Brainstorm]', `Formatting brainstorming for: "${challenge}"`, { 
         toolCallId: options.toolCallId,
-        hasIdeas: !!ideas,
-        ideasLength: ideas?.length || 0,
+        ideasLength: ideas.length,
         timestamp: new Date().toISOString()
       });
       
-      // Add a minimal artificial delay to allow the loading animation to be visible
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Format success result directly using createToolResult
+      const trimmedIdeas = ideas.trim();
+      const title = `## 💡 Brainstorm: ${challenge}`;
+      const markdownContent = `${title}\n\n${trimmedIdeas}`;
+      const result = createToolResult('brainstorm_result', markdownContent);
       
-      // Handle partial calls (when only challenge is provided)
-      if (!ideas || ideas.trim() === '') {
-        logger.debug(LogCategory.NODE, '[Brainstorm]', 'Partial call detected - generating dynamic structured brainstorming', {
-          challenge,
-          timestamp: new Date().toISOString()
-        });
-        
-        // Generate dynamic structured brainstorming for the challenge using LLM
-        const dynamicIdeas = await generateStructuredBrainstorming(challenge, options);
-        
-        return createToolResult(
-          'brainstorm_result',
-          `## 💡 Brainstorm: ${challenge}\n\n${dynamicIdeas}`
-        );
-      }
-      
-      // Create the result with all parameters for complete calls
-      const result = createToolResult(
-        'brainstorm_result',
-        `## 💡 Brainstorm: ${challenge}\n\n${ideas}`
-      );
-      
-      logger.debug(LogCategory.NODE, '[Brainstorm]', 'Returning complete brainstorming session', {
+      logger.debug(LogCategory.NODE, '[Brainstorm]', 'Returning formatted brainstorming session', {
         challenge,
-        ideasLength: ideas.length,
+        ideasLength: ideas.length, // Log original length
         timestamp: new Date().toISOString()
       });
       
       return result;
     } catch (error) {
-      // Use the safe error handler to ensure proper formatting
-      return safelyHandleError(error, params.challenge || 'Unknown Challenge');
+      const challenge = typeof params?.challenge === 'string' ? params.challenge : 'Unknown Challenge';
+      // Use the helper to throw the error consistently
+      safelyHandleError(error, challenge);
     }
   }
 };

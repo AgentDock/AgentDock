@@ -75,8 +75,11 @@ function maskSensitiveData(key: string, visibleChars: number = 5): string {
   return `${key.substring(0, visibleChars)}...`;
 }
 
-// Set the runtime to edge
-export const runtime = 'edge';
+// Set runtime to Node.js for reliable background processing
+export const runtime = 'nodejs';
+
+// Keep dynamic property 
+export const dynamic = 'force-dynamic';
 
 // For Next.js Edge runtime configuration, we need to export a static value
 // The actual value used in the code will be determined by the environment variable

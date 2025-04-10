@@ -85,7 +85,7 @@ export function SiteHeader({ isCollapsed, onCollapse }: SiteHeaderProps) {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link 
-                  href="https://github.com/agentdock/agentdock-core" 
+                  href="https://github.com/agentdock/agentdock" 
                   target="_blank" 
                   rel="noopener noreferrer"
                 >

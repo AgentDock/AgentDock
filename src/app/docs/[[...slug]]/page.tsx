@@ -7,6 +7,7 @@ import { use } from 'react';
 import { docSections } from '@/lib/docs-config';
 import { getPrevNextPages } from '@/lib/docs-utils';
 import { PrevNextNav } from '@/app/docs/components/prev-next-nav';
+import { generatePageMetadata } from '@/lib/metadata-utils';
 
 // Get the docs directory path that works in both development and production
 function getDocsBasePath(): string {
@@ -122,8 +123,15 @@ function getMarkdownContent(slug: string[] = []): string | null {
 
 // Extract title from markdown content
 function extractTitle(content: string): string {
-  const titleMatch = content.match(/^#\s+(.*)$/m);
-  return titleMatch ? titleMatch[1] : 'Documentation';
+  // Look for a level 1 heading (# Title)
+  const titleMatch = content.match(/^#\s+(.+)$/m);
+  if (titleMatch && titleMatch[1]) {
+    return titleMatch[1].trim();
+  }
+  
+  // Fallback: use the first line as title
+  const firstLine = content.trim().split('\n')[0];
+  return firstLine || 'Documentation';
 }
 
 // Function to check if URL has .md extension in the last part or if it's README.md
@@ -171,10 +179,24 @@ export async function generateMetadata(
   
   const title = extractTitle(content);
   
-  return {
+  // Extract first paragraph for description
+  let description = '';
+  const paragraphMatch = content.match(/^(?!#)(.+)$/m);
+  if (paragraphMatch && paragraphMatch[1]) {
+    description = paragraphMatch[1].trim();
+  }
+  
+  // Use metadata utility without description in OG params
+  return generatePageMetadata({
     title: `${title} - AgentDock Documentation`,
-    description: `AgentDock documentation - ${title}`,
-  };
+    description: description || `AgentDock documentation - ${title}`,
+    ogImageParams: {
+      title: title,
+      // Use a more documentation-oriented color for docs
+      from: '2563EB',
+      to: '1E40AF',
+    }
+  });
 }
 
 export default function DocPage(props: {

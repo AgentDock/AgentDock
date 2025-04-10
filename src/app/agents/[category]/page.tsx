@@ -6,6 +6,7 @@ import { templates } from '@/generated/templates'
 import { hasTag } from "@/lib/utils"
 import type { AgentTemplate } from "@/lib/store/types"
 import { use } from "react"
+import { generatePageMetadata } from "@/lib/metadata-utils"
 
 // Define types for page props
 type CategoryPageProps = {
@@ -26,11 +27,19 @@ export async function generateMetadata(
   const categoryName = currentCategory?.name || category; // Fallback to id if name not found
 
   // Capitalize the category name for the title
-  const title = categoryName.charAt(0).toUpperCase() + categoryName.slice(1);
-
-  return {
-    title: `${title} Agents`, // Set the title like "Research Agents"
-  };
+  const title = `${categoryName.charAt(0).toUpperCase() + categoryName.slice(1)} Agents`;
+  const description = `Explore and use our collection of ${categoryName} AI agents powered by AgentDock.`;
+  
+  // Return metadata with dynamic OG image - remove description
+  return generatePageMetadata({
+    title,
+    description,
+    ogImageParams: {
+      title,
+      // Use a standard gradient color
+      from: '0062F0',
+    }
+  });
 }
 
 // This is a server component

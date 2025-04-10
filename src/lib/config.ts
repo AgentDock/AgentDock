@@ -5,8 +5,8 @@
 export const siteConfig = {
   name: 'AgentDock Hub',
   url: process.env.NEXT_PUBLIC_APP_URL || 'https://hub.agentdock.ai',
-  ogImage: 'https://hub.agentdock.ai/og.jpg',
-  description: 'Your AI Agent Hub - Build, Deploy, and Manage AI Agents',
+  ogImage: (process.env.NEXT_PUBLIC_APP_URL || 'https://hub.agentdock.ai') + '/api/og',
+  description: 'Build anything with AI Agents',
   links: {
     twitter: 'https://twitter.com/agentdock',
     github: 'https://github.com/agentdock',
@@ -26,9 +26,11 @@ export const metadata = {
     'LLM',
     'Machine Learning',
     'Automation',
-    'ChatGPT',
-    'Claude',
-    'GPT-4',
+    'Natural Language Inference',
+    'AgentDock',
+    'Agentic AI',
+    'Workflows',
+    'Agentic Framework',
   ],
   authors: [
     {

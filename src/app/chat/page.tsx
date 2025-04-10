@@ -3,6 +3,8 @@ import { Metadata } from 'next'
 import { templates, TemplateId } from '@/generated/templates'
 import ChatClientPage from './chat-client' // Import the new client component
 import { ChatSkeleton } from "@/components/chat/ChatSkeleton"
+import { generatePageMetadata } from "@/lib/metadata-utils"
+import type { AgentTemplate } from "@/lib/store/types"
 
 type PageParams = Record<string, never>; // Empty params object since chat page has no dynamic route params
 type SearchParams = { [key: string]: string | string[] | undefined };
@@ -16,13 +18,32 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const resolvedSearchParams = await searchParams;
   const agentId = resolvedSearchParams?.agent as string | undefined;
-  const agentName = agentId && templates[agentId as TemplateId] ? templates[agentId as TemplateId].name : null;
+  const template = agentId && templates[agentId as TemplateId] 
+    ? templates[agentId as TemplateId] as unknown as AgentTemplate 
+    : null;
   
-  const title = agentName ? agentName : `Chat`; 
+  // If we have a template, use its details
+  if (template) {
+    const title = `${template.name} - Chat`;
+    const description = template.description || `Chat with ${template.name} on AgentDock`;
+    
+    return generatePageMetadata({
+      title,
+      description,
+      ogImageParams: {
+        title: template.name,
+        // Use a chat-specific gradient
+        from: '4F46E5',
+        to: '1E3A8A',
+      }
+    });
+  }
   
-  return {
-    title: title,
-  };
+  // Fallback for cases when there is no agent specified
+  return generatePageMetadata({
+    title: 'Chat',
+    description: 'Chat with AI agents on AgentDock',
+  });
 }
 
 // This is now a Server Component responsible for metadata and rendering the client part

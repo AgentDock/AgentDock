@@ -192,9 +192,6 @@ export async function generateMetadata(
     description: description || `AgentDock documentation - ${title}`,
     ogImageParams: {
       title: title,
-      // Use a more documentation-oriented color for docs
-      from: '2563EB',
-      to: '1E40AF',
     }
   });
 }

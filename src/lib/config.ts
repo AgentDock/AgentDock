@@ -6,7 +6,7 @@ export const siteConfig = {
   name: 'AgentDock Hub',
   url: process.env.NEXT_PUBLIC_APP_URL || 'https://hub.agentdock.ai',
   ogImage: (process.env.NEXT_PUBLIC_APP_URL || 'https://hub.agentdock.ai') + '/api/og',
-  description: 'Build anything with AI Agents',
+  description: 'Build Anything with AI Agents',
   links: {
     twitter: 'https://twitter.com/agentdock',
     github: 'https://github.com/agentdock',

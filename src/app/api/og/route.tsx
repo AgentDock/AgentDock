@@ -54,14 +54,17 @@ export async function GET(req: NextRequest) {
               margin: '0 20px',
               width: '90%',
               maxWidth: '1000px',
+              overflowWrap: 'break-word',
+              wordWrap: 'break-word',
             }}
           >
             <div
               style={{
-                fontSize: 64,
+                fontSize: title.length > 40 ? 48 : 64,
                 fontWeight: 700,
-                lineHeight: 1.1,
-                whiteSpace: 'nowrap',
+                lineHeight: 1.2,
+                maxWidth: '100%',
+                wordBreak: 'break-word',
                 textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
               }}
             >

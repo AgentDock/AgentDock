@@ -231,6 +231,8 @@ const COMPONENTS = {
   // Use actual BR element with improved styling
   br: () => <br style={{ marginBottom: '0.75rem' }} />,
   a: ({ node, href, children, ...props }: ComponentProps) => {
+    // NOTE: 'node' is intentionally used here by react-markdown's component API
+    // but we don't spread it below.
     const messageClasses = "text-blue-600 dark:text-blue-400 font-medium underline underline-offset-2 break-all hover:text-blue-800 dark:hover:text-blue-300 [.bg-primary_&]:text-blue-100 [.bg-primary_&]:hover:text-white [.bg-primary_&]:font-semibold [.bg-muted_&]:text-blue-600";
     
     // Format link text for .md files
@@ -270,8 +272,9 @@ const COMPONENTS = {
       </a>
     );
   },
-  pre: ({ children }: any) => children,
+  pre: ({ children }: any) => children, // 'node' is implicitly handled by the 'code' component
   code: ({ node, className, children, ...props }: ComponentProps) => {
+    // NOTE: 'node' is intentionally used here by react-markdown's component API
     const match = /language-(\w+)/.exec(className || '')
     const language = match ? match[1] : ''
     
@@ -293,54 +296,58 @@ const COMPONENTS = {
     
     // For code blocks vs inline code
     return isCodeBlock ? (
-      <CodeBlock className={className} language={language} {...props}>
+      // Pass {...props} excluding node to CodeBlock if needed, but CodeBlock doesn't seem to use random props
+      <CodeBlock className={className} language={language}> 
         {children}
       </CodeBlock>
     ) : (
+      // For inline code, don't spread potentially problematic props like 'node'
       <code
         className={cn(
           "font-mono [:not(pre)>&]:rounded-md [:not(pre)>&]:bg-background/50 [:not(pre)>&]:px-1 [:not(pre)>&]:py-0.5"
         )}
-        {...props}
+        // Only pass known/safe props if necessary, or none if props are just children/className
+        // {...props} <- Removed spread
       >
         {children}
       </code>
     )
   },
-  ol: ({ children, ...props }: ComponentProps) => {
+  ol: ({ node, children, ...props }: ComponentProps) => { // Destructure node
     return (
-      <ol className="list-decimal pl-6 marker:text-neutral-700" {...props}>
+      <ol className="list-decimal pl-6 marker:text-neutral-700" {...props}> {/* Spread remaining props */}
         {children}
       </ol>
     );
   },
-  ul: ({ children, ...props }: ComponentProps) => {
+  ul: ({ node, children, ...props }: ComponentProps) => { // Destructure node
     return (
-      <ul className="list-disc pl-6 marker:text-neutral-700" {...props}>
+      <ul className="list-disc pl-6 marker:text-neutral-700" {...props}> {/* Spread remaining props */}
         {children}
       </ul>
     );
   },
-  li: ({ children, ...props }: ComponentProps) => {
+  li: ({ node, children, ...props }: ComponentProps) => { // Destructure node
     return (
-      <li className="my-1" {...props}>
+      <li className="my-1" {...props}> {/* Spread remaining props */}
         {children}
       </li>
     );
   },
-  p: ({ children, ...props }: ComponentProps) => {
+  p: ({ node, children, ...props }: ComponentProps) => { // Destructure node
     return (
-      <p {...props}>{children}</p>
+      <p {...props}>{children}</p> // Spread remaining props
     );
   },
   hr: withClass("hr", "border-foreground/20"),
 }
 
 function withClass(Tag: keyof React.JSX.IntrinsicElements, classes: string) {
+  // Modify the HOC to destructure 'node' and exclude it from spreading
   const Component = ({ node, ...props }: ComponentProps) => {
     const elementProps = {
       className: classes,
-      ...props
+      ...props // Spread only the remaining props, excluding 'node'
     };
     return React.createElement(Tag, elementProps);
   }

@@ -27,14 +27,13 @@ export async function generateMetadata({
     const title = `${template.name} - Chat`;
     const description = template.description || `Chat with ${template.name} on AgentDock`;
     
+    // Pass OG image title specifically, but no custom colors
     return generatePageMetadata({
       title,
       description,
       ogImageParams: {
-        title: template.name,
-        // Use a chat-specific gradient
-        from: '4F46E5',
-        to: '1E3A8A',
+        title: template.name, // Use template name for OG image text
+        // No 'from' or 'to' properties here, so default gradient is used
       }
     });
   }

@@ -82,8 +82,8 @@ async function validateRouteHandler(): Promise<boolean> {
 
   // Read file content directly
   const fileContent = readFileSync(routePath, 'utf8');
-  if (!fileContent.includes('export const runtime = \'edge\'')) {
-    throw new ValidationError('Edge runtime not properly configured');
+  if (!fileContent.includes('export const runtime = \'edge\'') && !fileContent.includes('export const runtime = \'nodejs\'')) {
+    throw new ValidationError('Runtime not properly configured - must be either "edge" or "nodejs"');
   }
 
   return true;

@@ -42,14 +42,6 @@ import { streamText } from 'ai';
 // Import and initialize the agent adapter - this ensures all components are properly set up
 import { processAgentMessage } from '@/lib/agent-adapter';
 
-// Import the initial NextJS orchestration module for backward compatibility, will be removed later
-// import { initOrchestration } from '@/lib/orchestration'; // Removed old import
-
-// Import the initialization module to ensure nodes are registered
-// import '@/nodes/init'; // Remove direct import
-// import { initToolRegistry } from '@/nodes/init'; // Remove direct import
-// initToolRegistry(); // Remove direct initialization
-
 // Import the lazy initialization utility instead
 import { ensureToolsInitialized } from '@/lib/tools';
 

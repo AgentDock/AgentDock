@@ -32,4 +32,4 @@ graph LR
 
 Not a developer? You can still create these agents without code using **AgentDock Pro** - our visual agent builder lets you implement any RFA through an intuitive drag-and-drop interface and natural language instructions.
 
-[Learn more about AgentDock Pro →](https://agentdock.ai/pro)
+[Learn more about AgentDock Pro →](/docs/agentdock-pro)

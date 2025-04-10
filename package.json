@@ -12,7 +12,7 @@
     "predev": "tsx --no-deprecation scripts/bundle-templates.ts",
     "dev": "next dev",
     "build": "next build",
-    "postbuild": "tsx --no-deprecation scripts/generate-search-index.ts && node scripts/generate-favicons.js",
+    "postbuild": "tsx --no-deprecation scripts/generate-search-index.ts && node scripts/generate-favicons.js && tsx --no-deprecation scripts/generate-llms-from-docs.ts",
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
@@ -29,7 +29,8 @@
     "git-hooks-validate": "tsx scripts/git-hooks-validate.ts",
     "prepare": "husky",
     "clean-install": "./scripts/clean-install.sh",
-    "postinstall": "cd agentdock-core && pnpm install"
+    "postinstall": "cd agentdock-core && pnpm install && cd .. && tsx --no-deprecation scripts/generate-llms-from-docs.ts",
+    "generate-llms": "tsx --no-deprecation scripts/generate-llms-from-docs.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

@@ -107,6 +107,9 @@ importers:
       '@vercel/blob':
         specifier: ^0.27.3
         version: 0.27.3
+      '@vercel/functions':
+        specifier: ^2.0.0
+        version: 2.0.0
       '@vercel/speed-insights':
         specifier: ^1.2.0
         version: 1.2.0(next@15.2.4(@babel/core@7.26.10)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
@@ -2475,6 +2478,15 @@ packages:
   '@vercel/fun@1.1.5':
     resolution: {integrity: sha512-vRuR7qlsl8CgdeQIhfgLDtbMEuxqltx6JWFahB7Q5VOKMo/sFZV1rCxIHsHsJP4yYY2hoZqlT/EUkfG1tfPicg==}
     engines: {node: '>= 18'}
+
+  '@vercel/functions@2.0.0':
+    resolution: {integrity: sha512-BSwIihLHoV18gerKZJyGuqd3rtaYM6rJvET1kOwKktshucyaHXTJel7Cxegs+sdX0NZqsX4LO2MFnMU2jG01Cw==}
+    engines: {node: '>= 18'}
+    peerDependencies:
+      '@aws-sdk/credential-provider-web-identity': '*'
+    peerDependenciesMeta:
+      '@aws-sdk/credential-provider-web-identity':
+        optional: true
 
   '@vercel/gatsby-plugin-vercel-analytics@1.0.11':
     resolution: {integrity: sha512-iTEA0vY6RBPuEzkwUTVzSHDATo1aF6bdLLspI68mQ/BTbi5UQEGjpjyzdKOVcSYApDtFU6M6vypZ1t4vIEnHvw==}
@@ -9061,6 +9073,8 @@ snapshots:
     transitivePeerDependencies:
       - encoding
       - supports-color
+
+  '@vercel/functions@2.0.0': {}
 
   '@vercel/gatsby-plugin-vercel-analytics@1.0.11':
     dependencies:

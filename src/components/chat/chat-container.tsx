@@ -418,6 +418,12 @@ const ChatContainer = React.forwardRef<
         totalTokens: number;
         provider?: string;
       };
+      // Final token usage data appended after the chat stream completes
+      finalCumulativeTokenUsage?: {
+        promptTokens: number;
+        completionTokens: number;
+        totalTokens: number;
+      };
     };
     
     // Check for streaming errors
@@ -484,6 +490,41 @@ const ChatContainer = React.forwardRef<
     // Check for token usage in the stream data
     if (streamData.usage) {
       setTokenUsage(streamData.usage);
+    }
+    
+    // Check for final cumulative token usage (this is the key addition)
+    if (streamData.finalCumulativeTokenUsage) {
+      logDebug('ChatContainer', 'Received final token usage via stream data', undefined, {
+        usage: streamData.finalCumulativeTokenUsage
+      });
+      
+      // Update our token usage state with the definitive value from the backend
+      setTokenUsage({
+        promptTokens: streamData.finalCumulativeTokenUsage.promptTokens,
+        completionTokens: streamData.finalCumulativeTokenUsage.completionTokens,
+        totalTokens: streamData.finalCumulativeTokenUsage.totalTokens
+      });
+      
+      // Also update localStorage directly to ensure consistent state
+      // This helps ensure other components can access the latest token count
+      // even without a separate API call to /api/session
+      try {
+        const storageKey = `session-info-${orchestrationState.sessionId}`;
+        const existingDataStr = localStorage.getItem(storageKey);
+        const existingData = existingDataStr ? JSON.parse(existingDataStr) : {};
+        
+        localStorage.setItem(storageKey, JSON.stringify({
+          ...existingData,
+          cumulativeTokenUsage: streamData.finalCumulativeTokenUsage,
+          lastUpdateTime: Date.now()
+        }));
+        
+        if (process.env.NODE_ENV === 'development') {
+          console.debug('[TOKEN USAGE DEBUG] Updated localStorage with final token usage from stream');
+        }
+      } catch (err) {
+        console.warn('Failed to update token usage in localStorage:', err);
+      }
     }
   }, [data, orchestrationState]); // Add orchestrationState to dependency array for comparison
   

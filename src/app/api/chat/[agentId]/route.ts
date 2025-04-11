@@ -199,25 +199,71 @@ async function resolveApiKey(request: NextRequest, provider: string, isByokOnly:
 
 /**
  * Creates a response from the agent result, adding necessary headers
+ * AND appending the final cumulative token usage to the data stream.
  */
 async function createAgentResponse(result: any, finalSessionId: string) {
-  // Get data stream response - the error handling is now handled by the agent adapter
-  const response = result.toDataStreamResponse();
+  // ----- START: Append final token usage -----
+  try {
+    // Import necessary functions (ensure this is efficient in edge/nodejs)
+    const { getOrchestrationState, toMutableConfig } = await import('@/lib/orchestration-adapter');
+    const { templates } = await import('@/generated/templates');
 
-  // Add token usage headers if available
-  const tokenUsage = result.getLastTokenUsage?.();
-  if (tokenUsage) {
-    response.headers.set('x-token-usage', JSON.stringify(tokenUsage));
+    // We need the agentId again to potentially get the orchestration config
+    // This assumes finalSessionId follows the pattern 'session-<agentId>-...'
+    // A more robust approach might involve passing agentId or template directly
+    const agentId = finalSessionId.split('-')[1]; // Extract agentId from sessionId (needs validation)
+    const template = agentId ? templates[agentId as keyof typeof templates] : null;
+
+    if (finalSessionId && template && 'orchestration' in template && template.orchestration) {
+       // Convert readonly config to mutable
+       const mutableConfig = toMutableConfig(template.orchestration);
+      
+       // Fetch the LATEST state AFTER the stream has finished and onFinish updated KV
+       const finalState = await getOrchestrationState(finalSessionId, mutableConfig);
+
+       if (finalState?.cumulativeTokenUsage) {
+         logger.debug(LogCategory.API, 'ChatRoute', 'Appending final token usage to data stream', { 
+             sessionId: finalSessionId?.substring(0, 8),
+             usage: finalState.cumulativeTokenUsage 
+         });
+         // Use the experimental_appendData method from the AI SDK result
+         result.experimental_appendData({
+           finalCumulativeTokenUsage: finalState.cumulativeTokenUsage
+         });
+       } else {
+         logger.warn(LogCategory.API, 'ChatRoute', 'Final state or usage missing, cannot append to stream', { sessionId: finalSessionId?.substring(0, 8) });
+       }
+    } else {
+       logger.debug(LogCategory.API, 'ChatRoute', 'Agent/Session/Config not suitable for appending final usage', { sessionId: finalSessionId?.substring(0, 8), hasTemplate: !!template });
+    }
+  } catch (appendError) {
+    logger.error(LogCategory.API, 'ChatRoute', 'Error fetching/appending final token usage', {
+      sessionId: finalSessionId?.substring(0, 8),
+      error: appendError instanceof Error ? appendError.message : String(appendError)
+    });
+    // Don't block the response if appending fails, just log it
+  }
+  // ----- END: Append final token usage -----
+
+  // Get data stream response - the error handling is now handled by the agent adapter
+  // Using the correct response method that preserves tool calling functionality
+  const response = result.toResponse ? result.toResponse() : result.toDataStreamResponse();
+
+  // Add token usage headers if available (this might be from the last step, not cumulative)
+  const lastStepTokenUsage = result.getLastTokenUsage?.();
+  if (lastStepTokenUsage) {
+    // Consider if this header is still useful or potentially confusing
+    // response.headers.set('x-token-usage', JSON.stringify(lastStepTokenUsage));
     
     // Add debug log in development
     if (isDevelopment) {
-      console.log('[TOKEN DEBUG] Setting token usage header:', tokenUsage);
+      console.log('[TOKEN DEBUG] Last step token usage was:', lastStepTokenUsage);
     }
   }
 
-  // Add orchestration state from adapter
+  // Add orchestration state from adapter (might be slightly stale vs. finalState above)
   const { addOrchestrationHeaders } = await import('@/lib/orchestration-adapter');
-  await addOrchestrationHeaders(response, finalSessionId);
+  await addOrchestrationHeaders(response, finalSessionId); // This reads from KV again
 
   // Ensure streaming isn't terminated early
   response.headers.set('Cache-Control', 'no-cache');
@@ -584,7 +630,8 @@ export async function POST(
         orchestrationState: orchestrationState
       });
 
-      // Create and return the response with proper headers
+      // Create and return the response with proper headers AND appended final usage
+      // The createAgentResponse function now handles appending the final usage
       return await createAgentResponse(result, finalSessionId);
       
     } catch (error) {

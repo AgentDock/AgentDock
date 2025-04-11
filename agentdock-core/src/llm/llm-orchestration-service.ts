@@ -19,6 +19,42 @@ import {
 } from './index';
 import { logger, LogCategory } from '../logging';
 
+// Define a type for the waitUntil function
+type WaitUntilFn = (promise: Promise<any>) => void;
+
+// Try to dynamically load Vercel's waitUntil function
+let waitUntilFn: WaitUntilFn | null = null;
+try {
+  // Dynamically try to import Vercel's waitUntil if available (in production)
+  // This way we don't add a dependency to agentdock-core
+  // @ts-ignore - Ignore TS errors for dynamic require
+  const vercelModule = require('@vercel/functions');
+  if (vercelModule && typeof vercelModule.waitUntil === 'function') {
+    waitUntilFn = vercelModule.waitUntil;
+    logger.info(LogCategory.LLM, 'LLMOrchestrationService', 'Vercel waitUntil function available for background tasks');
+  }
+} catch (e) {
+  // Vercel functions not available - will use fallback
+  logger.debug(LogCategory.LLM, 'LLMOrchestrationService', 'Vercel functions not available, will use fallback for background tasks');
+}
+
+/**
+ * Safely runs a promise with waitUntil when available, falls back gracefully otherwise
+ */
+function runBackgroundTask(promise: Promise<any>): void {
+  if (waitUntilFn) {
+    // Use Vercel's waitUntil if available
+    waitUntilFn(promise);
+  } else {
+    // Fallback for local/non-Vercel: at least start the promise but don't block
+    promise.catch(error => {
+      logger.error(LogCategory.LLM, 'LLMOrchestrationService', 'Background task error', { 
+        error: error instanceof Error ? error.message : String(error) 
+      });
+    });
+  }
+}
+
 /**
  * Type definitions based on Vercel AI SDK documentation
  */
@@ -115,15 +151,15 @@ export class LLMOrchestrationService {
         usage: !!usage // Log if usage object is present
       });
       
-      // Ensure the state update is initiated and potentially completed
-      // before proceeding or calling the original onFinish.
-      await this.updateTokenUsage(usage);
+      // Use waitUntil for token updates if it's available
+      // This makes sure the updates complete even after response streaming
+      if (usage) {
+        this.updateTokenUsage(usage);
+      }
       
       // Call original onFinish if provided
       if (options.onFinish) {
         try {
-          // Note: Original onFinish might still run concurrently if it's async
-          // but at least the KV update has been awaited.
           await options.onFinish(event);
         } catch (callbackError) {
             logger.error(LogCategory.LLM, 'LLMOrchestrationService', 'Error in provided onFinish callback', { 
@@ -265,22 +301,31 @@ export class LLMOrchestrationService {
 
   /**
    * Updates token usage in the session state.
-   * Called from the onFinish callback.
+   * Uses waitUntil when available to ensure the update completes.
    */
-  private async updateTokenUsage(usage?: TokenUsage): Promise<void> {
-    if (!usage) return;
-
-    logger.debug(LogCategory.LLM, 'LLMOrchestrationService', 'updateTokenUsage called', { 
-      sessionId: this.sessionId?.substring(0, 8), 
-      usage 
-    });
+  private updateTokenUsage(usage: TokenUsage): void {
+    // Create the token update promise
+    const updatePromise = this.performTokenUsageUpdate(usage);
     
-    // Logic to get current state and update cumulativeTokenUsage
-    // using this.orchestrationManager and this.sessionId
+    // Use the background task runner which will use waitUntil if available
+    runBackgroundTask(updatePromise);
+    
+    logger.debug(LogCategory.LLM, 'LLMOrchestrationService', 'Token usage update started', { 
+      sessionId: this.sessionId?.substring(0, 8),
+      usingWaitUntil: !!waitUntilFn
+    });
+  }
+
+  /**
+   * Performs the actual token usage update operation.
+   */
+  private async performTokenUsageUpdate(usage: TokenUsage): Promise<void> {
     try {
+      // Get current state
       const currentState = await this.orchestrationManager.getState(this.sessionId);
       const currentUsage = currentState?.cumulativeTokenUsage || { promptTokens: 0, completionTokens: 0, totalTokens: 0 };
-      // Ensure usage properties are treated as numbers
+      
+      // Calculate new totals
       const promptTokensToAdd = typeof usage.promptTokens === 'number' ? usage.promptTokens : 0;
       const completionTokensToAdd = typeof usage.completionTokens === 'number' ? usage.completionTokens : 0;
       const totalTokensToAdd = typeof usage.totalTokens === 'number' ? usage.totalTokens : 0;
@@ -290,8 +335,11 @@ export class LLMOrchestrationService {
         completionTokens: (currentUsage.completionTokens || 0) + completionTokensToAdd,
         totalTokens: (currentUsage.totalTokens || 0) + totalTokensToAdd,
       };
+      
+      // Update the state with new token usage
       await this.orchestrationManager.updateState(this.sessionId, { cumulativeTokenUsage: newUsage });
-      logger.info(LogCategory.LLM, 'LLMOrchestrationService', 'Token usage updated', {
+      
+      logger.info(LogCategory.LLM, 'LLMOrchestrationService', 'Token usage updated successfully', {
         sessionId: this.sessionId?.substring(0, 8),
         newTotals: newUsage
       });

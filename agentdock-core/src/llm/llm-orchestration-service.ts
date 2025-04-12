@@ -22,32 +22,23 @@ import { logger, LogCategory } from '../logging';
 // Define a type for the waitUntil function
 type WaitUntilFn = (promise: Promise<any>) => void;
 
-// Initialize waitUntilFn to null
+// Try to dynamically load Vercel's waitUntil function
 let waitUntilFn: WaitUntilFn | null = null;
-
-// Check environment variable first to decide if we should attempt loading Vercel functions
-if (process.env.AGENTDOCK_EXECUTION_ENV === 'vercel') {
-  logger.info(LogCategory.LLM, 'LLMOrchestrationService', 'Detected AGENTDOCK_EXECUTION_ENV=vercel, attempting to load @vercel/functions');
-  try {
-    // Dynamically try to import Vercel's waitUntil if available
-    // This avoids adding a hard dependency to agentdock-core
-    // @ts-ignore - Ignore TS errors for dynamic require
-    const vercelModule = require('@vercel/functions');
-    if (vercelModule && typeof vercelModule.waitUntil === 'function') {
-      waitUntilFn = vercelModule.waitUntil;
-      logger.info(LogCategory.LLM, 'LLMOrchestrationService', 'Vercel waitUntil function loaded successfully for background tasks');
-    } else {
-      logger.warn(LogCategory.LLM, 'LLMOrchestrationService', '@vercel/functions loaded, but waitUntil function not found or not a function.');
-    }
-  } catch (e) {
-    // Vercel functions specified but not available or import failed
-    logger.warn(LogCategory.LLM, 'LLMOrchestrationService', 'AGENTDOCK_EXECUTION_ENV=vercel set, but failed to load @vercel/functions. Background tasks may not complete reliably.', {
-      error: e instanceof Error ? e.message : String(e)
-    });
+try {
+  // Dynamically try to import Vercel's waitUntil if available (in production)
+  // This way we don't add a dependency to agentdock-core
+  // @ts-ignore - Ignore TS errors for dynamic require
+  const vercelModule = require('@vercel/functions');
+  if (vercelModule && typeof vercelModule.waitUntil === 'function') {
+    waitUntilFn = vercelModule.waitUntil;
+    logger.info(LogCategory.LLM, 'LLMOrchestrationService', 'Vercel waitUntil function available for background tasks');
   }
-} else {
+} catch (e) {
   // Not in a Vercel environment according to the env variable
-  logger.debug(LogCategory.LLM, 'LLMOrchestrationService', `AGENTDOCK_EXECUTION_ENV=${process.env.AGENTDOCK_EXECUTION_ENV || 'not set'}, using fallback for background tasks`);
+  // Only log this in development mode and when not in browser environment
+  if (process.env.NODE_ENV === 'development' && typeof window === 'undefined') {
+    logger.debug(LogCategory.LLM, 'LLMOrchestrationService', `AGENTDOCK_EXECUTION_ENV=${process.env.AGENTDOCK_EXECUTION_ENV || 'not set'}, using fallback for background tasks`);
+  }
 }
 
 /**

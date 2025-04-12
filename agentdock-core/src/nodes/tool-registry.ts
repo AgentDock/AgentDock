@@ -70,7 +70,7 @@ export class DefaultToolRegistry implements ToolRegistry {
     logger.debug(
       LogCategory.NODE,
       'ToolRegistry',
-      'Got tools for agent',
+      'Core: Got tools for agent',
       { 
         requestedTools: nodeNames.length,
         availableTools: Object.keys(result).length,
@@ -82,32 +82,36 @@ export class DefaultToolRegistry implements ToolRegistry {
   }
 }
 
-// Global registry instance
-let globalRegistry: ToolRegistry | null = null;
-
-/**
- * Set the global tool registry
- */
-export function setToolRegistry(registry: ToolRegistry): void {
-  globalRegistry = registry;
-  logger.debug(
-    LogCategory.NODE,
-    'ToolRegistry',
-    'Set global tool registry'
-  );
+// --- Robust Singleton Implementation ---
+declare global {
+  // eslint-disable-next-line no-var
+  var __agentdockToolRegistryInstance: ToolRegistry | undefined;
 }
 
 /**
  * Get the global tool registry
  */
 export function getToolRegistry(): ToolRegistry {
-  if (!globalRegistry) {
-    globalRegistry = new DefaultToolRegistry();
+  if (!globalThis.__agentdockToolRegistryInstance) {
+    globalThis.__agentdockToolRegistryInstance = new DefaultToolRegistry();
     logger.debug(
       LogCategory.NODE,
       'ToolRegistry',
-      'Created default tool registry'
+      'Core: Created default tool registry instance on globalThis'
     );
   }
-  return globalRegistry;
-} 
+  return globalThis.__agentdockToolRegistryInstance;
+}
+
+/**
+ * Set the global tool registry
+ */
+export function setToolRegistry(registry: ToolRegistry): void {
+  globalThis.__agentdockToolRegistryInstance = registry;
+  logger.debug(
+    LogCategory.NODE,
+    'ToolRegistry',
+    'Core: Set global tool registry instance on globalThis'
+  );
+}
+// --- Singleton Implementation --- 

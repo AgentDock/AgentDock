@@ -1,6 +1,19 @@
 "use client"
 
-import { useState } from "react"
+/**
+ * IMPORTANT: This page uses client-side components and hooks that require
+ * the "use client" directive. To avoid hydration issues and Next.js warnings:
+ * 
+ * 1. We separate the main content into its own component (AllAgentsPageContent)
+ * 2. We wrap it in a Suspense boundary in the default exported component
+ * 3. This pattern ensures hooks like useAgentNavigation work properly
+ *    without causing "Warning: serverless functions/edge don't support 
+ *    useState, useEffect, or similar..." errors
+ * 
+ * This approach should be followed for all pages using client-side hooks.
+ */
+
+import { useState, Suspense } from "react"
 import { useAgents } from "@/lib/store"
 import { templates } from '@/generated/templates'
 import type { AgentTemplate } from "@/lib/store/types"
@@ -12,7 +25,8 @@ import { ApiKeyDialog } from "@/components/api-key-dialog"
 import { useAgentFiltering } from "@/lib/hooks/useAgentFiltering"
 import { useAgentNavigation } from "@/lib/hooks/useAgentNavigation"
 
-export default function AllAgentsPage() {
+// Separate the actual implementation into its own component
+function AllAgentsPageContent() {
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null)
   const [configDialogOpen, setConfigDialogOpen] = useState(false)
   const { isInitialized, templatesValidated, templatesError } = useAgents()
@@ -35,7 +49,6 @@ export default function AllAgentsPage() {
 
   // Handle GitHub button click - open repository in new tab
   const handleGithub = (agentId: string) => {
-    // For now, just open a dummy URL - this will be replaced with the actual URL structure
     window.open(`https://github.com/agentdock/agentdock/tree/main/agents/${agentId}`, '_blank');
   }
 
@@ -76,5 +89,14 @@ export default function AllAgentsPage() {
         />
       )}
     </div>
+  )
+}
+
+// Main page component 
+export default function AllAgentsPage() {
+  return (
+    <Suspense fallback={<AgentLoading />}>
+      <AllAgentsPageContent />
+    </Suspense>
   )
 } 

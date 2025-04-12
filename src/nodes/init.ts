@@ -148,5 +148,5 @@ export function initToolRegistry() {
   }
 }
 
-// Initialize the tool registry when this module is loaded
-initToolRegistry();
+// Initialize the tool registry when this module is loaded - REMOVED
+// initToolRegistry();

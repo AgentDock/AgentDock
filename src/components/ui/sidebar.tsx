@@ -211,10 +211,13 @@ const Sidebar = React.forwardRef<
               } as React.CSSProperties
             }
             side={side}
+            aria-describedby="mobile-sidebar-description"
           >
             <SheetHeader className="sr-only">
               <SheetTitle>Sidebar</SheetTitle>
-              <SheetDescription>Displays the mobile sidebar.</SheetDescription>
+              <SheetDescription id="mobile-sidebar-description">
+                Displays the mobile sidebar.
+              </SheetDescription>
             </SheetHeader>
             <div className="flex h-full w-full flex-col">{children}</div>
           </SheetContent>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, createContext, useContext, ReactNode } from 'react';
+import { useEffect, createContext, useContext, ReactNode, Suspense } from 'react';
 import posthog from 'posthog-js';
 import { usePathname, useSearchParams } from 'next/navigation';
 
@@ -37,38 +37,16 @@ const PostHogContext = createContext<PostHogContextType>({
 // Hook for consuming the PostHog context
 export const usePostHog = () => useContext(PostHogContext);
 
-// PostHog provider component
-export function PostHogProvider({
-  children,
+// PageView tracker component that uses useSearchParams
+function PageViewTracker({
+  enabled,
   apiKey,
-  apiHost = 'https://app.posthog.com',
-  enabled = process.env.NODE_ENV === 'production',
 }: {
-  children: ReactNode;
+  enabled: boolean;
   apiKey: string;
-  apiHost?: string;
-  enabled?: boolean;
 }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-
-  // Initialize PostHog on mount
-  useEffect(() => {
-    if (!enabled || !apiKey) return;
-
-    // Initialize PostHog with options that won't interfere with tool calling (use options defined above)
-    const options = {
-      ...posthogOptions, // Use the options defined outside
-      api_host: apiHost
-    };
-
-    posthog.init(apiKey, options);
-
-    // Clean up PostHog when component unmounts (no explicit cleanup needed)
-    return () => {
-      // PostHog doesn't have a shutdown method
-    };
-  }, [apiKey, apiHost, enabled]);
 
   // Track page views manually
   useEffect(() => {
@@ -90,6 +68,39 @@ export function PostHogProvider({
     return () => clearTimeout(timer);
   }, [pathname, searchParams, enabled, apiKey]);
 
+  return null; // This component doesn't render anything
+}
+
+// PostHog provider component
+export function PostHogProvider({
+  children,
+  apiKey,
+  apiHost = 'https://app.posthog.com',
+  enabled = process.env.NODE_ENV === 'production',
+}: {
+  children: ReactNode;
+  apiKey: string;
+  apiHost?: string;
+  enabled?: boolean;
+}) {
+  // Initialize PostHog on mount
+  useEffect(() => {
+    if (!enabled || !apiKey) return;
+
+    // Initialize PostHog with options that won't interfere with tool calling (use options defined above)
+    const options = {
+      ...posthogOptions, // Use the options defined outside
+      api_host: apiHost
+    };
+
+    posthog.init(apiKey, options);
+
+    // Clean up PostHog when component unmounts (no explicit cleanup needed)
+    return () => {
+      // PostHog doesn't have a shutdown method
+    };
+  }, [apiKey, apiHost, enabled]);
+
   // Define a capture function to abstract PostHog usage
   const capture = (event: string, properties?: Record<string, any>) => {
     if (enabled && apiKey && posthog) {
@@ -105,6 +116,10 @@ export function PostHogProvider({
       }}
     >
       {children}
+      {/* Wrap the page view tracker in Suspense */}
+      <Suspense fallback={null}>
+        <PageViewTracker enabled={enabled} apiKey={apiKey} />
+      </Suspense>
     </PostHogContext.Provider>
   );
 } 

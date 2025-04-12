@@ -43,7 +43,7 @@ describe('Chat API Streaming', () => {
 
   describe('Streaming Setup', () => {
     it('should set up edge runtime', () => {
-      expect(process.env.NEXT_RUNTIME).toBe('edge');
+      expect(process.env.NEXT_RUNTIME).toBe('nodejs');
     });
 
     it('should require API key', async () => {

@@ -38,6 +38,7 @@ import { templates, TemplateId } from '@/generated/templates';
 import { getLLMInfo } from '@/lib/utils';
 import { getProviderApiKey } from '@/types/env';
 import { streamText } from 'ai';
+import { PostHog } from 'posthog-node';
 
 // Import and initialize the agent adapter - this ensures all components are properly set up
 import { processAgentMessage } from '@/lib/agent-adapter';
@@ -47,6 +48,20 @@ import { ensureToolsInitialized } from '@/lib/tools';
 
 // Import helpers and adapter from orchestration adapter
 import { OrchestrationAdapter, toMutableConfig } from '@/lib/orchestration-adapter';
+
+// Initialize PostHog Client (outside handler)
+const posthogApiKey = process.env.NEXT_PUBLIC_POSTHOG_API_KEY;
+let posthogClient: PostHog | null = null;
+if (posthogApiKey) {
+  posthogClient = new PostHog(posthogApiKey, {
+    host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com',
+    flushAt: 1, // Send events immediately
+    flushInterval: 0 // Don't batch
+  });
+  logger.info(LogCategory.API, 'ChatRoute', 'PostHog Node client initialized');
+} else {
+  logger.warn(LogCategory.API, 'ChatRoute', 'PostHog Node client NOT initialized (NEXT_PUBLIC_POSTHOG_API_KEY missing)');
+}
 
 // Initialize a simple storage for API keys
 const storage = {
@@ -86,7 +101,7 @@ logger.debug(
   'ChatRoute',
   'Route handler initialized',
   {
-    runtime: 'edge',
+    runtime: 'nodejs',
     path: '/api/chat/[agentId]',
     maxDuration: process.env.MAX_DURATION ? parseInt(process.env.MAX_DURATION, 10) : 300,
     timestamp: new Date().toISOString()
@@ -200,7 +215,7 @@ async function resolveApiKey(request: NextRequest, provider: string, isByokOnly:
 /**
  * Creates a response from the agent result, adding necessary headers
  */
-async function createAgentResponse(result: any, finalSessionId: string) {
+async function createAgentResponse(result: any, finalSessionId: string, requestStartTime: number, agentId: string, llmInfo: any, llmConfig: any) {
   // Get data stream response - the error handling is now handled by the agent adapter
   const response = result.toDataStreamResponse();
 
@@ -214,6 +229,49 @@ async function createAgentResponse(result: any, finalSessionId: string) {
       console.log('[TOKEN DEBUG] Setting token usage header:', tokenUsage);
     }
   }
+
+  // ---- ADD Log and Capture Chat Completion ----
+  try {
+    const durationMs = Date.now() - requestStartTime;
+    // Attempt to get token usage from result.usage (common pattern)
+    const tokenUsage = result.usage; 
+
+    const properties = {
+      agentId,
+      sessionId: finalSessionId ? `${finalSessionId.substring(0, 12)}...` : "none",
+      durationMs,
+      provider: llmInfo.provider,
+      model: llmConfig.model,
+    };
+
+    // Log locally
+    logger.info(LogCategory.API, 'ChatRoute', 'Chat completion successful', properties);
+
+    // Send event to PostHog if client is initialized
+    if (posthogClient && finalSessionId) {
+      posthogClient.capture({
+        distinctId: finalSessionId, // Use sessionId as the distinct user ID
+        event: 'chat_completion_successful',
+        properties: properties
+      });
+      // Ensure event is sent before response potentially closes connection
+      await posthogClient.shutdown(); // Use shutdown()
+    } else if (!posthogClient) {
+       logger.warn(LogCategory.API, 'ChatRoute', 'Skipping PostHog event capture (client not initialized)');
+    } else if (!finalSessionId) {
+       logger.warn(LogCategory.API, 'ChatRoute', 'Skipping PostHog event capture (no session ID)');
+    }
+
+  } catch (logError) {
+    // Prevent logging/capture errors from breaking the main response
+    console.error('Failed to log/capture chat completion event:', logError);
+    logger.error(LogCategory.API, 'ChatRoute', 'Failed to log/capture chat completion', { 
+        error: logError instanceof Error ? logError.message : String(logError) 
+    });
+    // Ensure PostHog client is shut down even if capture fails
+    if (posthogClient) await posthogClient.shutdown(); // Use shutdown()
+  }
+  // ---- END Log and Capture ----
 
   // Add orchestration state from adapter
   const { addOrchestrationHeaders } = await import('@/lib/orchestration-adapter');
@@ -355,6 +413,7 @@ export async function POST(
   request: NextRequest,
   context: { params: Promise<{ agentId: string }> }
 ) {
+  const requestStartTime = Date.now();
   try {
     // Ensure tools are initialized lazily when needed
     ensureToolsInitialized();
@@ -585,7 +644,7 @@ export async function POST(
       });
 
       // Create and return the response with proper headers
-      return await createAgentResponse(result, finalSessionId);
+      return await createAgentResponse(result, finalSessionId, requestStartTime, agentId, llmInfo, llmConfig);
       
     } catch (error) {
       // Log session-related errors specifically

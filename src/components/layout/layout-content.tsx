@@ -8,6 +8,7 @@ import { SiteHeader } from '@/components/layout/site-header';
 import { SiteSidebar } from '@/components/layout/site-sidebar';
 import { CoreInitializer } from '@/components/core/initializer';
 import { FontProvider } from '@/components/font-provider';
+import { PostHogProvider } from '@/components/providers/posthog-provider';
 import { cn } from '@/lib/utils';
 
 // Create a context to share the collapse state and handlers
@@ -51,30 +52,41 @@ export function LayoutContent({ children }: { children: React.ReactNode }) {
     setIsCollapsed(shouldBeCollapsed);
   }, [shouldBeCollapsed]);
 
+  // Get PostHog configuration from environment variables
+  const posthogApiKey = process.env.NEXT_PUBLIC_POSTHOG_API_KEY || '';
+  const posthogHost = process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com';
+  const analyticsEnabled = process.env.NEXT_PUBLIC_ANALYTICS_ENABLED === 'true';
+
   return (
     <ThemeProvider>
       <FontProvider>
-        <CoreInitializer />
-        <SidebarContext.Provider value={{ isCollapsed, setIsCollapsed, toggleSidebar, expandSidebar }}>
-          <div className="relative min-h-screen bg-background">
-            <SiteSidebar isCollapsed={isCollapsed} />
-            <div 
-              className={cn(
-                "flex min-h-screen flex-col transition-all duration-300 ease-in-out",
-                isCollapsed ? "md:ml-[70px]" : "md:ml-[240px]"
-              )}
-            >
-              <SiteHeader 
-                isCollapsed={isCollapsed} 
-                onCollapse={toggleSidebar} 
-              />
-              <main className="flex-1 overflow-x-hidden overflow-y-auto p-0 md:p-8 md:py-0 relative">
-                {children}
-              </main>
+        <PostHogProvider
+          apiKey={posthogApiKey}
+          apiHost={posthogHost}
+          enabled={analyticsEnabled}
+        >
+          <CoreInitializer />
+          <SidebarContext.Provider value={{ isCollapsed, setIsCollapsed, toggleSidebar, expandSidebar }}>
+            <div className="relative min-h-screen bg-background">
+              <SiteSidebar isCollapsed={isCollapsed} />
+              <div 
+                className={cn(
+                  "flex min-h-screen flex-col transition-all duration-300 ease-in-out",
+                  isCollapsed ? "md:ml-[70px]" : "md:ml-[240px]"
+                )}
+              >
+                <SiteHeader 
+                  isCollapsed={isCollapsed} 
+                  onCollapse={toggleSidebar} 
+                />
+                <main className="flex-1 overflow-x-hidden overflow-y-auto p-0 md:p-8 md:py-0 relative">
+                  {children}
+                </main>
+              </div>
             </div>
-          </div>
-        </SidebarContext.Provider>
-        <Toaster richColors />
+          </SidebarContext.Provider>
+          <Toaster richColors />
+        </PostHogProvider>
       </FontProvider>
     </ThemeProvider>
   );

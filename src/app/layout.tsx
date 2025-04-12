@@ -7,9 +7,15 @@ import { metadata as sharedMetadata } from '@/lib/config';
 import { LayoutContent } from '@/components/layout/layout-content';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { EnvOverrideProvider } from '@/components/env-override-provider';
+import { PostHogProvider } from '@/components/providers/posthog-provider';
 
 // Import system initialization
 import '@/lib/core/init';
+
+// NOTE: We're using the package-based PostHog implementation (via posthog-provider.tsx)
+// instead of the script-based implementation to avoid interfering with tool calling.
+// The direct script implementation can modify global objects and network handling
+// in ways that break the Vercel AI SDK's tool calling functionality.
 
 // Preload the fonts at the root level and add them only once
 // This ensures they're available immediately and prevents font flickering
@@ -31,9 +37,11 @@ export default function RootLayout({
         <link rel="manifest" href="/site.webmanifest" />
       </head>
       <body className={inter.className}>
-        <EnvOverrideProvider>
-          <LayoutContent>{children}</LayoutContent>
-        </EnvOverrideProvider>
+        <PostHogProvider apiKey={process.env.NEXT_PUBLIC_POSTHOG_KEY || ''} >
+          <EnvOverrideProvider>
+            <LayoutContent>{children}</LayoutContent>
+          </EnvOverrideProvider>
+        </PostHogProvider>
         <SpeedInsights />
       </body>
     </html>

@@ -38,7 +38,7 @@ import { templates, TemplateId } from '@/generated/templates';
 import { getLLMInfo } from '@/lib/utils';
 import { getProviderApiKey } from '@/types/env';
 import { streamText } from 'ai';
-import { PostHog } from 'posthog-node';
+import { captureEvent } from '@/lib/analytics';
 
 // Import and initialize the agent adapter - this ensures all components are properly set up
 import { processAgentMessage } from '@/lib/agent-adapter';
@@ -48,20 +48,6 @@ import { ensureToolsInitialized } from '@/lib/tools';
 
 // Import helpers and adapter from orchestration adapter
 import { OrchestrationAdapter, toMutableConfig } from '@/lib/orchestration-adapter';
-
-// Initialize PostHog Client (outside handler)
-const posthogApiKey = process.env.NEXT_PUBLIC_POSTHOG_API_KEY;
-let posthogClient: PostHog | null = null;
-if (posthogApiKey) {
-  posthogClient = new PostHog(posthogApiKey, {
-    host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com',
-    flushAt: 1, // Send events immediately
-    flushInterval: 0 // Don't batch
-  });
-  logger.info(LogCategory.API, 'ChatRoute', 'PostHog Node client initialized');
-} else {
-  logger.warn(LogCategory.API, 'ChatRoute', 'PostHog Node client NOT initialized (NEXT_PUBLIC_POSTHOG_API_KEY missing)');
-}
 
 // Initialize a simple storage for API keys
 const storage = {
@@ -238,7 +224,7 @@ async function createAgentResponse(result: any, finalSessionId: string, requestS
 
     const properties = {
       agentId,
-      sessionId: finalSessionId ? `${finalSessionId.substring(0, 12)}...` : "none",
+      sessionId: finalSessionId || "none",
       durationMs,
       provider: llmInfo.provider,
       model: llmConfig.model,
@@ -247,29 +233,22 @@ async function createAgentResponse(result: any, finalSessionId: string, requestS
     // Log locally
     logger.info(LogCategory.API, 'ChatRoute', 'Chat completion successful', properties);
 
-    // Send event to PostHog if client is initialized
-    if (posthogClient && finalSessionId) {
-      posthogClient.capture({
-        distinctId: finalSessionId, // Use sessionId as the distinct user ID
-        event: 'chat_completion_successful',
-        properties: properties
-      });
-      // Ensure event is sent before response potentially closes connection
-      await posthogClient.shutdown(); // Use shutdown()
-    } else if (!posthogClient) {
-       logger.warn(LogCategory.API, 'ChatRoute', 'Skipping PostHog event capture (client not initialized)');
-    } else if (!finalSessionId) {
-       logger.warn(LogCategory.API, 'ChatRoute', 'Skipping PostHog event capture (no session ID)');
+    // Send analytics event using the analytics module
+    if (finalSessionId) {
+      captureEvent(
+        'chat_completion_successful',
+        properties,
+        finalSessionId // Use sessionId as the distinct user ID
+      );
+    } else {
+      logger.warn(LogCategory.API, 'ChatRoute', 'Skipping analytics event capture (no session ID)');
     }
-
   } catch (logError) {
     // Prevent logging/capture errors from breaking the main response
     console.error('Failed to log/capture chat completion event:', logError);
     logger.error(LogCategory.API, 'ChatRoute', 'Failed to log/capture chat completion', { 
         error: logError instanceof Error ? logError.message : String(logError) 
     });
-    // Ensure PostHog client is shut down even if capture fails
-    if (posthogClient) await posthogClient.shutdown(); // Use shutdown()
   }
   // ---- END Log and Capture ----
 

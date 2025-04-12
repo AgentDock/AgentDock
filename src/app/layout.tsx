@@ -28,6 +28,11 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  const posthogApiKey = process.env.NEXT_PUBLIC_POSTHOG_API_KEY || '';
+  const posthogHost = process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com';
+  // Only enable in production unless explicitly enabled in development
+  const analyticsEnabled = process.env.NODE_ENV === 'production' || process.env.NEXT_PUBLIC_ANALYTICS_ENABLED === 'true';
+  
   return (
     <html lang="en" suppressHydrationWarning className={fontClasses}>
       <head>
@@ -37,7 +42,11 @@ export default function RootLayout({
         <link rel="manifest" href="/site.webmanifest" />
       </head>
       <body className={inter.className}>
-        <PostHogProvider apiKey={process.env.NEXT_PUBLIC_POSTHOG_KEY || ''} >
+        <PostHogProvider 
+          apiKey={posthogApiKey} 
+          apiHost={posthogHost}
+          enabled={analyticsEnabled}
+        >
           <EnvOverrideProvider>
             <LayoutContent>{children}</LayoutContent>
           </EnvOverrideProvider>

@@ -114,7 +114,8 @@ export const docSections: DocSection[] = [
   {
     title: "Additional Features",
     items: [
-      { path: "token-usage-tracking", title: "Token Usage Tracking" }
+      { path: "token-usage-tracking", title: "Token Usage Tracking" },
+      { path: "analytics", title: "Analytics" }
     ]
   },
   

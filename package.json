@@ -147,7 +147,7 @@
     "next-themes": "^0.2.1",
     "node-fetch": "2",
     "postcss-import": "^15.1.0",
-    "shadcn": "^2.3.0",
+    "shadcn": "^2.4.0",
     "sharp": "^0.33.5",
     "tr46": "5.1.0",
     "ts-jest": "^29.2.5",

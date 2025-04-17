@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./public/AgentDock-logo.png" alt="AgentDock Logo" width="900" />
+  <img src="./public/AgentDock-logo.png" alt="AgentDock Logo" width="750" />
 </p>
 
 <h1 align="left">Build Anything with AI Agents</h1>

@@ -11,6 +11,7 @@ Welcome to the translated versions of the AgentDock README.
 *   [Español](./spanish/README.md) (Spanish)
 *   [Italiano](./italian/README.md) (Italian)
 *   [Nederlands](./dutch/README.md) (Dutch)
+*   [Deutsch](./deutsch/README.md) (German)
 *   [Polski](./polish/README.md) (Polish)
 *   [Türkçe](./turkish/README.md) (Turkish)
 *   [Українська](./ukrainian/README.md) (Ukrainian)

@@ -71,3 +71,6 @@ public/search-index.json
 # LLMs.txt files (generated on each run)
 public/llms.txt
 public/llms-full.txt
+
+# Build output
+agentdock-core/dist/

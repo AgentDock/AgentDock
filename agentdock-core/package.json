@@ -1,9 +1,16 @@
 {
   "name": "agentdock-core",
   "private": true,
-  "main": "src/index.ts",
-  "types": "src/index.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
   "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts --external ai --external @ai-sdk/* --external @anthropic-ai/* --external @google/* --external openai --external @upstash/* --external @vercel/*",
     "test": "jest",
     "typecheck": "tsc --noEmit"
   },
@@ -22,5 +29,8 @@
   },
   "comments": {
     "providers": "DeepSeek API is compatible with OpenAI's format, so we use the OpenAI client with a custom baseURL"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.2"
   }
 }

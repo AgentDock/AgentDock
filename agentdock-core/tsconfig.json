@@ -11,7 +11,7 @@
     "rootDir": "./src",
     "lib": ["dom", "dom.iterable", "esnext"],
     "jsx": "preserve",
-    "incremental": true,
+    "incremental": false,
     "paths": {
       "agentdock-core/*": ["./src/*"]
     }

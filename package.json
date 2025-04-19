@@ -9,9 +9,9 @@
   "packageManager": "pnpm@9.15.0",
   "scripts": {
     "prebuild": "tsx --no-deprecation scripts/bundle-templates.ts",
-    "predev": "tsx --no-deprecation scripts/bundle-templates.ts",
+    "predev": "tsx --no-deprecation scripts/bundle-templates.ts && pnpm run build:agentdock-core",
     "dev": "next dev",
-    "build": "next build",
+    "build": "pnpm run build:agentdock-core && next build",
     "postbuild": "tsx --no-deprecation scripts/generate-search-index.ts && node scripts/generate-favicons.js && tsx --no-deprecation scripts/generate-llms-from-docs.ts",
     "start": "next start",
     "lint": "next lint",
@@ -30,7 +30,8 @@
     "prepare": "husky",
     "clean-install": "./scripts/clean-install.sh",
     "postinstall": "cd agentdock-core && pnpm install && cd .. && tsx --no-deprecation scripts/generate-llms-from-docs.ts",
-    "generate-llms": "tsx --no-deprecation scripts/generate-llms-from-docs.ts"
+    "generate-llms": "tsx --no-deprecation scripts/generate-llms-from-docs.ts",
+    "build:agentdock-core": "pnpm --filter agentdock-core build"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -86,7 +87,7 @@
     "lodash-es": "^4.17.21",
     "lucide-react": "^0.344.0",
     "mermaid": "^11.6.0",
-    "next": "15.2.4",
+    "next": "15.3.1",
     "panzoom": "^9.4.3",
     "postcss": "^8.5.3",
     "posthog-js": "^1.235.6",

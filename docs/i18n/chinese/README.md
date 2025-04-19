@@ -1,16 +1,12 @@
-# AgentDock: 用 AI Agent 构建无限可能
-
-[![GitHub stars](https://img.shields.io/github/stars/agentdock/agentdock?style=social)](https://github.com/agentdock/agentdock/stargazers)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Status: Beta](https://img.shields.io/badge/Status-Beta-blue)](https://github.com/AgentDock/AgentDock/releases)
-[![Documentation](https://img.shields.io/badge/Documentation-📕-blue)](https://hub.agentdock.ai/docs)
-[![Discord](https://img.shields.io/discord/1335979387975110656?color=7289DA&label=Discord&logo=discord&logoColor=white)](https://discord.gg/fDYFFmwuRA)
-[![Cloud](https://img.shields.io/badge/Cloud-☁️-blue)](https://agentdock.ai)
-[![Twitter Follow](https://img.shields.io/twitter/follow/AgentDock?style=social)](https://x.com/agentdock)
+<p align="center">
+  <img src="../../../public/AgentDock-logo.png" alt="AgentDock Logo" width="800" />
+</p>
 
 ## 🌐 README 翻译
 
 [Français](../french/README.md) • [日本語](../japanese/README.md) • [한국어](../korean/README.md) • [中文](./README.md) • [Español](../spanish/README.md) • [Italiano](../italian/README.md) • [Nederlands](../dutch/README.md) • [Polski](../polish/README.md) • [Türkçe](../turkish/README.md) • [Українська](../ukrainian/README.md) • [Ελληνικά](../greek/README.md)
+
+# AgentDock: 用 AI Agent 构建无限可能
 
 AgentDock 是一个用于构建复杂 AI Agent 的框架，这些 Agent 通过**可配置的确定性**来完成复杂任务。它由两个主要组件构成：
 
@@ -374,4 +370,4 @@ AgentDock 根据 [MIT 许可证](../../LICENSE) 发布。
 AgentDock 为您构建几乎任何可以想象的 AI 驱动应用程序或自动化提供了基础。我们鼓励您探索该框架，构建创新的 Agent，并回馈社区。让我们一起构建 AI 交互的未来！
 
 ---
-[返回翻译索引](../README.md) 
+[返回翻译索引](/docs/i18n/README.md) 

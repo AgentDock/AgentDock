@@ -4,8 +4,8 @@
 
 set -e # Exit on any error
 
-echo "🧹 Cleaning up existing installations..."
-rm -rf node_modules agentdock-core/node_modules
+echo "🧹 Cleaning up existing installations and build artifacts..."
+rm -rf node_modules agentdock-core/node_modules agentdock-core/dist # Also remove core dist folder
 rm -f pnpm-lock.yaml agentdock-core/pnpm-lock.yaml
 
 echo "📦 Installing dependencies in one shot..."

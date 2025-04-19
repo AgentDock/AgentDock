@@ -23,6 +23,9 @@ import { z } from 'zod';
 import { AgentConfig, PersonalitySchema } from '../types/agent-config';
 import { DynamicOrchestrationState } from '../utils/prompt-utils';
 
+
+
+
 /**
  * Configuration specific to the AgentNode.
  */
@@ -102,6 +105,7 @@ export class AgentNode extends BaseNode<AgentNodeConfig> {
    */
   constructor(id: string, config: AgentNodeConfig) {
     super(id, config);
+    console.log('AgentNode Constructor - Test Log: 1744977381'); // <<< Add this line here
     if (!config.apiKey) {
       throw createError('node', 'API key is required for AgentNode', ErrorCode.NODE_INITIALIZATION);
     }

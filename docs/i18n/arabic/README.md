@@ -4,7 +4,7 @@
 
 ## 🌐 ترجمات README
 
-[Français](../french/README.md) • [日本語](../japanese/README.md) • [한국어](../korean/README.md) • [中文](../chinese/README.md) • [Español](../spanish/README.md) • [Italiano](../italian/README.md) • [Nederlands](../dutch/README.md) • [Deutsch](../deutsch/README.md) • [Polski](../polish/README.md) • [Türkçe](../turkish/README.md) • [Українська](../ukrainian/README.md) • [Ελληνικά](../greek/README.md) • [Русский](../russian/README.md) • [العربية](./README.md)
+[Français](/docs/i18n/french/README.md) • [日本語](/docs/i18n/japanese/README.md) • [한국어](/docs/i18n/korean/README.md) • [中文](/docs/i18n/chinese/README.md) • [Español](/docs/i18n/spanish/README.md) • [Italiano](/docs/i18n/italian/README.md) • [Nederlands](/docs/i18n/dutch/README.md) • [Deutsch](/docs/i18n/deutsch/README.md) • [Polski](/docs/i18n/polish/README.md) • [Türkçe](/docs/i18n/turkish/README.md) • [Українська](/docs/i18n/ukrainian/README.md) • [Ελληνικά](/docs/i18n/greek/README.md) • [Русский](/docs/i18n/russian/README.md) • [العربية](/docs/i18n/arabic/README.md)
 
 # AgentDock: ابنِ أي مشروع باستخدام وكلاء الذكاء الاصطناعي
 
@@ -370,4 +370,4 @@ FIRECRAWL_API_KEY=               # مطلوب لتصفح الويب بشكل أ�
 يوفر AgentDock الأساس لبناء أي تطبيق أو أتمتة تعمل بالذكاء الاصطناعي يمكنك تخيلها تقريبًا. نشجعك على استكشاف إطار العمل، وبناء وكلاء مبتكرين، والمساهمة مرة أخرى في المجتمع. لنبني مستقبل تفاعل الذكاء الاصطناعي معًا!
 
 ---
-[العودة إلى فهرس الترجمات](../README.md) 
+[العودة إلى فهرس الترجمات](/docs/i18n/README.md)

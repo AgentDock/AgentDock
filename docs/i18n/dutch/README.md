@@ -1,16 +1,12 @@
-# AgentDock: Onbegrensde mogelijkheden met AI-Agenten
-
-[![GitHub stars](https://img.shields.io/github/stars/agentdock/agentdock?style=social)](https://github.com/agentdock/agentdock/stargazers)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Status: Beta](https://img.shields.io/badge/Status-Beta-blue)](https://github.com/AgentDock/AgentDock/releases)
-[![Documentation](https://img.shields.io/badge/Documentation-📕-blue)](https://hub.agentdock.ai/docs)
-[![Discord](https://img.shields.io/discord/1335979387975110656?color=7289DA&label=Discord&logo=discord&logoColor=white)](https://discord.gg/fDYFFmwuRA)
-[![Cloud](https://img.shields.io/badge/Cloud-☁️-blue)](https://agentdock.ai)
-[![Twitter Follow](https://img.shields.io/twitter/follow/AgentDock?style=social)](https://x.com/agentdock)
+<p align="center">
+  <img src="../../../public/AgentDock-logo.png" alt="AgentDock Logo" width="800" />
+</p>
 
 ## 🌐 README-vertalingen
 
-[Français](../french/README.md) • [日本語](../japanese/README.md) • [한국어](../korean/README.md) • [中文](../chinese/README.md) • [Español](../spanish/README.md) • [Italiano](../italian/README.md) • [Nederlands](./README.md) • [Polski](../polish/README.md) • [Türkçe](../turkish/README.md) • [Українська](../ukrainian/README.md) • [Ελληνικά](../greek/README.md) • [العربية](../arabic/README.md)
+[Français](/docs/i18n/french/README.md) • [日本語](/docs/i18n/japanese/README.md) • [한국어](/docs/i18n/korean/README.md) • [中文](/docs/i18n/chinese/README.md) • [Español](/docs/i18n/spanish/README.md) • [Italiano](/docs/i18n/italian/README.md) • [Nederlands](/docs/i18n/dutch/README.md) • [Deutsch](/docs/i18n/deutsch/README.md) • [Polski](/docs/i18n/polish/README.md) • [Türkçe](/docs/i18n/turkish/README.md) • [Українська](/docs/i18n/ukrainian/README.md) • [Ελληνικά](/docs/i18n/greek/README.md) • [Русский](/docs/i18n/russian/README.md) • [العربية](/docs/i18n/arabic/README.md)
+
+# AgentDock: Onbegrensde mogelijkheden met AI-Agenten
 
 AgentDock is een framework voor het bouwen van geavanceerde AI-agenten die complexe taken uitvoeren met **configureerbaar determinisme**. Het bestaat uit twee hoofdcomponenten:
 
@@ -374,4 +370,4 @@ AgentDock wordt uitgebracht onder de [MIT Licentie](../../LICENSE).
 AgentDock biedt de basis om vrijwel elke AI-aangedreven applicatie of automatisering te bouwen die je je kunt voorstellen. We moedigen je aan om het framework te verkennen, innovatieve agenten te bouwen en bij te dragen aan de community. Laten we samen de toekomst van AI-interactie bouwen!
 
 ---
-[Terug naar Vertalingsindex](../README.md) 
+[Terug naar Vertalingsindex](/docs/i18n/README.md)

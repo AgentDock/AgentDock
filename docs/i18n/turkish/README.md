@@ -1,16 +1,12 @@
-# AgentDock: Yapay Zeka Ajanları ile Sınırsız Olasılıklar Yaratın
-
-[![GitHub stars](https://img.shields.io/github/stars/agentdock/agentdock?style=social)](https://github.com/agentdock/agentdock/stargazers)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Status: Beta](https://img.shields.io/badge/Status-Beta-blue)](https://github.com/AgentDock/AgentDock/releases)
-[![Documentation](https://img.shields.io/badge/Documentation-📕-blue)](https://hub.agentdock.ai/docs)
-[![Discord](https://img.shields.io/discord/1335979387975110656?color=7289DA&label=Discord&logo=discord&logoColor=white)](https://discord.gg/fDYFFmwuRA)
-[![Cloud](https://img.shields.io/badge/Cloud-☁️-blue)](https://agentdock.ai)
-[![Twitter Follow](https://img.shields.io/twitter/follow/AgentDock?style=social)](https://x.com/agentdock)
+<p align="center">
+  <img src="../../../public/AgentDock-logo.png" alt="AgentDock Logo" width="800" />
+</p>
 
 ## 🌐 README Çevirileri
 
-[Français](../french/README.md) • [日本語](../japanese/README.md) • [한국어](../korean/README.md) • [中文](../chinese/README.md) • [Español](../spanish/README.md) • [Italiano](../italian/README.md) • [Nederlands](../dutch/README.md) • [Polski](../polish/README.md) • [Türkçe](./README.md) • [Українська](../ukrainian/README.md) • [Ελληνικά](../greek/README.md)
+[Français](/docs/i18n/french/README.md) • [日本語](/docs/i18n/japanese/README.md) • [한국어](/docs/i18n/korean/README.md) • [中文](/docs/i18n/chinese/README.md) • [Español](/docs/i18n/spanish/README.md) • [Italiano](/docs/i18n/italian/README.md) • [Nederlands](/docs/i18n/dutch/README.md) • [Deutsch](/docs/i18n/deutsch/README.md) • [Polski](/docs/i18n/polish/README.md) • [Türkçe](/docs/i18n/turkish/README.md) • [Українська](/docs/i18n/ukrainian/README.md) • [Ελληνικά](/docs/i18n/greek/README.md) • [Русский](/docs/i18n/russian/README.md) • [العربية](/docs/i18n/arabic/README.md)
+
+# AgentDock: Yapay Zeka Ajanları ile Sınırsız Olasılıklar Yaratın
 
 AgentDock, **yapılandırılabilir determinizm** ile karmaşık görevleri yerine getiren sofistike yapay zeka ajanları oluşturmak için bir framework'tür. İki ana bileşenden oluşur:
 
@@ -374,4 +370,4 @@ AgentDock, [MIT Lisansı](../../LICENSE) altında yayınlanmıştır.
 AgentDock, hayal edebileceğiniz hemen hemen her yapay zeka destekli uygulama veya otomasyonu oluşturmak için temel sağlar. Framework'ü keşfetmeye, yenilikçi ajanlar oluşturmaya ve topluluğa katkıda bulunmaya teşvik ediyoruz. Yapay zeka etkileşiminin geleceğini birlikte şekillendirelim!
 
 ---
-[Çeviri dizinine geri dön](../README.md) 
+[Çeviri dizinine geri dön](/docs/i18n/README.md)

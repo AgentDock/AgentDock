@@ -28,6 +28,12 @@ This document outlines the planned features and future direction for AgentDock. 
 | [**Code Playground**](./roadmap/code-playground.md) | Sandboxed code generation and execution with rich visualization capabilities |
 | [**Generalist AI Agent**](./roadmap/generalist-agent.md) | Manus-like agent that can use browser and execute complex tasks |
 
+## Workflow System
+
+| Feature | Description |
+|---------|-------------|
+| [**Workflow Runtime & Nodes**](./roadmap/workflow-nodes.md) | Core runtime, node types, and orchestration logic for complex automations |
+
 ## Cloud Deployment
 
 | Feature | Description |
@@ -35,6 +41,7 @@ This document outlines the planned features and future direction for AgentDock. 
 | [**AgentDock Pro**](/docs/agentdock-pro) | Comprehensive enterprise cloud platform for scaling AI agents & workflows, with visual tools and autoscaling |
 | [**Natural Language AI Agent Builder**](./roadmap/nl-agent-builder.md) | Visual builder + natural language agent and workflow construction |
 | [**Agent Marketplace**](./roadmap/agent-marketplace.md) | Monetizable agent templates |
+
 ## Open Source Client Enhancements
 
 -   Improved UI/UX for agent management and chat.
@@ -53,6 +60,7 @@ This document outlines the planned features and future direction for AgentDock. 
 ## AgentDock Repository Improvements
 
 -   Complete test suite (Unit, Integration, E2E).
+-   Expand core capabilities with workflow node types and runtime enhancements.
 
 *This roadmap is indicative and subject to change.*
 

@@ -352,10 +352,9 @@ A continuación se muestra nuestra hoja de ruta de desarrollo para AgentDock. La
 | [**Colaboración Multi-Agente**](../../docs/roadmap/multi-agent-collaboration.md)   | Permitir que los agentes trabajen juntos                                                      | **Planificado** |
 | [**Integración del Protocolo de Contexto del Modelo (MCP)**](../../docs/roadmap/mcp-integration.md) | Soporte para descubrir y usar herramientas externas a través de MCP                          | **Planificado** |
 | [**Agentes de IA por Voz**](../../docs/roadmap/voice-agents.md)                   | Agentes de IA que usan interfaces de voz y números de teléfono a través de AgentNode         | **Planificado** |
-| [**Telemetría y Trazabilidad**](../../docs/roadmap/telemetry.md)              | Registro avanzado y seguimiento del rendimiento                                               | **Planificado** |
-| [**AgentDock Pro**](../../docs/agentdock-pro.md)                            | Plataforma cloud empresarial completa para escalar agentes y flujos de trabajo de IA        | **Cloud**       |
-| [**Constructor de Agentes de IA en Lenguaje Natural**](../../docs/roadmap/nl-agent-builder.md) | Constructor visual + construcción de agentes y flujos de trabajo en lenguaje natural        | **Cloud**       |
-| [**Marketplace de Agentes**](../../docs/roadmap/agent-marketplace.md)         | Plantillas de agentes monetizables                                                            | **Cloud**       |
+| [**Telemetría y Trazabilidad**](../../docs/roadmap/telemetry.md) | Registro avanzado y seguimiento del rendimiento | **Planificado** |
+| [**Workflow Runtime & Node Tipos**](../../docs/roadmap/workflow-nodes.md) | Runtime central, tipos de nodos y lógica de orquestación para automatizaciones complejas | **Planificado** |
+| [**AgentDock Pro**](../../docs/agentdock-pro.md) | Plataforma cloud empresarial completa para escalar agentes IA y flujos de trabajo | **Cloud** |
 
 ## 👥 Contribuyendo
 

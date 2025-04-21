@@ -31,6 +31,7 @@ export const docSections: DocSection[] = [
       { path: "getting-started", title: "Getting Started" },
       { path: "agent-templates", title: "Agent Templates" },
       { path: "agentdock-pro", title: "AgentDock Pro" },
+      { path: "roadmap/workflow-nodes", title: "Workflows & Node Types" },
       { path: "roadmap", title: "Roadmap" }
     ]
   },
@@ -140,10 +141,19 @@ export const docSections: DocSection[] = [
       { path: "roadmap/mcp-integration", title: "MCP Integration" },
       { path: "roadmap/voice-agents", title: "Voice AI Agents" },
       { path: "roadmap/telemetry", title: "Telemetry & Traceability" },
+      { path: "roadmap/workflow-nodes", title: "Workflow Runtime & Node Types" },
       { path: "roadmap/code-playground", title: "Code Playground" },
       { path: "roadmap/generalist-agent", title: "Generalist AI Agent" },
       { path: "roadmap/nl-agent-builder", title: "Natural Language Agent Builder" },
       { path: "roadmap/agent-marketplace", title: "Agent Marketplace" }
+    ]
+  },
+  
+  // i18n Section
+  {
+    title: "README Translations",
+    items: [
+      { path: "i18n/", title: "Available Languages" }
     ]
   }
 ]; 

@@ -352,8 +352,9 @@ Hieronder staat onze ontwikkelingsroadmap voor AgentDock. De meeste hier genoemd
 | [**Multi-Agent Samenwerking**](../../docs/roadmap/multi-agent-collaboration.md)| Agenten laten samenwerken                                                                     | **Gepland**    |
 | [**Model Context Protocol (MCP) Integratie**](../../docs/roadmap/mcp-integration.md)| Ondersteuning voor het ontdekken en gebruiken van externe tools via MCP                       | **Gepland**    |
 | [**Voice AI Agenten**](../../docs/roadmap/voice-agents.md)                | AI-agenten die spraakinterfaces en telefoonnummers gebruiken via AgentNode                    | **Gepland**    |
-| [**Telemetrie & Traceerbaarheid**](../../docs/roadmap/telemetry.md)       | Geavanceerde logging en prestatietracking                                                     | **Gepland**    |
-| [**AgentDock Pro**](../../docs/agentdock-pro.md)                         | Volledig enterprise cloud-platform voor het schalen van AI-agenten en workflows             | **Cloud**      |
+| [**Telemetrie en Traceerbaarheid**](../../docs/roadmap/telemetry.md)       | Geavanceerde logging en prestatietracering                                                     | **Gepland**    |
+| [**Workflow Runtime & Node Types**](../../docs/roadmap/workflow-nodes.md) | Kern runtime, node types en orkestratielogica voor complexe automatiseringen | **Gepland** |
+| [**AgentDock Pro**](../../docs/agentdock-pro.md)                         | Uitgebreid enterprise cloud platform voor het schalen van AI-agenten & workflows             | **Cloud**      |
 | [**Natuurlijke Taal AI Agent Bouwer**](../../docs/roadmap/nl-agent-builder.md)| Visuele bouwer + natuurlijke taal agent & workflow constructie                               | **Cloud**      |
 | [**Agent Marktplaats**](../../docs/roadmap/agent-marketplace.md)          | Monetiseerbare agent templates                                                                | **Cloud**      |
 

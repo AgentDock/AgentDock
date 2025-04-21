@@ -1,10 +1,20 @@
 # Node System
 
-AgentDock is built around a powerful **node-based architecture** using `BaseNode` as the foundation for all functionality. This design allows for modular, extensible, and highly configurable systems. `BaseNode` supports various node categories, including LLM interaction (`AgentNode`), callable tools, data processors, platform integrations (e.g., for specific chat services), and more.
+AgentDock is built around a powerful **node-based architecture** using `BaseNode` as the foundation for all functionality. This design allows for modular, extensible, and highly configurable systems. `BaseNode` supports various node categories, including core functionalities like LLM interaction (`AgentNode`) and callable tools, forming the basis for sophisticated agent behaviors.
 
-The underlying structure, with defined `input`/`output` ports and `MessageBus` integration, provides the core capabilities necessary to build complex workflow engines and chained execution patterns directly using the open-source library. While the reference client currently focuses on `AgentNode` orchestrating individual tool executions, developers *can* leverage these foundational components to implement sophisticated multi-node workflows.
+**Looking Ahead: The Workflow Vision**
 
-AgentDock Pro aims to enhance this capability by providing advanced tooling, such as visual workflow builders and management interfaces, built upon the core open-source node system.
+The underlying structure, with defined `input`/`output` ports and `MessageBus` integration, provides the core capabilities necessary to build complex workflow engines and chained execution patterns directly using the open-source library. While the reference client currently focuses on `AgentNode` orchestrating individual tool executions, the architecture is designed for much more.
+
+We are actively developing a richer set of node types to unlock true workflow automation, including:
+- **Event Nodes**: To trigger workflows from external sources or schedules.
+- **Transform & AI Inference Nodes**: For powerful data manipulation and specialized AI tasks.
+- **Connector & Action Nodes**: To seamlessly integrate with external services and databases.
+- **Logic Nodes**: For sophisticated flow control like branching and looping.
+
+These planned additions, detailed further in the [Workflow Nodes Roadmap](./../roadmap/workflow-nodes.md), will empower users to build complex, multi-step automations visually and programmatically, extending far beyond the current agent-tool interaction model.
+
+AgentDock Pro aims to enhance this capability by providing advanced tooling, such as visual workflow builders and management interfaces, built upon this expanding core open-source node system.
 
 ## Core Node Types
 
@@ -188,13 +198,14 @@ Nodes can interact or be connected conceptually:
 
 - **Message Passing**: Asynchronous communication via the `MessageBus` enables decoupled interactions, suitable for complex event-driven workflows.
 - **Tool Invocation**: `AgentNode` invokes tool nodes based on LLM requests, orchestrated via `ToolRegistry` and `OrchestrationManager`.
-- **Potential Port Connections**: The `input`/`output` port system and `validateConnection` method provide the foundation for defining explicit data flow chains, enabling future visual workflow construction.
+- **Workflow Connections**: The `input`/`output` port system and `validateConnection` method provide the foundation for defining explicit data flow chains between diverse node types (Event, Transform, Action, Logic, etc.), enabling the construction of complex, automated processes and future visual workflow builders.
 
 ## Future Enhancements
 
 The node system is designed to support future enhancements:
 
-- **Visual Node Editor**: Leveraging `NodeMetadata` (ports, descriptions) for a UI.
+- **Rich Workflow Node Library**: Expanding the core library with robust implementations of Event, Transform, AI Inference, Connector, Action, and Logic nodes.
+- **Visual Node Editor**: Leveraging `NodeMetadata` (ports, descriptions) for a UI to connect the full range of workflow nodes.
 - **Node Versioning**: Core registry already supports versioning checks.
 - **Node Marketplace**: Sharing custom node implementations.
 - **Workflow Engine**: Building upon the message bus and port connections.

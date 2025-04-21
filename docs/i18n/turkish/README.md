@@ -352,10 +352,9 @@ Aşağıda AgentDock için geliştirme yol haritamız bulunmaktadır. Burada lis
 | [**Çoklu Ajan İşbirliği**](../../docs/roadmap/multi-agent-collaboration.md)  | Ajanların birlikte çalışmasını sağlama                                          | **Planlandı**   |
 | [**Model Bağlam Protokolü (MCP) Entegrasyonu**](../../docs/roadmap/mcp-integration.md) | MCP aracılığıyla harici araçları keşfetme ve kullanma desteği                      | **Planlandı**   |
 | [**Sesli Yapay Zeka Ajanları**](../../docs/roadmap/voice-agents.md)                    | AgentNode aracılığıyla sesli arayüzler ve telefon numaraları kullanan yapay zeka ajanları | **Planlandı**   |
-| [**Telemetri ve İzlenebilirlik**](../../docs/roadmap/telemetry.md)              | Gelişmiş günlükleme ve performans takibi                                          | **Planlandı**   |
-| [**AgentDock Pro**](../../docs/agentdock-pro.md)                            | Yapay zeka ajanlarını ve workflow'larını ölçeklendirmek için kapsamlı kurumsal bulut platformu | **Bulut**       |
-| [**Doğal Dil Yapay Zeka Ajan Oluşturucu**](../../docs/roadmap/nl-agent-builder.md)  | Görsel oluşturucu + doğal dil ajan ve workflow oluşturma                         | **Bulut**       |
-| [**Ajan Pazar Yeri**](../../docs/roadmap/agent-marketplace.md)         | Paraya çevrilebilir ajan şablonları                                              | **Bulut**       |
+| [**Telemetri ve İzlenebilirlik**](../../docs/roadmap/telemetry.md) | Gelişmiş loglama ve performans takibi | **Planlandı** |
+| [**Workflow Runtime & Node Türleri**](../../docs/roadmap/workflow-nodes.md) | Çekirdek runtime, node tipleri ve karmaşık otomasyonlar için orkestrasyon mantığı | **Planlandı** |
+| [**AgentDock Pro**](../../docs/agentdock-pro.md) | Yapay zeka ajanlarını ve workflow'larını ölçeklendirmek için kapsamlı kurumsal bulut platformu | **Bulut** |
 
 ## 👥 Katkıda Bulunma
 

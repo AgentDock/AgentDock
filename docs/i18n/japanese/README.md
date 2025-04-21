@@ -352,7 +352,8 @@ AgentDockのモジュール式アーキテクチャは、以下の主要コン�
 | [**マルチエージェントコラボレーション**](../../docs/roadmap/multi-agent-collaboration.md) | エージェントが連携して作業できるようにする                                         | **計画中**       |
 | [**モデルコンテキストプロトコル（MCP）統合**](../../docs/roadmap/mcp-integration.md)  | MCPを介した外部ツールの検出と使用のサポート                                       | **計画中**       |
 | [**音声AIエージェント**](../../docs/roadmap/voice-agents.md)                 | AgentNodeを介した音声インターフェースと電話番号を使用するAIエージェント              | **計画中**       |
-| [**テレメトリとトレーサビリティ**](../../docs/roadmap/telemetry.md)           | 高度なロギングとパフォーマンストラッキング                                          | **計画中**       |
+| [**テレメトリとトレーサビリティ**](../../docs/roadmap/telemetry.md)           | 高度なロギングとパフォーマンス追跡 | **計画中** |
+| [**Workflow Runtime & Node タイプ**](../../docs/roadmap/workflow-nodes.md) | コア runtime、ノードタイプ、および複雑な自動化のためのオーケストレーションロジック | **計画中** |
 | [**AgentDock Pro**](../../docs/agentdock-pro.md)                               | AIエージェントとワークフローをスケーリングするための包括的なエンタープライズクラウドプラットフォーム | **クラウド**     |
 | [**自然言語AIエージェントビルダー**](../../docs/roadmap/nl-agent-builder.md)     | ビジュアルビルダー＋自然言語エージェントとワークフロー構築                          | **クラウド**     |
 | [**エージェントマーケットプレイス**](../../docs/roadmap/agent-marketplace.md)     | 収益化可能なエージェントテンプレート                                                | **クラウド**     |

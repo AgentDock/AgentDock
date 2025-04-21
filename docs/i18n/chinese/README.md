@@ -352,8 +352,9 @@ AgentDock 的模块化架构建立在以下关键组件之上：
 | [**多 Agent 协作**](../../docs/roadmap/multi-agent-collaboration.md)   | 使 Agent 能够协同工作                                                                 | **计划中**     |
 | [**模型上下文协议 (MCP) 集成**](../../docs/roadmap/mcp-integration.md) | 支持通过 MCP 发现和使用外部工具                                                       | **计划中**     |
 | [**语音 AI Agent**](../../docs/roadmap/voice-agents.md)                   | 通过 AgentNode 使用语音接口和电话号码的 AI Agent                                      | **计划中**     |
-| [**遥测和可追溯性**](../../docs/roadmap/telemetry.md)                | 高级日志记录和性能跟踪                                                                  | **计划中**     |
-| [**AgentDock Pro**](../../docs/agentdock-pro.md)                         | 用于扩展 AI Agent 和工作流的全面企业云平台                                              | **云**       |
+| [**遥测与可追溯性**](../../docs/roadmap/telemetry.md)                | 高级日志记录和性能跟踪                                                                  | **计划中**     |
+| [**Workflow Runtime & Node 类型**](../../docs/roadmap/workflow-nodes.md) | 核心 runtime、节点类型和复杂自动化编排逻辑 | **计划中** |
+| [**AgentDock Pro**](../../docs/agentdock-pro.md)                         | 用于扩展 AI Agent 和工作流的全面企业云平台                                              | **云平台**       |
 | [**自然语言 AI Agent 构建器**](../../docs/roadmap/nl-agent-builder.md)    | 可视化构建器 + 自然语言 Agent 和工作流构建                                              | **云**       |
 | [**Agent 市场**](../../docs/roadmap/agent-marketplace.md)           | 可货币化的 Agent 模板                                                                 | **云**       |
 

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./public/AgentDock-logo.png" alt="AgentDock Logo" width="750" />
+  <img src="./public/AgentDock-logo.png" alt="AgentDock Logo" width="800" />
 </p>
 
 <h1 align="left">Build Anything with AI Agents</h1>
@@ -367,6 +367,7 @@ Below is our development roadmap for AgentDock. Most improvements listed here re
 | [**Model Context Protocol (MCP) Integration**](docs/roadmap/mcp-integration.md) | Support for discovering and using external tools via MCP | **Planned** |
 | [**Voice AI Agents**](docs/roadmap/voice-agents.md) | AI agents using voice interfaces and phone numbers via AgentNode | **Planned** |
 | [**Telemetry and Traceability**](docs/roadmap/telemetry.md) | Advanced logging and performance tracking | **Planned** |
+| [**Workflow Runtime & Nodes**](docs/roadmap/workflow-nodes.md) | Core runtime, node types, and orchestration logic for complex automations | **Planned** |
 | [**AgentDock Pro**](docs/agentdock-pro.md) | Comprehensive enterprise cloud platform for scaling AI agents & workflows | **Cloud** |
 | [**Natural Language AI Agent Builder**](docs/roadmap/nl-agent-builder.md) | Visual builder + natural language agent and workflow construction | **Cloud** |
 | [**Agent Marketplace**](docs/roadmap/agent-marketplace.md) | Monetizable agent templates | **Cloud** |

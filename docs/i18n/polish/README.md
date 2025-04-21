@@ -352,10 +352,9 @@ Poniżej znajduje się nasz plan rozwoju dla AgentDock. Większość wymienionyc
 | [**Współpraca Wielu Agentów**](../../docs/roadmap/multi-agent-collaboration.md)| Umożliwienie agentom współpracy                                                               | **Planowany**  |
 | [**Integracja Protokołu Kontekstu Modelu (MCP)**](../../docs/roadmap/mcp-integration.md)| Wsparcie dla odkrywania i używania zewnętrznych narzędzi za pomocą MCP                         | **Planowany**  |
 | [**Agenci AI Głosowi**](../../docs/roadmap/voice-agents.md)                  | Agenci AI używający interfejsów głosowych i numerów telefonów za pośrednictwem AgentNode      | **Planowany**  |
-| [**Telemetria i Śledzenie**](../../docs/roadmap/telemetry.md)              | Zaawansowane logowanie i śledzenie wydajności                                                  | **Planowany**  |
-| [**AgentDock Pro**](../../docs/agentdock-pro.md)                           | Pełna platforma chmurowa dla przedsiębiorstw do skalowania agentów i przepływów pracy AI       | **Chmura**     |
-| [**Kreator Agentów AI w Języku Naturalnym**](../../docs/roadmap/nl-agent-builder.md)| Kreator wizualny + budowanie agentów i przepływów pracy w języku naturalnym                 | **Chmura**     |
-| [**Rynek Agentów**](../../docs/roadmap/agent-marketplace.md)               | Szablony agentów do monetyzacji                                                              | **Chmura**     |
+| [**Telemetria i Identyfikowalność**](../../docs/roadmap/telemetry.md) | Zaawansowane logowanie i śledzenie wydajności | **Planowane** |
+| [**Workflow Runtime & Node Typy**](../../docs/roadmap/workflow-nodes.md) | Podstawowy runtime, typy węzłów (Nodes) i logika orkiestracji dla złożonych automatyzacji | **Planowane** |
+| [**AgentDock Pro**](../../docs/agentdock-pro.md) | Kompleksowa platforma chmurowa dla przedsiębiorstw do skalowania agentów AI i przepływów pracy | **Chmura** |
 
 ## 👥 Współtworzenie
 

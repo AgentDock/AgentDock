@@ -352,7 +352,8 @@ Unten finden Sie unsere Entwicklungs-Roadmap für AgentDock. Die meisten hier au
 | [**Multi-Agenten-Kollaboration**](../../docs/roadmap/multi-agent-collaboration.md)| Ermöglichen, dass Agenten zusammenarbeiten                                                              | **Geplant**     |
 | [**Integration des Model Context Protocol (MCP)**](../../docs/roadmap/mcp-integration.md)| Unterstützung für die Erkennung und Nutzung externer Werkzeuge über MCP                               | **Geplant**     |
 | [**Sprach-KI-Agenten**](../../docs/roadmap/voice-agents.md)                  | KI-Agenten, die Sprachschnittstellen und Telefonnummern über AgentNode verwenden                      | **Geplant**     |
-| [**Telemetrie und Nachverfolgbarkeit**](../../docs/roadmap/telemetry.md)       | Erweiterte Protokollierung und Leistungsverfolgung                                                     | **Geplant**     |
+| [**Telemetrie und Rückverfolgbarkeit**](../../docs/roadmap/telemetry.md)       | Erweitertes Logging und Leistungsüberwachung                                                     | **Geplant**     |
+| [**Workflow Runtime & Node Typen**](../../docs/roadmap/workflow-nodes.md)        | Kern-Runtime, Knotentypen und Orchestrierungslogik für komplexe Automatisierungen                     | **Geplant**     |
 | [**AgentDock Pro**](../../docs/agentdock-pro.md)                            | Umfassende Enterprise-Cloud-Plattform zur Skalierung von KI-Agenten & Workflows                       | **Cloud**       |
 | [**KI-Agenten-Builder in natürlicher Sprache**](../../docs/roadmap/nl-agent-builder.md)| Visueller Builder + Erstellung von Agenten und Workflows in natürlicher Sprache                     | **Cloud**       |
 | [**Agenten-Marktplatz**](../../docs/roadmap/agent-marketplace.md)              | Monetarisierbare Agentenvorlagen                                                                        | **Cloud**       |

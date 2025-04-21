@@ -353,6 +353,7 @@ AgentDock의 모듈식 아키텍처는 다음과 같은 주요 구성 요소를 
 | [**모델 컨텍스트 프로토콜 (MCP) 통합**](../../docs/roadmap/mcp-integration.md) | MCP를 통한 외부 도구 검색 및 사용 지원                                              | **계획됨**      |
 | [**음성 AI 에이전트**](../../docs/roadmap/voice-agents.md)                  | AgentNode를 통한 음성 인터페이스 및 전화번호를 사용하는 AI 에이전트                 | **계획됨**      |
 | [**텔레메트리 및 추적성**](../../docs/roadmap/telemetry.md)             | 고급 로깅 및 성능 추적                                                               | **계획됨**      |
+| [**Workflow Runtime & Node 타입**](../../docs/roadmap/workflow-nodes.md) | 코어 runtime, 노드 타입 및 복잡한 자동화를 위한 오케스트레이션 로직 | **계획됨** |
 | [**AgentDock Pro**](../../docs/agentdock-pro.md)                        | AI 에이전트 및 워크플로 확장을 위한 포괄적인 엔터프라이즈 클라우드 플랫폼            | **클라우드**    |
 | [**자연어 AI 에이전트 빌더**](../../docs/roadmap/nl-agent-builder.md)     | 시각적 빌더 + 자연어 에이전트 및 워크플로 구축                                       | **클라우드**    |
 | [**에이전트 마켓플레이스**](../../docs/roadmap/agent-marketplace.md)      | 수익화 가능한 에이전트 템플릿                                                        | **클라우드**    |

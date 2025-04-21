@@ -353,7 +353,8 @@ Voici notre feuille de route de développement pour AgentDock. La plupart des am
 | [**Intégration Model Context Protocol (MCP)**](../../docs/roadmap/mcp-integration.md) | Prise en charge de la découverte et de l'utilisation d'outils externes via MCP      | **Planifié**    |
 | [**Agents IA Vocaux**](../../docs/roadmap/voice-agents.md)                   | Agents IA utilisant des interfaces vocales et numéros de téléphone via AgentNode | **Planifié**    |
 | [**Télémétrie et Traçabilité**](../../docs/roadmap/telemetry.md)             | Journalisation avancée et suivi des performances                                | **Planifié**    |
-| [**AgentDock Pro**](../../docs/agentdock-pro.md)                           | Plateforme cloud d'entreprise complète pour scaler agents IA & workflows        | **Cloud**       |
+| [**Workflow Runtime & Node Types**](../../docs/roadmap/workflow-nodes.md)       | Runtime principal, types de nœuds et logique d'orchestration pour automatisations complexes | **Planifié**    |
+| [**AgentDock Pro**](../../docs/agentdock-pro.md)                           | Plateforme cloud d'entreprise complète pour la mise à l'échelle des agents IA et des workflows | **Cloud**       |
 | [**Constructeur d'Agent IA en Langage Naturel**](../../docs/roadmap/nl-agent-builder.md) | Constructeur visuel + construction d'agent et workflow en langage naturel        | **Cloud**       |
 | [**Place de Marché d'Agents**](../../docs/roadmap/agent-marketplace.md)        | Modèles d'agents monétisables                                                     | **Cloud**       |
 

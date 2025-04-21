@@ -5,8 +5,8 @@
 <h1 align="left">Build Anything with AI Agents</h1>
 
 
-[![GitHub stars](https://img.shields.io/github/stars/agentdock/agentdock?style=social)](https://github.com/agentdock/agentdock/stargazers)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub stars](https://img.shields.io/github/stars/agentdock/agentdock)](https://github.com/agentdock/agentdock/stargazers)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/AgentDock/AgentDock/blob/main/LICENSE)
 [![Status: Beta](https://img.shields.io/badge/Status-Beta-blue)](https://github.com/AgentDock/AgentDock/releases)
 [![Documentation](https://img.shields.io/badge/Documentation-📕-blue)](https://hub.agentdock.ai/docs)
 [![Discord](https://img.shields.io/discord/1335979387975110656?color=7289DA&label=Discord&logo=discord&logoColor=white)](https://discord.gg/fDYFFmwuRA)

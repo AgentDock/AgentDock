@@ -14,6 +14,7 @@
 [![Twitter Follow](https://img.shields.io/twitter/follow/AgentDock?style=social)](https://x.com/agentdock)
 
 
+
 AgentDock is a framework for building sophisticated AI agents that deliver complex tasks with **configurable determinism**. It consists of two main components:
 
 1. **AgentDock Core**: An open-source, backend-first framework for building and deploying AI agents. It's designed to be *framework-agnostic* and *provider-independent*, giving you complete control over your agent's implementation.
@@ -22,6 +23,7 @@ AgentDock is a framework for building sophisticated AI agents that deliver compl
 
 Built with TypeScript, AgentDock emphasizes *simplicity*, *extensibility*, and ***configurable determinism*** - making it ideal for building reliable and predictable AI systems that can operate with minimal supervision.
 
+https://github.com/user-attachments/assets/50c766dc-fc65-481c-aad2-9a71169c7b28
 
 ## 🌐 README Translations
 

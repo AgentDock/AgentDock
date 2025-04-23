@@ -25,21 +25,27 @@ Built with TypeScript, AgentDock emphasizes *simplicity*, *extensibility*, and *
 
 ## Demos
 
-**[Dr. Gregory House](https://github.com/AgentDock/AgentDock/tree/main/agents/dr-house):** This medical diagnostic agent orchestrates **`search`**, **`deep_research`**, and **`pubmed`** tools to emulate expert diagnostic reasoning for complex health scenarios.
+**[Dr. Gregory House](https://github.com/AgentDock/AgentDock/tree/main/agents/dr-house):** A diagnostic reasoning powerhouse that orchestrates **`search`**, **`deep_research`**, and **`pubmed`** tools in a multi-stage workflow to tackle complex medical cases using methodical investigation techniques that rival expert diagnosticians.
 
 https://github.com/user-attachments/assets/50c766dc-fc65-481c-aad2-9a71169c7b28
 
 </br>
 
-**[Cognitive Reasoner](https://github.com/AgentDock/AgentDock/tree/main/agents/cognitive-reasoner):** Tackle complex problems with this agent that orchestrates a suite of cognitive tools (**`search`**, **`think`**, **`reflect`**, **`compare`**, **`critique`**, **`brainstorm`**, **`debate`**) for advanced reasoning and structured problem-solving.
+**[Cognitive Reasoner](https://github.com/AgentDock/AgentDock/tree/main/agents/cognitive-reasoner):** Multi-stage reasoning engine that orchestrates seven specialized cognitive tools (**`search`**, **`think`**, **`reflect`**, **`compare`**, **`critique`**, **`brainstorm`**, **`debate`**) in configurable workflows to systematically deconstruct and solve complex problems with human-like reasoning patterns.
 
 https://github.com/user-attachments/assets/279a4e48-a980-4f83-becb-5e039fe10c56
 
 </br>
 
-**[History Mentor](https://github.com/AgentDock/AgentDock/tree/main/agents/history-mentor):** Engage in authentic educational dialogues as this agent utilizes **`search`** tools and Mermaid diagram rendering, orchestrating interactions with simulated historical figures for immersive learning.
+**[History Mentor](https://github.com/AgentDock/AgentDock/tree/main/agents/history-mentor):** Immersive educational agent combining vectorized historical knowledge with **`search`** capabilities and dynamic Mermaid diagram rendering to create authentic learning experiences that visualize complex historical relationships and timelines on demand.
 
 https://github.com/user-attachments/assets/56e80a15-eac3-452b-aa8b-efe7b7f3360c
+
+</br>
+
+**[Calorie Vision](https://github.com/AgentDock/AgentDock/tree/main/agents/calorie-vision):** Vision-based nutritional analysis system that combines computer vision with structured data extraction to deliver precise macro and micronutrient breakdowns from food images, functioning like a nutritionist that can instantly quantify meal composition without relying on manual input.
+
+https://github.com/user-attachments/assets/6b4e71cf-accc-4c18-bb42-7bc5ad2f37e4
 
 
 

@@ -1,0 +1,54 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Contribution Workflow & General Standards
+
+This file outlines the general workflow, Git practices, and coding standards for contributing to the AgentDock project.
+
+## 1. Core Principles
+- Review the overall project philosophy in `[docs/README.md](mdc:docs/README.md)`.
+- Familiarize yourself with the main components: `[agentdock-core](mdc:agentdock-core)` (framework) and the OSS Client (`/src`).
+- Adhere to the specific rules outlined in other `.mdc` files for the area you are working in (e.g., `[agentdock-core.mdc](mdc:.cursor/rules/agentdock-core.mdc)`, `[src.mdc](mdc:.cursor/rules/src.mdc)`, `[nodes.mdc](mdc:.cursor/rules/nodes.mdc)`, `[docs.mdc](mdc:.cursor/rules/docs.mdc)`).
+
+## 2. Getting Started
+- Ensure your development environment meets the requirements outlined in `[docs/getting-started.md](mdc:docs/getting-started.md)`.
+- For significant changes or new features, it's recommended to open a GitHub Issue first to discuss the approach.
+
+## 3. Development Workflow
+
+1.  **Assign/Pick Issue**: Work on an existing GitHub issue or create a new one for your intended change.
+2.  **Create Branch**: Create a branch from the main development branch (e.g., `main` or `develop`) following the naming convention:
+    *   Features: `feat/issue-{number}-{short-description}`
+    *   Bugfixes: `fix/issue-{number}-{short-description}`
+    *   Example: `feat/issue-123-add-rate-limiting`
+3.  **Implement Changes**: Write code following the project's coding standards and specific rules relevant to the modified directories.
+4.  **Write Tests**: Add appropriate unit, integration, or end-to-end tests for new functionality or bug fixes.
+5.  **Update Documentation**: Ensure relevant documentation in `/docs` is updated (see `[docs.mdc](mdc:.cursor/rules/docs.mdc)` for guidelines).
+6.  **Commit Changes**: Use clear and concise commit messages, referencing the issue number:
+    *   Format: `[Issue #{number}] Brief description of changes`
+    *   Example: `[Issue #123] Add rate limiting middleware to chat API`
+7.  **Create Pull Request (PR)**:
+    *   Push your branch to the repository.
+    *   Create a PR targeting the main development branch.
+    *   **Link the Issue**: Ensure the PR description clearly links the relevant GitHub Issue(s).
+    *   **Describe Changes**: Write a clear description outlining the changes made and the problem solved.
+    *   **Testing Info**: Briefly mention the testing performed or added.
+    *   **Breaking Changes**: Clearly document any breaking changes.
+    *   Request reviews from relevant team members/maintainers.
+8.  **Address Feedback**: Respond to review comments and push updates to your branch.
+9.  **Merge**: Once approved and checks pass, the PR will be merged by a maintainer.
+
+## 4. General Code Standards
+
+- **TypeScript**: Use TypeScript for type safety throughout the codebase.
+- **Code Style**: Adhere to ESLint and Prettier rules configured in the project (run `pnpm lint` and `pnpm format`).
+- **Naming Conventions** (Refer to specific rules like `src.mdc` for details, but generally):
+  - Files: `kebab-case.ts` / `kebab-case.tsx`
+  - Components: `PascalCase`
+  - Functions/Variables: `camelCase`
+  - Types/Interfaces: `PascalCase`
+  - Constants: `UPPER_SNAKE_CASE`
+- **Code Documentation**: Use JSDoc for exported functions, classes, types, and complex logic blocks.
+

@@ -1,0 +1,44 @@
+# AgentDock Core Framework Rules
+
+This file outlines rules, conventions, and architectural principles for contributing to the `agentdock-core` directory, the standalone AgentDock framework. Adhering to these guidelines ensures contributions align with the project's goals and future roadmap, facilitating integration into both the open-source project and potential future products.
+
+## 1. Core Concepts & Purpose
+- **Foundation:** `agentdock-core` is the foundational TypeScript framework, designed to be backend-first, framework-agnostic, and provider-independent. See [agentdock-core/README.md](mdc:agentdock-core/README.md) for a full overview.
+- **Goal:** Enable the creation of sophisticated AI agents capable of complex tasks with configurable determinism.
+- **Subsystems:** Provides modular subsystems for LLM interaction, node/tool execution, session management, orchestration, and pluggable storage/memory.
+- **Roadmap:** Development aims towards supporting advanced memory, vector storage, platform integrations (messaging, voice), multi-agent collaboration, workflow automation, evaluation, and observability. See [docs/roadmap.md](mdc:docs/roadmap.md) and detailed files in `[docs/roadmap/](mdc:docs/roadmap)`.
+- **Status:** Pre-release (targeting NPM publication). Contributions should focus on core framework logic.
+
+## 2. Directory Structure (`agentdock-core/src`)
+Refer to the structure outlined in the [agentdock-core/README.md](mdc:agentdock-core/README.md#directory-structure-agentdock-coresrc). Key directories house specific subsystems:
+- `[config/](mdc:agentdock-core/src/config)`: Agent configuration processing and validation.
+- `[errors/](mdc:agentdock-core/src/errors)`: Error handling and standardized error classes.
+- `[llm/](mdc:agentdock-core/src/llm)`: LLM abstraction layer with `CoreLLM` (`[core-llm.ts](mdc:agentdock-core/src/llm/core-llm.ts)`), provider implementations, model registry (`[model-registry.ts](mdc:agentdock-core/src/llm/model-registry.ts)`).
+- `[logging/](mdc:agentdock-core/src/logging)`: Structured logging system.
+- `[nodes/](mdc:agentdock-core/src/nodes)`: Base node framework with `BaseNode` (`[base-node.ts](mdc:agentdock-core/src/nodes/base-node.ts)`), `AgentNode` (`[agent-node.ts](mdc:agentdock-core/src/nodes/agent-node.ts)`), node registry (`[node-registry.ts](mdc:agentdock-core/src/nodes/node-registry.ts)`), and tool registry (`[tool-registry.ts](mdc:agentdock-core/src/nodes/tool-registry.ts)`).
+- `[nodes/tool/](mdc:agentdock-core/src/nodes/tool)`: Tool implementation utilities with base classes and helper functions.
+- `[orchestration/](mdc:agentdock-core/src/orchestration)`: Orchestration and state management.
+- `[session/](mdc:agentdock-core/src/session)`: Session management for conversational state.
+- `[storage/](mdc:agentdock-core/src/storage)`: Storage abstraction with `[providers/](mdc:agentdock-core/src/storage/providers)` (memory, redis, vercel-kv) and `[secure-storage.ts](mdc:agentdock-core/src/storage/secure-storage.ts)`.
+- `[types/](mdc:agentdock-core/src/types)`: Core TypeScript definitions.
+- `[utils/](mdc:agentdock-core/src/utils)`: Utilities for prompts (`[prompt-utils.ts](mdc:agentdock-core/src/utils/prompt-utils.ts)`), messages (`[message-utils.ts](mdc:agentdock-core/src/utils/message-utils.ts)`), LLM operations (`[llm-utils.ts](mdc:agentdock-core/src/utils/llm-utils.ts)`), and security (`[security-utils.ts](mdc:agentdock-core/src/utils/security-utils.ts)`).
+
+## 3. Development Guidelines & Architectural Principles
+
+- **Modularity & Interfaces:** Design components as distinct, replaceable modules. Define clear TypeScript interfaces for core abstractions (e.g., storage providers, LLM handlers, platform nodes) to facilitate extensibility. Follow existing patterns like the storage provider interface.
+- **Node-Centric Design:** Implement new capabilities primarily as nodes extending `BaseNode`. Tools are specialized nodes. Ensure nodes are registered correctly (see `[nodes/](mdc:agentdock-core/src/nodes)` and `[docs/nodes/README.md](mdc:docs/nodes/README.md)`). For specific tool/node development, see `[docs/nodes/custom-tool-development.md](mdc:docs/nodes/custom-tool-development.md)` and `[docs/nodes/custom-node-development.md](mdc:docs/nodes/custom-node-development.md)`.
+- **Framework Agnosticism:** Code within `agentdock-core` must not depend directly on specific web frameworks like Next.js. Interactions with web frameworks (e.g., for webhooks) should occur through adapter layers (see `[docs/roadmap/platform-integration.md](mdc:docs/roadmap/platform-integration.md)`).
+- **Type Safety:** Use TypeScript strictly. Provide JSDoc comments for all exported functions, classes, types, methods, and complex logic.
+- **State Management:** Understand the roles of `SessionManager` (conversational state) and `OrchestrationManager` (interaction/control flow state). Leverage the storage abstraction layer for persistence. Consider future needs for advanced memory systems (see `[docs/roadmap/advanced-memory.md](mdc:docs/roadmap/advanced-memory.md)`).
+- **Extensibility Points:**
+    - **LLM Providers:** Follow `[docs/architecture/adding-new-provider.md](mdc:docs/architecture/adding-new-provider.md)`. Implement the necessary interfaces within `[llm/](mdc:agentdock-core/src/llm)`.
+    - **Storage Providers:** Implement storage providers following patterns in `[storage/providers/](mdc:agentdock-core/src/storage/providers)`.
+    - **Nodes/Tools:** Create new nodes in dedicated directories (usually outside core, e.g., in `/src/nodes`) and register them.
+    - **Platform Integrations:** Implement `PlatformNode` and potentially an `HttpAdapter` (see `[docs/roadmap/platform-integration.md](mdc:docs/roadmap/platform-integration.md)`).
+- **Asynchronous Operations:** Use `async/await` appropriately. Be mindful of potential blocking operations and consider patterns for parallel execution where applicable (see data fetching patterns in Next.js docs for inspiration, though core is framework-agnostic).
+- **Testing & Evaluation:** Add unit/integration tests for core functionality. Keep the future evaluation framework in mind (`[docs/roadmap/evaluation-framework.md](mdc:docs/roadmap/evaluation-framework.md)`). Code should be testable.
+- **Logging & Telemetry:** Use the structured logger (`[logging/](mdc:agentdock-core/src/logging)`). Be mindful of future telemetry integration (`[docs/roadmap/telemetry.md](mdc:docs/roadmap/telemetry.md)`). Avoid logging sensitive data.
+- **Error Handling:** Use the standardized `AgentError` (`[errors/](mdc:agentdock-core/src/errors)`). Ensure errors are meaningful and handled gracefully.
+- **Security:** Prioritize security. Validate inputs, handle API keys securely (core itself doesn't store keys, but facilitates their use), and consider risks outlined in `[docs/initial-security-audit.md](mdc:docs/initial-security-audit.md)`. Sanitize outputs where appropriate.
+- **Dependencies:** Minimize external dependencies within the core framework. Justify any additions. Keep dependencies updated and audited.
+- **Contribution Process:** Discuss significant changes or new features via GitHub Issues before implementation. Follow Git workflow guidelines in `[contributions.mdc](mdc:.cursor/rules/contributions.mdc)`.

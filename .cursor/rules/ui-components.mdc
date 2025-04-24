@@ -1,0 +1,43 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# UI Component Rules (shadcn/ui)
+
+This file outlines rules for using shadcn/ui components within the AgentDock OSS Client application.
+
+## Installation
+
+- Add new components using the shadcn-ui CLI:
+  ```bash
+  npx shadcn@latest add [component-name]
+  ```
+
+- Components are added to `[src/components/ui/](mdc:src/components/ui)` directory
+
+- Always use the latest versions of components
+
+## Usage Guidelines
+
+- Do not modify component files in `[src/components/ui/](mdc:src/components/ui)` directly
+
+- Create wrapper components for customization when needed
+
+- Use composition to build complex UI elements from simple components
+
+- Import components using:
+  ```tsx
+  import { Button } from "@/components/ui/button";
+  ```
+
+## Updates
+
+- Keep `[components.json](mdc:components.json)` file up to date
+
+- When updating a component, be careful not to break existing customizations
+
+- To update a component, rerun the shadcn-ui add command:
+  ```bash
+  npx shadcn@latest add [component-name] --overwrite
+  ```

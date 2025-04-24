@@ -1,0 +1,61 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Documentation Rules (`/docs`)
+
+This file provides guidelines for working with the documentation in the `/docs` directory.
+
+## Documentation Structure
+
+The `/docs` directory is organized as follows:
+
+- `[docs/README.md](mdc:docs/README.md)`: Main project overview
+- `[docs/getting-started.md](mdc:docs/getting-started.md)`: Setup instructions
+- `[docs/architecture/](mdc:docs/architecture)`: System design documentation
+- `[docs/nodes/](mdc:docs/nodes)`: Node system documentation
+- `[docs/oss-client/](mdc:docs/oss-client)`: Client application docs
+- `[docs/rfa/](mdc:docs/rfa)`: "Requests for Architecture" (RFA) process
+- `[docs/roadmap/](mdc:docs/roadmap)`: Future development plans
+- `[docs/roadmap.md](mdc:docs/roadmap.md)`: High-level roadmap
+- `[docs/agent-templates.md](mdc:docs/agent-templates.md)`: Agent template structure
+- `[docs/i18n/](mdc:docs/i18n)`: Internationalization documentation
+- `[docs/error-handling/](mdc:docs/error-handling)`: Error handling guidelines
+- `[docs/storage/](mdc:docs/storage)`: Storage systems documentation
+- Additional files for specific topics
+
+## Documentation Standards
+
+- **Markdown Format**: Use GitHub Flavored Markdown
+- **Headers**: Use ATX-style headers (# H1, ## H2) with proper hierarchy
+- **Code Examples**: Use fenced code blocks with language specifiers
+  ```typescript
+  // TypeScript example
+  function example(): string {
+    return "Hello World";
+  }
+  ```
+- **Links**: Use relative links to other docs in the repository
+- **Images**: Store in an `assets` or `images` directory next to the relevant docs
+- **Diagrams**: Prefer Mermaid diagrams for technical illustrations
+- **Tables**: Use standard Markdown tables for tabular data
+
+## Writing Style
+
+- **Audience**: Write for developers who are new to the codebase
+- **Clarity**: Be concise but thorough. Explain why, not just how
+- **Updates**: Keep documentation in sync with code changes
+- **Examples**: Include practical examples for complex topics
+- **Terminology**: Define specialized terms when first used
+
+## Contributing to Documentation
+
+To contribute documentation:
+
+1. For minor fixes, submit a PR with the changes
+2. For major additions, create an issue first to discuss the approach
+3. Follow the existing document structure and style
+4. Include documentation updates in the same PR as related code changes
+
+For questions about documentation, contact the project maintainers or open an issue.

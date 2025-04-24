@@ -126,26 +126,58 @@ AgentDock uses agent templates to define agent behavior. Here's how to create yo
 
 ### 1. Create Agent Template
 
-Create a new directory in the `src/templates` folder for your agent:
+Create a new directory in the `agents` folder for your agent:
 
 ```
-src/templates/my-first-agent/
+agents/my-first-agent/
 ```
 
 Create a `template.json` file in this directory with your agent configuration:
 
 ```json
 {
-  "id": "my-first-agent",
+  "version": "1.0",
+  "agentId": "my-first-agent",
   "name": "My First Agent",
   "description": "A simple example agent",
-  "systemPrompt": "You are a helpful assistant that provides concise answers.",
-  "personality": ["I'm designed to be helpful and informative.", "I provide concise answers to your questions."],
-  "avatar": "/avatars/default.png",
-  "tools": ["search", "weather"],
-  "provider": "anthropic",
-  "model": "claude-3-haiku-20240307",
-  "tags": ["Personal"]
+  "personality": [
+    "You are a helpful assistant that provides concise answers.",
+    "You are designed to be helpful and informative.",
+    "You can help users with weather information and web searches.",
+    "Use the weather tool to get current conditions and forecasts for any location worldwide.",
+    "Use the search tool to find information on any topic. The tool will return relevant web search results that you can use to answer user questions.",
+  ],
+  "nodes": [
+    "llm.anthropic",
+    "weather",
+    "search"
+  ],
+  "nodeConfigurations": {
+    "llm.anthropic": {
+      "model": "claude-3-haiku-20240307",
+      "temperature": 0.7,
+      "maxTokens": 4096,
+      "useCustomApiKey": false
+    },
+    "weather": {
+      "maxResults": 5
+    },
+    "search": {
+      "maxResults": 8
+    }
+  },
+  "chatSettings": {
+    "historyPolicy": "lastN",
+    "historyLength": 50,
+    "initialMessages": [
+      "Hello! I'm your new agent. I can help you with weather information and web searches. How can I assist you today?"
+    ],
+    "chatPrompts": [
+      "What's the weather like in New York?",
+      "Search for information about climate change"
+    ]
+  },
+  "tags": ["Personal", "Weather", "Research"]
 }
 ```
 
@@ -157,7 +189,7 @@ Simply run the development server which will automatically bundle your templates
 pnpm dev
 ```
 
-The `predev` script will automatically run before starting the server, bundling all templates in the `src/templates` directory.
+The `predev` script will automatically run before starting the server, bundling all templates in the `agents` directory.
 
 ### 3. Test Your Agent
 
@@ -167,15 +199,31 @@ Navigate to [http://localhost:3000/chat?agentId=my-first-agent](http://localhost
 
 Agent customization is done entirely through the `template.json` file. The file supports the following key fields:
 
-- `id`: Unique identifier for your agent
+- `version`: Template version (optional)
+- `agentId`: Unique identifier for your agent
 - `name`: Display name for your agent
 - `description`: Brief description of what your agent does
-- `systemPrompt`: Instructions that guide your agent's behavior
-- `personality`: Array of personality traits (or can be a string)
-- `avatar`: Path to avatar image (supported in the configuration but not currently rendered in the interface)
-- `tools`: Array of tool IDs the agent can use
-- `provider`: LLM provider to use (anthropic, openai, gemini)
-- `model`: Specific model to use from the provider
+- `personality`: Array of personality traits that guide your agent's behavior
+- `nodes`: Array of node types used by the agent. Each node represents a capability:
+  - LLM nodes (e.g., "llm.anthropic", "llm.openai", "llm.gemini") - Provide language model capabilities
+  - Tool nodes - Provide specific functionality:
+    - "weather" - Get weather forecasts for locations
+    - "search" - Search the web for information
+    - "stock-price" - Get stock market data
+    - "crypto-price" - Get cryptocurrency prices
+    - "image-generation" - Generate images
+    - "deep-research" - Perform in-depth research
+    - "science" - Access scientific papers and data
+    - "cognitive-tools" - Advanced cognitive capabilities
+- `nodeConfigurations`: Configuration for specific nodes
+  - For LLM nodes, specify the model and parameters (temperature, maxTokens, etc.)
+  - For tool nodes, configure their specific settings (e.g., maxResults for search)
+  - Each node type may have its own configuration options
+- `chatSettings`: Controls chat behavior
+  - `historyPolicy`: How chat history is managed ("none", "lastN", "all")
+  - `historyLength`: Number of messages to keep if using "lastN"
+  - `initialMessages`: Messages shown when chat starts
+  - `chatPrompts`: Suggested prompts shown in UI
 - `tags`: Categories for your agent
 
 ## About the Open Source Client

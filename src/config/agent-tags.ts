@@ -74,6 +74,12 @@ export const AGENT_TAGS: TagConfig[] = [
     name: "Learning",
     description: "Learning and tutoring assistants",
     order: 8
+  },
+  {
+    id: "marketing",
+    name: "Marketing",
+    description: "Marketing assistants and agents",
+    order: 9
   }
 
 ]; 

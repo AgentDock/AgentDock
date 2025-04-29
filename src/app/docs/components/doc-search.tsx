@@ -6,6 +6,7 @@ import { Search } from 'lucide-react';
 import { debounce } from 'lodash-es';
 import { CommandDialog } from '@/components/ui/command';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { closeMobileSidebar } from './docs-sidebar';
 
 type SearchResult = {
   id: string;
@@ -161,6 +162,13 @@ export function DocSearch() {
 
   const handleSelect = (url: string) => {
     setOpen(false);
+    
+    // Close the mobile sidebar if we're on mobile
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      closeMobileSidebar();
+    }
+    
+    // Navigate to the selected result
     window.location.href = url;
   };
 

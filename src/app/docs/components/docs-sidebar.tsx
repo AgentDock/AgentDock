@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
 import { ChevronDown, ChevronRight } from 'lucide-react';
@@ -12,13 +12,24 @@ interface DocsSidebarProps {
   sidebarSections: SidebarSection[];
 }
 
+// Function to close the mobile sidebar - exported for use in other components
+export function closeMobileSidebar() {
+  // Find and uncheck the sidebar toggle checkbox
+  if (typeof window !== 'undefined') {
+    const sidebarToggle = document.getElementById('sidebar-mobile-toggle') as HTMLInputElement;
+    if (sidebarToggle) {
+      sidebarToggle.checked = false;
+    }
+  }
+}
+
 export function DocsSidebar({ sidebarSections }: DocsSidebarProps) {
   const pathname = usePathname();
   const isMainDocsPage = pathname === '/docs' || pathname === '/docs/';
   const initialized = useRef(false);
   
   // Check if a link should be considered active
-  const isLinkActive = (linkHref: string): boolean => {
+  const isLinkActive = useCallback((linkHref: string): boolean => {
     // Special case for the Introduction link which maps to the main docs page
     if (isMainDocsPage && linkHref === '/docs/') {
       return true;
@@ -29,7 +40,7 @@ export function DocsSidebar({ sidebarSections }: DocsSidebarProps) {
     const normalizedPathname = pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
     
     return normalizedPathname === normalizedHref;
-  };
+  }, [isMainDocsPage, pathname]);
   
   // Calculate which section contains the active link
   const activeSectionTitle = useMemo(() => {
@@ -42,7 +53,7 @@ export function DocsSidebar({ sidebarSections }: DocsSidebarProps) {
     }
     
     return null;
-  }, [sidebarSections, isMainDocsPage, pathname]);
+  }, [sidebarSections, isMainDocsPage, isLinkActive]);
   
   // State for expanded sections
   const [expandedSections, setExpandedSections] = useState<{[key: string]: boolean}>({});
@@ -73,8 +84,16 @@ export function DocsSidebar({ sidebarSections }: DocsSidebarProps) {
     }));
   };
 
+  // Handle link click
+  const handleLinkClick = () => {
+    // Only close on mobile
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      closeMobileSidebar();
+    }
+  };
+
   return (
-    <div className="py-8 w-full h-full">
+    <div className="py-8 w-full h-full overflow-y-auto scrollbar-thin">
       <div className="px-6 space-y-6">
         <div>
           <h2 className="text-xl font-semibold mb-2">Documentation</h2>
@@ -121,6 +140,7 @@ export function DocsSidebar({ sidebarSections }: DocsSidebarProps) {
                       <Link
                         key={item.href}
                         href={item.href as any}
+                        onClick={handleLinkClick}
                         className={`block text-sm py-2 px-3 rounded-md transition-colors ${
                           isActive 
                             ? 'bg-primary/10 text-primary font-medium' 

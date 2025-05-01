@@ -1,6 +1,6 @@
-# Testing Strategy for AgentDock Core
+# Testing Strategy
 
-This document outlines the testing strategy for the `agentdock-core` framework, focusing on comprehensive unit testing with strict dependency isolation through mocking.
+This document outlines the testing strategy for the AgentDock project, with a particular focus on the `agentdock-core` framework and its comprehensive unit testing approach.
 
 ## Core Principles
 
@@ -128,3 +128,50 @@ describe('ComponentName', () => {
 4. **Test Edge Cases**: Include tests for error conditions and edge cases
 5. **Descriptive Test Names**: Use clear, descriptive names for test cases
 6. **Use Helper Functions**: Leverage the helper functions in `src/test/setup.ts` for creating consistent mocks
+
+## Module-Specific Testing Guidelines
+
+### Orchestration Module Testing
+
+The orchestration module (`OrchestrationManager`, `OrchestrationStateManager`, `StepSequencer`) requires comprehensive testing of:
+
+- State transitions and management
+- Tool filtering and sequencing
+- Conditional logic for step activation
+- Error handling and edge cases
+
+Use the `createMockOrchestrationManager()` helper function to create standardized mocks for orchestration components.
+
+### Storage Module Testing
+
+The storage module requires testing of:
+
+- Interface compliance for all provider implementations
+- CRUD operations and TTL functionality
+- Provider-specific logic and error handling
+- Factory instantiation and configuration
+
+Use the `createMockStorageProvider()` helper function to create standardized mocks for storage components.
+
+### Node System Testing
+
+The core node system requires testing of:
+
+- Node registration and retrieval
+- Tool registration and filtering
+- Metadata validation and port definitions
+- Node instantiation and execution
+
+Use the `createMockBaseNode()` helper function to create standardized mocks for node components.
+
+## Helper Functions
+
+The `src/test/setup.ts` file provides helper functions for creating standardized mocks:
+
+- `createMockCoreLLM()`: Creates a mock CoreLLM instance with configurable behavior
+- `createMockLLMOrchestrationService()`: Creates a mock LLMOrchestrationService instance
+- `createMockOrchestrationManager()`: Creates a mock OrchestrationManager instance
+- `createMockStorageProvider()`: Creates a mock StorageProvider instance
+- `createMockBaseNode()`: Creates a mock BaseNode instance
+
+These helper functions ensure consistent behavior across tests and facilitate strict dependency isolation.

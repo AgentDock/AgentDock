@@ -58,7 +58,7 @@ Before submitting a PR:
 3. Check linting: `pnpm lint`
 4. Run validation: `pnpm run validate`
 
-For `agentdock-core` specific testing guidelines, refer to the [TESTING.md](agentdock-core/TESTING.md) document, which outlines the mocking strategy and best practices for unit testing.
+For testing guidelines, refer to the [Testing Strategy](docs/testing.md) document, which outlines the mocking strategy and best practices for unit testing, particularly for the `agentdock-core` module.
 
 The pre-push hook will run these automatically, but it's good practice to check them manually during development.
 

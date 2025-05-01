@@ -358,11 +358,11 @@ AgentDock работает по модели BYOK (Bring Your Own Key - Испо
 
 ## 👥 Вклад
 
-Мы приветствуем вклад в AgentDock! Подробные инструкции см. в [CONTRIBUTING.md](../../CONTRIBUTING.md).
+Мы приветствуем вклад в AgentDock! Подробные инструкции см. в [CONTRIBUTING.md](https://github.com/AgentDock/AgentDock/blob/main/CONTRIBUTING.md).
 
 ## 📜 Лицензия
 
-AgentDock выпускается под [Лицензией MIT](../../LICENSE).
+AgentDock выпускается под [Лицензией MIT](https://github.com/AgentDock/AgentDock/blob/main/LICENSE).
 
 ## ✨ Создавайте Безграничные Возможности!
 

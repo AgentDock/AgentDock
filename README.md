@@ -223,6 +223,11 @@ For a comprehensive guide, see the [Getting Started Guide](docs/getting-started.
    ```bash
    pnpm dev
    ```
+## Deploy the Open Source Client
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FAgentDock%2FAgentDock)
+
+Click the button above to deploy the AgentDock Open Source Client directly to your Vercel account. 
 
 ### Advanced Capabilities
 

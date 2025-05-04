@@ -417,12 +417,12 @@ ISO timestamp: ${now.toISOString()}`;
   
   /** Provides the display label for this node. */
   protected getLabel(): string {
-    return this.config.agentConfig?.name || 'Agent Node';
+    return this.config?.agentConfig?.name || 'Agent Node';
   }
   
   /** Provides the description for this node. */
   protected getDescription(): string {
-    return this.config.agentConfig?.description || 'Core Agent Node using Vercel AI SDK streamText.';
+    return this.config?.agentConfig?.description || 'Core Agent Node using Vercel AI SDK streamText.';
   }
   
   /** Provides the version for this node implementation. */

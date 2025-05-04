@@ -1,27 +1,19 @@
 import globals from "globals";
 import js from "@eslint/js";
-// import tseslint from "typescript-eslint"; // Use the combined package - REVERTED
-import tsParser from "@typescript-eslint/parser"; // Use separate parser
-import tsPlugin from "@typescript-eslint/eslint-plugin"; // Use separate plugin
+import tsParser from "@typescript-eslint/parser";
+import tsPlugin from "@typescript-eslint/eslint-plugin";
 import reactPlugin from "eslint-plugin-react";
 import reactHooksPlugin from "eslint-plugin-react-hooks";
-import nextPlugin from "@next/eslint-plugin-next"; // Import next plugin
+import nextPlugin from "@next/eslint-plugin-next";
 import importPlugin from "eslint-plugin-import";
-// import { FlatCompat } from "@eslint/eslintrc"; // No longer needed for Next.js
 import path from "path";
 import { fileURLToPath } from "url";
 
-// mimic CommonJS variables
+// Mimic CommonJS variables
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Compatibility helper for eslintrc configs - Keep if needed for other legacy configs
-// const compat = new FlatCompat({
-//     baseDirectory: __dirname,
-//     recommendedConfig: js.configs.recommended,
-// });
-
-// Define the config array directly
+// Define the ESLint configuration
 export default [
     // Global ignores
     {
@@ -31,31 +23,28 @@ export default [
             "dist/",
             "build/",
             "coverage/",
-            "**/*.config.js", // Adjusted for glob
-            "**/*.config.ts", // Adjusted for glob
-            // Add other global ignores if needed, e.g., "**/.*" for dotfiles if necessary
+            "**/*.config.js",
+            "**/*.config.ts",
         ],
     },
 
     // Base recommended configurations
     js.configs.recommended,
-    // Apply recommended TS rules directly
+    
+    // Apply recommended TypeScript rules
     {
         plugins: { '@typescript-eslint': tsPlugin },
         rules: tsPlugin.configs.recommended.rules,
     },
 
-    // Remove: Next.js core web vitals config (using FlatCompat)
-    // ...compat.extends("next/core-web-vitals"),
-
     // Configuration for TypeScript/JavaScript files (including Next.js/React)
     {
-        files: ["**/*.{js,jsx,mjs,cjs,ts,tsx}"], // Apply broadly
+        files: ["**/*.{js,jsx,mjs,cjs,ts,tsx}"],
         plugins: {
             '@typescript-eslint': tsPlugin,
             'react': reactPlugin,
             'react-hooks': reactHooksPlugin,
-            '@next/next': nextPlugin, // Add next plugin here
+            '@next/next': nextPlugin,
             'import': importPlugin,
         },
         languageOptions: {
@@ -64,34 +53,31 @@ export default [
             parser: tsParser,
             parserOptions: {
                 ecmaFeatures: {
-                    jsx: true, // Enable JSX
+                    jsx: true,
                 },
                 project: './tsconfig.json',
             },
             globals: {
                 ...globals.browser,
                 ...globals.node,
-                React: "readonly", // Add React global explicitly if needed
-                NodeJS: "readonly", // Add NodeJS global for things like NodeJS.Timeout
+                React: "readonly",
+                NodeJS: "readonly",
             },
         },
         settings: {
-             react: {
+            react: {
                 version: "detect",
             },
-             'import/resolver': {
-                 typescript: {}
-             },
-             // 'next' settings might not be needed when rules are included directly
+            'import/resolver': {
+                typescript: {}
+            },
         },
         rules: {
-            // === Base Recommended Rules ===
-            ...reactPlugin.configs.recommended.rules, // Include recommended react rules
-            ...reactHooksPlugin.configs.recommended.rules, // Keep recommended hooks rules
-            ...nextPlugin.configs.recommended.rules, // Include recommended Next.js rules
-            ...nextPlugin.configs['core-web-vitals'].rules, // Include core-web-vitals rules
-
-            // === Your Specific Rule Overrides ===
+            // Framework-specific recommended rules
+            ...reactPlugin.configs.recommended.rules,
+            ...reactHooksPlugin.configs.recommended.rules,
+            ...nextPlugin.configs.recommended.rules,
+            ...nextPlugin.configs['core-web-vitals'].rules,
 
             // TypeScript specific rules
             '@typescript-eslint/explicit-module-boundary-types': 'off',
@@ -107,26 +93,17 @@ export default [
             'no-console': ['warn', { allow: ['warn', 'error'] }],
             'prefer-const': 'warn',
             'eqeqeq': ['error', 'always', { null: 'ignore' }],
-            'no-unreachable': 'off', // Disable ESLint rule, handled by TS
+            'no-unreachable': 'off', // Handled by TypeScript
 
-            // React rules (overrides for included recommended)
+            // React rules
             'react/prop-types': 'off',
-            'react/react-in-jsx-scope': 'off', // Still needed
+            'react/react-in-jsx-scope': 'off',
             'react/display-name': 'off',
-            'react/no-unescaped-entities': 'warn', // Downgrade from error if needed
-
-            // React hooks rules (already included via plugin recommended config)
-            // 'react-hooks/rules-of-hooks': 'error',
-            // 'react-hooks/exhaustive-deps': 'warn',
-
-            // Next.js rules (can override specific rules from recommended/core-web-vitals)
-            // Example: '@next/next/no-img-element': 'warn', // if you want to downgrade
+            'react/no-unescaped-entities': 'warn',
 
             // Import rules
             'import/no-anonymous-default-export': 'warn',
             'import/no-duplicates': 'error',
-
-            // Add any other custom rules here
         },
     },
 
@@ -135,11 +112,10 @@ export default [
         files: ["**/*.test.{js,jsx,ts,tsx}", "**/*.spec.{js,jsx,ts,tsx}"],
         languageOptions: {
             globals: {
-                ...globals.jest, // Add jest globals
+                ...globals.jest,
             }
         },
         rules: {
-            // Disable rules that are often problematic in tests, if necessary
             '@typescript-eslint/no-non-null-assertion': 'off',
         }
     }

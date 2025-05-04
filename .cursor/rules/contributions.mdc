@@ -24,7 +24,10 @@ This file outlines the general workflow, Git practices, and coding standards for
     *   Bugfixes: `fix/issue-{number}-{short-description}`
     *   Example: `feat/issue-123-add-rate-limiting`
 3.  **Implement Changes**: Write code following the project's coding standards and specific rules relevant to the modified directories.
-4.  **Write Tests**: Add appropriate unit, integration, or end-to-end tests for new functionality or bug fixes.
+4.  **Testing Practices:**
+    *   Before adding new tests, check existing Jest tests in the relevant module (e.g., within `agentdock-core` or the main Next.js app) to avoid duplication.
+    *   Remember that tests for the `agentdock-core` module are executed from the root project level (Next.js client), so configuration might be in the root `package.json` or `jest.config.ts`.
+    *   Avoid duplicating test infrastructure (setup files, mocks) that might already exist in the project root or within `agentdock-core/src/test/`.
 5.  **Update Documentation**: Ensure relevant documentation in `/docs` is updated (see `[docs.mdc](mdc:.cursor/rules/docs.mdc)` for guidelines).
 6.  **Commit Changes**: Use clear and concise commit messages, referencing the issue number:
     *   Format: `[Issue #{number}] Brief description of changes`
@@ -51,4 +54,3 @@ This file outlines the general workflow, Git practices, and coding standards for
   - Types/Interfaces: `PascalCase`
   - Constants: `UPPER_SNAKE_CASE`
 - **Code Documentation**: Use JSDoc for exported functions, classes, types, and complex logic blocks.
-

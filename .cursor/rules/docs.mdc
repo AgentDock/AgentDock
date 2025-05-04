@@ -16,7 +16,7 @@ The `/docs` directory is organized as follows:
 - `[docs/architecture/](mdc:docs/architecture)`: System design documentation
 - `[docs/nodes/](mdc:docs/nodes)`: Node system documentation
 - `[docs/oss-client/](mdc:docs/oss-client)`: Client application docs
-- `[docs/rfa/](mdc:docs/rfa)`: "Requests for Architecture" (RFA) process
+- `[docs/rfa/](mdc:docs/rfa)`: \"Requests for Architecture\" (RFA) process
 - `[docs/roadmap/](mdc:docs/roadmap)`: Future development plans
 - `[docs/roadmap.md](mdc:docs/roadmap.md)`: High-level roadmap
 - `[docs/agent-templates.md](mdc:docs/agent-templates.md)`: Agent template structure
@@ -33,13 +33,14 @@ The `/docs` directory is organized as follows:
   ```typescript
   // TypeScript example
   function example(): string {
-    return "Hello World";
+    return \"Hello World\";
   }
   ```
 - **Links**: Use relative links to other docs in the repository
 - **Images**: Store in an `assets` or `images` directory next to the relevant docs
 - **Diagrams**: Prefer Mermaid diagrams for technical illustrations
 - **Tables**: Use standard Markdown tables for tabular data
+- **Centralized Location:** All user-facing documentation (guides, architecture overviews, API docs, etc.) must be placed in the main `/docs` directory at the root of the repository. Do *not* place documentation within the `/agentdock-core` directory, as the core is not published as a standalone package yet and all documentation is hosted centrally.
 
 ## Writing Style
 

@@ -110,7 +110,7 @@ export const weatherForecastSchema = z.object({
  * Type inference from schemas
  */
 export type WeatherCard = z.infer<typeof weatherCardSchema>;
-export type WeatherForecast = z.infer<typeof weatherForecastSchema>;
+export type WeatherForecastData = z.infer<typeof weatherForecastSchema>;
 
 /**
  * Helper function to format temperature
@@ -194,10 +194,10 @@ ${icon} **${description}**
 /**
  * Helper function to create a weather forecast component
  */
-export function createWeatherForecast(data: WeatherForecast['data']): string {
+export function createWeatherForecast(data: WeatherForecastData): string {
   const forecastHeader = `## 7-Day Forecast\n`;
   
-  const forecastDays = data.daily.map(day => {
+  const forecastDays = data.data.daily.map(day => {
     const icon = weatherIcons[day.weatherCode] || '❓';
     const date = formatDate(day.date);
     const tempMin = formatTemperature(day.temperatureMin);

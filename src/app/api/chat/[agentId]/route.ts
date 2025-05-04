@@ -57,6 +57,7 @@ const storage = {
       return null;
     } catch (error) {
       console.error(`Error getting storage key ${key}:`, error);
+      // eslint-disable-next-line no-unreachable
       return null;
     }
   }

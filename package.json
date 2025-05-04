@@ -14,8 +14,8 @@
     "build": "pnpm run build:agentdock-core && next build",
     "postbuild": "tsx --no-deprecation scripts/generate-search-index.ts && node scripts/generate-favicons.js && tsx --no-deprecation scripts/generate-llms-from-docs.ts",
     "start": "next start",
-    "lint": "next lint",
-    "lint:fix": "next lint --fix",
+    "lint": "ESLINT_USE_FLAT_CONFIG=false next lint",
+    "lint:fix": "ESLINT_USE_FLAT_CONFIG=false next lint --fix",
     "typecheck": "tsc --noEmit",
     "test": "jest",
     "test:unit": "jest",
@@ -126,6 +126,7 @@
     "zustand": "^5.0.3"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
     "@tailwindcss/typography": "^0.5.16",
     "@testing-library/jest-dom": "^6.6.3",
     "@types/jest": "^29.5.14",

@@ -16,17 +16,23 @@ process.env.ANTHROPIC_API_KEY = 'test-key';
 const originalConsoleError = console.error;
 const originalConsoleWarn = console.warn;
 const originalConsoleLog = console.log;
+const originalConsoleGroupCollapsed = console.groupCollapsed;
+const originalConsoleGroupEnd = console.groupEnd;
 
 beforeAll(() => {
   console.error = jest.fn();
   console.warn = jest.fn();
   console.log = jest.fn();
+  console.groupCollapsed = jest.fn();
+  console.groupEnd = jest.fn();
 });
 
 afterAll(() => {
   console.error = originalConsoleError;
   console.warn = originalConsoleWarn;
   console.log = originalConsoleLog;
+  console.groupCollapsed = originalConsoleGroupCollapsed;
+  console.groupEnd = originalConsoleGroupEnd;
 });
 
 // Assign fetch to the global object
@@ -44,3 +50,25 @@ global.TextDecoder = require('util').TextDecoder;
 global.TransformStream = TransformStream as any;
 global.ReadableStream = ReadableStream as any;
 global.WritableStream = WritableStream as any;
+
+// Mock ResizeObserver globally (optional, but often helpful for UI tests)
+global.ResizeObserver = jest.fn().mockImplementation(() => ({
+  observe: jest.fn(),
+  unobserve: jest.fn(),
+  disconnect: jest.fn(),
+}));
+
+// Mock the custom logger module MORE aggressively
+jest.mock('agentdock-core/src/logging', () => ({
+  logger: {
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+    // Explicitly add mocks for any other methods used by logger, like formatBrowser if needed
+    formatBrowser: jest.fn(), 
+  },
+  // Re-export actual values for other things exported from the module if needed
+  // e.g., if LogCategory is also exported and needed by tests:
+  LogCategory: jest.requireActual('agentdock-core/src/logging').LogCategory, 
+}));

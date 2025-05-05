@@ -68,7 +68,7 @@ export function LayoutContent({ children }: { children: React.ReactNode }) {
                 isCollapsed={isCollapsed} 
                 onCollapse={toggleSidebar} 
               />
-              <main className="flex-1 overflow-x-hidden overflow-y-auto p-0 md:p-8 md:py-0 relative">
+              <main className="flex-1 p-0 md:p-8 md:py-0 relative">
                 {children}
               </main>
             </div>

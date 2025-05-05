@@ -56,7 +56,7 @@ export default function DocsLayout({ children }: DocsLayoutProps) {
         />
         
         {/* Sidebar - fixed position on mobile, sticky on desktop */}
-        <aside className="docs-sidebar fixed top-14 left-0 z-40 h-[calc(100vh-3.5rem)] w-80 max-w-[85%] border-r border-border/40 bg-background -translate-x-full md:static md:z-30 md:w-64 md:translate-x-0 transition-transform duration-300">
+        <aside className="docs-sidebar fixed top-14 left-0 z-40 h-[calc(100vh-3.5rem)] w-80 max-w-[85%] border-r border-border/40 bg-background -translate-x-full md:z-30 md:w-64 md:translate-x-0 transition-transform duration-300">
           <div className="flex md:hidden items-center justify-end p-4">
             <label
               htmlFor="sidebar-mobile-toggle"
@@ -70,7 +70,7 @@ export default function DocsLayout({ children }: DocsLayoutProps) {
         </aside>
         
         {/* Main content */}
-        <main className="flex-1 overflow-auto h-screen">
+        <main className="flex-1">
           <div className="container py-8 px-4 md:px-8 max-w-4xl mx-auto">
             {children}
           </div>

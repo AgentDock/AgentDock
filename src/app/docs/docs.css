@@ -36,11 +36,11 @@
   background-color: hsl(var(--muted-foreground));
 }
 
-/* Docs layout container */
+/* Docs layout container - KEEP SIMPLE */
 .docs-layout {
   display: flex;
   flex-grow: 1;
-  overflow: hidden;
+  /* NO overflow, NO height here */
 }
 
 /* Mobile sidebar toggle functionality */
@@ -52,15 +52,36 @@
   transform: translateX(0);
 }
 
+/* --- START DESKTOP STICKY STYLES --- */
 @media (min-width: 768px) {
-  aside {
+  .docs-layout {
+    /* No desktop-specific styles needed here */
+  }
+
+  .docs-sidebar {
+    /* === Core Sticky Properties === */
     position: sticky;
-    top: 0;
-    height: 100vh;
+    top: 0; /* Stick to the top */
+    
+    /* === Height & Internal Scroll === */
+    height: 100vh; /* Full viewport height */
     max-height: 100vh;
-    overflow-y: auto;
+    overflow-y: auto; /* Allow sidebar scroll */
+
+    /* === Flexbox Child Properties === */
+    flex-shrink: 0;
+    
+    /* === Width (Use Tailwind's md:w-64) === */
+    /* width: 256px; /* Let Tailwind handle width */
+    
+    /* === Z-index (Keep from Tailwind) === */
+    /* z-index: 30; /* Let Tailwind handle z-index */
+
+    /* Reset mobile transform */
+    transform: none;
   }
 }
+/* --- END DESKTOP STICKY STYLES --- */
 
 /* Content styling - only applied inside docs content */
 .docs-content {

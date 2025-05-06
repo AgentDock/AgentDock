@@ -11,6 +11,10 @@ export * from './runner';
 // Export concrete storage provider implementations
 export { JsonFileStorageProvider } from './storage/json_file_storage';
 
+// Export concrete evaluator implementations
+export { RuleBasedEvaluator } from './evaluators/rule-based';
+export { LLMJudgeEvaluator } from './evaluators/llm';
+
 // TODO: Export concrete evaluator implementations from ./evaluators/* when they exist
 // Example:
 // export { RuleBasedEvaluator } from './evaluators/rule-based/evaluator';

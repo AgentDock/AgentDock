@@ -342,21 +342,33 @@ export function createMockOrchestrationManager(options: {
 export function createMockStorageProvider(options: {
   get?: jest.Mock;
   set?: jest.Mock;
-  update?: jest.Mock;
   delete?: jest.Mock;
-  deleteByPrefix?: jest.Mock;
+  exists?: jest.Mock;
+  getMany?: jest.Mock;
+  setMany?: jest.Mock;
+  deleteMany?: jest.Mock;
   list?: jest.Mock;
+  clear?: jest.Mock;
+  getList?: jest.Mock;
+  saveList?: jest.Mock;
+  deleteList?: jest.Mock;
+  destroy?: jest.Mock;
 } = {}): jest.Mocked<StorageProvider> {
-  const mockProvider = {
-    get: options.get || jest.fn().mockResolvedValue(null),
-    set: options.set || jest.fn().mockResolvedValue(undefined),
-    update: options.update || jest.fn().mockResolvedValue(undefined),
-    delete: options.delete || jest.fn().mockResolvedValue(undefined),
-    deleteByPrefix: options.deleteByPrefix || jest.fn().mockResolvedValue(undefined),
-    list: options.list || jest.fn().mockResolvedValue([]),
-  } as unknown as jest.Mocked<StorageProvider>;
-
-  return mockProvider;
+  return {
+    get: options.get || jest.fn(),
+    set: options.set || jest.fn(),
+    delete: options.delete || jest.fn(),
+    exists: options.exists || jest.fn(),
+    getMany: options.getMany || jest.fn(),
+    setMany: options.setMany || jest.fn(),
+    deleteMany: options.deleteMany || jest.fn(),
+    list: options.list || jest.fn(),
+    clear: options.clear || jest.fn(),
+    getList: options.getList || jest.fn(),
+    saveList: options.saveList || jest.fn(),
+    deleteList: options.deleteList || jest.fn(),
+    destroy: options.destroy || jest.fn(),
+  };
 }
 
 /**

@@ -126,16 +126,21 @@ The implementation will reside primarily within a new top-level directory in the
 
 *   **Primary Directory:** `agentdock-core/src/evaluation/`
 *   **Core Types (`evaluation/types.ts`):**
-    *   `EvaluationScale = 'binary' | 'likert5' | 'numeric' | 'pass/fail' | string;` // Allow common scales + custom string scales
+    *   `EvaluationScale = 'binary' | 'likert5' | 'numeric' | 'pass/fail' | string;` 
+        // binary: Simple yes/no, true/false.
+        // likert5: Standard 1-5 rating scale, usually for subjective stuff like "how relevant?" (1=trash, 5=perfect).
+        // numeric: Any plain number score, could be 0-1, percentage, count - flexible for quantitative measures.
+        // pass/fail: Clear categorical outcome.
+        // string: For custom scales or categorical results where numbers don't fit.
     *   `EvaluationCriteria`: `{ name: string; // Unique identifier for the criterion description: string; // Human-readable explanation scale: EvaluationScale; // The scale used for scoring this criterion weight?: number; // Optional weight for aggregation }`
-    *   `EvaluationInput`: `{ // Rich context for the evaluation prompt?: string; // Optional initiating prompt response: string | AgentMessage; // The agent output being evaluated context?: Record<string, any>; // Arbitrary contextual data groundTruth?: string | any; // Optional reference answer/data criteria: EvaluationCriteria[]; // Criteria being evaluated against agentConfig?: Record<string, any>; // Snapshot of agent config at time of response messageHistory?: AgentMessage[]; // Relevant message history timestamp?: number; // Timestamp of the response generation sessionId?: string; // Identifier for the session/conversation agentId?: string; // Identifier for the agent instance metadata?: Record<string, any>; // Other arbitrary metadata }`
+    *   `EvaluationInput`: `{ // Rich context for the evaluation prompt?: string; // Optional initiating prompt response: string | AgentMessage; // The agent output being evaluated context?: Record<string, any>; // Arbitrary contextual data groundTruth?: string | any; // Optional reference answer/data criteria: EvaluationCriteria[]; // Criteria being evaluated against agentConfig?: Record<string, any>; // Snapshot of agent config at time of response messageHistory?: AgentMessage[]; // Relevant message history timestamp?: number; // Timestamp of the response generation sessionId?: string; // Identifier for the session/conversation agentId?: string; // Identifier for the agent instance metadata?: Record<string, any>; // Other arbitrary metadata (e.g., test runner context if applicable) }`
     *   `EvaluationResult`: `{ // Result for a single criterion from one evaluator criterionName: string; // Links back to EvaluationCriteria.name score: number | boolean | string; // The actual score/judgment reasoning?: string; // Optional explanation from the evaluator (esp. LLM judge) evaluatorType: string; // Identifier for the evaluator producing this result error?: string; // Error message if this specific evaluation failed metadata?: Record<string, any>; // Evaluator-specific metadata }`
     *   `AggregatedEvaluationResult`: `{ // Overall result for an evaluation run overallScore?: number; // Optional aggregated score (e.g., weighted avg) results: EvaluationResult[]; // List of individual results from all evaluators timestamp: number; // Timestamp of the evaluation run completion agentId?: string; // Copied from input sessionId?: string; // Copied from input inputSnapshot: EvaluationInput; // Capture the exact input used evaluationConfigSnapshot?: any; // Snapshot of criteria, evaluators used metadata?: Record<string, any>; // Run-level metadata }`
     *   `Evaluator`: `interface Evaluator { type: string; evaluate(input: EvaluationInput, criteria: EvaluationCriteria[]): Promise<EvaluationResult[]>; }`
     *   `EvaluationStorageProvider`: `interface EvaluationStorageProvider { saveResult(result: AggregatedEvaluationResult): Promise<void>; }`
 *   **Sub-directories & Components:**
     *   `evaluation/criteria/`: Utilities or helpers related to defining/managing criteria sets (if needed beyond simple objects).
-    *   `evaluation/evaluators/`: Implementations of the `Evaluator` interface (`rule_based.ts`, `llm_judge.ts`, etc.).
+    *   `evaluation/evaluators/`: Implementations of the `Evaluator` interface, organized into subdirectories by type (e.g., `rule-based/`, `llm/`, potentially `nlp/` later).
     *   `evaluation/runner/`: Implementation of the `EvaluationRunner` logic (`index.ts`).
     *   `evaluation/storage/`: The `EvaluationStorageProvider` interface definition and concrete implementations (`json_file_storage.ts`, potentially others later).
     *   `evaluation/types.ts`: Location for all core type definitions and interfaces listed above.
@@ -145,15 +150,16 @@ The implementation will reside primarily within a new top-level directory in the
 
 We'll build the foundation first using a "tracer bullet" approach: establish the simplest possible end-to-end flow to validate the core architecture before adding complexity.
 
-1.  **Establish Module & Structure:** Create the `agentdock-core/src/evaluation/` directory and the planned sub-directories (`types`, `runner`, `storage`, `evaluators`).
-2.  **Define Core Interfaces:** Implement all the TypeScript interfaces and type aliases detailed in section 6 within `evaluation/types.ts`. Critically, define the `Evaluator` and `EvaluationStorageProvider` interfaces accurately.
-3.  **Basic Criteria Handling:** Ensure `EvaluationCriteria[]` can be defined and passed programmatically to the runner. No complex loading mechanism needed initially.
-4.  **Basic Runner Skeleton:** Create `evaluation/runner/index.ts`. Implement the core `EvaluationRunner` class or function. It should accept `EvaluationInput`, `EvaluationCriteria[]`, and `Evaluator[]`. Implement the basic loop to call `evaluate` on each evaluator (with basic `try/catch` for error handling per evaluator). Initially, aggregation can simply involve collecting all returned `EvaluationResult` objects into the `AggregatedEvaluationResult`.
-5.  **Basic Storage Implementation:** Create `evaluation/storage/json_file_storage.ts`. Implement the `EvaluationStorageProvider` interface by appending the serialized `AggregatedEvaluationResult` to a specified file path.
-6.  **Unit Tests:** Add initial Jest/Vitest unit tests covering:
-    *   Correctness of type definitions.
-    *   Basic `EvaluationRunner` flow (using mock evaluators and a mock storage provider).
-    *   Contract adherence of the `JsonFileStorageProvider` (mocking file system interactions).
+**Status Legend:**
+*   🟢: Done (Base structure/interfaces/skeletons created)
+*   🟡: Needs Implementation/Tests (Skeletons exist, logic/tests pending)
+*   🔴: Not Started
+
+1.  🟢 **Establish Module & Structure:** Create the `agentdock-core/src/evaluation/` directory and the planned sub-directories (`types`, `runner`, `storage`, `evaluators/rule-based`, `evaluators/llm`).
+2.  🟢 **Define Core Interfaces:** Implement all the TypeScript interfaces and type aliases detailed in section 6 within `evaluation/types.ts`. Critically, define the `Evaluator` and `EvaluationStorageProvider` interfaces accurately.
+3.  🟢 **Basic Criteria Handling:** Ensure `EvaluationCriteria[]` can be defined and passed programmatically via `EvaluationInput`. No complex loading mechanism needed initially. *(Handled by type definition)*.
+4.  🟡 **Basic Runner Skeleton:** Create `evaluation/runner/index.ts`. Implement the core `EvaluationRunner` class or function skeleton. It should accept `EvaluationInput`, `EvaluationConfig`. Implement the basic loop skeleton calling `evaluate` (with basic `try/catch`). Initial aggregation skeleton (weighted average) included. *(Needs full evaluator loop logic refinement, robust error handling, configurable aggregation, and tests)*.
+5.  🟡 **Basic Storage Implementation:** Create `evaluation/storage/json_file_storage.ts`. Implement the `EvaluationStorageProvider`
 
 Subsequent phases will build out the specific `RuleBasedEvaluator` and `LLMJudgeEvaluator`, refine the result aggregation logic, enhance the core integration points, and add more comprehensive tests.
 
@@ -164,7 +170,7 @@ The long-term value of this framework hinges on its adaptability. We achieve thi
 *   **The `Evaluator` Interface:** This is the primary extension point. Any evaluation logic—custom business rules, advanced NLP metrics, statistical analysis, wrappers around external APIs (like commercial evaluation platforms), or even processors for human feedback—can be integrated by implementing this simple interface.
 *   **The `EvaluationStorageProvider` Interface:** This decouples the evaluation execution from how results are persisted. Implementations can target relational databases, document stores, dedicated MLOps platforms, or cloud logging services without impacting the core runner.
 *   **Flexible `EvaluationInput` Structure:** The input object is designed to be rich and extensible using `context` and `metadata` fields, allowing diverse types of information to be passed to evaluators without needing interface changes.
-*   **Configuration-Driven Execution:** The `EvaluationRunner` operates based on the configuration it receives (which evaluators to run, which criteria to apply, storage settings), rather than having evaluation logic hardcoded within it.
+*   **Configuration-Driven Execution:** The `EvaluationRunner` operates based on the configuration it receives (which evaluators to run, criteria defined in the input, storage settings), rather than having evaluation logic hardcoded within it.
 *   **Service Wrapping Potential:** The decoupled design, centered around the `runEvaluation` function and its configuration, ensures that the core logic can be easily wrapped within different deployment models in the future, such as a standalone HTTP microservice, if required for specific use cases like a centralized evaluation service.
 
-This approach ensures that `agentdock-core` provides a solid foundation for evaluation without prescribing a specific methodology or locking users into proprietary tools. External platforms like DeepEval, TruLens, or LangSmith can be integrated by creating corresponding `Evaluator` wrappers that conform to our interface. 
+This approach ensures that `agentdock-core` provides a solid foundation for evaluation without prescribing a specific methodology or locking users into proprietary tools. External platforms like DeepEval, TruLens, or LangSmith can be integrated by creating corresponding `Evaluator` wrappers that conform to our interface.

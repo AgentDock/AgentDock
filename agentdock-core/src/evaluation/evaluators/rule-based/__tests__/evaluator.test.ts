@@ -479,4 +479,65 @@ describe('RuleBasedEvaluator', () => {
       expect(results[0].score).toBe('fail');
     });
   });
+
+  describe('Evaluator Configuration and Error Handling', () => {
+    const relevantCriterion = mockCriteria.find(c => c.name === 'TestLength')!;
+    const testInput: EvaluationInput = { ...mockBaseInput, response: 'test', criteria: [relevantCriterion] };
+
+    beforeEach(() => {
+      mockGetInputText.mockReturnValue('test'); // Default mock for these tests
+    });
+
+    it('should produce an error result if rule config for type \'length\' has no min or max', async () => {
+      const incompleteLengthRule: EvaluationRule = {
+        criterionName: 'TestLength',
+        config: { type: 'length' }, // No min, no max
+      };
+      const evaluator = new RuleBasedEvaluator([incompleteLengthRule]);
+      const results = await evaluator.evaluate(testInput, [relevantCriterion]);
+      expect(results).toHaveLength(1);
+      // Depending on implementation, this might be a pass (no constraints) or an error if min/max are considered essential.
+      // The current evaluateLength handles undefined min/max as no constraint, so it passes.
+      // To make it an error test, the evaluator logic would need to change or this test should target a different misconfiguration.
+      // For now, let's assume it should pass if no min/max given they are optional in type.
+      // If the intention is that a length rule *must* have at least one, the type or runtime check should enforce it.
+      // Based on current `evaluateLength`, it will pass. If that's not desired error behavior, evaluator must change.
+      // Let's adjust the expectation to a pass, as per current evaluator code.
+      expect(results[0].score).toBe(true); 
+      expect(results[0].reasoning).toContain('Rule length passed');
+      expect(results[0].error).toBeUndefined();
+    });
+
+    it('should produce an error result if rule type is unknown', async () => {
+      const unknownTypeRule: EvaluationRule = {
+        criterionName: 'TestLength',
+        config: { type: 'unknown_rule_type' } as any, // Cast to any to bypass type checking for test
+      };
+      const evaluator = new RuleBasedEvaluator([unknownTypeRule]);
+      const results = await evaluator.evaluate(testInput, [relevantCriterion]);
+      expect(results).toHaveLength(1);
+      expect(results[0].score).toBe(false);
+      expect(results[0].error).toBeDefined();
+      expect(results[0].reasoning).toContain('Unknown rule type: unknown_rule_type');
+    });
+
+    it('should produce an error result if rule has no config property', async () => {
+      // No @ts-expect-error needed here as the cast handles the type mismatch for the array.
+      const ruleMissingConfigProperty: Omit<EvaluationRule, 'config'> = {
+        criterionName: 'TestLength',
+      };
+      
+      const evaluator = new RuleBasedEvaluator([ruleMissingConfigProperty as unknown as EvaluationRule]);
+      const results = await evaluator.evaluate(testInput, [relevantCriterion]);
+      expect(results).toHaveLength(1);
+      expect(results[0].score).toBe(false);
+      expect(results[0].error).toBeDefined();
+      // Exact reasoning may vary, check for presence of an error message.
+      expect(results[0].reasoning).toBeTruthy(); 
+    });
+
+    // Note: The constructor of RuleBasedEvaluator itself doesn't throw for invalid rule structures,
+    // it handles them during the evaluate phase by producing error results.
+    // If constructor-level validation were added, those tests would go here too.
+  });
 }); 

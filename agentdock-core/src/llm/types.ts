@@ -134,11 +134,14 @@ export interface LLMProviderInterface {
   generateText(messages: LLMMessage[], config: LLMConfig, tools?: any): Promise<string>;
 }
 
+import type { LanguageModel } from 'ai';
+
 export interface LLMAdapter {
   provider: LLMProviderInterface;
   config: LLMConfig;
   generateStream(messages: LLMMessage[], tools?: any): Promise<ReadableStream>;
   generateText(messages: LLMMessage[], tools?: any): Promise<string>;
+  getSdkLanguageModel(): LanguageModel;
 }
 
 /**

@@ -1,5 +1,8 @@
-import type { LLMAdapter } from '../../../llm/types'; // Import LLMAdapter instead of LLM
-import type { EvaluationCriteria, EvaluationInput, EvaluationResult, Evaluator } from '../../types';
+import { generateObject, type CoreTool } from 'ai';
+import { z } from 'zod';
+// import type { LLMAdapter } from '../../../llm/types'; // No longer using LLMAdapter directly here
+import type { CoreLLM } from '../../../llm/core-llm'; // Import CoreLLM
+import type { EvaluationCriteria, EvaluationInput, EvaluationResult, Evaluator, EvaluationScale } from '../../types';
 
 /**
  * Configuration for the LLM-as-a-judge evaluator.
@@ -7,27 +10,28 @@ import type { EvaluationCriteria, EvaluationInput, EvaluationResult, Evaluator }
 export interface LLMJudgeConfig {
   /** The name of the criterion this judge evaluates (must match an EvaluationCriteria name) */
   criterionName: string;
-  /** The configured LLM adapter instance to use for judging */
-  llm: LLMAdapter;
+  /** 
+   * The configured CoreLLM instance to use for judging.
+   */
+  llm: CoreLLM; // Changed from LLMAdapter to CoreLLM
   /** 
    * A prompt template for the LLM judge. 
    * Should include placeholders for input (prompt), response, reference (groundTruth), 
    * and criterion details (name, description, scale).
+   * It should also instruct the LLM to respond in JSON format.
    * Example placeholders: {{input}}, {{response}}, {{reference}}, {{criterion_name}}, {{criterion_description}}, {{criterion_scale}}
    */
   promptTemplate: string;
   /** 
-   * Optional: Instructions on how to parse the LLM's response to extract the score and reasoning.
-   * This could be a regex pattern, JSON schema instructions, or specific keywords.
-   * If not provided, a default parsing strategy might be used (e.g., expecting a simple score).
+   * Optional: A system prompt to guide the LLM's behavior.
    */
-  parsingInstructions?: string; 
-  // TODO: Add more configuration options as needed (e.g., model parameters, retry logic)
+  systemPrompt?: string;
+  // TODO: Add more configuration options as needed (e.g., model parameters for generateObject, retry logic)
 }
 
 /**
  * An Evaluator that uses a Large Language Model (LLM) to judge the quality 
- * of a response based on specified criteria.
+ * of a response based on specified criteria using Vercel AI SDK for structured output.
  */
 export class LLMJudgeEvaluator implements Evaluator {
   public readonly type = 'LLMJudge';
@@ -39,7 +43,7 @@ export class LLMJudgeEvaluator implements Evaluator {
    */
   constructor(config: LLMJudgeConfig) {
     if (!config.llm || !config.promptTemplate || !config.criterionName) {
-      throw new Error('LLMJudgeEvaluator requires llm (LLMAdapter instance), promptTemplate, and criterionName in config.');
+      throw new Error('LLMJudgeEvaluator requires llm (CoreLLM instance), promptTemplate, and criterionName in config.');
     }
     this.config = config;
   }
@@ -47,105 +51,108 @@ export class LLMJudgeEvaluator implements Evaluator {
   async evaluate(input: EvaluationInput, criteria: EvaluationCriteria[]): Promise<EvaluationResult[]> {
     const targetCriterion = criteria.find(c => c.name === this.config.criterionName);
 
-    // Only run if the specific criterion this judge handles is in the list for this run
     if (!targetCriterion) {
-      return []; // Not applicable to this run
+      return []; 
     }
 
-    let result: EvaluationResult;
+    // Define the Zod schema for the LLM's expected response structure
+    const llmResponseSchema = z.object({
+      score: z.any().describe("The score for the criterion. This can be a number, boolean, or string depending on the criterion's scale."),
+      reasoning: z.string().optional().describe("The reasoning behind the score."),
+    });
 
     try {
-      // 1. Prepare the prompt using the template and input data
       const prompt = this.preparePrompt(input, targetCriterion);
 
-      // 2. Call the LLM using the adapter
-      // TODO: Implement actual LLM call using config.llm.generateText or generateStream
-      const llmResponseText = await this.config.llm.generateText([ { role: 'user', content: prompt } ]); // Example call structure
-      // const llmResponseText = "Placeholder LLM Response: Score=4, Reasoning=Looks good."; // Placeholder
+      // Use Vercel AI SDK's generateObject to get structured output
+      // Assuming this.config.llm can be used directly or adapted for generateObject's model parameter.
+      // For example, if this.config.llm is an instance of OpenAI from 'openai', 
+      // we might need to adapt it or expect it to be an @ai-sdk/openai model instance.
+      // This is a potential point of friction depending on LLMAdapter's design.
+      const { object: llmOutput } = await generateObject({
+        model: this.config.llm.getModel(), // Changed from this.config.llm as any to use getModel()
+                                      // This assumes LLMAdapter provides a compatible instance.
+        schema: llmResponseSchema,
+        prompt: prompt,
+        system: this.config.systemPrompt || 'You are an expert evaluator. Respond in JSON format as specified.',
+        // tools: {} as Record<string, CoreTool<any, any>> // If no tools needed, pass empty object or omit if allowed
+      });
 
-      // 3. Parse the LLM's response
-      const { score, reasoning } = this.parseLLMResponse(llmResponseText, targetCriterion.scale);
+      const normalizedScore = this.normalizeScore(llmOutput.score, targetCriterion.scale);
 
-      result = {
+      if (normalizedScore.error) {
+        throw new Error(`Score normalization failed: ${normalizedScore.error}`);
+      }
+
+      return [{
         criterionName: this.config.criterionName,
-        score: score,
-        reasoning: reasoning || `LLM Judge based on: ${llmResponseText}`, // Include raw response if no reasoning extracted
+        score: normalizedScore.score!,
+        reasoning: llmOutput.reasoning,
         evaluatorType: this.type,
-      };
+      }];
 
     } catch (error: any) {
       console.error(`[${this.type}] Error evaluating criterion ${this.config.criterionName}:`, error);
-      result = {
+      return [{
         criterionName: this.config.criterionName,
-        score: false, // Or some error indicator score?
+        score: 'error', // Indicate error in score
         evaluatorType: this.type,
         error: error instanceof Error ? error.message : String(error),
         reasoning: 'LLM Judge evaluation failed due to error.'
-      };
+      }];
     }
-
-    return [result];
   }
 
   /**
    * Prepares the prompt string to send to the LLM judge.
+   * Instructs the LLM to respond in JSON matching the defined Zod schema.
    */
   private preparePrompt(input: EvaluationInput, criterion: EvaluationCriteria): string {
-    // Basic placeholder replacement - might need more robust templating
     let prompt = this.config.promptTemplate;
-    prompt = prompt.replace('{{input}}', JSON.stringify(input.prompt)); // Use input.prompt
+    // Basic placeholder replacement
+    prompt = prompt.replace('{{input}}', input.prompt ? JSON.stringify(input.prompt) : 'N/A');
     prompt = prompt.replace('{{response}}', typeof input.response === 'string' ? input.response : JSON.stringify(input.response));
-    prompt = prompt.replace('{{reference}}', input.groundTruth ? JSON.stringify(input.groundTruth) : 'N/A'); // Use input.groundTruth
+    prompt = prompt.replace('{{reference}}', input.groundTruth ? JSON.stringify(input.groundTruth) : 'N/A');
     prompt = prompt.replace('{{criterion_name}}', criterion.name);
     prompt = prompt.replace('{{criterion_description}}', criterion.description);
-    prompt = prompt.replace('{{criterion_scale}}', JSON.stringify(criterion.scale)); // Provide scale info
+    prompt = prompt.replace('{{criterion_scale}}', JSON.stringify(criterion.scale));
 
-    // TODO: Add more sophisticated template filling logic if needed
+    // Add instruction for JSON output based on schema
+    prompt += `\\n\\nPlease provide your evaluation in JSON format. The JSON object must have a 'score' field and an optional 'reasoning' field. The 'score' should correspond to the criterion's scale: ${criterion.scale}.`;
     return prompt;
   }
 
   /**
-   * Parses the raw text response from the LLM to extract score and reasoning.
-   * TODO: Implement actual parsing based on config.parsingInstructions or defaults.
+   * Normalizes the raw score from the LLM based on the criterion's scale.
    */
-  private parseLLMResponse(llmResponse: string, scale: EvaluationCriteria['scale']): { score: EvaluationResult['score'], reasoning?: string } {
-    // Placeholder parsing logic - extremely basic
-    let score: EvaluationResult['score'] = false; // Default to fail/false
-    let reasoning: string | undefined = llmResponse; // Default reasoning is the raw response
+  private normalizeScore(rawValue: any, scale: EvaluationScale): { score?: EvaluationResult['score'], error?: string } {
+    switch (scale) {
+      case 'binary':
+      case 'pass/fail':
+        if (typeof rawValue === 'boolean') return { score: rawValue };
+        const lowerVal = String(rawValue).toLowerCase();
+        if (lowerVal === 'true' || lowerVal === 'pass' || lowerVal === 'yes' || lowerVal === '1') return { score: true };
+        if (lowerVal === 'false' || lowerVal === 'fail' || lowerVal === 'no' || lowerVal === '0') return { score: false };
+        return { error: `Invalid value for ${scale} scale: ${rawValue}. Expected boolean or standard affirmative/negative string.` };
+      
+      case 'likert5':
+        const numLikert = Number(rawValue);
+        if (Number.isInteger(numLikert) && numLikert >= 1 && numLikert <= 5) return { score: numLikert };
+        return { error: `Invalid value for likert5 scale: ${rawValue}. Expected integer between 1 and 5.` };
 
-    const scoreMatch = llmResponse.match(/Score=(\d+(\.\d+)?|true|false|pass|fail)/i);
-    const reasoningMatch = llmResponse.match(/Reasoning=(.*)/i);
-
-    if (scoreMatch && scoreMatch[1]) {
-        const scoreStr = scoreMatch[1].toLowerCase();
-        if (scoreStr === 'true' || scoreStr === 'pass') score = true;
-        else if (scoreStr === 'false' || scoreStr === 'fail') score = false;
-        else {
-            const numScore = parseFloat(scoreStr);
-            if (!isNaN(numScore)) {
-                // TODO: Validate numeric score against scale if possible?
-                score = numScore;
-            } else {
-                 // If scale is string, maybe the score itself is the string value?
-                 if (scale === 'string') {
-                     score = scoreStr; // Use raw string if scale allows
-                 } else {
-                     console.warn(`[${this.type}] Could not parse score value: ${scoreStr}`);
-                 }
-            }
-        }
-    } else {
-         console.warn(`[${this.type}] Could not find score in LLM response: ${llmResponse}`);
-         // Attempt to infer score based on keywords if no explicit score found? Risky.
+      case 'numeric':
+        const numNumeric = Number(rawValue);
+        if (!isNaN(numNumeric)) return { score: numNumeric };
+        return { error: `Invalid value for numeric scale: ${rawValue}. Expected a number.` };
+      
+      // For 'string' scale, any string is technically valid as a score, but we might want to be stricter.
+      // For now, accept any string if the raw value is a string.
+      // If the scale is a custom string (e.g., "low|medium|high"), this simple normalization won't validate against those specific values.
+      // That would require passing the allowed string values to normalizeScore or having a more complex EvaluationScale type.
+      default: // Handles 'string' and any custom string scales
+        if (typeof rawValue === 'string') return { score: rawValue };
+        if (typeof rawValue === 'number' || typeof rawValue === 'boolean') return { score: String(rawValue) }; // Coerce common types to string
+        return { error: `Value for scale '${scale}' could not be reliably converted to a string score: ${rawValue}`};
     }
-
-    if (reasoningMatch && reasoningMatch[1]) {
-      reasoning = reasoningMatch[1].trim();
-    }
-
-    // TODO: Add more robust parsing logic based on config.parsingInstructions
-    // TODO: Convert parsed score to match the expected type based on 'scale' (e.g., number for numeric/likert, boolean for binary)
-
-    return { score, reasoning };
   }
 } 

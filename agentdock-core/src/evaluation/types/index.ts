@@ -2,8 +2,11 @@
  * @fileoverview Core type definitions for the AgentDock Evaluation Framework.
  */
 
-// Import AgentMessage type from the correct location
-import type { Message as AgentMessage } from '../../types/messages';
+// Import Message type from the correct location and alias it as AgentMessage for this module and export
+import type { Message, MessageContent, TextContent, ImageContent, ToolCallContent, ToolResultContent } from '../../types/messages';
+export type AgentMessage = Message;
+// Export MessageContent and its constituent types as they are used by ToolUsageEvaluator
+export type { MessageContent, TextContent, ImageContent, ToolCallContent, ToolResultContent };
 
 /**
  * Defines the scale used for scoring an evaluation criterion.
@@ -33,7 +36,7 @@ export interface EvaluationInput {
   /** The initial prompt that led to the response, if applicable. */
   prompt?: string;
   /** The agent's output (response) being evaluated. Can be raw string or structured message. */
-  response: string | AgentMessage;
+  response: string | AgentMessage; // Now uses the locally defined AgentMessage alias
   /** Arbitrary contextual data relevant to the evaluation (e.g., RAG context, user profile). */
   context?: Record<string, any>;
   /** Optional ground truth or reference answer/data for comparison. */
@@ -43,7 +46,7 @@ export interface EvaluationInput {
   /** A snapshot of the agent's configuration at the time the response was generated. */
   agentConfig?: Record<string, any>; // Consider defining a more specific AgentConfig snapshot type if needed
   /** The message history leading up to the response being evaluated. */
-  messageHistory?: AgentMessage[];
+  messageHistory?: AgentMessage[]; // Now uses the locally defined AgentMessage alias
   /** Timestamp when the agent response was generated or evaluation was triggered. */
   timestamp?: number; // Consider using Date object? Using number for simplicity for now.
   /** Identifier for the session or conversation, if applicable. */
@@ -108,17 +111,4 @@ export interface Evaluator {
    * @returns A promise resolving to an array of EvaluationResult objects for the criteria this evaluator assessed.
    */
   evaluate(input: EvaluationInput, criteria: EvaluationCriteria[]): Promise<EvaluationResult[]>;
-}
-
-/**
- * Interface defining the contract for storing evaluation results.
- * Implementations handle the persistence of AggregatedEvaluationResult objects.
- */
-export interface EvaluationStorageProvider {
-  /**
-   * Saves a completed evaluation result.
-   * @param result The aggregated result object to save.
-   * @returns A promise resolving when the save operation is complete.
-   */
-  saveResult(result: AggregatedEvaluationResult): Promise<void>;
 } 

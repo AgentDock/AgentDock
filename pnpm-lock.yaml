@@ -6583,6 +6583,10 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
+  sentiment@5.0.2:
+    resolution: {integrity: sha512-ZeC3y0JsOYTdwujt5uOd7ILJNilbgFzUtg/LEG4wUv43LayFNLZ28ec8+Su+h3saHlJmIwYxBzfDHHZuiMA15g==}
+    engines: {node: '>=8.0'}
+
   serialize-javascript@6.0.2:
     resolution: {integrity: sha512-Saa1xPByTTq2gdeFZYLLo+RFE35NHZkAbqZeWNd3BpzppeVisAqpDjcp8dyf6uIvEqJRd46jemmyA4iFIeVk8g==}
 
@@ -6737,6 +6741,9 @@ packages:
 
   strict-event-emitter@0.5.1:
     resolution: {integrity: sha512-vMgjE/GGEPEFnhFub6pa4FmJBRBVOLpIII2hvCZ8Kzb7K0hlHo7mQv6xYrBvCL2LtAIBwFUK8wvuJgTVSQ5MFQ==}
+
+  string-comparisons@0.0.20:
+    resolution: {integrity: sha512-y4olT6kNPH0xbRbs1YaDSXtYhI8RQXB56di4oa0kc0dQrqw0WqZs9jAYtuw+mviSjF1vkTTKcshw2V0g9qa7Kg==}
 
   string-length@4.0.2:
     resolution: {integrity: sha512-+l6rNN5fYHNhZZy41RXsYptCjA2Igmq4EG7kZAYFQI1E1VTXarr6ZPXBg6eq7Y6eK4FEhY6AJlyuFIb/v/S0VQ==}
@@ -10385,6 +10392,8 @@ snapshots:
       '@vercel/kv': 1.0.1
       ai: 4.2.0(react@18.3.1)(zod@3.24.3)
       openai: 4.95.1(ws@8.18.1)(zod@3.24.3)
+      sentiment: 5.0.2
+      string-comparisons: 0.0.20
     transitivePeerDependencies:
       - encoding
       - react
@@ -14710,6 +14719,8 @@ snapshots:
 
   semver@7.7.1: {}
 
+  sentiment@5.0.2: {}
+
   serialize-javascript@6.0.2:
     dependencies:
       randombytes: 2.1.0
@@ -14953,6 +14964,8 @@ snapshots:
   streamsearch@1.1.0: {}
 
   strict-event-emitter@0.5.1: {}
+
+  string-comparisons@0.0.20: {}
 
   string-length@4.0.2:
     dependencies:

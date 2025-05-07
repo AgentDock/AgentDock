@@ -57,14 +57,18 @@ export class ToolUsageEvaluator implements Evaluator {
 
     config.rules.forEach((rule, index) => {
       if (!rule.criterionName || rule.criterionName.trim() === '') {
-        throw new Error(`[ToolUsageEvaluator] Rule at index ${index} must have a non-empty criterionName.`);
+        throw new Error(`[ToolUsageEvaluator] Rule for criterion '${rule.criterionName}' at index ${index} must have a non-empty criterionName.`);
       }
-      // Most rules will expect a tool name, but allow it to be optional for potential future generic rules (e.g., "no tools should be called")
-      // However, if argumentChecks are specified, a tool name is mandatory.
+      
       if (rule.argumentChecks && (!rule.expectedToolName || rule.expectedToolName.trim() === '')) {
         throw new Error(`[ToolUsageEvaluator] Rule for criterion '${rule.criterionName}' at index ${index} specifies argumentChecks but no expectedToolName.`);
       }
-      // TODO: Could add more validation, e.g., if isRequired is used meaningfully with expectedToolName
+      
+      // Add validation: if a rule isRequired, it must specify an expectedToolName.
+      if (rule.isRequired === true && (!rule.expectedToolName || rule.expectedToolName.trim() === '')) {
+        throw new Error(`[ToolUsageEvaluator] Rule for criterion '${rule.criterionName}' at index ${index} is marked as isRequired but does not specify an expectedToolName.`);
+      }
+      // Further validation could be added here if needed.
     });
 
     this.config = {

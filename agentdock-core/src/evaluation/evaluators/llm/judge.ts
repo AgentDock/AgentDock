@@ -1,5 +1,5 @@
 import { generateObject, type CoreTool } from 'ai';
-import { z } from 'zod';
+import { z, ZodTypeAny } from 'zod';
 // import type { LLMAdapter } from '../../../llm/types'; // No longer using LLMAdapter directly here
 import type { CoreLLM } from '../../../llm/core-llm'; // Import CoreLLM
 import type { EvaluationCriteria, EvaluationInput, EvaluationResult, Evaluator, EvaluationScale } from '../../types';
@@ -48,6 +48,32 @@ export class LLMJudgeEvaluator implements Evaluator {
     this.config = config;
   }
 
+  private getZodSchemaForScale(scale: EvaluationScale): ZodTypeAny {
+    switch (scale) {
+      case 'binary':
+      case 'pass/fail':
+        return z.union([
+          z.boolean(),
+          z.string().transform((val, ctx) => {
+            const lowerVal = val.toLowerCase();
+            if (lowerVal === 'true' || lowerVal === 'pass' || lowerVal === 'yes' || lowerVal === '1') return true;
+            if (lowerVal === 'false' || lowerVal === 'fail' || lowerVal === 'no' || lowerVal === '0') return false;
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Invalid boolean string" });
+            return z.NEVER;
+          })
+        ]).describe("Score as boolean (or common string representations like 'true', 'pass', '1').");
+      case 'likert5':
+        return z.number().int().min(1).max(5).describe("Score as integer between 1 and 5.");
+      case 'numeric':
+        return z.number().describe("Score as a numeric value.");
+      default: // Handles 'string' and any custom string scales (e.g., "low|medium|high")
+        // For custom enum-like string scales, the user might need to provide the enum values in config
+        // if they want strict validation against those specific strings at the Zod level.
+        // For now, z.string() is a reasonable default for any other scale type.
+        return z.string().describe("Score as a string value.");
+    }
+  }
+
   async evaluate(input: EvaluationInput, criteria: EvaluationCriteria[]): Promise<EvaluationResult[]> {
     const targetCriterion = criteria.find(c => c.name === this.config.criterionName);
 
@@ -55,9 +81,9 @@ export class LLMJudgeEvaluator implements Evaluator {
       return []; 
     }
 
-    // Define the Zod schema for the LLM's expected response structure
+    const scoreSchema = this.getZodSchemaForScale(targetCriterion.scale);
     const llmResponseSchema = z.object({
-      score: z.any().describe("The score for the criterion. This can be a number, boolean, or string depending on the criterion's scale."),
+      score: scoreSchema,
       reasoning: z.string().optional().describe("The reasoning behind the score."),
     });
 
@@ -70,9 +96,8 @@ export class LLMJudgeEvaluator implements Evaluator {
       // we might need to adapt it or expect it to be an @ai-sdk/openai model instance.
       // This is a potential point of friction depending on LLMAdapter's design.
       const { object: llmOutput } = await generateObject({
-        model: this.config.llm.getModel(), // Changed from this.config.llm as any to use getModel()
-                                      // This assumes LLMAdapter provides a compatible instance.
-        schema: llmResponseSchema,
+        model: this.config.llm.getModel(), 
+        schema: llmResponseSchema, // Use the dynamically generated schema
         prompt: prompt,
         system: this.config.systemPrompt || 'You are an expert evaluator. Respond in JSON format as specified.',
         // tools: {} as Record<string, CoreTool<any, any>> // If no tools needed, pass empty object or omit if allowed

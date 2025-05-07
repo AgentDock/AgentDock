@@ -197,11 +197,12 @@ function validateEvaluatorConfigs(evaluatorConfigs: EvaluatorConfig[]): void {
             throw new Error(`[EvaluationRunner] ToxicityEvaluator config at index ${index} requires a non-empty 'toxicTerms' array.`);
         }
         break;
-      default:
+      default: {
         // This case handles any unknown types if EvaluatorConfig is extended without updating the switch
         // The type assertion helps catch this at compile time if possible, but runtime check is good too.
         const _exhaustiveCheck: never = config;
         throw new Error(`[EvaluationRunner] Unknown evaluator type '${(_exhaustiveCheck as any).type}' at index ${index}.`);
+      }
     }
   }
 }
@@ -354,11 +355,12 @@ export async function runEvaluation(
           evaluator = new ToxicityEvaluator(evalConfig.config);
           evaluatorType = `${evalConfig.type}:${evalConfig.config.criterionName}`;
           break;
-        default:
+        default: {
           // This will be caught by the exhaustive check in validateEvaluatorConfigs if a new type is added
           // but not handled here. However, for safety:
           const _exhaustiveCheck: never = evalConfig;
           throw new Error(`Unknown evaluator type specified in config: ${(_exhaustiveCheck as any).type}`);
+        }
       }
       instantiatedEvaluatorTypes.push(evaluatorType);
 
@@ -383,6 +385,15 @@ export async function runEvaluation(
   resultsFromAllEvaluators.forEach(resultSet => allResults.push(...resultSet));
 
   // --- Aggregation --- 
+  // IMPORTANT: The current aggregation logic processes each `EvaluationResult` individually.
+  // If multiple evaluators produce an `EvaluationResult` for the *same* `criterionName`,
+  // the `weight` associated with that `criterionName` (from `input.criteria`) will be applied
+  // to *each* of those results. This means a single criterion can effectively contribute
+  // N times its configured weight to the `overallScore` if it's assessed by N evaluators
+  // and all N results are included in the aggregation (i.e., have no errors and are normalizable).
+  // This behavior implies that weights are applied *per-result* rather than *per-unique-criterion*.
+  // If a strict "per-unique-criterion" weighting is desired, results would need to be pre-grouped
+  // and reduced (e.g., averaged) by `criterionName` before this loop.
   let overallScore: number | undefined = undefined;
   const scoresForAggregation: { normalizedScore: number; weight: number }[] = [];
 

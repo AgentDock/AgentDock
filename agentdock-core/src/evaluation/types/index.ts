@@ -24,7 +24,10 @@ export interface EvaluationCriteria {
   description: string;
   /** The scale used for scoring this criterion. */
   scale: EvaluationScale;
-  /** Optional weight for this criterion when calculating an aggregated score (default: 1). */
+  /** 
+   * Optional weight for this criterion when calculating an aggregated score. 
+   * Must be a finite, positive number. Defaults to 1.
+   */
   weight?: number;
 }
 

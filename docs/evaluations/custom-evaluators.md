@@ -83,13 +83,8 @@ import type {
 // Or if getInputText becomes part of the main agentdock-core exports:
 // import { getInputText } from 'agentdock-core';
 
-// Placeholder for actual import - replace with correct path when getInputText is finalized and exported
-const getInputText = (input: EvaluationInput, sourceField?: string): string | undefined => {
-  // This is a placeholder. In reality, you'd import the actual getInputText utility.
-  if (sourceField === 'response' && typeof input.response === 'string') return input.response;
-  // Add more mock logic if other sourceFields are tested in this example context
-  return undefined;
-};
+// Import the utility function from the framework
+import { getInputText } from 'agentdock-core/evaluation/utils';
 
 // Configuration type for our custom evaluator
 interface ExactLengthConfig {
@@ -139,7 +134,60 @@ class ExactLengthEvaluator implements Evaluator<ExactLengthConfig> {
 
 // To make it available, you might export it or register it with a central registry if your app has one.
 export { ExactLengthEvaluator };
-```
+
+// Testing custom evaluators
+// --------------------------
+// It's important to thoroughly test your custom evaluators. Here's a basic example of how you might
+// write tests for the `ExactLengthEvaluator` using a testing framework like Jest.
+
+/*
+import { ExactLengthEvaluator } from './my-custom-evaluators';
+import type { EvaluationInput, EvaluationCriteria, ExactLengthConfig } from './my-custom-evaluators'; // Assuming types are also exported or defined locally for test
+
+describe('ExactLengthEvaluator', () => {
+  let evaluator: ExactLengthEvaluator;
+  const mockCriteria: EvaluationCriteria[] = [{ name: 'ExactLength', description: 'Test', scale: 'binary' }];
+  const mockConfig: ExactLengthConfig = { expectedLength: 10 };
+
+  beforeEach(() => {
+    evaluator = new ExactLengthEvaluator(); // Assuming constructor takes no args, or adjust as needed
+  });
+
+  it('should pass when text length matches expected length', async () => {
+    const input: EvaluationInput = { 
+      response: '1234567890', // exactly 10 characters
+      criteria: mockCriteria 
+    };
+    const results = await evaluator.evaluate(input, mockCriteria, mockConfig);
+    expect(results.length).toBe(1);
+    expect(results[0].score).toBe(true);
+    expect(results[0].reasoning).toContain('Response length is exactly 10.');
+  });
+
+  it('should fail when text length differs from expected length', async () => {
+    const input: EvaluationInput = { 
+      response: '12345', // only 5 characters
+      criteria: mockCriteria 
+    };
+    const results = await evaluator.evaluate(input, mockCriteria, mockConfig);
+    expect(results.length).toBe(1);
+    expect(results[0].score).toBe(false);
+    expect(results[0].reasoning).toContain('Expected length 10, got 5.');
+  });
+
+  it('should handle undefined textToEvaluate gracefully', async () => {
+    const input: EvaluationInput = { 
+      response: { complex: 'object' }, // Not a string, and getInputText might return undefined
+      criteria: mockCriteria 
+    };
+    // Assuming config.sourceField is not set, so getInputText defaults to 'response'
+    const results = await evaluator.evaluate(input, mockCriteria, mockConfig);
+    expect(results.length).toBe(1);
+    expect(results[0].score).toBe(false);
+    expect(results[0].reasoning).toContain('Source field \'response\' not found, not a string, or not extractable.');
+  });
+});
+*/
 
 ## Using Your Custom Evaluator
 

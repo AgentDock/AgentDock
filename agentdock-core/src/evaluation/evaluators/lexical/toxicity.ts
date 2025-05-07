@@ -30,7 +30,7 @@ export interface ToxicityEvaluatorConfig {
 export class ToxicityEvaluator implements Evaluator {
   public readonly type = 'Toxicity';
   private config: Required<ToxicityEvaluatorConfig>;
-  private toxicRegexes: RegExp[];
+  private regexToTermMap: Map<RegExp, string>;
 
   constructor(config: ToxicityEvaluatorConfig) {
     if (!config.criterionName || config.criterionName.trim() === '') {
@@ -48,12 +48,13 @@ export class ToxicityEvaluator implements Evaluator {
       matchWholeWord: config.matchWholeWord === undefined ? true : config.matchWholeWord,
     };
 
-    // Pre-compile regexes for toxic terms
-    this.toxicRegexes = this.config.toxicTerms.map(term => {
-      // Escape special regex characters in the term itself
+    // Pre-compile regexes and map them to their original terms
+    this.regexToTermMap = new Map<RegExp, string>();
+    this.config.toxicTerms.forEach(term => {
       const escapedTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const flags = this.config.caseSensitive ? 'g' : 'gi'; // global, ignoreCase
-      return new RegExp(this.config.matchWholeWord ? `\\b${escapedTerm}\\b` : escapedTerm, flags);
+      const regex = new RegExp(this.config.matchWholeWord ? `\\b${escapedTerm}\\b` : escapedTerm, flags);
+      this.regexToTermMap.set(regex, term);
     });
   }
 
@@ -76,16 +77,13 @@ export class ToxicityEvaluator implements Evaluator {
     }
 
     const foundToxicTerms: string[] = [];
-    for (const regex of this.toxicRegexes) {
-      regex.lastIndex = 0;
+    // Iterate over the map's keys (RegExp objects)
+    for (const regex of this.regexToTermMap.keys()) {
+      regex.lastIndex = 0; // Reset regex state for global matches
       if (regex.test(sourceText)) {
-        const matchedTerm = this.config.toxicTerms.find(t => {
-            const escapedT = t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            const pattern = this.config.matchWholeWord ? `\\b${escapedT}\\b` : escapedT;
-            return regex.source === (this.config.matchWholeWord ? `\\b${escapedT}\\b` : escapedT);
-        });
-        if(matchedTerm && !foundToxicTerms.includes(matchedTerm)) {
-            foundToxicTerms.push(matchedTerm);
+        const matchedTerm = this.regexToTermMap.get(regex);
+        if (matchedTerm && !foundToxicTerms.includes(matchedTerm)) {
+          foundToxicTerms.push(matchedTerm);
         }
       }
     }

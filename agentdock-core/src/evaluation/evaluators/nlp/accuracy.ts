@@ -2,10 +2,16 @@ import { embed, type EmbeddingModel } from 'ai';
 import type { EvaluationCriteria, EvaluationInput, EvaluationResult, Evaluator } from '../../types';
 // We'll need a cosine similarity function. For now, a placeholder.
 // Popular libraries like 'vector-math' or 'mathjs' have this, or we can implement a simple one.
-function cosineSimilarity(vecA: number[], vecB: number[]): number {
-  if (vecA.length === 0 || vecA.length !== vecB.length) {
-    return 0; // Or throw error, handle as appropriate
+export function cosineSimilarity(vecA: number[], vecB: number[]): number {
+  if (vecA.length === 0) {
+    throw new Error('cosineSimilarity: vectors must be non-empty');
   }
+  if (vecA.length !== vecB.length) {
+    throw new Error(
+      `cosineSimilarity: dimension mismatch (${vecA.length} != ${vecB.length})`,
+    );
+  }
+
   let dotProduct = 0;
   let normA = 0;
   let normB = 0;

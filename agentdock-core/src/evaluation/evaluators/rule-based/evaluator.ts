@@ -127,12 +127,18 @@ export class RuleBasedEvaluator implements Evaluator {
           case 'includes':
             rulePassed = this.evaluateIncludes(textToEvaluate!, rule.config); // textToEvaluate ensured by check above
             break;
-          case 'json_parse':
+          case 'json_parse': {
             // For json_parse, if input.response is a string, use it directly.
             // Otherwise, stringify the raw input.response object.
-            const stringToParse = typeof input.response === 'string' ? input.response : JSON.stringify(input.response);
+            const stringToParse =
+              typeof input.response === 'string'
+                ? input.response
+                : JSON.stringify(input.response, (_k, v) =>
+                    typeof v === 'function' ? undefined : v,
+                  );
             rulePassed = this.evaluateJsonParse(stringToParse);
             break;
+          }
           default:
             throw new Error(`Unsupported rule type: ${(rule.config as any).type}`);
         }

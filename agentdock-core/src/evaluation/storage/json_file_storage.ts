@@ -1,22 +1,25 @@
-import type { EvaluationStorageProvider, AggregatedEvaluationResult } from '../types';
+import type { AggregatedEvaluationResult } from '../types';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
 /**
- * A basic EvaluationStorageProvider that appends results to a local JSON file.
- * Note: This is not suitable for high-throughput or production environments
- * due to potential race conditions and lack of scalability.
+ * A basic storage provider that appends results to a local JSONL file.
+ * This class is intended for server-side use only due to its use of 'fs'.
+ * It is NOT part of the main library exports and should be imported directly by its file path in server-side scripts.
  */
-export class JsonFileStorageProvider implements EvaluationStorageProvider {
+export class JsonFileStorageProvider {
   private resolvedFilePath: string;
 
   /**
    * Creates an instance of JsonFileStorageProvider.
-   * @param filePath The path to the JSON log file. Will be created if it doesn't exist.
+   * @param options Configuration options.
+   * @param options.filePath The path to the JSONL log file. Will be created if it doesn't exist.
    */
-  constructor(filePath: string = './evaluation_results.log') {
-    this.resolvedFilePath = path.resolve(filePath);
-    // Ensure directory exists during initialization (or handle error)
+  constructor(options: { filePath: string }) {
+    if (!options || !options.filePath) {
+      throw new Error('[JsonFileStorageProvider] filePath is required in options.');
+    }
+    this.resolvedFilePath = path.resolve(options.filePath);
     this.ensureDirectoryExists(path.dirname(this.resolvedFilePath)).catch(err => {
       console.error(`[JsonFileStorageProvider] Failed to ensure directory exists for ${this.resolvedFilePath}:`, err);
     });
@@ -26,7 +29,7 @@ export class JsonFileStorageProvider implements EvaluationStorageProvider {
     try {
       await fs.mkdir(dirPath, { recursive: true });
     } catch (error: any) {
-      if (error.code !== 'EEXIST') { // Ignore error if directory already exists
+      if (error.code !== 'EEXIST') {
         throw error;
       }
     }
@@ -34,11 +37,10 @@ export class JsonFileStorageProvider implements EvaluationStorageProvider {
 
   async saveResult(result: AggregatedEvaluationResult): Promise<void> {
     try {
-      const resultString = JSON.stringify(result) + '\n'; // Append newline for line-based reading
+      const resultString = JSON.stringify(result) + '\n';
       await fs.appendFile(this.resolvedFilePath, resultString, 'utf8');
     } catch (error) {
       console.error(`[JsonFileStorageProvider] Failed to save result to ${this.resolvedFilePath}:`, error);
-      // Re-throw or handle as appropriate for the application context
       throw new Error(`Failed to save evaluation result: ${error instanceof Error ? error.message : String(error)}`);
     }
   }

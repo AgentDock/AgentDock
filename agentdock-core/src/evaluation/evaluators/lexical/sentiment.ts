@@ -1,5 +1,6 @@
 import type { EvaluationCriteria, EvaluationInput, EvaluationResult, Evaluator } from '../../types';
 import Sentiment from 'sentiment'; // Capital S for constructor
+import { getInputText } from '../../utils/input-text-extractor';
 
 /**
  * Configuration for the SentimentEvaluator.
@@ -58,38 +59,19 @@ export class SentimentEvaluator implements Evaluator {
     this.sentimentAnalyzer = new Sentiment();
   }
 
-  private getFieldContent(input: EvaluationInput, fieldName: 'response' | 'prompt'): string | any {
-    switch (fieldName) {
-      case 'response':
-        if (typeof input.response === 'object' && input.response !== null && 'content' in input.response) {
-          const message = input.response as any; 
-          if (message.contentParts && Array.isArray(message.contentParts) && message.contentParts.length > 0) {
-            const textPart = message.contentParts.find((p: any) => p.type === 'text');
-            return textPart ? textPart.text : (typeof message.content === 'string' ? message.content : '');
-          }
-          return typeof message.content === 'string' ? message.content : '';
-        }
-        return input.response; 
-      case 'prompt':
-        return input.prompt;
-      default:
-        return (input as any)[fieldName];
-    }
-  }
-
   async evaluate(input: EvaluationInput, criteria: EvaluationCriteria[]): Promise<EvaluationResult[]> {
     const targetCriterion = criteria.find(c => c.name === this.config.criterionName);
     if (!targetCriterion) {
       return [];
     }
 
-    const sourceText = this.getFieldContent(input, this.config.sourceTextField);
+    const sourceText = getInputText(input, this.config.sourceTextField as string | undefined);
 
-    if (typeof sourceText !== 'string') {
+    if (sourceText === undefined) {
       return [{
         criterionName: this.config.criterionName,
-        score: this.config.outputType === 'category' ? 'neutral' : 0, // Default score on error
-        reasoning: `Evaluation failed: Source text field '${this.config.sourceTextField}' did not yield a string. Type: ${typeof sourceText}.`,
+        score: this.config.outputType === 'category' ? 'neutral' : 0, 
+        reasoning: `Evaluation failed: Source text field '${this.config.sourceTextField}' did not yield a string.`,
         evaluatorType: this.type,
         error: 'Invalid input type for sentiment analysis.',
       }];

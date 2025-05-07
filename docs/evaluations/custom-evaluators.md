@@ -78,6 +78,18 @@ import type {
   EvaluationCriteria, 
   EvaluationResult 
 } from 'agentdock-core'; // Adjust path as necessary
+// Assuming getInputText is exported from agentdock-core or a known utils path
+// For example: import { getInputText } from 'agentdock-core/evaluation/utils'; 
+// Or if getInputText becomes part of the main agentdock-core exports:
+// import { getInputText } from 'agentdock-core';
+
+// Placeholder for actual import - replace with correct path when getInputText is finalized and exported
+const getInputText = (input: EvaluationInput, sourceField?: string): string | undefined => {
+  // This is a placeholder. In reality, you'd import the actual getInputText utility.
+  if (sourceField === 'response' && typeof input.response === 'string') return input.response;
+  // Add more mock logic if other sourceFields are tested in this example context
+  return undefined;
+};
 
 // Configuration type for our custom evaluator
 interface ExactLengthConfig {
@@ -94,26 +106,16 @@ class ExactLengthEvaluator implements Evaluator<ExactLengthConfig> {
     config: ExactLengthConfig
   ): Promise<EvaluationResult[]> {
     const results: EvaluationResult[] = [];
-    const sourceField = config.sourceField || 'response';
-    let textToEvaluate: string | undefined;
+    // Use the utility function to extract text
+    const textToEvaluate = getInputText(input, config.sourceField);
 
-    if (sourceField === 'response') {
-      textToEvaluate = typeof input.response === 'string' ? input.response : undefined;
-    } else if (sourceField.startsWith('context.')) {
-      const contextKey = sourceField.substring('context.'.length);
-      // Basic context navigation; real-world might need more robust path resolution
-      textToEvaluate = input.context && typeof input.context[contextKey] === 'string' 
-        ? input.context[contextKey] 
-        : undefined;
-    } 
-    // Add more sourceField handling as needed (e.g., prompt, groundTruth)
-
+    // Original logic for iterating criteria and checking length follows
     for (const criterion of criteria) {
       if (textToEvaluate === undefined) {
         results.push({
           criterionName: criterion.name,
           score: false,
-          reasoning: `Source field '${sourceField}' not found or not a string.`,
+          reasoning: `Source field '${config.sourceField || 'response'}' not found, not a string, or not extractable.`,
           evaluatorType: this.type,
         });
         continue;

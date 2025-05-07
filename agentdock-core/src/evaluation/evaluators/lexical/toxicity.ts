@@ -1,4 +1,5 @@
 import type { EvaluationCriteria, EvaluationInput, EvaluationResult, Evaluator } from '../../types';
+import { getInputText } from '../../utils/input-text-extractor';
 
 /**
  * Configuration for the ToxicityEvaluator.
@@ -56,39 +57,19 @@ export class ToxicityEvaluator implements Evaluator {
     });
   }
 
-  private getFieldContent(input: EvaluationInput, fieldName: 'response' | 'prompt'): string | any {
-    // (Reusing a similar helper - consider moving to a util if shared more)
-    switch (fieldName) {
-      case 'response':
-        if (typeof input.response === 'object' && input.response !== null && 'content' in input.response) {
-          const message = input.response as any; 
-          if (message.contentParts && Array.isArray(message.contentParts) && message.contentParts.length > 0) {
-            const textPart = message.contentParts.find((p: any) => p.type === 'text');
-            return textPart ? textPart.text : (typeof message.content === 'string' ? message.content : '');
-          }
-          return typeof message.content === 'string' ? message.content : '';
-        }
-        return input.response; 
-      case 'prompt':
-        return input.prompt;
-      default:
-        return (input as any)[fieldName];
-    }
-  }
-
   async evaluate(input: EvaluationInput, criteria: EvaluationCriteria[]): Promise<EvaluationResult[]> {
     const targetCriterion = criteria.find(c => c.name === this.config.criterionName);
     if (!targetCriterion) {
       return [];
     }
 
-    let sourceText = this.getFieldContent(input, this.config.sourceTextField);
+    const sourceText = getInputText(input, this.config.sourceTextField as string | undefined);
 
-    if (typeof sourceText !== 'string') {
+    if (sourceText === undefined) {
       return [{
         criterionName: this.config.criterionName,
-        score: false, // Fails if input is not string
-        reasoning: `Evaluation failed: Source text field '${this.config.sourceTextField}' did not yield a string. Type: ${typeof sourceText}.`,
+        score: false,
+        reasoning: `Evaluation failed: Source text field '${this.config.sourceTextField}' did not yield a string.`,
         evaluatorType: this.type,
         error: 'Invalid input type for toxicity analysis.',
       }];
@@ -96,16 +77,12 @@ export class ToxicityEvaluator implements Evaluator {
 
     const foundToxicTerms: string[] = [];
     for (const regex of this.toxicRegexes) {
-      // Important: Reset lastIndex for global regexes before each test/exec
       regex.lastIndex = 0;
       if (regex.test(sourceText)) {
-        // Find the actual term that matched for reporting (could be multiple matches of same term)
-        // For simplicity, use the original term that generated the regex.
-        // A more precise way would be to find which term in this.config.toxicTerms maps to this regex.
         const matchedTerm = this.config.toxicTerms.find(t => {
             const escapedT = t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             const pattern = this.config.matchWholeWord ? `\\b${escapedT}\\b` : escapedT;
-            return regex.source === pattern; // Compare source without flags for simplicity here
+            return regex.source === (this.config.matchWholeWord ? `\\b${escapedT}\\b` : escapedT);
         });
         if(matchedTerm && !foundToxicTerms.includes(matchedTerm)) {
             foundToxicTerms.push(matchedTerm);
@@ -124,7 +101,7 @@ export class ToxicityEvaluator implements Evaluator {
 
     return [{
       criterionName: this.config.criterionName,
-      score: isNotToxic, // true if no toxic terms found, false otherwise
+      score: isNotToxic,
       reasoning: reasoning,
       evaluatorType: this.type,
       metadata: { foundToxicTerms }

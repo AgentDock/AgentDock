@@ -1,4 +1,5 @@
 import type { EvaluationCriteria, EvaluationInput, EvaluationResult, Evaluator } from '../../types';
+import { getInputText } from '../../utils/input-text-extractor';
 
 /**
  * Configuration for the KeywordCoverageEvaluator.
@@ -67,55 +68,43 @@ export class KeywordCoverageEvaluator implements Evaluator {
     const source = this.config.keywordsSourceField;
 
     if (source === 'config') {
-      keywords = this.config.expectedKeywords;
+      keywords = this.config.expectedKeywords || [];
     } else if (source === 'groundTruth') {
       if (Array.isArray(input.groundTruth)) {
         keywords = input.groundTruth.filter(k => typeof k === 'string');
-      } else if (typeof input.groundTruth === 'string') {
-        if (this.config.groundTruthKeywordMode === 'split-comma') {
-          keywords = input.groundTruth.split(',').map(k => k.trim()).filter(k => k.length > 0);
-        } else { // 'exact'
-          keywords = [input.groundTruth];
+      } else {
+        // Try to get groundTruth as text using the utility
+        const gtText = getInputText(input, 'groundTruth');
+        if (gtText) {
+          if (this.config.groundTruthKeywordMode === 'split-comma') {
+            keywords = gtText.split(',').map(k => k.trim()).filter(k => k.length > 0);
+          } else { // 'exact'
+            keywords = [gtText];
+          }
         }
       }
     } else if (source && source.startsWith('context.')) {
-      const fieldName = source.substring('context.'.length);
-      const contextValue = input.context?.[fieldName];
-      if (Array.isArray(contextValue)) {
-        keywords = contextValue.filter(k => typeof k === 'string');
-      } else if (typeof contextValue === 'string') {
-         // For simplicity, if context field is string, treat as single keyword or comma-separated
-         keywords = contextValue.split(',').map(k => k.trim()).filter(k => k.length > 0);
+      // For context, try to get text using utility. If it returns a string, parse it.
+      // If the context field directly holds an array, that specific handling is more complex
+      // and might need dedicated logic if getInputText doesn't fit.
+      // For now, assume context source field for keywords should resolve to a parsable string.
+      const contextText = getInputText(input, source as `context.${string}`);
+      if (contextText) {
+         keywords = contextText.split(',').map(k => k.trim()).filter(k => k.length > 0);
+      } else {
+        // Fallback or specific handling if context field is an array directly
+        const fieldName = source.substring('context.'.length);
+        const contextValue = input.context?.[fieldName];
+        if (Array.isArray(contextValue)) {
+          keywords = contextValue.filter(k => typeof k === 'string');
+        }
       }
     }
-    // Normalize keywords from input sources (case, whitespace) for consistent matching if evaluator is not case sensitive for source
-    // This isn't strictly necessary if source text is also normalized, but good for robustness.
-    // However, if keywords themselves contain significant casing/spacing, this might be too aggressive.
-    // Let's apply case normalization to keywords if the source comparison is case-insensitive.
+    
     if (!this.config.caseSensitive) {
         keywords = keywords.map(k => k.toLowerCase());
     }
-    return keywords.filter(k => k.length > 0); // Ensure no empty strings from split etc.
-  }
-
-  private getFieldContent(input: EvaluationInput, fieldName: 'response' | 'prompt'): string | any {
-    // (Reusing a similar helper from LexicalSimilarityEvaluator - consider moving to a util if shared more)
-    switch (fieldName) {
-      case 'response':
-        if (typeof input.response === 'object' && input.response !== null && 'content' in input.response) {
-          const message = input.response as any; 
-          if (message.contentParts && Array.isArray(message.contentParts) && message.contentParts.length > 0) {
-            const textPart = message.contentParts.find((p: any) => p.type === 'text');
-            return textPart ? textPart.text : (typeof message.content === 'string' ? message.content : '');
-          }
-          return typeof message.content === 'string' ? message.content : '';
-        }
-        return input.response; 
-      case 'prompt':
-        return input.prompt;
-      default:
-        return (input as any)[fieldName];
-    }
+    return keywords.filter(k => k.length > 0);
   }
 
   async evaluate(input: EvaluationInput, criteria: EvaluationCriteria[]): Promise<EvaluationResult[]> {
@@ -125,13 +114,14 @@ export class KeywordCoverageEvaluator implements Evaluator {
     }
 
     const keywordsToFind = this.getKeywords(input);
-    let sourceText = this.getFieldContent(input, this.config.sourceTextField || 'response');
+    // Use getInputText for the source text field
+    let sourceText = getInputText(input, this.config.sourceTextField as string | undefined);
 
-    if (typeof sourceText !== 'string') {
+    if (sourceText === undefined) {
       return [{
         criterionName: this.config.criterionName,
         score: 0,
-        reasoning: `Evaluation failed: Source text field '${this.config.sourceTextField}' did not yield a string. Type: ${typeof sourceText}.`,
+        reasoning: `Evaluation failed: Source text field '${this.config.sourceTextField}' did not yield a string.`,
         evaluatorType: this.type,
         error: 'Invalid input type for source text.',
       }];
@@ -140,11 +130,9 @@ export class KeywordCoverageEvaluator implements Evaluator {
     if (keywordsToFind.length === 0) {
       return [{
         criterionName: this.config.criterionName,
-        score: 1, // Or 0, or specific error. If no keywords to find, is it 100% coverage or 0%?
-                   // Let's say 100% as there are no expectations that were missed. Or perhaps an error/warning.
+        score: 1, 
         reasoning: 'No keywords to find. Ensure keywordsSourceField and its content are correctly specified.',
         evaluatorType: this.type,
-        // error: 'No keywords provided for coverage check.' // Alternative
       }];
     }
 
@@ -153,7 +141,6 @@ export class KeywordCoverageEvaluator implements Evaluator {
     }
     if (!this.config.caseSensitive) {
       sourceText = sourceText.toLowerCase();
-      // Keywords are already lowercased in getKeywords if caseSensitive is false
     }
 
     let foundCount = 0;
@@ -161,8 +148,6 @@ export class KeywordCoverageEvaluator implements Evaluator {
     const missedKeywords: string[] = [];
 
     for (const keyword of keywordsToFind) {
-      // If not case sensitive, keyword is already lowercased by getKeywords.
-      // Source text is also lowercased if not case sensitive.
       if (sourceText.includes(keyword)) {
         foundCount++;
         foundKeywords.push(keyword);
@@ -171,7 +156,7 @@ export class KeywordCoverageEvaluator implements Evaluator {
       }
     }
 
-    const score = keywordsToFind.length > 0 ? foundCount / keywordsToFind.length : 1; // Avoid division by zero, 1 if no keywords
+    const score = keywordsToFind.length > 0 ? foundCount / keywordsToFind.length : 1;
     const reasoning = `Found ${foundCount} out of ${keywordsToFind.length} keywords. Coverage: ${(score * 100).toFixed(2)}%. Found: [${foundKeywords.join(', ')}]. Missed: [${missedKeywords.join(', ')}]. Source text (processed): "${sourceText.substring(0, 200)}${sourceText.length > 200 ? '...' : ''}".`;
     
     return [{

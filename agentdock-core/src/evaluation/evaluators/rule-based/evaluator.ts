@@ -1,4 +1,5 @@
 import type { EvaluationCriteria, EvaluationInput, EvaluationResult, Evaluator } from '../../types';
+import { getInputText } from '../../utils/input-text-extractor';
 
 // --- Rule Definitions ---
 
@@ -79,68 +80,63 @@ export class RuleBasedEvaluator implements Evaluator {
     const applicableCriteriaNames = new Set(criteria.map(c => c.name));
     const results: EvaluationResult[] = [];
 
-    // Get the text content to evaluate
-    let textToEvaluate: string | undefined;
-    if (typeof input.response === 'string') {
-      textToEvaluate = input.response;
-    } else if (typeof input.response?.content === 'string') {
-      // Basic handling for AgentMessage with string content
-      textToEvaluate = input.response.content;
-    } else {
-      // Cannot evaluate non-string content with current rules
-      // TODO: Consider stringifying complex content or adding rules for structured data?
-      console.warn(`[${this.type}] Cannot evaluate non-string response content for input.`);
-      // Add error results for all applicable rules? Or just return empty?
-      // Let's skip rules that require text for now.
+    // Use the utility to get text from the response field for text-based rules
+    const textToEvaluate = getInputText(input, 'response');
+
+    if (textToEvaluate === undefined && typeof input.response !== 'string') {
+        // If response is not a string and getInputText also couldn't extract from it as AgentMessage,
+        // log a warning. Some rules like json_parse might still operate on the raw response object.
+        console.warn(`[${this.type}] Could not extract a simple string from input.response for text-based rules.`);
     }
 
     for (const rule of this.rules) {
-      // Only run the rule if its criterion is relevant for this run
       if (!applicableCriteriaNames.has(rule.criterionName)) {
         continue;
       }
 
       const criterion = criteria.find(c => c.name === rule.criterionName);
       if (!criterion) {
-        // Should not happen if applicableCriteriaNames is derived correctly, but belt-and-suspenders
         console.error(`[${this.type}] Criterion ${rule.criterionName} not found in provided criteria list.`);
         continue;
       }
 
       let result: EvaluationResult;
       try {
-        if (textToEvaluate === undefined && rule.config.type !== 'json_parse') { 
-            // Skip text based rules if no text was extracted
-            // Json parse can still work if response is a stringified object
-            // Or maybe we should attempt JSON parse on the raw response if it's an object?
-            // For now, keep it simple: skip if no string is readily available for text rules
-            continue; 
-        }
-        
-        let responseStringForJson = typeof input.response === 'string' ? input.response : JSON.stringify(input.response);
-
         let rulePassed: boolean;
-        let score: EvaluationResult['score'] = false; // Default to failing/false
+        let score: EvaluationResult['score'] = false;
+
+        if (rule.config.type !== 'json_parse' && textToEvaluate === undefined) {
+            // For non-json_parse rules, if textToEvaluate is still undefined, we cannot proceed.
+            // This could happen if input.response was a complex object not parsable by getInputText into a single string.
+            results.push({
+              criterionName: rule.criterionName,
+              score: this.mapPassFailToScore(false, criterion.scale),
+              reasoning: `Cannot evaluate rule '${rule.config.type}': input.response is not a simple string or extractable text.`, 
+              evaluatorType: this.type,
+            });
+            continue;
+        }
 
         switch (rule.config.type) {
           case 'regex':
-            rulePassed = this.evaluateRegex(textToEvaluate!, rule.config);
+            rulePassed = this.evaluateRegex(textToEvaluate!, rule.config); // textToEvaluate ensured by check above
             break;
           case 'length':
-            rulePassed = this.evaluateLength(textToEvaluate!, rule.config);
+            rulePassed = this.evaluateLength(textToEvaluate!, rule.config); // textToEvaluate ensured by check above
             break;
           case 'includes':
-            rulePassed = this.evaluateIncludes(textToEvaluate!, rule.config);
+            rulePassed = this.evaluateIncludes(textToEvaluate!, rule.config); // textToEvaluate ensured by check above
             break;
           case 'json_parse':
-             // Attempt parsing even if textToEvaluate is undefined, use original response if string
-            rulePassed = this.evaluateJsonParse(responseStringForJson);
+            // For json_parse, if input.response is a string, use it directly.
+            // Otherwise, stringify the raw input.response object.
+            const stringToParse = typeof input.response === 'string' ? input.response : JSON.stringify(input.response);
+            rulePassed = this.evaluateJsonParse(stringToParse);
             break;
           default:
             throw new Error(`Unsupported rule type: ${(rule.config as any).type}`);
         }
 
-        // Map boolean pass/fail to score based on criterion scale
         score = this.mapPassFailToScore(rulePassed, criterion.scale);
 
         result = {
@@ -154,7 +150,7 @@ export class RuleBasedEvaluator implements Evaluator {
         console.error(`[${this.type}] Error evaluating rule for criterion ${rule.criterionName}:`, error);
         result = {
           criterionName: rule.criterionName,
-          score: false, // Consider using a specific error score/value?
+          score: this.mapPassFailToScore(false, criterion.scale), // Map error to a failed score
           evaluatorType: this.type,
           error: error instanceof Error ? error.message : String(error),
           reasoning: 'Rule evaluation failed due to error.'

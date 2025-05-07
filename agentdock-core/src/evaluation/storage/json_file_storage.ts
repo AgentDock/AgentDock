@@ -1,5 +1,5 @@
 import type { AggregatedEvaluationResult } from '../types';
-import fs from 'node:fs/promises';
+import fs from 'node:fs';
 import path from 'node:path';
 
 /**
@@ -20,25 +20,33 @@ export class JsonFileStorageProvider {
       throw new Error('[JsonFileStorageProvider] filePath is required in options.');
     }
     this.resolvedFilePath = path.resolve(options.filePath);
-    this.ensureDirectoryExists(path.dirname(this.resolvedFilePath)).catch(err => {
-      console.error(`[JsonFileStorageProvider] Failed to ensure directory exists for ${this.resolvedFilePath}:`, err);
-    });
+    
+    // Ensure directory exists synchronously during construction
+    try {
+      this.ensureDirectoryExistsSync(path.dirname(this.resolvedFilePath));
+    } catch (err: any) {
+      // Re-throw error if directory creation fails, making constructor fail.
+      console.error(`[JsonFileStorageProvider] Fatal: Failed to create directory for ${this.resolvedFilePath}:`, err.message);
+      throw new Error(`Failed to initialize JsonFileStorageProvider (directory creation failed for ${this.resolvedFilePath}): ${err.message}`);
+    }
   }
 
-  private async ensureDirectoryExists(dirPath: string): Promise<void> {
+  private ensureDirectoryExistsSync(dirPath: string): void {
     try {
-      await fs.mkdir(dirPath, { recursive: true });
+      fs.mkdirSync(dirPath, { recursive: true });
     } catch (error: any) {
-      if (error.code !== 'EEXIST') {
+      if (error.code !== 'EEXIST') { // If error is not 'already exists', then throw
         throw error;
       }
+      // If error is EEXIST, directory already exists, which is fine.
     }
   }
 
   async saveResult(result: AggregatedEvaluationResult): Promise<void> {
     try {
       const resultString = JSON.stringify(result) + '\n';
-      await fs.appendFile(this.resolvedFilePath, resultString, 'utf8');
+      // Use fs.promises for the async append operation as it's not in constructor path
+      await fs.promises.appendFile(this.resolvedFilePath, resultString, 'utf8');
     } catch (error) {
       console.error(`[JsonFileStorageProvider] Failed to save result to ${this.resolvedFilePath}:`, error);
       throw new Error(`Failed to save evaluation result: ${error instanceof Error ? error.message : String(error)}`);

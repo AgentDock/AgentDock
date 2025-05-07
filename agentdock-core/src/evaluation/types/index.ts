@@ -95,6 +95,8 @@ export interface AggregatedEvaluationResult {
   evaluationConfigSnapshot?: any; // Define more specifically later if needed
   /** Any run-level metadata not captured elsewhere. */
   metadata?: Record<string, any>;
+  /** Optional list of errors that occurred at the run level (e.g., an evaluator failing completely). */
+  runErrors?: { evaluatorType?: string; message: string; stack?: string }[];
 }
 
 /**

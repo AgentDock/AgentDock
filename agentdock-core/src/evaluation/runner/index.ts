@@ -315,7 +315,7 @@ export async function runEvaluation(
   }
 
   const allResults: EvaluationResult[] = [];
-  const errors: { evaluatorType: string, error: string }[] = [];
+  const runErrors: { evaluatorType?: string; message: string; stack?: string }[] = [];
   const instantiatedEvaluatorTypes: string[] = []; // For snapshot
 
   const evaluationPromises = evaluatorConfigs.map(async (evalConfig) => {
@@ -369,7 +369,11 @@ export async function runEvaluation(
     } catch (error: any) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       console.error(`[EvaluationRunner] Evaluator ${evaluatorType} failed:`, errorMessage);
-      errors.push({ evaluatorType: evaluatorType, error: errorMessage });
+      runErrors.push({
+        evaluatorType: evaluatorType,
+        message: errorMessage,
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       return []; // Return empty array on error for this evaluator
     }
   });
@@ -414,7 +418,7 @@ export async function runEvaluation(
   const endTime = Date.now();
   const duration = endTime - startTime;
 
-  const finalMetadata = { ...runMetadata, errors, durationMs: duration };
+  const finalMetadata = { ...runMetadata, errors: runErrors, durationMs: duration };
 
   const aggregatedResult: AggregatedEvaluationResult = {
     overallScore,
@@ -431,6 +435,7 @@ export async function runEvaluation(
       metadataKeys: Object.keys(runMetadata),
     },
     metadata: finalMetadata,
+    runErrors: runErrors.length > 0 ? runErrors : undefined,
   };
 
   // Use the passed-in storageProvider directly
@@ -441,6 +446,14 @@ export async function runEvaluation(
       console.log(`[EvaluationRunner] Aggregated result saved via provided storage provider.`);
     } catch (error) {
       console.error('[EvaluationRunner] Failed to save evaluation result via provided storage provider:', error);
+      aggregatedResult.runErrors = [
+        ...(aggregatedResult.runErrors || []),
+        {
+            evaluatorType: 'StorageProvider', // Special type for storage errors
+            message: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+        }
+      ];
     }
   } else {
     console.log('[EvaluationRunner] No storage provider configured. Results not saved by runner.');

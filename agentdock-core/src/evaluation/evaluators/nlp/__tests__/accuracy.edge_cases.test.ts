@@ -67,54 +67,46 @@ describe('NLPAccuracyEvaluator - Edge Cases (Empty/Null Inputs)', () => {
 
   it('should handle empty response string (similarity 0, score false for binary)', async () => {
     const gtText = 'This is the ground truth text.';
-    const embeddingEmpty = mockEmbedding('');
-    const embeddingGt = mockEmbedding(gtText);
-    mockEmbed
-      .mockResolvedValueOnce({ embedding: embeddingEmpty, usage: { promptTokens: 1, totalTokens: 1 } })
-      .mockResolvedValueOnce({ embedding: embeddingGt, usage: { promptTokens: 1, totalTokens: 1 } });
+    // mockEmbed calls are not expected if response is empty, as evaluator should return early.
+    // So, no mockEmbed setup here if it returns early.
     
     const input = createTestInput('', gtText);
     const results = await evaluator.evaluate(input, input.criteria!);
     expect(results.length).toBe(1);
     const result = results[0];
-    expect(result.score).toBe(false); // Cosine with zero vector is 0, 0 < 0.8 -> false
-    expect(result.reasoning).toContain('Cosine similarity: 0.0000.');
-    expect(result.reasoning).toContain(`Threshold: ${evaluatorConfig.similarityThreshold}. Outcome: Fail.`);
-    expect(result.error).toBeUndefined();
+    expect(result.score).toBe(false);
+    expect(result.reasoning).toContain('No agent response provided.'); // Corrected assertion
+    expect(result.error).toContain('Missing agent response in EvaluationInput.'); // Also check error message
+    expect(mockEmbed).toHaveBeenCalledTimes(0); // Ensure embed was not called
   });
 
   it('should handle empty groundTruth string (similarity 0, score false for binary)', async () => {
     const respText = 'This is the response text.';
-    const embeddingResp = mockEmbedding(respText);
-    const embeddingEmpty = mockEmbedding('');
-    mockEmbed
-      .mockResolvedValueOnce({ embedding: embeddingResp, usage: { promptTokens: 1, totalTokens: 1 } })
-      .mockResolvedValueOnce({ embedding: embeddingEmpty, usage: { promptTokens: 1, totalTokens: 1 } });
+    // mockEmbed for response will be called, but not for empty groundTruth if it returns early.
+    // mockEmbed.mockResolvedValueOnce({ embedding: mockEmbedding(respText), usage: { promptTokens: 1, totalTokens: 1 } });
 
     const input = createTestInput(respText, '');
     const results = await evaluator.evaluate(input, input.criteria!);
     expect(results.length).toBe(1);
     const result = results[0];
     expect(result.score).toBe(false);
-    expect(result.reasoning).toContain('Cosine similarity: 0.0000.');
-    expect(result.error).toBeUndefined();
+    expect(result.reasoning).toContain('No ground truth provided for comparison.'); // Corrected assertion
+    expect(result.error).toContain('Missing groundTruth in EvaluationInput.'); // Also check error message
+    expect(mockEmbed).toHaveBeenCalledTimes(0); // Ensure embed was not called for groundTruth (or at all if it exits on groundTruth check)
+                                              // Let's check accuracy.ts: it checks response, then groundTruth. If groundTruth is empty, it returns. Embed is only called after both checks pass.
   });
 
   it('should handle both response and groundTruth being empty (similarity 0, score false for binary)', async () => {
-    // Current cosineSimilarity([0,..],[0,..]) returns 0.
-    const embeddingEmpty1 = mockEmbedding('');
-    const embeddingEmpty2 = mockEmbedding('');
-
-    mockEmbed
-      .mockResolvedValueOnce({ embedding: embeddingEmpty1, usage: { promptTokens: 1, totalTokens: 1 } })
-      .mockResolvedValueOnce({ embedding: embeddingEmpty2, usage: { promptTokens: 1, totalTokens: 1 } });
+    // No mockEmbed calls expected.
 
     const input = createTestInput('', '');
     const results = await evaluator.evaluate(input, input.criteria!);
     expect(results.length).toBe(1);
     const result = results[0];
-    expect(result.score).toBe(false); // Similarity is 0, 0 < 0.8 -> false
-    expect(result.reasoning).toContain('Cosine similarity: 0.0000.');
+    expect(result.score).toBe(false);
+    expect(result.reasoning).toContain('No agent response provided.'); // Corrected assertion (response check is first)
+    expect(result.error).toContain('Missing agent response in EvaluationInput.');
+    expect(mockEmbed).toHaveBeenCalledTimes(0);
   });
 
   it('should return error if groundTruth is undefined (as per accuracy.ts logic)', async () => {

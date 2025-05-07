@@ -69,23 +69,23 @@ describe('NLPAccuracyEvaluator - Input Type Handling', () => {
     const respObj = { key: 'value object' };
     const gtArr = [1, 2, 3];
     const strRespObj = JSON.stringify(respObj);
-    const strGtArr = JSON.stringify(gtArr);
+    const expectedStrGt = String(gtArr);
 
     mockEmbed
       .mockResolvedValueOnce({ embedding: mockEmbedding(strRespObj), usage: { promptTokens: 1, totalTokens: 1 } })
-      .mockResolvedValueOnce({ embedding: mockEmbedding(strGtArr), usage: { promptTokens: 1, totalTokens: 1 } });
+      .mockResolvedValueOnce({ embedding: mockEmbedding(expectedStrGt), usage: { promptTokens: 1, totalTokens: 1 } });
 
     const input = createTestInput(respObj, gtArr);
     const results = await evaluator.evaluate(input, input.criteria!);
     expect(results.length).toBe(1);
     const result = results[0];
     
-    const expectedSimilarity = cosineSimilarity(mockEmbedding(strRespObj), mockEmbedding(strGtArr));
-    expect(result.score).toBe(expectedSimilarity >= (evaluatorConfig.similarityThreshold || 0));
-    expect(result.reasoning).toContain(`Cosine similarity: ${expectedSimilarity.toFixed(4)}.`);
+    const actualSimilarity = cosineSimilarity(mockEmbedding(strRespObj), mockEmbedding(expectedStrGt));
+    expect(result.score).toBe(actualSimilarity >= (evaluatorConfig.similarityThreshold || 0));
+    expect(result.reasoning).toContain(`Cosine similarity: ${actualSimilarity.toFixed(4)}.`);
     
-    expect(mockEmbed).toHaveBeenNthCalledWith(1, expect.objectContaining({ value: [strRespObj] }));
-    expect(mockEmbed).toHaveBeenNthCalledWith(2, expect.objectContaining({ value: [strGtArr] }));
+    expect(mockEmbed).toHaveBeenNthCalledWith(1, expect.objectContaining({ value: strRespObj }));
+    expect(mockEmbed).toHaveBeenNthCalledWith(2, expect.objectContaining({ value: expectedStrGt }));
   });
 
   it('should handle EvaluationInput with Message objects (by stringifying them)', async () => {
@@ -121,8 +121,8 @@ describe('NLPAccuracyEvaluator - Input Type Handling', () => {
     expect(result.score).toBe(expectedSimilarity >= (evaluatorConfig.similarityThreshold || 0));
     expect(result.reasoning).toContain(`Cosine similarity: ${expectedSimilarity.toFixed(4)}.`);
         
-    expect(mockEmbed).toHaveBeenNthCalledWith(1, expect.objectContaining({ value: [strResponseMessage] }));
-    expect(mockEmbed).toHaveBeenNthCalledWith(2, expect.objectContaining({ value: [strGroundTruthMessage] })); // Expect String(groundTruthMessage)
+    expect(mockEmbed).toHaveBeenNthCalledWith(1, expect.objectContaining({ value: strResponseMessage }));
+    expect(mockEmbed).toHaveBeenNthCalledWith(2, expect.objectContaining({ value: strGroundTruthMessage })); // Expect String(groundTruthMessage)
   });
 
   it('should produce a similarity of 0 if embeddings are orthogonal', async () => {

@@ -3,6 +3,7 @@ import { z, ZodTypeAny } from 'zod';
 // import type { LLMAdapter } from '../../../llm/types'; // No longer using LLMAdapter directly here
 import type { CoreLLM } from '../../../llm/core-llm'; // Import CoreLLM
 import type { EvaluationCriteria, EvaluationInput, EvaluationResult, Evaluator, EvaluationScale } from '../../types';
+import { getInputText } from '../../utils/input-text-extractor'; // Import getInputText
 
 /**
  * Configuration for the LLM-as-a-judge evaluator.
@@ -42,8 +43,15 @@ export class LLMJudgeEvaluator implements Evaluator {
    * @param config Configuration for the LLM judge.
    */
   constructor(config: LLMJudgeConfig) {
-    if (!config.llm || !config.promptTemplate || !config.criterionName) {
-      throw new Error('LLMJudgeEvaluator requires llm (CoreLLM instance), promptTemplate, and criterionName in config.');
+    // Improved validation
+    if (!config.llm || typeof (config.llm as any).getModel !== 'function') { // Check if it looks like CoreLLM
+      throw new Error('[LLMJudgeEvaluator] llm must be provided and appear to be a CoreLLM instance.');
+    }
+    if (!config.promptTemplate || typeof config.promptTemplate !== 'string' || config.promptTemplate.trim() === '') {
+      throw new Error('[LLMJudgeEvaluator] promptTemplate must be a non-empty string.');
+    }
+    if (!config.criterionName || typeof config.criterionName !== 'string' || config.criterionName.trim() === '') {
+      throw new Error('[LLMJudgeEvaluator] criterionName must be a non-empty string.');
     }
     this.config = config;
   }
@@ -87,43 +95,58 @@ export class LLMJudgeEvaluator implements Evaluator {
       reasoning: z.string().optional().describe("The reasoning behind the score."),
     });
 
+    let prompt: string;
     try {
-      const prompt = this.preparePrompt(input, targetCriterion);
+      prompt = this.preparePrompt(input, targetCriterion);
+    } catch (e: any) {
+      console.error(`[${this.type}] Error preparing prompt for criterion ${this.config.criterionName}:`, e);
+      return [{
+        criterionName: this.config.criterionName,
+        score: 'error',
+        evaluatorType: this.type,
+        error: `Prompt preparation failed: ${e.message}`,
+        reasoning: 'LLM Judge evaluation failed during prompt preparation.'
+      }];
+    }
 
-      // Use Vercel AI SDK's generateObject to get structured output
-      // Assuming this.config.llm can be used directly or adapted for generateObject's model parameter.
-      // For example, if this.config.llm is an instance of OpenAI from 'openai', 
-      // we might need to adapt it or expect it to be an @ai-sdk/openai model instance.
-      // This is a potential point of friction depending on LLMAdapter's design.
+    try {
       const { object: llmOutput } = await generateObject({
         model: this.config.llm.getModel(), 
-        schema: llmResponseSchema, // Use the dynamically generated schema
+        schema: llmResponseSchema, 
         prompt: prompt,
-        system: this.config.systemPrompt || 'You are an expert evaluator. Respond in JSON format as specified.',
-        // tools: {} as Record<string, CoreTool<any, any>> // If no tools needed, pass empty object or omit if allowed
+        system: this.config.systemPrompt || 'You are an expert evaluator. Respond in JSON format using the provided schema.', // Updated system prompt slightly
       });
 
       const normalizedScore = this.normalizeScore(llmOutput.score, targetCriterion.scale);
 
       if (normalizedScore.error) {
-        throw new Error(`Score normalization failed: ${normalizedScore.error}`);
+        // If normalization fails, return an error result but include the raw LLM output in reasoning/metadata if possible
+        return [{
+          criterionName: this.config.criterionName,
+          score: 'error', // Keep score as 'error' to indicate failure
+          reasoning: `Score normalization failed: ${normalizedScore.error}. Raw LLM reasoning: ${llmOutput.reasoning || 'N/A'}`,
+          evaluatorType: this.type,
+          error: `Score normalization failed: ${normalizedScore.error}`,
+          metadata: { rawLlmScore: llmOutput.score, rawLlmReasoning: llmOutput.reasoning }
+        }];
       }
 
       return [{
         criterionName: this.config.criterionName,
-        score: normalizedScore.score!,
+        score: normalizedScore.score!, // Use the validated & normalized score
         reasoning: llmOutput.reasoning,
         evaluatorType: this.type,
+        metadata: { rawLlmScore: llmOutput.score } // Include raw LLM score in metadata
       }];
 
     } catch (error: any) {
       console.error(`[${this.type}] Error evaluating criterion ${this.config.criterionName}:`, error);
       return [{
         criterionName: this.config.criterionName,
-        score: 'error', // Indicate error in score
+        score: 'error', 
         evaluatorType: this.type,
         error: error instanceof Error ? error.message : String(error),
-        reasoning: 'LLM Judge evaluation failed due to error.'
+        reasoning: 'LLM Judge evaluation failed due to error during LLM call or processing.'
       }];
     }
   }
@@ -134,16 +157,32 @@ export class LLMJudgeEvaluator implements Evaluator {
    */
   private preparePrompt(input: EvaluationInput, criterion: EvaluationCriteria): string {
     let prompt = this.config.promptTemplate;
-    // Basic placeholder replacement
-    prompt = prompt.replace('{{input}}', input.prompt ? JSON.stringify(input.prompt) : 'N/A');
-    prompt = prompt.replace('{{response}}', typeof input.response === 'string' ? input.response : JSON.stringify(input.response));
-    prompt = prompt.replace('{{reference}}', input.groundTruth ? JSON.stringify(input.groundTruth) : 'N/A');
+    
+    // Use getInputText to handle string or AgentMessage extraction
+    const inputText = getInputText(input, 'prompt') ?? 'N/A';
+    const responseText = getInputText(input, 'response') ?? 'N/A'; 
+    const referenceText = getInputText(input, 'groundTruth') ?? 'N/A'; 
+
+    prompt = prompt.replace('{{input}}', inputText);
+    prompt = prompt.replace('{{response}}', responseText);
+    prompt = prompt.replace('{{reference}}', referenceText);
     prompt = prompt.replace('{{criterion_name}}', criterion.name);
     prompt = prompt.replace('{{criterion_description}}', criterion.description);
-    prompt = prompt.replace('{{criterion_scale}}', JSON.stringify(criterion.scale));
+    prompt = prompt.replace('{{criterion_scale}}', criterion.scale); // Pass scale directly, not stringified
 
-    // Add instruction for JSON output based on schema
-    prompt += `\\n\\nPlease provide your evaluation in JSON format. The JSON object must have a 'score' field and an optional 'reasoning' field. The 'score' should correspond to the criterion's scale: ${criterion.scale}.`;
+    // Replace any context variables like {{context.someKey}}
+    // This requires parsing the template for such patterns
+    const contextRegex = /\{\{context\.([^}]+)\}\}/g;
+    prompt = prompt.replace(contextRegex, (_match, key) => {
+      const value = input.context?.[key.trim()];
+      // Stringify complex objects from context, otherwise use as is or 'N/A'
+      if (value === undefined || value === null) return 'N/A';
+      if (typeof value === 'object') return JSON.stringify(value);
+      return String(value);
+    });
+
+    // Removed the appended JSON instruction - generateObject handles this.
+    // prompt += `\\\\n\\\\nPlease provide your evaluation in JSON format...`; 
     return prompt;
   }
 
@@ -166,6 +205,12 @@ export class LLMJudgeEvaluator implements Evaluator {
         return { error: `Invalid value for likert5 scale: ${rawValue}. Expected integer between 1 and 5.` };
 
       case 'numeric':
+        if (rawValue === null || rawValue === undefined) { // Handle null and undefined explicitly
+            return { error: `Invalid value for numeric scale: ${rawValue}. Expected a number.` };
+        }
+        if (typeof rawValue === 'string' && rawValue.trim() === '') { // Handle empty string
+            return { error: `Invalid value for numeric scale: \"\" (empty string). Expected a number.` };
+        }
         const numNumeric = Number(rawValue);
         if (!isNaN(numNumeric)) return { score: numNumeric };
         return { error: `Invalid value for numeric scale: ${rawValue}. Expected a number.` };

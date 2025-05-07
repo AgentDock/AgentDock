@@ -90,14 +90,14 @@ describe('NLPAccuracyEvaluator - Configuration Options', () => {
     
     expect(mockEmbed).toHaveBeenCalledWith(
       expect.objectContaining({
-        model: customModelId, // Check if the custom model string was used
-        value: [respText],
+        model: customModelId,
+        value: respText,
       }),
     );
     expect(mockEmbed).toHaveBeenCalledWith(
       expect.objectContaining({
         model: customModelId,
-        value: [gtText],
+        value: gtText,
       }),
     );
   });
@@ -217,12 +217,12 @@ describe('NLPAccuracyEvaluator - Configuration Options', () => {
 
     expect(results.length).toBe(1);
     expect(results[0].criterionName).toBe(numericScaleCriterion);
-    // The score should be the raw cosine similarity
-    const expectedSimilarity = cosineSimilarity(testVecA, testVecB); // Calculate expected similarity
+    const expectedSimilarity = cosineSimilarity(testVecA, testVecB);
     expect(results[0].score).toBeCloseTo(expectedSimilarity); 
     expect(results[0].reasoning).toContain(`Cosine similarity: ${expectedSimilarity.toFixed(4)}.`);
-    expect(results[0].reasoning).toContain(`Configured threshold: ${numericConfig.similarityThreshold}.`);
-    expect(results[0].reasoning).toContain('Outputting raw similarity for numeric scale.');
+    expect(results[0].reasoning).toContain(
+      `(Note: similarityThreshold is set but criterion scale is 'numeric', not binary/pass-fail. Threshold not directly applied for scoring boolean pass/fail unless scale matches.)`
+    );
   });
 
   describe('NLPAccuracyEvaluator - similarityThreshold Edge Cases', () => {

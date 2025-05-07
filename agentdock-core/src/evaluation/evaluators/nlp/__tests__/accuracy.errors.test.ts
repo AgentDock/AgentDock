@@ -68,15 +68,16 @@ describe('NLPAccuracyEvaluator - Error Handling', () => {
   it('should handle embedding generation failure for response', async () => {
     const errorMsg = 'Embedding API error for response';
     mockEmbed.mockRejectedValueOnce(new Error(errorMsg));
+    mockEmbed.mockResolvedValueOnce({ embedding: mockEmbedding('Ground truth.'), usage: { promptTokens: 1, totalTokens: 1 } });
 
     const input = createTestInput('Some response.', 'Ground truth.');
     const results = await evaluator.evaluate(input, input.criteria!);
     expect(results.length).toBe(1);
     const result = results[0];
-    expect(result.score).toBe(input.criteria![0].scale === 'binary' ? false : 0); // Default error score
+    expect(result.score).toBe(input.criteria![0].scale === 'binary' ? false : 0);
     expect(result.reasoning).toContain(errorMsg);
     expect(result.error).toContain(errorMsg);
-    expect(mockEmbed).toHaveBeenCalledTimes(1); // Only the first call to embed for response
+    expect(mockEmbed).toHaveBeenCalledTimes(2);
   });
 
   it('should handle embedding generation failure for groundTruth', async () => {

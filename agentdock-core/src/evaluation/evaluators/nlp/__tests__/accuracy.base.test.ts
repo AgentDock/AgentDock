@@ -109,13 +109,14 @@ describe('NLPAccuracyEvaluator - Base Functionality', () => {
   });
 
   it('should correctly score (false for binary, raw for numeric) when similarity is below threshold', async () => {
-    const respText = 'This is a completely different response.';
-    const gtText = 'This is the ground truth text.';
-    const embeddingResp = mockEmbedding(respText);
-    const embeddingGt = mockEmbedding(gtText);
+    // Define explicitly orthogonal vectors to guarantee similarity is 0 (or close to 0)
+    const embeddingResp = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0]; // Vector A (normalized)
+    const embeddingGt =   [0, 1, 0, 0, 0, 0, 0, 0, 0, 0]; // Vector B (normalized and orthogonal to A)
+    const respText = 'Text producing vector A'; // Text value doesn't matter now
+    const gtText = 'Text producing vector B';   // Text value doesn't matter now
 
-    const expectedLowSimilarity = cosineSimilarity(embeddingResp, embeddingGt);
-    expect(expectedLowSimilarity).toBeLessThan(evaluatorConfigForConstructor.similarityThreshold!);
+    const expectedLowSimilarity = cosineSimilarity(embeddingResp, embeddingGt); // Should be 0
+    expect(expectedLowSimilarity).toBeLessThan(evaluatorConfigForConstructor.similarityThreshold!); // 0 < 0.8, should pass
 
     // Test with numeric scale
     mockEmbed.mockClear(); // Clear for new set of calls

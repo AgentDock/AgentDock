@@ -511,14 +511,15 @@ describe('RuleBasedEvaluator', () => {
     it('should produce an error result if rule type is unknown', async () => {
       const unknownTypeRule: EvaluationRule = {
         criterionName: 'TestLength',
-        config: { type: 'unknown_rule_type' } as any, // Cast to any to bypass type checking for test
+        config: { type: 'unknown_rule_type' } as any, 
       };
       const evaluator = new RuleBasedEvaluator([unknownTypeRule]);
       const results = await evaluator.evaluate(testInput, [relevantCriterion]);
       expect(results).toHaveLength(1);
       expect(results[0].score).toBe(false);
       expect(results[0].error).toBeDefined();
-      expect(results[0].reasoning).toContain('Unknown rule type: unknown_rule_type');
+      expect(results[0].error).toContain('Unsupported rule type: unknown_rule_type'); // Check error field
+      expect(results[0].reasoning).toContain('Rule evaluation failed due to error.'); // Generic reasoning
     });
 
     it('should produce an error result if rule has no config property', async () => {

@@ -1,6 +1,6 @@
 # Lexical Similarity Evaluator
 
-The `LexicalSimilarityEvaluator` compares two strings and calculates a score representing their textual similarity. This is distinct from semantic similarity (handled by `NLPAccuracyEvaluator`) as it focuses on the character-level or token-level makeup of the strings. My experience suggests this is useful for cases where specific phrasing or structure is expected, but minor variations are tolerable, or for comparing against known textual patterns.
+The `LexicalSimilarityEvaluator` compares two strings and calculates a score representing their textual similarity. This is distinct from semantic similarity (handled by `NLPAccuracyEvaluator`) as it focuses on the character-level or token-level makeup of the strings. Experience suggests this is useful for cases where specific phrasing or structure is expected, but minor variations are tolerable, or for comparing against known textual patterns.
 
 It typically employs various string comparison algorithms like Levenshtein distance, Jaro-Winkler, or others available through libraries.
 

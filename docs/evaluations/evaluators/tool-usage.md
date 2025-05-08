@@ -1,6 +1,6 @@
 # Tool Usage Evaluator
 
-The `ToolUsageEvaluator` is designed to assess the correctness of an agent's tool invocations. In modern agent systems, the ability to reliably and accurately use tools is paramount. This evaluator checks if the agent called the right tools, with the right arguments, and in the expected manner. My experience deploying agents has shown that tool use is a frequent point of failure, making robust evaluation in this area critical.
+The `ToolUsageEvaluator` is designed to assess the correctness of an agent's tool invocations. In modern agent systems, the ability to reliably and accurately use tools is paramount. This evaluator checks if the agent called the right tools, with the right arguments, and in the expected manner. Deploying agents has shown that tool use is a frequent point of failure, making robust evaluation in this area critical.
 
 It typically examines the `messageHistory` within the `EvaluationInput` to find tool call messages and compares them against predefined expectations.
 

@@ -1,6 +1,6 @@
 # Creating Custom Evaluators
 
-The AgentDock Evaluation Framework is designed for extensibility. While the built-in evaluators cover many common use cases, you will inevitably encounter scenarios requiring bespoke evaluation logic specific to your agent's tasks, data, or business rules. My philosophy has always been that a framework's true power lies in its adaptability.
+The AgentDock Evaluation Framework is designed for extensibility. While the built-in evaluators cover many common use cases, you will inevitably encounter scenarios requiring bespoke evaluation logic specific to your agent's tasks, data, or business rules. A core design philosophy is that a framework's true power lies in its adaptability.
 
 The core of this extensibility is the `Evaluator` interface. By implementing this interface, you can seamlessly integrate your custom evaluation logic into the `EvaluationRunner` and leverage the broader framework features.
 

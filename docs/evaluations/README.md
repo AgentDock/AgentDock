@@ -1,6 +1,6 @@
 # AgentDock Evaluation Framework: Measuring What Matters
 
-The capability to build AI agents is rapidly becoming commoditized. The real differentiator--and the foundation of any production-grade system--lies in the ability to *systematically and reliably measure agent quality*. Without robust evaluation, "improvement" is guesswork, and "reliability" is a marketing slogan. My experience in deploying these systems has consistently shown that what isn't measured, isn't managed, and certainly isn't improved in a way that stands up to real-world demands.
+The capability to build AI agents is rapidly becoming commoditized. The real differentiator—and the foundation of any production-grade system—lies in the ability to *systematically and reliably measure agent quality*. Without robust evaluation, "improvement" is guesswork, and "reliability" is a marketing slogan. Experience in deploying these systems has consistently shown that what isn't measured, isn't managed, and certainly isn't improved in a way that stands up to real-world demands.
 
 AgentDock Core now includes a foundational, extensible **Evaluation Framework** designed to address this critical need. This isn't about chasing every possible academic metric; it's about providing a practical, adaptable toolkit for developers to define what quality means for *their* agents and to measure it consistently.
 
@@ -8,7 +8,7 @@ AgentDock Core now includes a foundational, extensible **Evaluation Framework** 
 
 The framework is built on two core tenets:
 
-1.  **Practicality:** We provide a suite of common-sense evaluators out-of-the-box--from simple rule-based checks and lexical analysis to sophisticated LLM-as-judge capabilities. These are tools designed for immediate utility in typical development and CI/CD workflows. The focus is on actionable insights, not just scores.
+1.  **Practicality:** The framework provides a suite of common-sense evaluators out-of-the-box--from simple rule-based checks and lexical analysis to sophisticated LLM-as-judge capabilities. These are tools designed for immediate utility in typical development and CI/CD workflows. The focus is on actionable insights, not just scores.
 2.  **Extensibility:** No framework can anticipate every evaluation need. The AgentDock Evaluation Framework is architected around a clear `Evaluator` interface. This allows developers to seamlessly integrate custom evaluation logic, whether it's proprietary business rules, specialized NLP models, or wrappers around third-party evaluation services, without needing to modify the core framework.
 
 This isn't just about running tests; it's about building a continuous feedback loop that drives genuine improvement in agent performance, safety, and reliability.
@@ -41,7 +41,7 @@ graph TD
     subgraph EvaluationRunConfig Components
         direction LR
         ARC_eval_configs[Evaluator Configurations]
-        ARC_storage["storageProvider_FOR_SERVER_USE_ONLY (optional)"]
+        ARC_storage["storageProvider (optional)"]
         ARC_eval_configs --> ARC
         ARC_storage --> ARC
     end
@@ -64,7 +64,7 @@ graph TD
 *   **`EvaluationCriteria`**: Defines *what* you're measuring. Each criterion has a `name`, `description`, and an `EvaluationScale` (e.g., `binary`, `likert5`, `numeric`, `pass/fail`). This allows for both quantitative and qualitative assessments.
 *   **`Evaluator` Interface**: The heart of the system's extensibility. Any class implementing this interface can be plugged into the framework. It defines a `type` identifier and an `evaluate` method that takes an `EvaluationInput` and `EvaluationCriteria[]`, returning `EvaluationResult[]`.
 *   **`EvaluationResult`**: The output from a single evaluator for a single criterion. It includes the `criterionName`, the `score` (which can be a number, boolean, or string), optional `reasoning`, and the `evaluatorType`.
-*   **`EvaluationRunConfig`**: Configures an evaluation run. It specifies the `evaluatorConfigs` (which evaluators to use and their specific settings) and can include run-level `metadata`.
+*   **`EvaluationRunConfig`**: Configures an evaluation run. It specifies the `evaluatorConfigs` (which evaluators to use and their specific settings), includes the optional `storageProvider (optional)`, and can include run-level `metadata`.
 *   **`EvaluationRunner`**: The orchestrator. The `runEvaluation(input: EvaluationInput, config: EvaluationRunConfig)` function takes the input and configuration, instantiates the necessary evaluators, executes them, and aggregates their findings.
 *   **`AggregatedEvaluationResult`**: The final output of `runEvaluation`. It contains an optional `overallScore` (if applicable through normalization and weighting of criteria), a list of all individual `EvaluationResult` objects, a snapshot of the input and configuration, and metadata for the run.
 
@@ -86,7 +86,7 @@ async function performMyEvaluation() {
       // ... other evaluator configurations
     ],
     // For server-side scripts wanting to persist results, a storage mechanism can be provided:
-    // storageProvider_FOR_SERVER_USE_ONLY: new JsonFileStorageProvider({ filePath: './my_eval_results.log' })
+    // storageProvider: new JsonFileStorageProvider({ filePath: './my_eval_results.log' })
   };
 
   const aggregatedResult = await runEvaluation(input, config);
@@ -109,7 +109,7 @@ sequenceDiagram
     RFE->>ER: Processes input & config
     ER->>EV: Instantiates & calls evaluate()
     EV-->>ER: Returns EvaluationResult(s)
-    alt storageProvider_FOR_SERVER_USE_ONLY is provided
+    alt storageProvider is provided
         ER->>SP: saveResult(AggregatedEvaluationResult)
         SP-->>ER: Confirmation
     end
@@ -121,7 +121,7 @@ sequenceDiagram
 
 The `EvaluationRunner` returns the `AggregatedEvaluationResult` in memory. For server-side scenarios (like CI runs or dedicated evaluation scripts), persisting these results is often necessary.
 
-The `EvaluationRunConfig` accepts an optional `storageProvider_FOR_SERVER_USE_ONLY` parameter. Server-side scripts can instantiate a logger, such as the `JsonFileStorageProvider` (imported directly via its file path: `agentdock-core/src/evaluation/storage/json_file_storage.ts`), and pass it to the runner. This provider will append each `AggregatedEvaluationResult` as a JSON line to the specified file.
+The `EvaluationRunConfig` accepts an optional `storageProvider` parameter. Server-side scripts can instantiate a logger, such as the `JsonFileStorageProvider` (imported directly via its file path: `agentdock-core/src/evaluation/storage/json_file_storage.ts`), and pass it to the runner. This provider will append each `AggregatedEvaluationResult` as a JSON line to the specified file.
 
 ```typescript
 // Example of using JsonFileStorageProvider in a server-side script:
@@ -130,7 +130,7 @@ import { JsonFileStorageProvider } from '../agentdock-core/src/evaluation/storag
 const myFileLogger = new JsonFileStorageProvider({ filePath: './evaluation_run_output.jsonl' });
 const config: EvaluationRunConfig = {
   // ... other configs
-  storageProvider_FOR_SERVER_USE_ONLY: myFileLogger,
+  storageProvider: myFileLogger,
 };
 // ...
 ```
@@ -153,6 +153,6 @@ The framework ships with a versatile set of built-in evaluators:
 
 ## Next Steps
 
-Dive deeper into the specifics of each [evaluator](./evaluators/), learn how to [create custom evaluators](./custom-evaluators.md), and explore the [example script (`examples/run_evaluation_example.ts`)](../../examples/run_evaluation_example.ts) in the repository to see the framework in action.
+Dive deeper into the specifics of each evaluator, learn how to create custom evaluators, and explore the example script (`examples/run_evaluation_example.ts`) in the repository to see the framework in action.
 
-This framework is a living system. My expectation is that it will evolve as we identify new patterns and requirements from real-world agent deployments. The current foundation, however, provides the necessary tools to move beyond subjective assessments and start building a culture of measurable quality. 
+This framework is a living system. The expectation is that it will evolve as new patterns and requirements are identified from real-world agent deployments. The current foundation, however, provides the necessary tools to move beyond subjective assessments and start building a culture of measurable quality. 

@@ -1,6 +1,6 @@
 # LLM-as-Judge Evaluator
 
-The `LLMJudgeEvaluator` leverages the power of a large language model (LLM) to perform nuanced, qualitative assessments of agent outputs. Unlike rule-based systems that check for specific, deterministic patterns, an LLM judge can evaluate responses based on broader criteria like coherence, relevance, helpfulness, safety, or adherence to complex instructions. My experience has shown that for many sophisticated agent behaviors, an LLM judge is an indispensable tool for capturing the subtleties of quality.
+The `LLMJudgeEvaluator` leverages the power of a large language model (LLM) to perform nuanced, qualitative assessments of agent outputs. Unlike rule-based systems that check for specific, deterministic patterns, an LLM judge can evaluate responses based on broader criteria like coherence, relevance, helpfulness, safety, or adherence to complex instructions. Practical experience shows that for many sophisticated agent behaviors, an LLM judge is an indispensable tool for capturing the subtleties of quality.
 
 ## Core Workflow
 

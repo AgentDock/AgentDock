@@ -1,6 +1,6 @@
 # Keyword Coverage Evaluator
 
-The `KeywordCoverageEvaluator` checks for the presence, frequency, or coverage of specified keywords or phrases within a given text. This is a straightforward but highly effective way to ensure that essential information is included in an agent's response, or conversely, that undesirable terms are absent. My experience finds this useful for quick checks on information inclusion or policy adherence.
+The `KeywordCoverageEvaluator` checks for the presence, frequency, or coverage of specified keywords or phrases within a given text. This is a straightforward but highly effective way to ensure that essential information is included in an agent's response, or conversely, that undesirable terms are absent. Experience finds this useful for quick checks on information inclusion or policy adherence.
 
 ## Core Workflow
 

@@ -1,6 +1,6 @@
 # Rule-Based Evaluator
 
-The `RuleBasedEvaluator` provides essential, low-cost checks for agent outputs. Its purpose is straightforward: enforce deterministic constraints and basic validations without incurring the latency or cost of LLM calls. In my experience, establishing these kinds of guardrails early is fundamental for building any semblance of predictable agent behavior.
+The `RuleBasedEvaluator` provides essential, low-cost checks for agent outputs. Its purpose is straightforward: enforce deterministic constraints and basic validations without incurring the latency or cost of LLM calls. Experience shows that establishing these kinds of guardrails early is fundamental for building any semblance of predictable agent behavior.
 
 Think of it as the first line of defense: Does the response meet minimum length? Does it contain required keywords? Is the generated structure valid? These aren't complex semantic judgments, but they are critical for filtering out basic failures quickly.
 

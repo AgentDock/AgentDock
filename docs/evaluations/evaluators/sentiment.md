@@ -1,6 +1,6 @@
 # Sentiment Evaluator
 
-The `SentimentEvaluator` analyzes the emotional tone of a given text, typically classifying it as positive, negative, or neutral. It can also provide a numerical score indicating the intensity of the sentiment. This is useful for ensuring agents maintain an appropriate tone or for flagging overly negative or positive responses. My experience has shown this is a good first-pass check for agent demeanor.
+The `SentimentEvaluator` analyzes the emotional tone of a given text, typically classifying it as positive, negative, or neutral. It can also provide a numerical score indicating the intensity of the sentiment. This is useful for ensuring agents maintain an appropriate tone or for flagging overly negative or positive responses. Experience shows this is a good first-pass check for agent demeanor.
 
 It usually relies on pre-trained sentiment analysis models or libraries (like VADER, AFINN, or others).
 

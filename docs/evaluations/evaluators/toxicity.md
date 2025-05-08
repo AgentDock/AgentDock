@@ -1,6 +1,6 @@
 # Toxicity Evaluator
 
-The `ToxicityEvaluator` scans text for the presence of predefined toxic terms, offensive language, or other undesirable content based on a blocklist. This is a fundamental safety check to help ensure agents do not produce harmful or inappropriate responses. My experience underscores that even basic blocklist checks are a necessary first line of defense for responsible agent deployment.
+The `ToxicityEvaluator` scans text for the presence of predefined toxic terms, offensive language, or other undesirable content based on a blocklist. This is a fundamental safety check to help ensure agents do not produce harmful or inappropriate responses. Experience underscores that even basic blocklist checks are a necessary first line of defense for responsible agent deployment.
 
 ## Core Workflow
 

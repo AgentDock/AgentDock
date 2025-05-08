@@ -1,6 +1,6 @@
 # NLP Accuracy Evaluator
 
-The `NLPAccuracyEvaluator` measures the semantic similarity between an agent's response and a provided ground truth. This is crucial for tasks where the exact wording isn't as important as the meaning or intent conveyed. My experience indicates that for question answering, summarization, or any task requiring semantic understanding, this kind of evaluation is far more insightful than simple lexical matches.
+The `NLPAccuracyEvaluator` measures the semantic similarity between an agent's response and a provided ground truth. This is crucial for tasks where the exact wording isn't as important as the meaning or intent conveyed. Experience indicates that for question answering, summarization, or any task requiring semantic understanding, this kind of evaluation is far more insightful than simple lexical matches.
 
 It typically works by generating embeddings (vector representations) for both the agent's response and the ground truth, and then calculating the cosine similarity between these embeddings. A higher cosine similarity indicates greater semantic closeness.
 

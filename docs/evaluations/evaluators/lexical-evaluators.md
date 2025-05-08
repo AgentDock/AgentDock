@@ -1,6 +1,6 @@
 # Lexical Evaluator Suite
 
-The AgentDock Evaluation Framework includes a suite of **Lexical Evaluators** designed for fast, deterministic, and cost-effective analysis of textual content. These evaluators operate directly on the text of agent responses or other inputs, without relying on complex NLP models or LLMs. My experience has shown that these kinds of checks are invaluable for quick feedback loops and for validating basic textual properties before engaging more resource-intensive evaluations.
+The AgentDock Evaluation Framework includes a suite of **Lexical Evaluators** designed for fast, deterministic, and cost-effective analysis of textual content. These evaluators operate directly on the text of agent responses or other inputs, without relying on complex NLP models or LLMs. Practical experience shows that these kinds of checks are invaluable for quick feedback loops and for validating basic textual properties before engaging more resource-intensive evaluations.
 
 They are particularly useful for:
 

@@ -74,6 +74,24 @@ export const docSections: DocSection[] = [
       { path: "roadmap/vector-storage", title: "Vector Storage Integration" },
     ]
   },
+
+  // Evaluation Framework section - NEW
+  {
+    title: "Evaluation Framework",
+    items: [
+      { path: "evaluations/README", title: "Framework Overview" },
+      { path: "evaluations/custom-evaluators", title: "Custom Evaluators" },
+      { path: "evaluations/evaluators/llm-judge", title: "LLM Judge Evaluator" },
+      { path: "evaluations/evaluators/nlp-accuracy", title: "NLP Accuracy Evaluator" },
+      { path: "evaluations/evaluators/rule-based", title: "Rule-Based Evaluator" },
+      { path: "evaluations/evaluators/tool-usage", title: "Tool Usage Evaluator" },
+      { path: "evaluations/evaluators/lexical-evaluators", title: "Lexical Evaluators Overview" },
+      { path: "evaluations/evaluators/lexical-similarity", title: "Lexical Similarity" },
+      { path: "evaluations/evaluators/keyword-coverage", title: "Keyword Coverage" },
+      { path: "evaluations/evaluators/sentiment", title: "Sentiment Analysis" },
+      { path: "evaluations/evaluators/toxicity", title: "Toxicity Check" },
+    ]
+  },
   
   // Error Handling section - Consolidated
   {

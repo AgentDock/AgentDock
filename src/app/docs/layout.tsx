@@ -70,7 +70,7 @@ export default function DocsLayout({ children }: DocsLayoutProps) {
         </aside>
         
         {/* Main content */}
-        <main className="flex-1">
+        <main className="flex-1 overflow-x-hidden">
           <div className="container py-8 px-4 md:px-8 max-w-4xl mx-auto">
             {children}
           </div>

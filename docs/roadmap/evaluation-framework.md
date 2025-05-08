@@ -1,162 +1,106 @@
 # Agent Evaluation Framework
 
-The Agent Evaluation Framework will provide tools for measuring and improving agent performance, ensuring consistent quality across different use cases.
+The Agent Evaluation Framework provides tools for measuring and improving agent performance, ensuring consistent quality across different use cases.
 
 ## Current Status
 
-**Status: Planned**
+**Status: Phase 1 Implemented**
 
-We're currently evaluating different approaches to implementing the evaluation framework, including both third-party solutions and custom implementations. Regardless of the chosen approach, the framework will include comprehensive assessment capabilities.
+Phase 1 of the custom AgentDock Core Evaluation Framework has been implemented. This includes the core runner, evaluator interface, storage provider concept, and a suite of initial evaluators (RuleBased, LLMJudge, NLPAccuracy, ToolUsage, Lexical Suite).
 
 ## Overview
 
-The framework will offer:
+The framework offers:
 
-- **Automated Assessment**: Evaluate agent outputs against objective metrics
-- **LLM-Based Evaluation**: Use AI to judge response quality, relevance, and accuracy
-- **Custom Metrics**: Support for domain-specific evaluation criteria 
-- **Feedback Collection**: Gather and analyze user feedback
-- **Continuous Improvement**: Track metrics over time to drive enhancements
+- **Extensible Architecture**: Based on a core `Evaluator` interface.
+- **Suite of Built-in Evaluators**: Covering rule-based checks, LLM-as-judge, semantic similarity, tool usage, and lexical analysis.
+- **Configurable Runs**: Using `EvaluationRunConfig` to select evaluators and criteria.
+- **Aggregated Results**: Providing detailed outputs with scores, reasoning, and metadata.
+- **Optional Persistence**: Basic file-based logging (`JsonFileStorageProvider`) implemented, with potential for future integration with a Storage Abstraction Layer.
 
-## Architecture
+## Architecture (Phase 1 Implementation)
 
 ```mermaid
 graph TD
-    A[Agent Output] --> B[Evaluation Framework]
-    B --> C{Evaluation Type}
+    A[EvaluationInput] --> ER[EvaluationRunner]
+    ARC[EvaluationRunConfig] --> ER
+
+    subgraph InputComponents
+        A_crit[Criteria] --> A
+        A_resp[Response] --> A
+        A_prom[Prompt] --> A
+    end
+
+    subgraph ConfigComponents
+        ARC_conf[Evaluator Configs] --> ARC
+        ARC_store[Storage] --> ARC
+    end
+
+    ER -- uses --> E[Evaluator Interface]
+    E -- produces --> RES[Result]
+    ER -- aggregates --> AGG[Aggregated Results]
+    RES --> AGG
     
-    C -->|Automated| D[Rule-Based Metrics]
-    C -->|LLM-Based| E[AI Judge]
-    C -->|Human| F[Feedback Collection]
-    
-    D --> G[Score Aggregation]
-    E --> G
-    F --> G
-    
-    G --> H[Performance Dashboard]
-    G --> I[Improvement Recommendations]
-    
-    style B fill:#0066cc,color:#ffffff,stroke:#0033cc
-    style G fill:#e6f2ff,stroke:#99ccff
+    subgraph Evaluators
+     RB[RuleBased] -. implements .-> E
+     LLM[LLMJudge] -. implements .-> E
+     NLP[NLPAccuracy] -. implements .-> E
+    end
+
+    style ER fill:#f9f,stroke:#333,stroke-width:2px
+    style E fill:#ccf,stroke:#333,stroke-width:2px
+    style AGG fill:#9f9,stroke:#333,stroke-width:2px
 ```
 
 ## Implementation Options
 
-We're exploring two potential approaches:
+A **Custom Implementation** within AgentDock Core was chosen and developed for Phase 1. This provides:
 
-### 1. Custom Implementation
+- Full control over the evaluation process.
+- Tight integration with AgentDock types (`AgentMessage`, etc.).
+- Specific evaluators tailored to agent use cases (e.g., `ToolUsageEvaluator`).
+- An extensible base for future enhancements.
 
-Building our own evaluation system tailored specifically to AgentDock's needs:
+Third-party integrations were deferred to allow for a bespoke foundation matching AgentDock's architecture.
 
-- Full control over evaluation criteria and metrics
-- Direct integration with the rest of AgentDock
-- Customized reporting for agent-specific insights
-- Ability to fine-tune evaluations for specific agent types
+## Key Components (Phase 1)
 
-A custom implementation would allow us to design the evaluation framework exactly to our specifications, with features like:
+*   **`EvaluationInput`**: Data packet including response, prompt, history, ground truth, context, criteria.
+*   **`EvaluationCriteria`**: Defines metrics with name, description, scale, and optional weight.
+*   **`Evaluator` Interface**: Core extensibility point (`type`, `evaluate` method).
+*   **`EvaluationResult`**: Output per criterion (score, reasoning, type).
+*   **`EvaluationRunConfig`**: Specifies evaluators, their configs, optional storage provider, metadata.
+*   **`EvaluationRunner`**: Orchestrates the run via `runEvaluation` function.
+*   **`AggregatedEvaluationResult`**: Final combined output with overall score (if applicable), individual results, snapshots.
+*   **`JsonFileStorageProvider`**: Basic implementation for server-side result logging.
 
-```typescript
-interface EvaluationResult {
-  score: number;         // 0-1 score
-  category: string;      // Accuracy, Relevance, etc.
-  feedback: string;      // Explanation of score
-  timestamp: number;     // When evaluation occurred
-  evaluatorType: string; // "auto", "llm", "human"
-}
+## Key Features (Phase 1)
 
-// Define evaluation criteria
-const evaluationCriteria = [
-  {
-    name: 'accuracy',
-    description: 'Does the response contain factually correct information?',
-    weight: 0.4
-  },
-  {
-    name: 'relevance',
-    description: 'Does the response address the user query directly?',
-    weight: 0.3
-  },
-  {
-    name: 'completeness',
-    description: 'Does the response cover all aspects of the query?',
-    weight: 0.3
-  }
-];
-```
+*   **Rule-Based Checks**: Length, includes, regex, JSON validity.
+*   **LLM-as-Judge**: Qualitative assessment via LLM call with templating.
+*   **Semantic Similarity**: Cosine similarity using pluggable embedding models (default provided).
+*   **Tool Usage Validation**: Checks tool calls, arguments against expectations.
+*   **Lexical Analysis**: Similarity (Levenshtein, Dice, etc.), keyword coverage, sentiment (VADER), toxicity (blocklist).
+*   **Flexible Input Sourcing**: Evaluators can pull text from `response`, `prompt`, `groundTruth`, or nested `context` fields.
+*   **Score Normalization & Aggregation**: Runner attempts to normalize scores to 0-1 and calculate weighted average.
+*   **Basic Persistence**: Optional JSONL file logging.
+*   **Comprehensive Unit Tests**: Added for core components and evaluators.
 
-### 2. Third-Party Integration
+## Benefits (Achieved in Phase 1)
 
-Leveraging open source platforms like Laminar that offer comprehensive evaluation tools:
-
-- Ready-to-use metrics and evaluation pipelines
-- Integration with industry-standard observability
-- Lower development overhead
-- Community-supported extensions
-
-Third-party platforms provide powerful evaluation capabilities that we could integrate with minimal development effort, while still allowing for customization where needed.
-
-For more on how this connects to our telemetry approach, see the [Telemetry & Observability](./telemetry.md) document.
-
-## Key Components
-
-### Evaluation Criteria
-
-The framework will include standard evaluation criteria such as:
-
-- **Accuracy**: Factual correctness of information
-- **Relevance**: Alignment with user query
-- **Comprehensiveness**: Completeness of the response
-- **Helpfulness**: Practical utility to the user
-- **Safety**: Avoidance of harmful content
-- **Clarity**: Ease of understanding
-
-### Evaluation Methods
-
-Multiple evaluation approaches will be supported:
-
-1. **Automated Rule-Based**:
-   - Pattern matching
-   - Statistical analysis
-   - Keyword detection
-   - Syntax/grammar checking
-
-2. **LLM-Based**:
-   - LLM-as-a-judge evaluations
-   - Comparative assessments
-   - Multi-perspective evaluation
-
-3. **Human Feedback**:
-   - Rating interfaces
-   - Annotation tools
-   - A/B testing
-
-### Reporting Dashboard
-
-Results will be available through:
-
-- Interactive performance dashboards
-- Historical trend analysis
-- Per-agent and cross-agent comparisons
-- Exportable reports for further analysis
-
-## Benefits
-
-The Agent Evaluation Framework will provide:
-
-1. **Quality Assurance**: Ensure agent responses meet consistent standards
-2. **Informed Development**: Direct development efforts to address identified weaknesses
-3. **Benchmarking**: Compare agent performance across versions and types
-4. **User Trust**: Build confidence by demonstrating measurable quality
-5. **Continuous Improvement**: Establish feedback loops for ongoing enhancement
+1.  **Foundational Quality Assurance**: Basic framework for consistent checks.
+2.  **Extensible Base**: Custom evaluators can be built.
+3.  **Initial Benchmarking**: Enables comparison of runs via results.
+4.  **Concrete Metrics**: Moves beyond subjective assessment for core areas.
 
 ## Timeline
 
 | Phase | Status | Description |
 |-------|--------|-------------|
-| Approach Evaluation | In Progress | Comparing third-party vs. custom solutions |
-| Architecture Design | Planned | Define framework based on selected approach |
-| Core Implementation | Planned | Basic evaluation capabilities |
-| Advanced Features | Future | Enhanced analytics and visualization |
+| ~~Approach Evaluation~~ | ~~In Progress~~ Completed | ~~Comparing third-party vs. custom solutions~~ Custom solution chosen. |
+| ~~Architecture Design~~ | ~~Planned~~ Completed | Phase 1 architecture designed and implemented. |
+| Core Implementation | **Completed (Phase 1)** | Basic framework, runner, interface, initial evaluators, storage provider implemented. |
+| **Phase 2 / Advanced Features** | **Planned** | See PRD for details (e.g., Advanced evaluator configs, UI integration, enhanced storage, etc.). |
 
 ## Use Cases
 
@@ -165,11 +109,11 @@ The Agent Evaluation Framework will provide:
 Apply evaluations during development to iteratively improve quality:
 
 ```mermaid
-graph LR
-    A[Agent Implementation] --> B[Test Cases]
-    B --> C[Evaluation Framework]
-    C --> D[Quality Metrics]
-    D --> E[Issue Identification]
+flowchart LR
+    A[Agent Implementation] --> B[Test Cases/EvaluationInput]
+    B --> C[runEvaluation]
+    C --> D[AggregatedEvaluationResult]
+    D --> E[Analyze Results]
     E --> F[Agent Refinement]
     F --> A
     
@@ -177,6 +121,4 @@ graph LR
     style D fill:#e6f2ff,stroke:#99ccff
 ```
 
-For information on how evaluation integrates with production monitoring and quality assurance processes, please refer to the [Telemetry & Observability](./telemetry.md) document, which covers these aspects in detail.
-
-The final decision on implementation approach will balance development resources, specific needs of AgentDock agents, and integration with our broader observability strategy. Whether we build our own custom solution or leverage third-party tools, the framework will deliver comprehensive evaluation capabilities that drive continuous improvement of agent performance. 
+The implemented Phase 1 framework provides the core capabilities for this loop. Refer to the [Evaluation Framework PRD](../prd/evaluation-framework.md) for detailed usage and Phase 2 plans. 

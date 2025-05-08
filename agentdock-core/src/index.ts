@@ -189,3 +189,43 @@ export type {
   LanguageModel,
   CoreMessage
 };
+
+//=============================================================================
+// Evaluation System
+//=============================================================================
+export {
+  runEvaluation, // from ./evaluation/runner (via ./evaluation/index.ts)
+  // JsonFileStorageProvider, // Commented out: No longer directly exported from ./evaluation
+  RuleBasedEvaluator,
+  LLMJudgeEvaluator,
+  NLPAccuracyEvaluator,
+  ToolUsageEvaluator,
+  LexicalSimilarityEvaluator,
+  KeywordCoverageEvaluator,
+  SentimentEvaluator,
+  ToxicityEvaluator,
+  // Core Types from ./evaluation/types (via ./evaluation/index.ts)
+  type EvaluationScale,
+  type EvaluationCriteria,
+  type EvaluationInput,
+  type EvaluationResult,
+  type AggregatedEvaluationResult,
+  type Evaluator,
+  type AgentMessage,
+  type MessageContent,
+  type TextContent,
+  type ImageContent,
+  type ToolCallContent,
+  type ToolResultContent,
+} from './evaluation';
+
+// Explicit direct re-exports for problematic types
+export type { EvaluationRunConfig } from './evaluation/runner';
+export type { LLMJudgeConfig } from './evaluation/evaluators/llm'; // Assumes LLMJudgeConfig is exported by evaluators/llm/index.ts
+export type { EvaluationRule, RuleConfig } from './evaluation/evaluators/rule-based'; // Assumes these are exported by evaluators/rule-based/index.ts
+export type { NLPAccuracyEvaluatorConfig } from './evaluation/evaluators/nlp'; // Added export for NLPAccuracyEvaluatorConfig
+export type { ToolUsageEvaluatorConfig, ToolUsageRule } from './evaluation/evaluators/tool';
+export type { LexicalSimilarityEvaluatorConfig } from './evaluation/evaluators/lexical';
+export type { KeywordCoverageEvaluatorConfig } from './evaluation/evaluators/lexical';
+export type { SentimentEvaluatorConfig } from './evaluation/evaluators/lexical';
+export type { ToxicityEvaluatorConfig } from './evaluation/evaluators/lexical';

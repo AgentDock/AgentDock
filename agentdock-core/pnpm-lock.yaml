@@ -38,10 +38,19 @@ importers:
       openai:
         specifier: ^4.83.0
         version: 4.95.1(zod@3.24.3)
+      sentiment:
+        specifier: ^5.0.2
+        version: 5.0.2
+      string-comparisons:
+        specifier: ^0.0.20
+        version: 0.0.20
     devDependencies:
+      '@types/sentiment':
+        specifier: ^5.0.4
+        version: 5.0.4
       tsup:
         specifier: ^8.0.2
-        version: 8.4.0
+        version: 8.4.0(typescript@5.8.3)
 
 packages:
 
@@ -403,6 +412,9 @@ packages:
 
   '@types/node@18.19.86':
     resolution: {integrity: sha512-fifKayi175wLyKyc5qUfyENhQ1dCNI1UNjp653d8kuYcPQN5JhX3dGuP/XmvPTg/xRBn1VTLpbmi+H/Mr7tLfQ==}
+
+  '@types/sentiment@5.0.4':
+    resolution: {integrity: sha512-6FL0CYijhnrR3gHbu7boAJn8zRCekJXBPfIHLkIgWbkY+hz5Dwfsq79FM7l/tLZKuEgQWktnzf6JqV2UCWKrbg==}
 
   '@upstash/redis@1.25.1':
     resolution: {integrity: sha512-ACj0GhJ4qrQyBshwFgPod6XufVEfKX2wcaihsEvSdLYnY+m+pa13kGt1RXm/yTHKf4TQi/Dy2A8z/y6WUEOmlg==}
@@ -796,6 +808,10 @@ packages:
   secure-json-parse@2.7.0:
     resolution: {integrity: sha512-6aU+Rwsezw7VR8/nyvKTx8QpWH9FrcYiXXlqC4z5d5XQBDRqtbfsRjnwGyqbi3gddNtWHuEk9OANUotL26qKUw==}
 
+  sentiment@5.0.2:
+    resolution: {integrity: sha512-ZeC3y0JsOYTdwujt5uOd7ILJNilbgFzUtg/LEG4wUv43LayFNLZ28ec8+Su+h3saHlJmIwYxBzfDHHZuiMA15g==}
+    engines: {node: '>=8.0'}
+
   shebang-command@2.0.0:
     resolution: {integrity: sha512-kHxr2zZpYtdmrN1qDjrrX/Z1rR1kG8Dx+gkpK1G4eXmvXswmcE1hTWBWYUzlraYw1/yZp6YuDY77YtvbN0dmDA==}
     engines: {node: '>=8'}
@@ -811,6 +827,9 @@ packages:
   source-map@0.8.0-beta.0:
     resolution: {integrity: sha512-2ymg6oRBpebeZi9UUNsgQ89bhx01TcTkmNTGnNO88imTmbSgy4nfujrgVEFKWpMTEGA11EDkTt7mqObTPdigIA==}
     engines: {node: '>= 8'}
+
+  string-comparisons@0.0.20:
+    resolution: {integrity: sha512-y4olT6kNPH0xbRbs1YaDSXtYhI8RQXB56di4oa0kc0dQrqw0WqZs9jAYtuw+mviSjF1vkTTKcshw2V0g9qa7Kg==}
 
   string-width@4.2.3:
     resolution: {integrity: sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==}
@@ -887,6 +906,11 @@ packages:
         optional: true
       typescript:
         optional: true
+
+  typescript@5.8.3:
+    resolution: {integrity: sha512-p1diW6TqL9L07nNxvRMM7hMMw4c5XOo/1ibL4aAIGmSAt9slTE1Xgw5KWuof2uTOvCg9BY7ZRi+GaF+7sfgPeQ==}
+    engines: {node: '>=14.17'}
+    hasBin: true
 
   undici-types@5.26.5:
     resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
@@ -1191,6 +1215,8 @@ snapshots:
   '@types/node@18.19.86':
     dependencies:
       undici-types: 5.26.5
+
+  '@types/sentiment@5.0.4': {}
 
   '@upstash/redis@1.25.1':
     dependencies:
@@ -1556,6 +1582,8 @@ snapshots:
 
   secure-json-parse@2.7.0: {}
 
+  sentiment@5.0.2: {}
+
   shebang-command@2.0.0:
     dependencies:
       shebang-regex: 3.0.0
@@ -1567,6 +1595,8 @@ snapshots:
   source-map@0.8.0-beta.0:
     dependencies:
       whatwg-url: 7.1.0
+
+  string-comparisons@0.0.20: {}
 
   string-width@4.2.3:
     dependencies:
@@ -1631,7 +1661,7 @@ snapshots:
 
   ts-interface-checker@0.1.13: {}
 
-  tsup@8.4.0:
+  tsup@8.4.0(typescript@5.8.3):
     dependencies:
       bundle-require: 5.1.0(esbuild@0.25.2)
       cac: 6.7.14
@@ -1649,11 +1679,16 @@ snapshots:
       tinyexec: 0.3.2
       tinyglobby: 0.2.12
       tree-kill: 1.2.2
+    optionalDependencies:
+      typescript: 5.8.3
     transitivePeerDependencies:
       - jiti
       - supports-color
       - tsx
       - yaml
+
+  typescript@5.8.3:
+    optional: true
 
   undici-types@5.26.5: {}
 

@@ -31,7 +31,8 @@
     "clean-install": "./scripts/clean-install.sh",
     "postinstall": "cd agentdock-core && pnpm install && cd .. && tsx --no-deprecation scripts/generate-llms-from-docs.ts",
     "generate-llms": "tsx --no-deprecation scripts/generate-llms-from-docs.ts",
-    "build:agentdock-core": "pnpm --filter agentdock-core build"
+    "build:agentdock-core": "pnpm --filter agentdock-core build",
+    "run-eval-example": "tsx examples/run_evaluation_example.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

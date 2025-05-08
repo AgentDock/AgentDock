@@ -65,8 +65,8 @@ jest.mock('agentdock-core/src/logging', () => ({
     info: jest.fn(),
     warn: jest.fn(),
     error: jest.fn(),
-    // Explicitly add mocks for any other methods used by logger, like formatBrowser if needed
-    formatBrowser: jest.fn(), 
+    fatal: jest.fn(),
+    child: jest.fn().mockReturnThis(), // Ensure child() returns the mock itself for chaining
   },
   // Re-export actual values for other things exported from the module if needed
   // e.g., if LogCategory is also exported and needed by tests:

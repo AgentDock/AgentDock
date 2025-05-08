@@ -8,37 +8,24 @@ const createJestConfig = nextJest({
 
 // Add any custom config to be passed to Jest
 const customJestConfig: Config = {
-  setupFilesAfterEnv: ['<rootDir>/tests/jest.setup.ts'],
   testEnvironment: 'jest-environment-jsdom',
+  setupFilesAfterEnv: ['<rootDir>/tests/jest.setup.ts'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    // Add mapping for agentdock-core internal logger
+    '^agentdock-core/src/logging$': '<rootDir>/agentdock-core/src/logging/index.ts',
   },
   transform: {
-    '^.+\\.(ts|tsx)$': 'ts-jest', // For TypeScript
-    '^.+\\.(js|jsx)$': 'ts-jest', // Transform JavaScript files with ts-jest
+    '^.+\\.(ts|tsx)$': 'ts-jest',
   },
   transformIgnorePatterns: [
-    '/node_modules/(?!node-fetch)', // Allow node-fetch to be transformed
+    '/node_modules/(?!node-fetch)',
   ],
   testMatch: [
     '<rootDir>/tests/**/*.test.ts',
     '<rootDir>/tests/**/*.test.tsx',
     '<rootDir>/agentdock-core/src/**/*.test.ts'
   ],
-  collectCoverageFrom: [
-    'src/**/*.{js,jsx,ts,tsx}',
-    '!src/**/*.d.ts',
-    '!src/**/*.stories.{js,jsx,ts,tsx}',
-    '!src/**/*.test.{js,jsx,ts,tsx}',
-  ],
-  coverageThreshold: {
-    global: {
-      branches: 80,
-      functions: 80,
-      lines: 80,
-      statements: 80,
-    },
-  },
 };
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async

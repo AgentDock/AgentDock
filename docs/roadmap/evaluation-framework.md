@@ -25,56 +25,31 @@ graph TD
     A[EvaluationInput] --> ER[EvaluationRunner]
     ARC[EvaluationRunConfig] --> ER
 
-    subgraph EvaluationInput Components
-        direction LR
-        A_crit[EvaluationCriteria]
-        A_resp[Agent Response]
-        A_prom[Prompt]
-        A_hist[Message History]
-        A_cont[Context]
-        A_conf[Agent Config]
-        A_crit --> A
-        A_resp --> A
-        A_prom --> A
-        A_hist --> A
-        A_cont --> A
-        A_conf --> A
+    subgraph InputComponents
+        A_crit[Criteria] --> A
+        A_resp[Response] --> A
+        A_prom[Prompt] --> A
     end
 
-    subgraph EvaluationRunConfig Components
-        direction LR
-        ARC_eval_configs[Evaluator Configurations]
-        ARC_storage["storageProvider (optional)"]
-        ARC_eval_configs --> ARC
-        ARC_storage --> ARC
+    subgraph ConfigComponents
+        ARC_conf[Evaluator Configs] --> ARC
+        ARC_store[Storage] --> ARC
     end
 
     ER -- uses --> E[Evaluator Interface]
-    E -- processes w/ --> A_crit
-    E -- produces --> RES[EvaluationResult]
-    
-    ER -- aggregates --> AGG[AggregatedEvaluationResult]
+    E -- produces --> RES[Result]
+    ER -- aggregates --> AGG[Aggregated Results]
     RES --> AGG
     
-    subgraph Built_in_Evaluators_Phase_1
-     direction LR
-     RB[RuleBasedEvaluator]
-     LLM[LLMJudgeEvaluator]
-     NLP[NLPAccuracyEvaluator]
-     TU[ToolUsageEvaluator]
-     LS[LexicalSuite (Similarity, Keywords, Sentiment, Toxicity)]
-     RB -. implements .-> E
-     LLM -. implements .-> E
-     NLP -. implements .-> E
-     TU -. implements .-> E
-     LS -. implements .-> E
+    subgraph Evaluators
+     RB[RuleBased] -. implements .-> E
+     LLM[LLMJudge] -. implements .-> E
+     NLP[NLPAccuracy] -. implements .-> E
     end
 
     style ER fill:#f9f,stroke:#333,stroke-width:2px
     style E fill:#ccf,stroke:#333,stroke-width:2px
     style AGG fill:#9f9,stroke:#333,stroke-width:2px
-    style A fill:#lightgrey,stroke:#333
-    style ARC fill:#lightgrey,stroke:#333
 ```
 
 ## Implementation Options
@@ -134,9 +109,9 @@ Third-party integrations were deferred to allow for a bespoke foundation matchin
 Apply evaluations during development to iteratively improve quality:
 
 ```mermaid
-graph LR
+flowchart LR
     A[Agent Implementation] --> B[Test Cases/EvaluationInput]
-    B --> C[runEvaluation()]
+    B --> C[runEvaluation]
     C --> D[AggregatedEvaluationResult]
     D --> E[Analyze Results]
     E --> F[Agent Refinement]

@@ -79,7 +79,7 @@ export const docSections: DocSection[] = [
   {
     title: "Evaluation Framework",
     items: [
-      { path: "evaluations/README", title: "Framework Overview" },
+      { path: "evaluations/", title: "Framework Overview" },
       { path: "evaluations/custom-evaluators", title: "Custom Evaluators" },
       { path: "evaluations/evaluators/llm-judge", title: "LLM Judge Evaluator" },
       { path: "evaluations/evaluators/nlp-accuracy", title: "NLP Accuracy Evaluator" },

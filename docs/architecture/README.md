@@ -64,4 +64,18 @@ See [Request Flow](./core/request-flow.md) for more details.
 
 -   [Core Architecture Overview](./core/overview.md)
 -   [Node System Overview](../nodes/README.md)
--   [Technology Stack](./core/technology-stack.md) 
+-   [Technology Stack](./core/technology-stack.md)
+
+## Evaluation Framework
+
+A crucial component of AgentDock is its **Evaluation Framework**, designed to systematically measure, analyze, and improve agent quality. This framework resides within `agentdock-core` and provides a comprehensive suite of tools for assessing various aspects of agent performance.
+
+Key aspects include:
+
+*   **Modular Evaluators**: A collection of diverse evaluators (e.g., `RuleBasedEvaluator`, `LLMJudgeEvaluator`, `NLPAccuracyEvaluator`, Lexical Suite, `ToolUsageEvaluator`) allow for targeted assessment of different quality dimensions.
+*   **`EvaluationRunner`**: Orchestrates the execution of evaluation runs based on defined criteria and configurations.
+*   **Configurable Criteria**: Enables developers to define specific `EvaluationCriteria` (name, description, scale, weight) against which agents are assessed.
+*   **Result Aggregation & Storage**: Provides mechanisms for aggregating results (e.g., weighted scoring) and persisting them via `EvaluationStorageProvider` implementations.
+*   **Extensibility**: Designed with interfaces like `Evaluator` and `EvaluationStorageProvider` to allow for easy custom extensions.
+
+The Evaluation Framework is integral to maintaining high standards of agent reliability and performance, facilitating data-driven development and iterative improvement. For more details, see the [Evaluation Framework Documentation](../evaluations/README.md). 

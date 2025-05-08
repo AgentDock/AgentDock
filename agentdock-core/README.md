@@ -159,6 +159,23 @@ runAgent().catch(console.error);
 
 *Note: The example above is simplified. Full usage, especially with sessions and orchestration, requires integrating `SessionManager` and `OrchestrationManager` which depend on the chosen storage provider.*
 
+## Evaluation Framework
+
+`agentdock-core` includes a comprehensive **Evaluation Framework** designed for systematic assessment and improvement of AI agent performance. This framework provides the tools to:
+
+*   **Define and Manage Criteria**: Specify `EvaluationCriteria` to measure various aspects of agent behavior and output quality.
+*   **Utilize Diverse Evaluators**: Leverage a suite of built-in evaluators, including:
+    *   `RuleBasedEvaluator`: For deterministic checks (regex, length, keywords, JSON parsing).
+    *   `LLMJudgeEvaluator`: For nuanced, LLM-driven assessments with structured output.
+    *   `NLPAccuracyEvaluator`: For semantic similarity using embeddings.
+    *   `ToolUsageEvaluator`: For validating correct tool invocation and argument usage.
+    *   Lexical Suite: A set of fast, practical evaluators for similarity, keyword coverage, sentiment, and toxicity.
+*   **Orchestrate Evaluation Runs**: Use the `EvaluationRunner` to execute evaluations against defined inputs and configurations.
+*   **Aggregate and Store Results**: Normalize scores, calculate weighted averages, and persist results using `EvaluationStorageProvider` implementations (e.g., `JsonFileStorageProvider`).
+*   **Extend with Custom Logic**: Easily create and integrate custom evaluators and storage providers.
+
+This framework is essential for building reliable, high-quality agents by enabling data-driven insights into their performance. Refer to the [full Evaluation Framework documentation](../../docs/evaluations/README.md) for detailed usage and API information.
+
 ## Contributing to AgentDock Core
 
 We welcome contributions specifically to the core **framework**!

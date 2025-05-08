@@ -123,6 +123,12 @@ The framework is built around a powerful node-based system:
 - **Node Registry**: Central system for managing and connecting nodes
 - **Session Management**: State isolation between concurrent conversations
 - **Orchestration Framework**: Context-aware control of agent behavior
+- **Evaluation Framework**: Provides tools for systematic agent assessment. Key components include:
+    -   `EvaluationRunner`: Orchestrates evaluation execution.
+    -   `Evaluators`: A suite of methods (RuleBased, LLMJudge, NLP, Lexical, ToolUsage) to measure different quality aspects.
+    -   `EvaluationCriteria`: Defines what to measure.
+    -   `EvaluationStorageProvider`: Persists results.
+    Details in the [Evaluation Documentation](./evaluations/README.md).
 
 ---
 

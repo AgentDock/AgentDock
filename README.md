@@ -231,11 +231,12 @@ Click the button above to deploy the AgentDock Open Source Client directly to yo
 
 ### Advanced Capabilities
 
-| Capability | Description | Documentation |
-|------------|-------------|---------------|
-| **Session Management** | Isolated, performant state management for conversations | [Session Documentation](./docs/architecture/sessions/README.md) |
-| **Orchestration Framework** | Control agent behavior and tool availability based on context | [Orchestration Documentation](./docs/architecture/orchestration/README.md) |
-| **Storage Abstraction** | Flexible storage system with pluggable providers for KV, Vector, and Secure storage | [Storage Documentation](./docs/storage/README.md) |
+| Capability             | Description                                                                    | Documentation                                                        |
+|------------------------|--------------------------------------------------------------------------------|----------------------------------------------------------------------|
+| **Session Management** | Isolated, performant state management for conversations                        | [Session Documentation](./docs/architecture/sessions/README.md)      |
+| **Orchestration Framework** | Control agent behavior and tool availability based on context                  | [Orchestration Documentation](./docs/architecture/orchestration/README.md) |
+| **Storage Abstraction**  | Flexible storage system with pluggable providers for KV, Vector, and Secure storage | [Storage Documentation](./docs/storage/README.md)                    |
+| **Evaluation Framework** | Systematically measure and improve agent quality with diverse evaluators       | [Evaluation Documentation](./docs/evaluations/README.md)             |
 
 The storage system is currently evolving with key-value storage (Memory, Redis, Vercel KV providers) and secure client-side storage, while vector storage and additional backends are in development.
 
@@ -364,6 +365,7 @@ This project *requires* the use of `pnpm` for consistent dependency management. 
 | 🔄 **Orchestration**      | *Dynamic control* of agent behavior based on context                      |
 | 💾 **Session Management** | Isolated state for concurrent conversations                               |
 | 🎮 **Configurable Determinism** | Balance AI creativity & predictability via node logic/workflows.        |
+| 📊 **Evaluation Framework** | Robust tools to define, run, and analyze agent performance evaluations.   |
 
 ## 🧰 Components
 
@@ -376,6 +378,7 @@ AgentDock's modular architecture is built upon these key components:
 *   **Tool Registry**: Manages tool availability for agents
 *   **CoreLLM**: Unified interface for interacting with LLM providers
 *   **Provider Registry**: Manages LLM provider configurations
+*   **Evaluation Framework**: Core components for agent assessment
 *   **Error Handling**: System for handling errors and ensuring predictable behavior
 *   **Logging**: Structured logging system for monitoring and debugging
 *   **Orchestration**: Controls tool availability and behavior based on conversation context

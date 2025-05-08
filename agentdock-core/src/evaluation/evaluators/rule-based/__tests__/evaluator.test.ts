@@ -87,7 +87,7 @@ describe('RuleBasedEvaluator', () => {
       const results = await evaluator.evaluate(input, [relevantCriterion]);
       expect(results).toHaveLength(1);
       expect(results[0].score).toBe(false);
-      expect(results[0].reasoning).toContain("Cannot evaluate rule 'length': input.response is not a simple string or extractable text.");
+      expect(results[0].reasoning).toContain("Cannot evaluate rule 'length': input from 'response' is not a simple string or extractable text.");
     });
   });
 
@@ -172,7 +172,7 @@ describe('RuleBasedEvaluator', () => {
       const input: EvaluationInput = { ...mockBaseInput, response: {} as any, criteria: [relevantCriterion] };
       const results = await evaluatorMatch.evaluate(input, [relevantCriterion]);
       expect(results[0].score).toBe(false);
-      expect(results[0].reasoning).toContain("Cannot evaluate rule 'regex': input.response is not a simple string or extractable text.");
+      expect(results[0].reasoning).toContain("Cannot evaluate rule 'regex': input from 'response' is not a simple string or extractable text.");
     });
   });
 
@@ -229,7 +229,7 @@ describe('RuleBasedEvaluator', () => {
       const input: EvaluationInput = { ...mockBaseInput, response: {} as any, criteria: [relevantCriterion] };
       const results = await evaluatorAll.evaluate(input, [relevantCriterion]); // Using evaluatorAll, outcome doesn't matter for undefined text
       expect(results[0].score).toBe(0); // Defaulting to 0 for numeric scale on failure
-      expect(results[0].reasoning).toContain("Cannot evaluate rule 'includes': input.response is not a simple string or extractable text.");
+      expect(results[0].reasoning).toContain("Cannot evaluate rule 'includes': input from 'response' is not a simple string or extractable text.");
     });
 
     it('should pass if all keywords are included (case-sensitive, expectedOutcome all)', async () => {
@@ -356,7 +356,7 @@ describe('RuleBasedEvaluator', () => {
       const results = await evaluator.evaluate(input, [relevantCriterion]);
       expect(results).toHaveLength(1);
       expect(results[0].score).toBe(false);
-      expect(results[0].reasoning).toContain('Rule json_parse failed');
+      expect(results[0].reasoning).toContain("Rule json_parse on field 'response' failed.");
     });
     
     it('should fail if response string is not JSON (e.g. plain text)', async () => {
@@ -365,7 +365,7 @@ describe('RuleBasedEvaluator', () => {
       const input: EvaluationInput = { ...mockBaseInput, response: plainText, criteria: [relevantCriterion] };
       const results = await evaluator.evaluate(input, [relevantCriterion]);
       expect(results[0].score).toBe(false);
-      expect(results[0].reasoning).toContain('Rule json_parse failed');
+      expect(results[0].reasoning).toContain("Rule json_parse on field 'response' failed.");
     });
 
     it('should pass if response is an object (will be stringified by evaluator logic)', async () => {
@@ -383,7 +383,7 @@ describe('RuleBasedEvaluator', () => {
       const results = await evaluator.evaluate(input, [relevantCriterion]);
       // Current logic: JSON.stringify(123) -> "123", JSON.parse("123") -> 123. This is a pass.
       expect(results[0].score).toBe(true);
-      expect(results[0].reasoning).toContain('Rule json_parse passed'); // Default pass reasoning
+      expect(results[0].reasoning).toContain('Rule json_parse on field \'response\' passed.'); // Default pass reasoning
     });
   });
 
@@ -504,7 +504,7 @@ describe('RuleBasedEvaluator', () => {
       // Based on current `evaluateLength`, it will pass. If that's not desired error behavior, evaluator must change.
       // Let's adjust the expectation to a pass, as per current evaluator code.
       expect(results[0].score).toBe(true); 
-      expect(results[0].reasoning).toContain('Rule length passed');
+      expect(results[0].reasoning).toContain('Rule length on field \'response\' passed.');
       expect(results[0].error).toBeUndefined();
     });
 
@@ -540,5 +540,85 @@ describe('RuleBasedEvaluator', () => {
     // Note: The constructor of RuleBasedEvaluator itself doesn't throw for invalid rule structures,
     // it handles them during the evaluate phase by producing error results.
     // If constructor-level validation were added, those tests would go here too.
+  });
+
+  describe('Multiple Rules and Criteria', () => {
+    const rules: EvaluationRule[] = [
+      { criterionName: 'TestLength', config: { type: 'length', min: 3 } },
+      { criterionName: 'TestRegex', config: { type: 'regex', pattern: '^[a-z]+$', expectedOutcome: 'match' } },
+      { criterionName: 'TestIncludes', config: { type: 'includes', keywords: ['world'], expectedOutcome: 'all' } },
+    ];
+    const evaluator = new RuleBasedEvaluator(rules);
+    const relevantCriteria = mockCriteria.filter(c => rules.some(r => r.criterionName === c.name));
+
+    it('should evaluate all configured rules and return results for each relevant criterion', async () => {
+      mockGetInputText.mockImplementation((input, field) => {
+        if (field === 'response' || field === undefined) return 'hello'; // Passes length, passes regex, fails includes
+        return undefined;
+      });
+      const input: EvaluationInput = { ...mockBaseInput, response: 'hello', criteria: relevantCriteria };
+      const results = await evaluator.evaluate(input, relevantCriteria);
+      
+      expect(results).toHaveLength(3);
+
+      const lengthResult = results.find(r => r.criterionName === 'TestLength');
+      expect(lengthResult).toBeDefined();
+      expect(lengthResult?.score).toBe(true); // 'hello' length 5 >= 3
+
+      const regexResult = results.find(r => r.criterionName === 'TestRegex');
+      expect(regexResult).toBeDefined();
+      expect(regexResult?.score).toBe(true); // 'hello' matches ^[a-z]+$
+
+      const includesResult = results.find(r => r.criterionName === 'TestIncludes');
+      expect(includesResult).toBeDefined();
+      expect(includesResult?.score).toBe(0); // 'hello' does not include 'world' (numeric scale 0 for fail)
+    });
+
+    it('should only return results for criteria that have matching rules', async () => {
+      mockGetInputText.mockReturnValue('test');
+      // Pass all mockCriteria, including UnusedCriterion
+      const input: EvaluationInput = { ...mockBaseInput, response: 'test', criteria: mockCriteria }; 
+      const results = await evaluator.evaluate(input, mockCriteria);
+      
+      expect(results).toHaveLength(3); // Only 3 rules are configured
+      expect(results.find(r => r.criterionName === 'UnusedCriterion')).toBeUndefined();
+    });
+
+    it('should correctly use different sourceTextFields per rule', async () => {
+      const rulesWithDifferentSources: EvaluationRule[] = [
+        { criterionName: 'TestLength', config: { type: 'length', min: 3 }, sourceTextField: 'response' },
+        { criterionName: 'TestRegex', config: { type: 'regex', pattern: 'prompt$', expectedOutcome: 'match' }, sourceTextField: 'prompt' },
+      ];
+      const evaluatorMultiSource = new RuleBasedEvaluator(rulesWithDifferentSources);
+      const multiSourceCriteria = mockCriteria.filter(c => rulesWithDifferentSources.some(r => r.criterionName === c.name));
+      
+      // Reset mock specifically for this test and set implementation
+      mockGetInputText.mockReset(); 
+      mockGetInputText.mockImplementation((_input, field) => {
+        if (field === 'response') return 'resp123'; // Passes length
+        if (field === 'prompt') return 'test prompt';   // Passes regex (ends with prompt)
+        return undefined;
+      });
+
+      const input: EvaluationInput = {
+        response: 'resp123',
+        prompt: 'test prompt',
+        criteria: multiSourceCriteria,
+        context: {},
+      };
+
+      const results = await evaluatorMultiSource.evaluate(input, multiSourceCriteria);
+      expect(results).toHaveLength(2);
+
+      const lengthResult = results.find(r => r.criterionName === 'TestLength');
+      expect(lengthResult?.score).toBe(true);
+
+      const regexResult = results.find(r => r.criterionName === 'TestRegex');
+      expect(regexResult?.score).toBe(true);
+    });
+  });
+
+  describe('Configuration Error Handling and Edge Cases', () => {
+    // ... existing code ...
   });
 }); 

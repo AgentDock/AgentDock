@@ -27,7 +27,7 @@ export interface LLMJudgeConfig {
    * Optional: A system prompt to guide the LLM's behavior.
    */
   systemPrompt?: string;
-  // TODO: Add more configuration options as needed (e.g., model parameters for generateObject, retry logic)
+  // TODO: [Phase 2] Add more configuration options as needed (e.g., model parameters for generateObject, retry logic)
 }
 
 /**

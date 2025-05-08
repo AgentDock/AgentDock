@@ -1,11 +1,28 @@
 import { SentimentEvaluator, type SentimentEvaluatorConfig } from '../sentiment';
-import type { EvaluationInput, EvaluationCriteria, EvaluationResult, AgentMessage } from '../../../types';
+import type { EvaluationInput, EvaluationCriteria, EvaluationResult, AgentMessage, TextContent, MessageContent } from '../../../types';
 
 // Mock helper
-const createMockInput = (response: string | AgentMessage, criteria?: EvaluationCriteria[]): EvaluationInput => ({
-  response,
-  criteria: criteria || [{ name: 'SentimentTest', description: 'Test', scale: 'numeric' }],
-});
+const createMockInput = (response: string | AgentMessage, criteria?: EvaluationCriteria[]): EvaluationInput => {
+  let finalResponse: string | AgentMessage;
+  if (typeof response === 'object' && 'role' in response && response.role === 'assistant') { // It's an AgentMessage
+    const agentMsg = response as AgentMessage;
+    let contentString = agentMsg.content; // Assume content is already a string or correctly set
+    if (Array.isArray(agentMsg.contentParts) && agentMsg.contentParts.length > 0) {
+      const firstTextPart = agentMsg.contentParts.find((p: MessageContent) => p.type === 'text') as TextContent | undefined;
+      if (firstTextPart && typeof firstTextPart.text === 'string') {
+        contentString = firstTextPart.text;
+      }
+    }
+    // Reconstruct AgentMessage with definite string content if needed
+    finalResponse = { ...agentMsg, content: contentString || '' }; 
+  } else {
+    finalResponse = response; // It's already a string or not the specific AgentMessage structure we need to adjust
+  }
+  return {
+    response: finalResponse,
+    criteria: criteria || [{ name: 'SentimentTest', description: 'Test', scale: 'numeric' }],
+  };
+};
 
 describe('SentimentEvaluator', () => {
   const mockCriterionNumeric: EvaluationCriteria = { name: 'SentimentTest', description: 'Test sentiment', scale: 'numeric' };
@@ -123,6 +140,73 @@ describe('SentimentEvaluator', () => {
     });
   });
 
-  // TODO: Add tests for core sentiment analysis, output types, field sourcing, etc.
+  describe('Advanced Field Sourcing', () => {
+    const positiveText = 'This is a wonderful and amazing experience! Great job!';
+    const mockCriterion: EvaluationCriteria = { name: 'SentimentTest', description: 'Test', scale: 'numeric' };
+
+    it('should source text from groundTruth (string) via sourceTextField', async () => {
+      const config: SentimentEvaluatorConfig = { 
+        criterionName: 'SentimentTest', 
+        sourceTextField: 'groundTruth' 
+      };
+      const evaluator = new SentimentEvaluator(config);
+      const input = createMockInput('Neutral response.');
+      input.groundTruth = positiveText;
+      const results = await evaluator.evaluate(input, [mockCriterion]);
+      expect(results[0].score).toBeGreaterThan(0.5);
+      expect(results[0].reasoning).toContain("Sentiment analysis of 'groundTruth'");
+    });
+
+    it('should source text from context (nested path) via sourceTextField', async () => {
+      const config: SentimentEvaluatorConfig = { 
+        criterionName: 'SentimentTest', 
+        sourceTextField: 'context.level1.level2.textToAnalyze'
+      };
+      const evaluator = new SentimentEvaluator(config);
+      const input = createMockInput('Neutral response.');
+      input.context = { level1: { level2: { textToAnalyze: positiveText } } };
+      const results = await evaluator.evaluate(input, [mockCriterion]);
+      expect(results[0].score).toBeGreaterThan(0.5);
+      expect(results[0].reasoning).toContain("Sentiment analysis of 'context.level1.level2.textToAnalyze'");
+    });
+
+    it('should source text from response (AgentMessage) via sourceTextField=\'response\'', async () => {
+      const config: SentimentEvaluatorConfig = { 
+        criterionName: 'SentimentTest',
+        sourceTextField: 'response' // Default, but explicitly testing
+      };
+      const evaluator = new SentimentEvaluator(config);
+      const agentMessageResponse: AgentMessage = {
+        id: 'msg-sentiment',
+        role: 'assistant',
+        content: positiveText, // content is string
+        contentParts: [{ type: 'text', text: positiveText }], // contentParts is array
+        createdAt: new Date(),
+      };
+      const input = createMockInput(agentMessageResponse);
+      const results = await evaluator.evaluate(input, [mockCriterion]);
+      expect(results[0].score).toBeGreaterThan(0.5);
+      expect(results[0].reasoning).toContain("Sentiment analysis of 'response'");
+    });
+
+    it('should return error if sourceTextField path is invalid for context', async () => {
+      const config: SentimentEvaluatorConfig = { 
+        criterionName: 'SentimentTest', 
+        sourceTextField: 'context.non.existent.path'
+      };
+      const evaluator = new SentimentEvaluator(config);
+      const input = createMockInput('Some text', [mockCriterion]);
+      input.context = { valid: { path: 'value' } }; // Context exists, but path is wrong
+
+      const results = await evaluator.evaluate(input, [mockCriterion]);
+      expect(results[0].score).toBe(0); // Default error score for numeric
+      expect(results[0].error).toBeDefined();
+      expect(results[0].reasoning).toContain("Evaluation failed: Source text field 'context.non.existent.path' did not yield a string.");
+    });
+  });
+
+  // TODO: Add tests for other algorithms, field sourcing, etc. (This refers to LexicalSimilarityEvaluator)
+  // TODO: Add tests for core toxicity checks, case sensitivity, whole word matching, etc. (This refers to ToxicityEvaluator)
+  // TODO: More tests for multiple rules, etc. (This refers to RuleBasedEvaluator)
 
 }); 

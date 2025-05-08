@@ -21,15 +21,23 @@ export interface KeywordCoverageEvaluatorConfig {
   keywordsSourceField?: 'config' | 'groundTruth' | `context.${string}`;
   /** 
    * Field in EvaluationInput to use as the text to search within. 
+   * Can be a top-level field like 'response', 'prompt', 'groundTruth', 
+   * or a dot-notation path e.g., 'response.content[0].text', 'context.someKey.value'.
    * Defaults to 'response'.
    */
-  sourceTextField?: 'response' | 'prompt';
+  sourceTextField?: 'response' | 'prompt' | 'groundTruth' | `response.${string}` | `groundTruth.${string}` | `context.${string}`;
   /** Whether keyword matching should be case-sensitive. Defaults to false. */
   caseSensitive?: boolean;
   /** Whether to normalize whitespace in the source text before matching. Defaults to true. */
   normalizeWhitespaceForSource?: boolean;
   /** How to treat keywords when `keywordsSourceField` is 'groundTruth' and it's a string: 'exact' or 'split-comma'. Defaults to 'split-comma'. */
   groundTruthKeywordMode?: 'exact' | 'split-comma';
+}
+
+// Helper to safely get a value from a nested path
+function getValueFromPath(obj: any, path: string): any {
+  if (!path || typeof path !== 'string') return undefined;
+  return path.split('.').reduce((o, k) => (o && typeof o === 'object' && k in o ? o[k] : undefined), obj);
 }
 
 /**
@@ -63,7 +71,7 @@ export class KeywordCoverageEvaluator implements Evaluator {
     };
   }
 
-  private getKeywords(input: EvaluationInput): string[] {
+  private getKeywords(input: EvaluationInput): string[] | null {
     let keywords: string[] = [];
     const source = this.config.keywordsSourceField;
 
@@ -72,39 +80,37 @@ export class KeywordCoverageEvaluator implements Evaluator {
     } else if (source === 'groundTruth') {
       if (Array.isArray(input.groundTruth)) {
         keywords = input.groundTruth.filter(k => typeof k === 'string');
-      } else {
-        // Try to get groundTruth as text using the utility
-        const gtText = getInputText(input, 'groundTruth');
-        if (gtText) {
-          if (this.config.groundTruthKeywordMode === 'split-comma') {
-            keywords = gtText.split(',').map(k => k.trim()).filter(k => k.length > 0);
-          } else { // 'exact'
-            keywords = [gtText];
-          }
+      } else if (typeof input.groundTruth === 'string' && input.groundTruth.trim() !== '') {
+        if (this.config.groundTruthKeywordMode === 'exact') {
+          keywords = [input.groundTruth.trim()];
+        } else { // 'split-comma' or implicitly split by common delimiters
+          keywords = input.groundTruth.split(/[,\s]+/).map(k => k.trim()).filter(k => k.length > 0);
         }
+      } else {
+        return null; // Expected groundTruth keywords but not found or invalid type
       }
     } else if (source && source.startsWith('context.')) {
-      // For context, try to get text using utility. If it returns a string, parse it.
-      // If the context field directly holds an array, that specific handling is more complex
-      // and might need dedicated logic if getInputText doesn't fit.
-      // For now, assume context source field for keywords should resolve to a parsable string.
-      const contextText = getInputText(input, source as `context.${string}`);
-      if (contextText) {
-         keywords = contextText.split(',').map(k => k.trim()).filter(k => k.length > 0);
+      const path = source.substring('context.'.length);
+      const contextValue = getValueFromPath(input.context, path);
+
+      if (Array.isArray(contextValue)) {
+        keywords = contextValue.filter(k => typeof k === 'string');
+      } else if (typeof contextValue === 'string' && contextValue.trim() !== '') {
+        // Assume string from context should be split by common delimiters
+        keywords = contextValue.split(/[,\s]+/).map(k => k.trim()).filter(k => k.length > 0);
       } else {
-        // Fallback or specific handling if context field is an array directly
-        const fieldName = source.substring('context.'.length);
-        const contextValue = input.context?.[fieldName];
-        if (Array.isArray(contextValue)) {
-          keywords = contextValue.filter(k => typeof k === 'string');
-        }
+        return null; // Expected context keywords but not found or invalid type
       }
+    }
+
+    if (keywords.length === 0 && source !== 'config') { // If not from config, and still no keywords, it's an issue.
+        return null;
     }
     
     if (!this.config.caseSensitive) {
         keywords = keywords.map(k => k.toLowerCase());
     }
-    return keywords.filter(k => k.length > 0);
+    return keywords.filter(k => k.length > 0); // Ensure no empty strings after processing
   }
 
   async evaluate(input: EvaluationInput, criteria: EvaluationCriteria[]): Promise<EvaluationResult[]> {
@@ -114,25 +120,48 @@ export class KeywordCoverageEvaluator implements Evaluator {
     }
 
     const keywordsToFind = this.getKeywords(input);
-    // Use getInputText for the source text field
-    let sourceText = getInputText(input, this.config.sourceTextField as string | undefined);
+
+    if (keywordsToFind === null) { // Keywords were expected from context/groundTruth but not found/invalid
+      return [{
+        criterionName: this.config.criterionName,
+        score: 'error',
+        reasoning: `Failed to source keywords from ${this.config.keywordsSourceField}. Source not found or invalid type.`,
+        evaluatorType: this.type,
+        error: `Keywords source ${this.config.keywordsSourceField} not found or not a string/array.`,
+      }];
+    }
+    
+    if (keywordsToFind.length === 0 && this.config.keywordsSourceField === 'config' && (!this.config.expectedKeywords || this.config.expectedKeywords.length === 0)) {
+        // This case should ideally be caught by constructor, but as a safeguard:
+         return [{
+            criterionName: this.config.criterionName,
+            score: 'error',
+            reasoning: 'Configuration error: expectedKeywords is empty or not provided for config source.',
+            evaluatorType: this.type,
+            error: 'Configuration error: expectedKeywords is empty for config source.',
+        }];
+    }
+    
+    if (keywordsToFind.length === 0) { 
+        // If keywordsSourceField was 'config' and expectedKeywords was deliberately an empty array in config (valid)
+        // or if after processing (e.g. filtering) an externally sourced list becomes empty (though `getKeywords` returning null should catch most problematic external sourcing)
+        return [{
+            criterionName: this.config.criterionName,
+            score: 1, 
+            reasoning: 'No keywords to find (list was empty or became empty after processing). Evaluation assumes 100% coverage.',
+            evaluatorType: this.type,
+        }];
+    }
+
+    let sourceText = getInputText(input, this.config.sourceTextField as any); 
 
     if (sourceText === undefined) {
       return [{
         criterionName: this.config.criterionName,
-        score: 0,
-        reasoning: `Evaluation failed: Source text field '${this.config.sourceTextField}' did not yield a string.`,
+        score: 'error', // Changed from 0 to 'error'
+        reasoning: `Evaluation failed: Source text field '${this.config.sourceTextField}' did not yield a string or was not found.`,
         evaluatorType: this.type,
-        error: 'Invalid input type for source text.',
-      }];
-    }
-
-    if (keywordsToFind.length === 0) {
-      return [{
-        criterionName: this.config.criterionName,
-        score: 1, 
-        reasoning: 'No keywords to find. Ensure keywordsSourceField and its content are correctly specified.',
-        evaluatorType: this.type,
+        error: `Source text field ${this.config.sourceTextField} not found in input or content is not a string.`,
       }];
     }
 

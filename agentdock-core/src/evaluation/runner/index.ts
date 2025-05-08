@@ -86,16 +86,16 @@ export interface EvaluationRunConfig {
   /** An array of evaluator configurations to instantiate and run. */
   evaluatorConfigs: EvaluatorConfig[];
   /** 
-   * Optional server-side only storage provider to persist the evaluation results.
+   * Optional storage provider to persist the evaluation results.
    * This will be called with the AggregatedEvaluationResult.
    * Example: An instance of JsonFileStorageProvider (imported directly by server-side script).
    */
-  storageProvider_FOR_SERVER_USE_ONLY?: { saveResult: (result: AggregatedEvaluationResult) => Promise<void> };
+  storageProvider?: { saveResult: (result: AggregatedEvaluationResult) => Promise<void> };
   /** Optional run-level metadata to include in the aggregated result. */
   metadata?: Record<string, any>;
   /** Optional settings for specific evaluators, keyed by evaluator type (if needed beyond individual configs). */
   // evaluatorSettings?: Record<string, any>; // Maybe remove if configs are sufficient
-  // TODO: Add other runner-specific settings like aggregation strategy, error handling policy?
+  // TODO: [Phase 2] Add other runner-specific settings like aggregation strategy, error handling policy?
 }
 
 /**
@@ -299,7 +299,7 @@ export async function runEvaluation(
   // Destructure with the new storage provider name
   const {
     evaluatorConfigs,
-    storageProvider_FOR_SERVER_USE_ONLY: storageProvider, // Use the new name
+    storageProvider, // Use the new name
     metadata: runMetadata = {},
   } = config;
 

@@ -96,8 +96,8 @@ describe('runEvaluation function', () => {
   // --- Configuration Validation Tests --- 
   describe('Configuration Validation (via runEvaluation)', () => {
     it('should throw if evaluatorConfigs array is missing or empty', async () => {
-      const config1: EvaluationRunConfig = { evaluatorConfigs: undefined as any, storageProvider_FOR_SERVER_USE_ONLY: mockStorageProvider };
-      const config2: EvaluationRunConfig = { evaluatorConfigs: [], storageProvider_FOR_SERVER_USE_ONLY: mockStorageProvider };
+      const config1: EvaluationRunConfig = { evaluatorConfigs: undefined as any, storageProvider: mockStorageProvider };
+      const config2: EvaluationRunConfig = { evaluatorConfigs: [], storageProvider: mockStorageProvider };
       await expect(runEvaluation(baseMockInput, config1)).rejects.toThrow('[EvaluationRunner] evaluatorConfigs must be a non-empty array.');
       await expect(runEvaluation(baseMockInput, config2)).rejects.toThrow('[EvaluationRunner] evaluatorConfigs must be a non-empty array.');
     });
@@ -105,7 +105,7 @@ describe('runEvaluation function', () => {
     it('should throw if an evaluator config is missing type', async () => {
       const config: EvaluationRunConfig = {
         evaluatorConfigs: [{ config: { criterionName: 'Test' } } as any],
-        storageProvider_FOR_SERVER_USE_ONLY: mockStorageProvider
+        storageProvider: mockStorageProvider
       };
       await expect(runEvaluation(baseMockInput, config)).rejects.toThrow('[EvaluationRunner] Invalid configuration at index 0: type is missing.');
     });
@@ -116,7 +116,7 @@ describe('runEvaluation function', () => {
           type: 'Toxicity',
           config: { criterionName: 'Test' } // Missing toxicTerms
         } as any],
-        storageProvider_FOR_SERVER_USE_ONLY: mockStorageProvider
+        storageProvider: mockStorageProvider
       };
       await expect(runEvaluation(baseMockInput, config)).rejects.toThrow("[EvaluationRunner] ToxicityEvaluator config at index 0 requires a non-empty 'toxicTerms' array.");
     });
@@ -127,7 +127,7 @@ describe('runEvaluation function', () => {
           type: 'UnknownType',
           config: { criterionName: 'Test' }
         } as any],
-        storageProvider_FOR_SERVER_USE_ONLY: mockStorageProvider
+        storageProvider: mockStorageProvider
       };
       await expect(runEvaluation(baseMockInput, config)).rejects.toThrow("[EvaluationRunner] Unknown evaluator type 'UnknownType' at index 0.");
     });
@@ -138,7 +138,7 @@ describe('runEvaluation function', () => {
                 type: 'LLMJudge',
                 config: { criterionName: 'Test', llm: undefined, promptTemplate: 'valid template' } as any 
             }],
-            storageProvider_FOR_SERVER_USE_ONLY: mockStorageProvider
+            storageProvider: mockStorageProvider
         };
         await expect(runEvaluation(baseMockInput, config)).rejects.toThrow("[EvaluationRunner] LLMJudgeEvaluator 'config.llm' at index 0 must be a CoreLLM instance (or provide a getModel method).");
     });
@@ -164,7 +164,7 @@ describe('runEvaluation function', () => {
             }
           }
         ],
-        storageProvider_FOR_SERVER_USE_ONLY: mockStorageProvider,
+        storageProvider: mockStorageProvider,
       };
       const input: EvaluationInput = {
         ...baseMockInput,
@@ -242,7 +242,7 @@ describe('runEvaluation function', () => {
         evaluatorConfigs: [
           { type: 'Toxicity', config: { criterionName: 'NonExistentCriterionInInput', toxicTerms: ['fail'] } }
         ],
-        storageProvider_FOR_SERVER_USE_ONLY: mockStorageProvider,
+        storageProvider: mockStorageProvider,
       };
       const result: AggregatedEvaluationResult = await runEvaluation(baseMockInput, runConfig);
       expect(result.results).toHaveLength(0);
@@ -263,7 +263,7 @@ describe('runEvaluation function', () => {
             config: { criterionName: 'Safety', toxicTerms: ['toxic'] } 
           }
         ],
-        storageProvider_FOR_SERVER_USE_ONLY: mockStorageProvider,
+        storageProvider: mockStorageProvider,
       };
       const localInput: EvaluationInput = { 
           ...baseMockInput, 
@@ -318,7 +318,7 @@ describe('runEvaluation function', () => {
             }
           }
         ],
-        storageProvider_FOR_SERVER_USE_ONLY: mockStorageProvider,
+        storageProvider: mockStorageProvider,
       };
       const localInput: EvaluationInput = { 
           ...baseMockInput, 
@@ -358,7 +358,7 @@ describe('runEvaluation function', () => {
             }
           }
         ],
-        storageProvider_FOR_SERVER_USE_ONLY: mockStorageProvider,
+        storageProvider: mockStorageProvider,
       };
       const responseText = "High quality stuff, very clear explanation";
       const localInput: EvaluationInput = {
@@ -422,7 +422,7 @@ describe('runEvaluation function', () => {
             }
           }
         ],
-        storageProvider_FOR_SERVER_USE_ONLY: mockStorageProvider,
+        storageProvider: mockStorageProvider,
       };
       const localInput: EvaluationInput = {
         ...baseMockInput,
@@ -447,7 +447,7 @@ describe('runEvaluation function', () => {
             config: { criterionName: 'Safety', toxicTerms: ['unsafe'] } // Safety has weight 2
           }
         ],
-        storageProvider_FOR_SERVER_USE_ONLY: mockStorageProvider,
+        storageProvider: mockStorageProvider,
       };
       const localInput: EvaluationInput = { 
           ...baseMockInput, 

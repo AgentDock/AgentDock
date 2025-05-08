@@ -22,14 +22,18 @@ export interface LexicalSimilarityEvaluatorConfig {
   normalizeWhitespace?: boolean;
   /** 
    * Field in EvaluationInput to use as the primary string for comparison. 
+   * Can be a top-level field like 'response', 'prompt', 'groundTruth', 
+   * or a dot-notation path e.g., 'response.content[0].text', 'context.someKey.value'.
    * Defaults to 'response'.
    */
-  sourceField?: 'response' | 'prompt'; // Or other relevant string fields from EvaluationInput
+  sourceField?: 'response' | 'prompt' | 'groundTruth' | `response.${string}` | `groundTruth.${string}` | `context.${string}`;
   /** 
    * Field in EvaluationInput to use as the reference string for comparison. 
+   * Can be a top-level field like 'response', 'prompt', 'groundTruth', 
+   * or a dot-notation path e.g., 'response.content[0].text', 'context.someKey.value'.
    * Defaults to 'groundTruth'.
    */
-  referenceField?: 'groundTruth' | 'prompt'; // Or other relevant string fields
+  referenceField?: 'response' | 'prompt' | 'groundTruth' | `response.${string}` | `groundTruth.${string}` | `context.${string}`;
 }
 
 /**

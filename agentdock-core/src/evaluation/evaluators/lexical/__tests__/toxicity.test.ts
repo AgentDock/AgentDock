@@ -1,11 +1,30 @@
 import { ToxicityEvaluator, type ToxicityEvaluatorConfig } from '../toxicity';
-import type { EvaluationInput, EvaluationCriteria, EvaluationResult, AgentMessage } from '../../../types';
+import type { EvaluationInput, EvaluationCriteria, EvaluationResult, AgentMessage, TextContent, MessageContent } from '../../../types';
 
 // Mock helper
-const createMockInput = (response: string | AgentMessage, criteria?: EvaluationCriteria[]): EvaluationInput => ({
-  response,
-  criteria: criteria || [{ name: 'ToxicityCheck', description: 'Test', scale: 'binary' }],
-});
+const createMockInput = (response: string | AgentMessage, criteria?: EvaluationCriteria[]): EvaluationInput => {
+  let finalResponse: string | AgentMessage;
+  if (typeof response === 'object' && 'role' in response && response.role === 'assistant') { // It's an AgentMessage
+    const agentMsg = response as AgentMessage;
+    let contentString = agentMsg.content; // Assume content is already a string or correctly set
+    // Ensure contentParts is an array before trying to find in it
+    if (Array.isArray(agentMsg.contentParts) && agentMsg.contentParts.length > 0) {
+      const firstTextPart = agentMsg.contentParts.find((p: MessageContent) => p.type === 'text') as TextContent | undefined;
+      if (firstTextPart && typeof firstTextPart.text === 'string') {
+        contentString = firstTextPart.text;
+      }
+    }
+    // If contentString is still not set (e.g. no text parts, or content wasn't a string initially),
+    // default to empty string for the content field.
+    finalResponse = { ...agentMsg, content: contentString || '' }; 
+  } else {
+    finalResponse = response; // It's already a string or not the specific AgentMessage structure we need to adjust
+  }
+  return {
+    response: finalResponse,
+    criteria: criteria || [{ name: 'ToxicityCheck', description: 'Test', scale: 'binary' }],
+  };
+};
 
 describe('ToxicityEvaluator', () => {
   const mockCriterion: EvaluationCriteria = { name: 'ToxicityCheck', description: 'Test toxicity', scale: 'binary' };
@@ -146,6 +165,76 @@ describe('ToxicityEvaluator', () => {
     });
   });
 
-  // TODO: Add tests for core toxicity checks, case sensitivity, whole word matching, etc.
+  describe('Advanced Field Sourcing', () => {
+    const toxicTerms = ['darn', 'heck'];
+    const mockCriterion: EvaluationCriteria = { name: 'ToxicityCheck', description: 'Test', scale: 'binary' };
+
+    it('should source text from groundTruth (string) via sourceTextField', async () => {
+      const config: ToxicityEvaluatorConfig = { 
+        criterionName: 'ToxicityCheck', 
+        toxicTerms,
+        sourceTextField: 'groundTruth' 
+      };
+      const evaluator = new ToxicityEvaluator(config);
+      const input = createMockInput('Clean response.');
+      input.groundTruth = 'This groundTruth is darn bad.';
+      const results = await evaluator.evaluate(input, [mockCriterion]);
+      expect(results[0].score).toBe(false);
+      expect(results[0].metadata?.foundToxicTerms).toEqual(['darn']);
+    });
+
+    it('should source text from context (nested path) via sourceTextField', async () => {
+      const config: ToxicityEvaluatorConfig = { 
+        criterionName: 'ToxicityCheck', 
+        toxicTerms,
+        sourceTextField: 'context.level1.textToAnalyze'
+      };
+      const evaluator = new ToxicityEvaluator(config);
+      const input = createMockInput('Clean response.');
+      input.context = { level1: { textToAnalyze: 'Oh heck, this context is toxic.' } };
+      const results = await evaluator.evaluate(input, [mockCriterion]);
+      expect(results[0].score).toBe(false);
+      expect(results[0].metadata?.foundToxicTerms).toEqual(['heck']);
+    });
+
+    it('should source text from response (AgentMessage) via sourceTextField=\'response\'', async () => {
+      const config: ToxicityEvaluatorConfig = { 
+        criterionName: 'ToxicityCheck',
+        toxicTerms,
+        sourceTextField: 'response'
+      };
+      const evaluator = new ToxicityEvaluator(config);
+      const textContentForAgentMessage = 'This agent message has a badword... I mean darn.';
+      const agentMessageResponse: AgentMessage = {
+        id: 'msg-toxic',
+        role: 'assistant',
+        content: textContentForAgentMessage, // content is string
+        contentParts: [{ type: 'text', text: textContentForAgentMessage }], // contentParts is array
+        createdAt: new Date(),
+      };
+      const input = createMockInput(agentMessageResponse);
+      const results = await evaluator.evaluate(input, [mockCriterion]);
+      expect(results[0].score).toBe(false);
+      expect(results[0].metadata?.foundToxicTerms).toEqual(['darn']);
+    });
+
+    it('should return error if sourceTextField path is invalid (e.g., context path wrong)', async () => {
+      const config: ToxicityEvaluatorConfig = { 
+        criterionName: 'ToxicityCheck', 
+        toxicTerms,
+        sourceTextField: 'context.non.existent'
+      };
+      const evaluator = new ToxicityEvaluator(config);
+      const input = createMockInput('Some text', [mockCriterion]);
+      input.context = { valid: 'path' };
+
+      const results = await evaluator.evaluate(input, [mockCriterion]);
+      expect(results[0].score).toBe(false); // Default error score is false (toxic)
+      expect(results[0].error).toBeDefined();
+      expect(results[0].reasoning).toContain("Source text field 'context.non.existent' did not yield a string");
+    });
+  });
+
+  // TODO: More tests for multiple rules, etc. (This refers to RuleBasedEvaluator)
 
 }); 

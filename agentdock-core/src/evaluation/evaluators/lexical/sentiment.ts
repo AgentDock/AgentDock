@@ -10,9 +10,11 @@ export interface SentimentEvaluatorConfig {
   criterionName: string;
   /** 
    * Field in EvaluationInput to use as the text to analyze. 
+   * Can be a top-level field like 'response', 'prompt', 'groundTruth', 
+   * or a dot-notation path e.g., 'response.content[0].text', 'context.someKey.value'.
    * Defaults to 'response'.
    */
-  sourceTextField?: 'response' | 'prompt';
+  sourceTextField?: 'response' | 'prompt' | 'groundTruth' | `response.${string}` | `groundTruth.${string}` | `context.${string}`;
   /** 
    * Specifies the type of output score to generate.
    * 'comparativeNormalized': The sentiment library's comparative score, normalized to a 0-1 range (default).

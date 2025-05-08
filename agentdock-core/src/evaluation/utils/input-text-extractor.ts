@@ -20,8 +20,16 @@ export function getInputText(
 ): string | undefined {
   const field = sourceField || "response";
   let targetValue: any;
+  let basePath = field;
+  let remainingPath = '';
 
-  switch (field) {
+  if (field.includes('.')) {
+    const parts = field.split('.');
+    basePath = parts[0];
+    remainingPath = parts.slice(1).join('.');
+  }
+
+  switch (basePath) {
     case "response":
       targetValue = input.response;
       break;
@@ -31,23 +39,43 @@ export function getInputText(
     case "groundTruth":
       targetValue = input.groundTruth;
       break;
-    default:
-      if (field.startsWith("context.")) {
-        const contextPath = field.substring("context.".length).split(".");
-        let currentContext = input.context;
-        for (const key of contextPath) {
-          if (currentContext && typeof currentContext === "object" && key in currentContext) {
-            currentContext = currentContext[key];
-          } else {
-            currentContext = undefined;
-            break;
-          }
-        }
-        targetValue = currentContext;
-      } else {
-        return undefined;
-      }
+    case "context": // If basePath is context, remainingPath is the actual context path
+      targetValue = input.context;
+      // remainingPath is already set correctly from field.split for context.
       break;
+    default:
+      // if (!field.startsWith("context.")) { // This check is now implicitly handled by basePath logic
+      //   return undefined;
+      // }
+      // For any other basePath, it's an unknown top-level field, or we only support response, prompt, groundTruth, context.
+      // If field was something like "unknown.path", basePath would be "unknown".
+      // We can decide to return undefined or try to access input[basePath]
+      // For now, let's assume if it's not response, prompt, groundTruth, context, it's invalid unless it's a path starting with one of them.
+      if (!['response', 'prompt', 'groundTruth', 'context'].includes(basePath)) {
+        return undefined; // Invalid base path
+      }
+      // This case should ideally not be reached if field.includes('.') was handled, 
+      // and basePath is one of the known ones, but remainingPath would be empty.
+      // This means a direct path like "response." which is invalid.
+      // Or if sourceField was just "context" without a path, remainingPath is empty.
+      // Let targetValue be input.context and path traversal below handle empty remainingPath for context.
+      targetValue = (input as any)[basePath];
+      break;
+  }
+  
+  // If there was a remainingPath, traverse it
+  if (remainingPath && targetValue !== undefined) {
+    const pathParts = remainingPath.split('.');
+    let currentValue = targetValue;
+    for (const key of pathParts) {
+      if (currentValue && typeof currentValue === "object" && key in currentValue) {
+        currentValue = currentValue[key];
+      } else {
+        currentValue = undefined;
+        break;
+      }
+    }
+    targetValue = currentValue;
   }
 
   if (typeof targetValue === "string") {
@@ -59,21 +87,29 @@ export function getInputText(
     typeof targetValue === "object" &&
     typeof (targetValue as AgentMessage).role === "string" 
   ) {
-    const agentMessage = targetValue as AgentMessage; // Assert once
-    // Check for contentParts and ensure it is an array
-    if (agentMessage.contentParts && Array.isArray(agentMessage.contentParts)) {
-      // Now agentMessage.contentParts is known to be an array here
-      for (const part of agentMessage.contentParts) { 
-        if (part.type === "text") {
-          const textContent = part as TextContent; 
-          if (typeof textContent.text === "string") { 
-            return textContent.text;
+    const agentMessage = targetValue as AgentMessage;
+    // console.log(`DEBUG: getInputText processing AgentMessage. ID: ${agentMessage.id}, contentParts: ${JSON.stringify(agentMessage.contentParts)}`);
+
+    if (Array.isArray(agentMessage.contentParts)) {
+      // console.log(`DEBUG: getInputText - contentParts is array. Length: ${agentMessage.contentParts.length}`);
+      for (const part of agentMessage.contentParts) {
+        // console.log(`DEBUG: getInputText - iterating part: ${JSON.stringify(part)}`);
+        if (part && typeof part === 'object' && part.type === "text") {
+          // console.log(`DEBUG: getInputText - part is text type.`);
+          if ('text' in part && typeof (part as TextContent).text === "string") {
+            // console.log(`DEBUG: getInputText - returning part.text: ${(part as TextContent).text}`);
+            return (part as TextContent).text;
           }
         }
       }
+      // console.log('DEBUG: getInputText - no text part found in contentParts array, returning undefined.');
     }
+    // If contentParts is not an array, or is an array but no text part was found, return undefined.
+    return undefined; 
   }
   
+  // This check handles cases where groundTruth might be an object but not an AgentMessage.
+  // And ensures that if field is 'groundTruth' and targetValue is an object (but not AgentMessage), it returns undefined.
   if (field === "groundTruth" && targetValue !== undefined && typeof targetValue !== 'string') {
     return undefined;
   }

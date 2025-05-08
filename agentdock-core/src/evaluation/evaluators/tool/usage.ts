@@ -21,8 +21,7 @@ export interface ToolUsageRule {
   ) => { isValid: boolean; reason?: string }; // True if valid, false with reason if not
   /** Optional: Specifies if the tool call is required or just observed. Defaults to false (observed). */
   isRequired?: boolean;
-  /** Optional: If multiple tools are checked, an expected sequence or count might be relevant */
-  // sequence?: number; // TODO: For more advanced sequence checking
+  // sequence?: number; // TODO: [Phase 2] For more advanced sequence checking (e.g., must be 1st call)
   // minCount?: number;
   // maxCount?: number;
 }

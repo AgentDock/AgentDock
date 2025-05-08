@@ -220,7 +220,7 @@ This phase focuses on delivering a suite of fast, cost-effective, and practical 
     *   **Status:** Initial drafts complete and available in `docs/evaluations/`. The main `docs/evaluations/README.md` provides an overview and links.
 
 **Phase 1.7: Comprehensive Testing (Next Up)**
-1.  🟢 **Unit & Integration Tests:** Systematically add tests for all evaluators (RuleBased, LLMJudge, NLPAccuracy, ToolUsage, and all Lexical evaluators), detailed runner logic (including edge cases for normalization and aggregation), and storage provider interactions. Ensure robust mocking of external dependencies like LLMs. (Note: One context variable assertion in LLMJudge test is temporarily skipped - requires investigation).
+1.  🟢 **Unit & Integration Tests:** Systematically add tests for all evaluators (RuleBased, LLMJudge, NLPAccuracy, ToolUsage, and all Lexical evaluators), detailed runner logic (including edge cases for normalization and aggregation), and storage provider interactions. Ensure robust mocking of external dependencies like LLMs. (Note: One context variable assertion in LLMJudge test is temporarily skipped - requires investigation. Jaro-Winkler test in LexicalSimilarity is also skipped due to suspected library issue).
 
 **Phase 2: Advanced Features & Ecosystem Integration (Future Work)**
 

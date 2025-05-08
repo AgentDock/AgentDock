@@ -54,6 +54,8 @@ export interface EvaluationRule {
   criterionName: string;
   /** The configuration defining the rule's logic and parameters */
   config: RuleConfig;
+  /** Optional: Field in EvaluationInput to use as the text source for this rule. Defaults to 'response'. */
+  sourceTextField?: 'response' | 'prompt' | 'groundTruth' | `response.${string}` | `groundTruth.${string}` | `context.${string}`;
 }
 
 // --- Evaluator Implementation ---
@@ -80,15 +82,6 @@ export class RuleBasedEvaluator implements Evaluator {
     const applicableCriteriaNames = new Set(criteria.map(c => c.name));
     const results: EvaluationResult[] = [];
 
-    // Use the utility to get text from the response field for text-based rules
-    const textToEvaluate = getInputText(input, 'response');
-
-    if (textToEvaluate === undefined && typeof input.response !== 'string') {
-        // If response is not a string and getInputText also couldn't extract from it as AgentMessage,
-        // log a warning. Some rules like json_parse might still operate on the raw response object.
-        console.warn(`[${this.type}] Could not extract a simple string from input.response for text-based rules.`);
-    }
-
     for (const rule of this.rules) {
       if (!applicableCriteriaNames.has(rule.criterionName)) {
         continue;
@@ -104,28 +97,36 @@ export class RuleBasedEvaluator implements Evaluator {
       try {
         let rulePassed: boolean;
         let score: EvaluationResult['score'] = false;
+        let textForRule: string | undefined = undefined; // Variable to hold text for the current rule
 
-        if (rule.config.type !== 'json_parse' && textToEvaluate === undefined) {
-            // For non-json_parse rules, if textToEvaluate is still undefined, we cannot proceed.
-            // This could happen if input.response was a complex object not parsable by getInputText into a single string.
+        // Determine the source field for this specific rule
+        const fieldToUse = rule.sourceTextField || 'response';
+
+        // Get text only if the rule type needs it
+        if (rule.config.type !== 'json_parse') {
+          textForRule = getInputText(input, fieldToUse);
+
+          if (textForRule === undefined) {
             results.push({
               criterionName: rule.criterionName,
               score: this.mapPassFailToScore(false, criterion.scale),
-              reasoning: `Cannot evaluate rule '${rule.config.type}': input.response is not a simple string or extractable text.`, 
+              reasoning: `Cannot evaluate rule '${rule.config.type}': input from '${fieldToUse}' is not a simple string or extractable text.`, 
               evaluatorType: this.type,
+              error: `Source field '${fieldToUse}' did not yield a string.`
             });
             continue;
+          }
         }
 
         switch (rule.config.type) {
           case 'regex':
-            rulePassed = this.evaluateRegex(textToEvaluate!, rule.config); // textToEvaluate ensured by check above
+            rulePassed = this.evaluateRegex(textForRule!, rule.config); // Use textForRule
             break;
           case 'length':
-            rulePassed = this.evaluateLength(textToEvaluate!, rule.config); // textToEvaluate ensured by check above
+            rulePassed = this.evaluateLength(textForRule!, rule.config); // Use textForRule
             break;
           case 'includes':
-            rulePassed = this.evaluateIncludes(textToEvaluate!, rule.config); // textToEvaluate ensured by check above
+            rulePassed = this.evaluateIncludes(textForRule!, rule.config); // Use textForRule
             break;
           case 'json_parse': {
             // For json_parse, if input.response is a string, use it directly.
@@ -140,6 +141,8 @@ export class RuleBasedEvaluator implements Evaluator {
             break;
           }
           default:
+            // Add a check here for exhaustive switch, although TS might catch it
+            // const _exhaustiveCheck: never = rule.config;
             throw new Error(`Unsupported rule type: ${(rule.config as any).type}`);
         }
 
@@ -148,7 +151,7 @@ export class RuleBasedEvaluator implements Evaluator {
         result = {
           criterionName: rule.criterionName,
           score: score,
-          reasoning: `Rule ${rule.config.type} ${rulePassed ? 'passed' : 'failed'}`,
+          reasoning: `Rule ${rule.config.type} on field '${fieldToUse}' ${rulePassed ? 'passed' : 'failed'}.`, // Updated reasoning
           evaluatorType: this.type,
         };
 

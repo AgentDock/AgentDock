@@ -1,13 +1,34 @@
 import { LexicalSimilarityEvaluator, type LexicalSimilarityEvaluatorConfig } from '../similarity';
-import type { EvaluationInput, EvaluationCriteria, EvaluationResult, AgentMessage } from '../../../types';
+import type { EvaluationInput, EvaluationCriteria, EvaluationResult, AgentMessage, TextContent, MessageContent } from '../../../types';
 
-// Mock helper (can reuse or adapt from other tests)
-const createMockInput = (response: string | AgentMessage, groundTruth?: string | any, context?: Record<string, any>, criteria?: EvaluationCriteria[]): EvaluationInput => ({
-  response,
-  groundTruth,
-  context,
-  criteria: criteria || [{ name: 'LexSim', description: 'Test', scale: 'numeric' }],
-});
+// Mock helper
+const createMockInput = (
+  response: string | AgentMessage, 
+  groundTruth?: string | any, 
+  context?: Record<string, any>, 
+  criteria?: EvaluationCriteria[]
+): EvaluationInput => {
+  let finalResponse: string | AgentMessage;
+  if (typeof response === 'object' && 'role' in response && response.role === 'assistant') { // It's an AgentMessage
+    const agentMsg = response as AgentMessage;
+    let contentString = agentMsg.content; 
+    if (Array.isArray(agentMsg.contentParts) && agentMsg.contentParts.length > 0) {
+      const firstTextPart = agentMsg.contentParts.find((p: MessageContent) => p.type === 'text') as TextContent | undefined;
+      if (firstTextPart && typeof firstTextPart.text === 'string') {
+        contentString = firstTextPart.text;
+      }
+    }
+    finalResponse = { ...agentMsg, content: contentString || '' }; 
+  } else {
+    finalResponse = response;
+  }
+  return {
+    response: finalResponse,
+    groundTruth,
+    context,
+    criteria: criteria || [{ name: 'LexSim', description: 'Test', scale: 'numeric' }],
+  };
+};
 
 describe('LexicalSimilarityEvaluator', () => {
   const mockCriterion: EvaluationCriteria = { name: 'LexSim', description: 'Test lexical similarity', scale: 'numeric' };
@@ -80,7 +101,6 @@ describe('LexicalSimilarityEvaluator', () => {
   });
 
   describe('Algorithm Selection', () => {
-    // Skipping Jaro-Winkler test due to inability to fix the missing import in similarity.ts via tool
     it.skip('should use Jaro-Winkler when configured', async () => {
       const config: LexicalSimilarityEvaluatorConfig = { criterionName: 'LexSim', algorithm: 'jaro-winkler' };
       const evaluator = new LexicalSimilarityEvaluator(config);
@@ -123,6 +143,67 @@ describe('LexicalSimilarityEvaluator', () => {
       const results = await evaluator.evaluate(input, [mockCriterion]);
       expect(results[0].score).toBeCloseTo(1);
       expect(results[0].reasoning).toContain("Comparing 'prompt' with 'groundTruth'");
+    });
+
+    it('should use context as sourceField and response (AgentMessage) as referenceField', async () => {
+      const agentResponse: AgentMessage = {
+        id: 'ar1',
+        role: 'assistant',
+        content: 'context text match', 
+        contentParts: [{ type: 'text', text: 'context text match' }], 
+        createdAt: new Date(),
+      };
+      const config: LexicalSimilarityEvaluatorConfig = {
+        criterionName: 'LexSim',
+        sourceField: 'context.data.source',
+        referenceField: 'response'
+      };
+      const evaluator = new LexicalSimilarityEvaluator(config);
+      const input = createMockInput(
+        agentResponse, 
+        'some groundtruth', 
+        { data: { source: 'context text match' }}
+      );
+      const results = await evaluator.evaluate(input, [mockCriterion]);
+      // console.log('DEBUGGING similarity.test.ts - results[0].reasoning:', results[0].reasoning); // Keep this commented out
+      expect(results[0].score).toBeCloseTo(1); 
+      expect(results[0].reasoning).toContain("Comparing 'context.data.source' with 'response'");
+    });
+
+    it('should use response (string) as source and context as referenceField', async () => {
+      const config: LexicalSimilarityEvaluatorConfig = {
+        criterionName: 'LexSim',
+        sourceField: 'response',
+        referenceField: 'context.data.ref'
+      };
+      const evaluator = new LexicalSimilarityEvaluator(config);
+      const input = createMockInput('match me', 'some groundtruth', { data: { ref: 'match me' }});
+      const results = await evaluator.evaluate(input, [mockCriterion]);
+      expect(results[0].score).toBeCloseTo(1);
+      expect(results[0].reasoning).toContain("Comparing 'response' with 'context.data.ref'");
+    });
+
+    it('should use groundTruth.path as source and prompt.path as reference (if supported by getInputText)', async () => {
+      // This tests if getInputText can handle deep paths for prompt if prompt were an object.
+      // Currently, input.prompt is typically a string, so prompt.path wouldn't work unless prompt itself becomes structured.
+      // We will test groundTruth.path as source and a simple prompt string as reference.
+      const config: LexicalSimilarityEvaluatorConfig = {
+        criterionName: 'LexSim',
+        sourceField: 'groundTruth.textValue',
+        referenceField: 'prompt'
+      };
+      const evaluator = new LexicalSimilarityEvaluator(config);
+      const input = createMockInput(
+        'some response', 
+        { textValue: 'gt text' }, // groundTruth is an object
+        {},
+        [mockCriterion]
+      );
+      input.prompt = 'gt text';
+
+      const results = await evaluator.evaluate(input, [mockCriterion]);
+      expect(results[0].score).toBeCloseTo(1);
+      expect(results[0].reasoning).toContain("Comparing 'groundTruth.textValue' with 'prompt'");
     });
 
     it('should return error result if sourceField (response) is missing/not string', async () => {

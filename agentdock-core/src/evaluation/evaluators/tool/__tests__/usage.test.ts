@@ -334,6 +334,90 @@ describe('ToolUsageEvaluator', () => {
     });
   });
 
+  describe('Multiple Rules', () => {
+    const criteria: EvaluationCriteria[] = [
+      { name: 'UsedWeather', description: '', scale: 'binary' },
+      { name: 'UsedStock', description: '', scale: 'binary' },
+      { name: 'WeatherArgsValid', description: '', scale: 'binary' },
+    ];
+
+    const weatherCall = createMockAgentMessage('msgW', 'assistant', [], [
+      { type: 'tool_call', toolCallId: 'tcW', toolName: 'get_weather', args: { location: 'London' } }
+    ]);
+    const stockCall = createMockAgentMessage('msgS', 'assistant', [], [
+      { type: 'tool_call', toolCallId: 'tcS', toolName: 'get_stock', args: { ticker: 'GOOG' } }
+    ]);
+
+    it('should evaluate multiple rules correctly (all pass)', async () => {
+      const rules: ToolUsageRule[] = [
+        { criterionName: 'UsedWeather', expectedToolName: 'get_weather', isRequired: true },
+        { criterionName: 'UsedStock', expectedToolName: 'get_stock', isRequired: true },
+      ];
+      const evaluator = new ToolUsageEvaluator({ rules });
+      mockInput.messageHistory = [weatherCall, stockCall];
+      mockInput.criteria = criteria.filter(c => c.name === 'UsedWeather' || c.name === 'UsedStock');
+
+      const results = await evaluator.evaluate(mockInput, mockInput.criteria);
+      expect(results).toHaveLength(2);
+      expect(results.find(r => r.criterionName === 'UsedWeather')?.score).toBe(true);
+      expect(results.find(r => r.criterionName === 'UsedStock')?.score).toBe(true);
+    });
+
+    it('should evaluate multiple rules correctly (one required fail, one optional pass)', async () => {
+      const rules: ToolUsageRule[] = [
+        { criterionName: 'UsedWeather', expectedToolName: 'get_weather', isRequired: true }, // Will fail
+        { criterionName: 'UsedStock', expectedToolName: 'get_stock', isRequired: false }, // Will pass (found)
+      ];
+      const evaluator = new ToolUsageEvaluator({ rules });
+      mockInput.messageHistory = [stockCall]; // Only stock called
+      mockInput.criteria = criteria.filter(c => c.name === 'UsedWeather' || c.name === 'UsedStock');
+
+      const results = await evaluator.evaluate(mockInput, mockInput.criteria);
+      expect(results).toHaveLength(2);
+      expect(results.find(r => r.criterionName === 'UsedWeather')?.score).toBe(false);
+      expect(results.find(r => r.criterionName === 'UsedWeather')?.reasoning).toContain('was not called');
+      expect(results.find(r => r.criterionName === 'UsedStock')?.score).toBe(true);
+      expect(results.find(r => r.criterionName === 'UsedStock')?.reasoning).toContain('was called');
+    });
+
+    it('should evaluate multiple rules correctly (one required pass, one optional missing)', async () => {
+      const rules: ToolUsageRule[] = [
+        { criterionName: 'UsedWeather', expectedToolName: 'get_weather', isRequired: true },   // Will pass
+        { criterionName: 'UsedStock', expectedToolName: 'get_stock', isRequired: false },    // Will pass (optional missing)
+      ];
+      const evaluator = new ToolUsageEvaluator({ rules });
+      mockInput.messageHistory = [weatherCall]; // Only weather called
+      mockInput.criteria = criteria.filter(c => c.name === 'UsedWeather' || c.name === 'UsedStock');
+
+      const results = await evaluator.evaluate(mockInput, mockInput.criteria);
+      expect(results).toHaveLength(2);
+      expect(results.find(r => r.criterionName === 'UsedWeather')?.score).toBe(true);
+      expect(results.find(r => r.criterionName === 'UsedStock')?.score).toBe(true); // Optional missing defaults to true for binary
+      expect(results.find(r => r.criterionName === 'UsedStock')?.reasoning).toContain('was not called. (Tool was optional)');
+    });
+
+    it('should evaluate multiple rules including argument checks', async () => {
+      const validCheck = jest.fn().mockReturnValue({ isValid: true });
+      const invalidCheck = jest.fn().mockReturnValue({ isValid: false, reason: 'Bad ticker' });
+      const rules: ToolUsageRule[] = [
+        { criterionName: 'UsedWeather', expectedToolName: 'get_weather', argumentChecks: validCheck },
+        { criterionName: 'UsedStock', expectedToolName: 'get_stock', argumentChecks: invalidCheck },
+      ];
+      const evaluator = new ToolUsageEvaluator({ rules });
+      mockInput.messageHistory = [weatherCall, stockCall];
+      mockInput.criteria = criteria.filter(c => c.name === 'UsedWeather' || c.name === 'UsedStock');
+
+      const results = await evaluator.evaluate(mockInput, mockInput.criteria);
+      expect(results).toHaveLength(2);
+      expect(results.find(r => r.criterionName === 'UsedWeather')?.score).toBe(true);
+      expect(results.find(r => r.criterionName === 'UsedWeather')?.reasoning).toContain('Argument check passed');
+      expect(results.find(r => r.criterionName === 'UsedStock')?.score).toBe(false);
+      expect(results.find(r => r.criterionName === 'UsedStock')?.reasoning).toContain('Argument check failed for the first call: Bad ticker');
+      expect(validCheck).toHaveBeenCalledWith({ location: 'London' });
+      expect(invalidCheck).toHaveBeenCalledWith({ ticker: 'GOOG' });
+    });
+  });
+
   // TODO: More tests for multiple rules, etc.
 
 }); 

@@ -73,3 +73,6 @@ public/llms-full.txt
 
 # Build output
 agentdock-core/dist/
+
+# Evaluation results
+evaluation_results.log

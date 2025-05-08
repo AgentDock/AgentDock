@@ -155,4 +155,244 @@ The framework ships with a versatile set of built-in evaluators:
 
 Dive deeper into the specifics of each evaluator, learn how to create custom evaluators, and explore the example script (`examples/run_evaluation_example.ts`) in the repository to see the framework in action.
 
-This framework is a living system. The expectation is that it will evolve as new patterns and requirements are identified from real-world agent deployments. The current foundation, however, provides the necessary tools to move beyond subjective assessments and start building a culture of measurable quality. 
+This framework is a living system. The expectation is that it will evolve as new patterns and requirements are identified from real-world agent deployments. The current foundation, however, provides the necessary tools to move beyond subjective assessments and start building a culture of measurable quality.
+
+## Example Evaluation Outputs
+
+This section provides examples of the `AggregatedEvaluationResult` objects that the `EvaluationRunner` produces. These are typically written to a log file (e.g., `evaluation_results.log` if using the `JsonFileStorageProvider`) or can be processed directly if no storage provider is used.
+
+### Comprehensive Evaluation Run
+
+The following is an example output from a run that includes multiple types of evaluators (RuleBased, LLMJudge, NLPAccuracy, ToolUsage, and the Lexical Suite). This demonstrates the typical structure of a complete evaluation result.
+
+```json
+{
+  "overallScore": 0.9578790001807427,
+  "results": [
+    {
+      "criterionName": "IsConcise",
+      "score": true,
+      "reasoning": "Rule length on field 'response' passed.",
+      "evaluatorType": "RuleBased"
+    },
+    {
+      "criterionName": "ContainsAgentDock",
+      "score": true,
+      "reasoning": "Rule includes on field 'response' passed.",
+      "evaluatorType": "RuleBased"
+    },
+    {
+      "criterionName": "IsHelpful",
+      "score": 5,
+      "reasoning": "The response accurately answers the query by providing the requested information about the weather in London. It is clear, concise, and directly addresses the user's request.",
+      "evaluatorType": "LLMJudge",
+      "metadata": {
+        "rawLlmScore": 5
+      }
+    },
+    {
+      "criterionName": "SemanticMatchToGreeting",
+      "score": 0.8556048791777057,
+      "reasoning": "Cosine similarity: 0.8556.",
+      "evaluatorType": "NLPAccuracy"
+    },
+    {
+      "criterionName": "UsedSearchToolCorrectly",
+      "score": true,
+      "reasoning": "Tool 'search_web' was called 1 time(s). Argument check passed for the first call.",
+      "evaluatorType": "ToolUsage"
+    },
+    {
+      "criterionName": "UsedRequiredFinalizeTool",
+      "score": true,
+      "reasoning": "Tool 'finalize_task' was called 1 time(s). Argument check passed for the first call.",
+      "evaluatorType": "ToolUsage"
+    },
+    {
+      "criterionName": "LexicalResponseMatch",
+      "score": 0.8979591836734694,
+      "reasoning": "Comparing 'response' with 'groundTruth' using sorensen-dice. Case-insensitive comparison. Whitespace normalized. Sørensen-Dice similarity: 0.8980. Processed source: \"i am an agentdock assistant. i found the weather for you. the weather in london is 15c and cloudy. i...\", Processed reference: \"as an agentdock helper, i can assist you with various activities. the weather in london is currently...\".",
+      "evaluatorType": "LexicalSimilarity"
+    },
+    {
+      "criterionName": "ResponseKeywordCoverage",
+      "score": 1,
+      "reasoning": "Found 4 out of 4 keywords. Coverage: 100.00%. Found: [weather, london, assistant, task]. Missed: []. Source text (processed): \"i am an agentdock assistant. i found the weather for you. the weather in london is 15c and cloudy. i have finalized the task.\".",
+      "evaluatorType": "KeywordCoverage"
+    },
+    {
+      "criterionName": "ResponseSentiment",
+      "score": 0.5,
+      "reasoning": "Sentiment analysis of 'response'. Raw score: 0, Comparative: 0.0000. Output type: comparativeNormalized -> 0.5000.",
+      "evaluatorType": "Sentiment",
+      "metadata": {
+        "rawScore": 0,
+        "comparativeScore": 0,
+        "positiveWords": [],
+        "negativeWords": []
+      }
+    },
+    {
+      "criterionName": "IsNotToxic",
+      "score": true,
+      "reasoning": "Toxicity check for field 'response'. No configured toxic terms found. Configured terms: [hate, stupid, terrible, awful, idiot]. Case sensitive: false, Match whole word: true.",
+      "evaluatorType": "Toxicity",
+      "metadata": {
+        "foundToxicTerms": []
+      }
+    }
+  ],
+  "timestamp": 1746674996953,
+  "agentId": "example-agent-tsx-002",
+  "sessionId": "example-session-tsx-1746674993007",
+  "inputSnapshot": {
+    "prompt": "Hello, what can you do for me? And find weather in London.",
+    "response": "I am an AgentDock assistant. I found the weather for you. The weather in London is 15C and Cloudy. I have finalized the task.",
+    "groundTruth": "As an AgentDock helper, I can assist you with various activities. The weather in London is currently 15C and cloudy.",
+    "criteria": "[... criteria definitions truncated for README example ...]",
+    "agentId": "example-agent-tsx-002",
+    "sessionId": "example-session-tsx-1746674993007",
+    "messageHistory": "[... message history truncated for README example ...]"
+  },
+  "evaluationConfigSnapshot": {
+    "evaluatorTypes": [
+      "RuleBased",
+      "LLMJudge:IsHelpful",
+      "NLPAccuracy:SemanticMatchToGreeting",
+      "ToolUsage",
+      "LexicalSimilarity:LexicalResponseMatch",
+      "KeywordCoverage:ResponseKeywordCoverage",
+      "Sentiment:ResponseSentiment",
+      "Toxicity:IsNotToxic"
+    ],
+    "criteriaNames": [
+      "IsConcise",
+      "IsHelpful",
+      "ContainsAgentDock",
+      "SemanticMatchToGreeting",
+      "UsedSearchToolCorrectly",
+      "UsedRequiredFinalizeTool",
+      "LexicalResponseMatch",
+      "ResponseKeywordCoverage",
+      "ResponseSentiment",
+      "IsNotToxic"
+    ],
+    "storageProviderType": "external",
+    "metadataKeys": [
+      "testSuite"
+    ]
+  },
+  "metadata": {
+    "testSuite": "example_tsx_explicit_dotenv_local_script_with_nlp",
+    "errors": [],
+    "durationMs": 3946
+  }
+}
+```
+
+### Negative Sentiment Test
+
+This example shows the output when specifically testing the `SentimentEvaluator` with a configuration designed to categorize a clearly negative response. Note that `overallScore` might be absent if only non-numeric scores (like string categories) are produced and no aggregation is performed or possible.
+
+```json
+{
+  "results": [
+    {
+      "criterionName": "NegativeResponseSentimentCategory",
+      "score": "negative",
+      "reasoning": "Sentiment analysis of 'response'. Raw score: -11, Comparative: -0.8462. Output type: category -> negative. (PosThreshold: 0.2, NegThreshold: -0.2).",
+      "evaluatorType": "Sentiment",
+      "metadata": {
+        "rawScore": -11,
+        "comparativeScore": -0.8461538461538461,
+        "positiveWords": [],
+        "negativeWords": [
+          "unhappy",
+          "awful",
+          "terrible",
+          "hate"
+        ]
+      }
+    }
+  ],
+  "timestamp": 1746674996970,
+  "agentId": "example-agent-tsx-003",
+  "sessionId": "example-session-tsx-neg-1746674993007",
+  "inputSnapshot": {
+    "prompt": "Hello, what can you do for me? And find weather in London.",
+    "response": "I hate this. This is terrible and awful and I am very unhappy.",
+    "groundTruth": "As an AgentDock helper, I can assist you with various activities. The weather in London is currently 15C and cloudy.",
+    "criteria": "[... criteria definitions truncated for README example ...]",
+    "agentId": "example-agent-tsx-003",
+    "sessionId": "example-session-tsx-neg-1746674993007",
+    "messageHistory": "[... message history truncated for README example ...]"
+  },
+  "evaluationConfigSnapshot": {
+    "evaluatorTypes": [
+      "Sentiment:NegativeResponseSentimentCategory"
+    ],
+    "criteriaNames": "[... criteria names truncated for README example ...]",
+    "storageProviderType": "external",
+    "metadataKeys": [
+      "testSuite"
+    ]
+  },
+  "metadata": {
+    "testSuite": "negative_sentiment_category_test",
+    "errors": [],
+    "durationMs": 3
+  }
+}
+```
+
+### Toxic Response Test
+
+This example shows the output when specifically testing the `ToxicityEvaluator`. The response contains terms from the blocklist, resulting in a `false` score for the `IsNotToxic` criterion and an `overallScore` of 0 (as this was the only criterion weighted for this run in the example script).
+
+```json
+{
+  "overallScore": 0,
+  "results": [
+    {
+      "criterionName": "IsNotToxic",
+      "score": false,
+      "reasoning": "Toxicity check for field 'response'. Found toxic terms: [hate, stupid, terrible, idiot]. Configured terms: [hate, stupid, terrible, awful, idiot]. Case sensitive: false, Match whole word: true.",
+      "evaluatorType": "Toxicity",
+      "metadata": {
+        "foundToxicTerms": [
+          "hate",
+          "stupid",
+          "terrible",
+          "idiot"
+        ]
+      }
+    }
+  ],
+  "timestamp": 1746674996975,
+  "agentId": "example-agent-tsx-004",
+  "sessionId": "example-session-tsx-toxic-1746674993007",
+  "inputSnapshot": {
+    "prompt": "Hello, what can you do for me? And find weather in London.",
+    "response": "You are a stupid idiot and I hate this terrible service.",
+    "groundTruth": "As an AgentDock helper, I can assist you with various activities. The weather in London is currently 15C and cloudy.",
+    "criteria": "[... criteria definitions truncated for README example ...]",
+    "agentId": "example-agent-tsx-004",
+    "sessionId": "example-session-tsx-toxic-1746674993007",
+    "messageHistory": "[... message history truncated for README example ...]"
+  },
+  "evaluationConfigSnapshot": {
+    "evaluatorTypes": [
+      "Toxicity:IsNotToxic"
+    ],
+    "criteriaNames": "[... criteria names truncated for README example ...]",
+    "storageProviderType": "external",
+    "metadataKeys": [
+      "testSuite"
+    ]
+  },
+  "metadata": {
+    "testSuite": "toxic_response_test",
+    "errors": [],
+    "durationMs": 0
+  }
+}

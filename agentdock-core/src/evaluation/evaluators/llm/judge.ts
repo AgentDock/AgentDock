@@ -171,10 +171,10 @@ export class LLMJudgeEvaluator implements Evaluator {
     prompt = prompt.replace('{{criterion_scale}}', criterion.scale); // Pass scale directly, not stringified
 
     // Replace any context variables like {{context.someKey}}
-    // This requires parsing the template for such patterns
-    const contextRegex = /\{\{context\.([^}]+)\}\}/g;
+    // Use explicit chars + length limit for key to prevent ReDoS
+    const contextRegex = /\\{\\{context\\.([\\w.-]{1,100})\\}\\}/g;
     prompt = prompt.replace(contextRegex, (_match, key) => {
-      const value = input.context?.[key.trim()];
+      const value = input.context?.[key.trim()]; // Use key.trim() for safety
       // Stringify complex objects from context, otherwise use as is or 'N/A'
       if (value === undefined || value === null) return 'N/A';
       if (typeof value === 'object') return JSON.stringify(value);

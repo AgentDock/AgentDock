@@ -364,8 +364,8 @@ This project *requires* the use of `pnpm` for consistent dependency management. 
 | 🌐 **Open Source Client** | Complete Next.js reference implementation included                       |
 | 🔄 **Orchestration**      | *Dynamic control* of agent behavior based on context                      |
 | 💾 **Session Management** | Isolated state for concurrent conversations                               |
-| 🎮 **Configurable Determinism** | Balance AI creativity & predictability via node logic/workflows.        |
-| 📊 **Evaluation Framework** | Robust tools to define, run, and analyze agent performance evaluations.   |
+| 🎮 **Configurable Determinism** | Balance AI creativity & predictability via node logic/workflows        |
+| 📊 **Evaluation Framework** | Robust tools to define, run, and analyze agent performance evaluations   |
 
 ## 🧰 Components
 

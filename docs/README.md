@@ -171,6 +171,7 @@ The framework is built around a powerful node-based system:
 | 🔄 **Orchestration** | *Dynamic control* of agent behavior based on context |
 | 💾 **Session Management** | Isolated state for concurrent conversations |
 | 🎮 **Configurable Determinism** | Precise control over agent predictability |
+| 📊 **Evaluation Framework** | Robust tools to define, run, and analyze agent performance evaluations |
 
 
 ## Getting Started

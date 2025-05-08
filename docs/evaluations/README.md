@@ -1,6 +1,6 @@
 # AgentDock Evaluation Framework: Measuring What Matters
 
-The capability to build AI agents is rapidly becoming commoditized. The real differentiator—and the foundation of any production-grade system—lies in the ability to *systematically and reliably measure agent quality*. Without robust evaluation, "improvement" is guesswork, and "reliability" is a marketing slogan. Experience in deploying these systems has consistently shown that what isn't measured, isn't managed, and certainly isn't improved in a way that stands up to real-world demands.
+The capability to build AI agents is rapidly becoming commoditized. The real differentiator lies in the ability to systematically and reliably measure agent quality. Without robust evaluation, "improvement" is guesswork, and "reliability" is a marketing slogan. Experience in deploying these systems has consistently shown that what isn't measured, isn't managed, and certainly isn't improved in a way that stands up to real-world demands.
 
 AgentDock Core now includes a foundational, extensible **Evaluation Framework** designed to address this critical need. This isn't about chasing every possible academic metric; it's about providing a practical, adaptable toolkit for developers to define what quality means for *their* agents and to measure it consistently.
 

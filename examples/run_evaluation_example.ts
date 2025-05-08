@@ -25,6 +25,8 @@ import { JsonFileStorageProvider } from '../agentdock-core/src/evaluation/storag
 
 import { openai } from '@ai-sdk/openai';
 import dotenv from 'dotenv';
+import path from 'path';
+import fs from 'fs';
 
 // Explicitly load .env.local
 dotenv.config({ path: '.env.local' });
@@ -288,7 +290,7 @@ async function main() {
       { type: 'Sentiment', config: sentimentConfig },
       { type: 'Toxicity', config: toxicityConfig }
     ],
-    storageProvider_FOR_SERVER_USE_ONLY: myFileLogger,
+    storageProvider: myFileLogger,
     metadata: { testSuite: 'example_tsx_explicit_dotenv_local_script_with_nlp' },
   };
 
@@ -340,7 +342,7 @@ async function main() {
         evaluatorConfigs: [
             { type: 'Sentiment', config: sentimentCategoryConfig }
         ],
-        storageProvider_FOR_SERVER_USE_ONLY: myFileLogger,
+        storageProvider: myFileLogger,
         metadata: { testSuite: 'negative_sentiment_category_test' }
     };
     const negativeAggregatedResult = await runEvaluation(negativeSentimentInput, negativeRunConfig);
@@ -353,7 +355,7 @@ async function main() {
         evaluatorConfigs: [
             { type: 'Toxicity', config: toxicityConfig }
         ],
-        storageProvider_FOR_SERVER_USE_ONLY: myFileLogger,
+        storageProvider: myFileLogger,
         metadata: { testSuite: 'toxic_response_test' }
     };
     const toxicAggregatedResult = await runEvaluation(toxicResponseInput, toxicRunConfig);

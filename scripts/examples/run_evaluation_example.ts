@@ -18,10 +18,10 @@ import {
   type AgentMessage,
   type MessageContent,
   type AggregatedEvaluationResult
-} from '../agentdock-core'; // Adjusted import path
+} from '../../agentdock-core'; // Corrected import path (up two levels)
 
 // Direct import for server-side use
-import { JsonFileStorageProvider } from '../agentdock-core/src/evaluation/storage/json_file_storage';
+import { JsonFileStorageProvider } from '../../agentdock-core/src/evaluation/storage/json_file_storage'; // Corrected import path (up two levels)
 
 import { openai } from '@ai-sdk/openai';
 import dotenv from 'dotenv';

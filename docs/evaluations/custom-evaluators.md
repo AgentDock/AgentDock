@@ -54,7 +54,7 @@ graph TD
         EIface -.-> EvalMethod["evaluate(input, criteria, config)"]
         CE -- "Uses" --> CEC["Custom Evaluator Config (from ERC)"]
         CE -- "Processes" --> EIn["EvaluationInput"]
-        CE -- "Produces" --> EVR[EvaluationResult(s)]
+        CE -- "Produces" --> EVR["EvaluationResult(s)"]
     end
 
     ER -- "Instantiates/Uses" --> CE

@@ -1,15 +1,15 @@
 # PRD: AgentDock Evaluation Framework - Building for Measurable Quality
 
-## 1. The Problem: We Can't Reliably Measure Agent Quality
+## 1. Introduction: The Need for Standardized Evaluation
 
-AgentDock currently lacks a systematic way to evaluate agent performance. We can build agents, but actually *measuring* their quality--accuracy, relevance, safety, adherence to instructions--is inconsistent and subjective. My experience shows this isn't theoretical; it's a practical bottleneck hindering our ability to:
+As AgentDock evolves, the ability to systematically measure and improve agent quality becomes paramount. While various ad-hoc methods and external tools have been used previously, a standardized, integrated **Evaluation Framework** within AgentDock Core is essential to:
 
-*   **Identify Regressions:** We can't reliably detect if a change degraded performance without objective metrics. We're flying blind.
-*   **Benchmark Effectively:** Comparing models or prompts relies on guesswork, not data. This slows down meaningful improvement.
-*   **Improve Systematically:** Real progress demands a data-driven feedback loop. Subjectivity doesn't scale and wastes engineering effort.
-*   **Ensure Production Readiness:** Shipping agents without clear quality metrics is unacceptable for mission-critical systems. "Looks good" isn't an engineering standard.
+*   **Ensure Consistency:** Provide a common yardstick for quality across all agents and development cycles.
+*   **Enable Systematic Improvement:** Establish a data-driven feedback loop to identify weaknesses and track progress effectively.
+*   **Facilitate Benchmarking:** Reliably compare the performance of different models, prompts, or agent versions.
+*   **Guarantee Production Readiness:** Implement objective quality gates before deploying agents into production environments.
 
-This isn't a nice-to-have. Building a robust, integrated evaluation framework is a core requirement for production-grade systems. (Ref: [GitHub Issue #105](https://github.com/AgentDock/AgentDock/issues/105)).
+Building this framework is a foundational step towards delivering robust, reliable, and continuously improving AI agents. (Ref: [GitHub Issue #105](https://github.com/AgentDock/AgentDock/issues/105)).
 
 ## 2. The Goal: A Foundational, Adaptable Evaluation Core
 
@@ -230,15 +230,19 @@ This phase focuses on delivering a suite of fast, cost-effective, and practical 
 *   🔴 **Configuration from Files:** Allow loading `EvaluationRunConfig` (or parts of it, like criteria sets or evaluator profiles) from static files (e.g., JSON, TS) for easier management of standard evaluation suites.
 *   🔴 **Observability Enhancements:** Deeper integration with tracing/logging systems, potentially emitting OpenTelemetry-compatible evaluation events.
 *   🔴 **UI/Dashboard for Results:** (Much Later) A dedicated interface for visualizing evaluation results, trends, and comparisons.
+*   🟡 **Resolve Skipped Tests:** Investigate and fix the skipped context variable assertion test in `LLMJudgeEvaluator` and the Jaro-Winkler test in `LexicalSimilarityEvaluator`.
+*   🟡 **Implement Runner Validation:** Complete the `validateEvaluatorConfigs` logic in the `EvaluationRunner` to ensure evaluator configurations are valid before execution.
+*   🟡 **Implement Advanced Evaluator Features:** Address Phase 2 TODOs within existing evaluators, such as advanced LLM Judge configurations (e.g., reference-free evaluation), sequence checking in `ToolUsageEvaluator`, and potentially adding more algorithms or features to the Lexical Suite.
 
 ## 8. Adaptability: Design Principles for Future Growth
 
 The long-term value of this framework hinges on its adaptability. We achieve this through:
 
-*   **The `Evaluator` Interface:** This is the primary extension point. Any evaluation logic—custom business rules, advanced NLP metrics, statistical analysis, wrappers around external APIs (like commercial evaluation platforms), or even processors for human feedback—can be integrated by implementing this simple interface.
+*   **The `Evaluator` Interface:** This is the primary extension point. Any evaluation logic—custom business rules, advanced NLP metrics, statistical analysis, or even processors for human feedback—can be integrated by implementing this simple interface.
+*   **Integrating Third-Party Tools:** External platforms and libraries (e.g., DeepEval, TruLens, LangSmith, custom model endpoints) can be seamlessly integrated by creating custom `Evaluator` classes. These classes act as wrappers, making calls to the external tool's API or library within their `evaluate` method and translating the results into the standard `EvaluationResult` format. This allows leveraging specialized external capabilities while maintaining a consistent workflow within the AgentDock framework.
 *   **The `EvaluationStorageProvider` Interface:** This decouples the evaluation execution from how results are persisted. Implementations can target relational databases, document stores, dedicated MLOps platforms, or cloud logging services without impacting the core runner.
 *   **Flexible `EvaluationInput` Structure:** The input object is designed to be rich and extensible using `context` and `metadata` fields, allowing diverse types of information to be passed to evaluators without needing interface changes.
 *   **Configuration-Driven Execution:** The `EvaluationRunner` operates based on the configuration it receives (which evaluators to run, criteria defined in the input, storage settings), rather than having evaluation logic hardcoded within it.
 *   **Service Wrapping Potential:** The decoupled design, centered around the `runEvaluation` function and its configuration, ensures that the core logic can be easily wrapped within different deployment models in the future, such as a standalone HTTP microservice, if required for specific use cases like a centralized evaluation service.
 
-This approach ensures that `agentdock-core` provides a solid foundation for evaluation without prescribing a specific methodology or locking users into proprietary tools. External platforms like DeepEval, TruLens, or LangSmith can be integrated by creating corresponding `Evaluator` wrappers that conform to our interface.
+This approach ensures that `agentdock-core` provides a solid foundation for evaluation without prescribing a specific methodology or locking users into proprietary tools.

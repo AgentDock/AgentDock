@@ -153,7 +153,7 @@ The framework ships with a versatile set of built-in evaluators:
 
 ## Next Steps
 
-Dive deeper into the specifics of each evaluator, learn how to create custom evaluators, and explore the example script (`examples/run_evaluation_example.ts`) in the repository to see the framework in action.
+Dive deeper into the specifics of each evaluator, learn how to create custom evaluators, and explore the example script (`scripts/examples/run_evaluation_example.ts`) in the repository to see the framework in action.
 
 This framework is a living system. The expectation is that it will evolve as new patterns and requirements are identified from real-world agent deployments. The current foundation, however, provides the necessary tools to move beyond subjective assessments and start building a culture of measurable quality.
 

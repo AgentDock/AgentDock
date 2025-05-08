@@ -74,6 +74,7 @@ For a deeper dive into the architectural concepts, see the [Main Architecture Do
 /src
 ├── config/         # Configuration loading and validation (e.g., agent templates)
 ├── errors/         # Custom error types and factory
+├── evaluation/     # Agent evaluation framework (runner, evaluators, storage)
 ├── llm/            # CoreLLM abstraction, provider specifics, model utilities
 ├── logging/        # Logging utilities and configuration
 ├── messaging/      # Core message types and handling (if applicable standalone)

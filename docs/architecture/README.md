@@ -49,6 +49,7 @@ See [Request Flow](./core/request-flow.md) for more details.
 ├── client/         # (Primarily for Open Source Client integration)
 ├── config/         # Configuration loading utilities
 ├── errors/         # Custom error types and factory
+├── evaluation/     # Agent evaluation framework (runner, evaluators, storage)
 ├── llm/            # CoreLLM abstraction, provider specifics
 ├── logging/        # Logging utilities
 ├── nodes/          # AgentNode, tool execution logic

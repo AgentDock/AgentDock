@@ -50,6 +50,10 @@ AgentDock Core comprises several interacting subsystems:
 8.  **Error Handling (`/errors`):**
     -   Provides standardized error types and a factory for consistent error reporting.
 
+9.  **Evaluation Framework (`/evaluation`):**
+    -   Provides tools for systematic evaluation of agent performance.
+    -   Includes `EvaluationRunner`, various `Evaluators` (RuleBased, LLMJudge, NLP, Lexical, ToolUsage), `EvaluationCriteria` definition, and `EvaluationStorageProvider` for results persistence.
+
 ## Core Components
 
 AgentDock Core consists of several key components:

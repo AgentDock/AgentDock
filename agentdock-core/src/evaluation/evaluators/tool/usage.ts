@@ -177,8 +177,14 @@ export class ToolUsageEvaluator implements Evaluator {
       if (Array.isArray(input.context.toolCalls)) {
         calls.push(...input.context.toolCalls.filter(
           (tc: any): tc is ExtractedToolCall => // Type guard for safety
-            tc && typeof tc.toolName === 'string' && typeof tc.toolArguments === 'object'
-        ));
+            tc && 
+            typeof tc.toolName === 'string' && 
+            (typeof tc.args === 'object' || typeof tc.toolArguments === 'object') // Accept either args or toolArguments
+        ).map((tc: any) => ({ // Map to ensure consistent output structure
+            toolName: tc.toolName,
+            toolCallId: tc.toolCallId, // Include toolCallId if available
+            toolArguments: tc.args ?? tc.toolArguments // Prefer args if both exist, otherwise toolArguments
+        })));
       }
     }
     return calls;

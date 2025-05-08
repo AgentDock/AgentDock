@@ -177,7 +177,8 @@ export class KeywordCoverageEvaluator implements Evaluator {
     const missedKeywords: string[] = [];
 
     for (const keyword of keywordsToFind) {
-      if (sourceText.includes(keyword)) {
+      const pattern = new RegExp(`\\b${keyword.replace(/[\\.\\*\\?\\^\\$\\{\\}\\(\\)\\|\\\\[\\\\]\\\\]/g, '\\\\$&')}\\b`, this.config.caseSensitive ? '' : 'i');
+      if (pattern.test(sourceText)) {
         foundCount++;
         foundKeywords.push(keyword);
       } else {

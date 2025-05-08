@@ -32,6 +32,10 @@ const baseMockInput: EvaluationInput = {
 const mockEmbeddingModel = {} as any; 
 
 // Minimal mock for CoreLLM - only for constructor validation of LLMJudge
+// TODO: [Phase 2] Consider replacing this with a full jest.mock('../../llm/core') 
+// if tests evolve to require more CoreLLM functionality. Current mock is sufficient 
+// for config validation tests where LLMJudgeEvaluator is instantiated but not deeply used.
+// (Acknowledges suggestion for more robust mocking).
 const mockValidLLM = {
     getModel: () => ({ doGenerate: jest.fn(), doStream: jest.fn() }),
     modelId: 'mock-valid-llm',
@@ -39,6 +43,9 @@ const mockValidLLM = {
     stream: jest.fn()
 } as any;
 
+// TODO: [Phase 2] Refactor this function and the original normalizeEvaluationScore from ../index.ts \
+// into a shared utility (e.g., in evaluation/utils/) and import it in both locations. \
+// This will prevent drift and ensure tests use the exact production logic. (Addresses the suggestion).
 // Helper function (copied from runner - for test expectation calculation)
 function normalizeEvaluationScoreForTest(rawScore: EvaluationResult['score'] | undefined, scale: EvaluationScale): number | null {
   if (rawScore === undefined) return null; // Handle undefined input

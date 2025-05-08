@@ -418,6 +418,8 @@ describe('ToolUsageEvaluator', () => {
     });
   });
 
-  // TODO: More tests for multiple rules, etc.
-
+  // TODO: [Phase 2] More tests for multiple rules, especially scenarios where rules might implicitly overlap 
+  // (e.g. different argument checks for the same tool, or different required counts for the same tool under different criteria),
+  // and to verify behavior with future features like call sequence checking or disallowing unspecified tools.
+  // Current multi-rule tests cover basic independent rule application.
 }); 

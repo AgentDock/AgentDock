@@ -52,12 +52,25 @@ Configuring this evaluator primarily involves specifying how embeddings are gene
 *   Potentially, parameters for the embedding generation.
 
 ```typescript
-// Example configuration structure (to be detailed)
-// {
-//   type: 'NLPAccuracy',
-//   embeddingConfig: { /* ... Configuration for embedding generation ... */ },
-//   // ... other NLP accuracy specific settings
-// }
+// Example configuration
+// NOTE: The `embeddingAdapter` needs to be an instance of a class
+// that implements the `EmbeddingAdapter` interface.
+// The instantiation below is conceptual.
+// You would typically import and configure a specific adapter (e.g., for OpenAI, Google, etc.).
+
+// Conceptual: const myOpenAIAdapter = new OpenAIEmbeddingAdapter({ apiKey: 'YOUR_API_KEY', model: 'text-embedding-ada-002' });
+// Conceptual: const myGoogleAdapter = new GoogleEmbeddingAdapter({ apiKey: 'YOUR_API_KEY', model: 'embedding-001' });
+
+// Example using a conceptual adapter instance:
+{
+  type: 'NLPAccuracy',
+  criterionName: 'SemanticClosenessToAnswer',
+  // embeddingAdapter: myOpenAIAdapter, // Pass the instantiated adapter
+  embeddingAdapter: {} as any, // Placeholder for a real adapter instance in a real setup
+  sourceTextField: 'response',       // Text to evaluate (e.g., agent's answer)
+  referenceTextField: 'groundTruth', // Text to compare against (e.g., ideal answer)
+  similarityThreshold: 0.75          // Optional: score >= this is considered a pass
+}
 ```
 
 ## Output (`EvaluationResult`)

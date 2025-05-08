@@ -122,9 +122,9 @@ import type { EvaluationRunConfig, EvaluationRule, RuleConfig } from 'agentdock-
 const ruleBasedRules: EvaluationRule[] = [
   {
     criterionName: 'IsConcise',
-    config: { 
-      type: 'length', 
-      max: 200 
+    config: {
+      type: 'length',
+      max: 200,
       // sourceField defaults to 'response'
     } as RuleConfig, // Type assertion sometimes helpful
   },

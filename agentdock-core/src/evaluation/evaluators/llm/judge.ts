@@ -163,12 +163,13 @@ export class LLMJudgeEvaluator implements Evaluator {
     const responseText = getInputText(input, 'response') ?? 'N/A'; 
     const referenceText = getInputText(input, 'groundTruth') ?? 'N/A'; 
 
-    prompt = prompt.replace('{{input}}', inputText);
-    prompt = prompt.replace('{{response}}', responseText);
-    prompt = prompt.replace('{{reference}}', referenceText);
-    prompt = prompt.replace('{{criterion_name}}', criterion.name);
-    prompt = prompt.replace('{{criterion_description}}', criterion.description);
-    prompt = prompt.replace('{{criterion_scale}}', criterion.scale); // Pass scale directly, not stringified
+    // Use split/join to replace all occurrences of each placeholder
+    prompt = prompt.split('{{input}}').join(inputText);
+    prompt = prompt.split('{{response}}').join(responseText);
+    prompt = prompt.split('{{reference}}').join(referenceText);
+    prompt = prompt.split('{{criterion_name}}').join(criterion.name);
+    prompt = prompt.split('{{criterion_description}}').join(criterion.description);
+    prompt = prompt.split('{{criterion_scale}}').join(criterion.scale); // Pass scale directly, not stringified
 
     // Replace any context variables like {{context.someKey}}
     // Use explicit chars + length limit for key to prevent ReDoS
@@ -192,19 +193,19 @@ export class LLMJudgeEvaluator implements Evaluator {
   private normalizeScore(rawValue: any, scale: EvaluationScale): { score?: EvaluationResult['score'], error?: string } {
     switch (scale) {
       case 'binary':
-      case 'pass/fail':
+      case 'pass/fail': {
         if (typeof rawValue === 'boolean') return { score: rawValue };
         const lowerVal = String(rawValue).toLowerCase();
         if (lowerVal === 'true' || lowerVal === 'pass' || lowerVal === 'yes' || lowerVal === '1') return { score: true };
         if (lowerVal === 'false' || lowerVal === 'fail' || lowerVal === 'no' || lowerVal === '0') return { score: false };
-        return { error: `Invalid value for ${scale} scale: ${rawValue}. Expected boolean or standard affirmative/negative string.` };
-      
-      case 'likert5':
+        return { error: `Invalid value for ${scale} scale: ${rawValue}. Expected boolean or standard pass/fail/binary strings.` };
+      }
+      case 'likert5': {
         const numLikert = Number(rawValue);
         if (Number.isInteger(numLikert) && numLikert >= 1 && numLikert <= 5) return { score: numLikert };
         return { error: `Invalid value for likert5 scale: ${rawValue}. Expected integer between 1 and 5.` };
-
-      case 'numeric':
+      }
+      case 'numeric': {
         if (rawValue === null || rawValue === undefined) { // Handle null and undefined explicitly
             return { error: `Invalid value for numeric scale: ${rawValue}. Expected a number.` };
         }
@@ -214,7 +215,7 @@ export class LLMJudgeEvaluator implements Evaluator {
         const numNumeric = Number(rawValue);
         if (!isNaN(numNumeric)) return { score: numNumeric };
         return { error: `Invalid value for numeric scale: ${rawValue}. Expected a number.` };
-      
+      }
       // For 'string' scale, any string is technically valid as a score, but we might want to be stricter.
       // For now, accept any string if the raw value is a string.
       // If the scale is a custom string (e.g., "low|medium|high"), this simple normalization won't validate against those specific values.

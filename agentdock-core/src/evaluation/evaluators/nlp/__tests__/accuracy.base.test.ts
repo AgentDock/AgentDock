@@ -4,9 +4,10 @@ import { embed, type EmbeddingModel } from 'ai'; // Ensure EmbeddingModel is imp
 
 // Mock the 'ai' module for the embed function
 jest.mock('ai', () => ({
-  ...jest.requireActual('ai'), // Import and retain default exports
-  embed: jest.fn(),
+  embed: jest.fn() // Only mock what is actually used by the NLPAccuracyEvaluator tests
 }));
+
+// Re-import after mocking to get the mocked version
 
 // Cast the mock to the correct type
 const mockEmbed = embed as jest.Mock;
@@ -44,7 +45,7 @@ describe('NLPAccuracyEvaluator - Base Functionality', () => {
   };
 
   beforeEach(() => {
-    mockEmbed.mockClear();
+    mockEmbed.mockReset();
     evaluator = new NLPAccuracyEvaluator(evaluatorConfigForConstructor);
   });
 

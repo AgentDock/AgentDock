@@ -176,7 +176,7 @@ describe('LLMJudgeEvaluator', () => {
     expect(mockAISDKGenerateObjectImpl).toHaveBeenCalledTimes(1);
     expect(results[0].score).toBe('error');
     expect(results[0].error).toBeDefined();
-    expect(results[0].error).toContain("Invalid value for binary scale: maybe. Expected boolean or standard affirmative/negative string.");
+    expect(results[0].error).toContain("Invalid value for binary scale: maybe. Expected boolean or standard pass/fail/binary strings.");
   });
 
   describe('Likert Scale Normalization and Zod Schema', () => {

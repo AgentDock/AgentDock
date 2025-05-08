@@ -229,20 +229,14 @@ This phase focuses on delivering a suite of fast, cost-effective, and practical 
 *   🔴 **Agent-Level Evaluation Paradigms:** Develop patterns or specialized evaluators for assessing multi-turn conversation quality, complex task completion across multiple steps, or agent adherence to long-term goals.
 *   🔴 **Configuration from Files:** Allow loading `EvaluationRunConfig` (or parts of it, like criteria sets or evaluator profiles) from static files (e.g., JSON, TS) for easier management of standard evaluation suites.
 *   🔴 **Observability Enhancements:** Deeper integration with tracing/logging systems, potentially emitting OpenTelemetry-compatible evaluation events.
-*   🔴 **UI/Dashboard for Results:** (Much Later) A dedicated interface for visualizing evaluation results, trends, and comparisons.
+*   🔴 **UI for Evaluation Results:** Develop a basic UI component or page within the AgentDock dashboard (or as a standalone tool) to view, filter, and compare evaluation results persisted via the SAL.
+*   🔴 **Benchmark Suite:** Establish a standardized benchmark suite using the evaluation framework to track performance of core agent capabilities over time and across different model versions.
+*   🔴 **Community Evaluators:** Document and streamline the process for community contributions of new evaluators to `agentdock-core`.
+*   🔴 **Improve Test Mock Robustness:** Transition simple test stubs (e.g., for `CoreLLM` in runner tests) to full `jest.mock()` implementations for better coverage and type safety as tests evolve.
+*   🔴 **Refactor Score Normalization Logic:** Extract the `normalizeEvaluationScore` function from the runner and its duplicate in tests into a shared utility to prevent drift and improve test reliability.
+*   🔴 **Improve Evaluation Module Exports:** Refactor `agentdock-core/evaluation` to expose necessary components like `JsonFileStorageProvider` via its public API (`index.ts`) to avoid deep internal imports in consuming code.
+
+*Previously listed items (status may need review as Phase 2 progresses):*
 *   🟡 **Resolve Skipped Tests:** Investigate and fix the skipped context variable assertion test in `LLMJudgeEvaluator` and the Jaro-Winkler test in `LexicalSimilarityEvaluator`.
 *   🟡 **Implement Runner Validation:** Complete the `validateEvaluatorConfigs` logic in the `EvaluationRunner` to ensure evaluator configurations are valid before execution.
 *   🟡 **Implement Advanced Evaluator Features:** Address Phase 2 TODOs within existing evaluators, such as advanced LLM Judge configurations (e.g., reference-free evaluation), sequence checking in `ToolUsageEvaluator`, and potentially adding more algorithms or features to the Lexical Suite.
-
-## 8. Adaptability: Design Principles for Future Growth
-
-The long-term value of this framework hinges on its adaptability. We achieve this through:
-
-*   **The `Evaluator` Interface:** This is the primary extension point. Any evaluation logic—custom business rules, advanced NLP metrics, statistical analysis, or even processors for human feedback—can be integrated by implementing this simple interface.
-*   **Integrating Third-Party Tools:** External platforms and libraries (e.g., DeepEval, TruLens, LangSmith, custom model endpoints) can be seamlessly integrated by creating custom `Evaluator` classes. These classes act as wrappers, making calls to the external tool's API or library within their `evaluate` method and translating the results into the standard `EvaluationResult` format. This allows leveraging specialized external capabilities while maintaining a consistent workflow within the AgentDock framework.
-*   **The `EvaluationStorageProvider` Interface:** This decouples the evaluation execution from how results are persisted. Implementations can target relational databases, document stores, dedicated MLOps platforms, or cloud logging services without impacting the core runner.
-*   **Flexible `EvaluationInput` Structure:** The input object is designed to be rich and extensible using `context` and `metadata` fields, allowing diverse types of information to be passed to evaluators without needing interface changes.
-*   **Configuration-Driven Execution:** The `EvaluationRunner` operates based on the configuration it receives (which evaluators to run, criteria defined in the input, storage settings), rather than having evaluation logic hardcoded within it.
-*   **Service Wrapping Potential:** The decoupled design, centered around the `runEvaluation` function and its configuration, ensures that the core logic can be easily wrapped within different deployment models in the future, such as a standalone HTTP microservice, if required for specific use cases like a centralized evaluation service.
-
-This approach ensures that `agentdock-core` provides a solid foundation for evaluation without prescribing a specific methodology or locking users into proprietary tools.

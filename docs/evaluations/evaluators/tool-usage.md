@@ -60,21 +60,29 @@ Configuration involves defining the expectations for tool usage:
 *   Potentially, checks for the `order` or `frequency` of calls.
 
 ```typescript
-// Example configuration structure (to be detailed)
-// {
-//   type: 'ToolUsage',
-//   expectedToolCalls: [
-//     {
-//       toolName: 'example_tool_name',
-//       required: true,
-//       argumentChecks: {
-//         'arg1': (value) => typeof value === 'string',
-//         'arg2': (value) => value > 0,
-//       }
-//     }
-//   ]
-//   // ... other tool usage specific settings
-// }
+// Example configuration
+{
+  type: 'ToolUsage',
+  criterionName: 'CorrectToolUse',
+  expectedToolCalls: [
+    {
+      toolName: 'search_knowledge_base',
+      required: true,
+      argumentChecks: {
+        'query': (value: any) => typeof value === 'string' && value.length > 0,
+        'max_results': (value: any) => typeof value === 'number' && value > 0 && value <= 10
+      }
+    },
+    {
+      toolName: 'send_email',
+      required: false,
+      argumentChecks: {
+        'recipient': (value: any) => typeof value === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
+        'subject': (value: any) => typeof value === 'string' && value.length > 0
+      }
+    }
+  ]
+}
 ```
 
 ## Output (`EvaluationResult`)

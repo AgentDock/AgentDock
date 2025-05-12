@@ -81,7 +81,7 @@
     "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.2.0",
     "flexsearch": "^0.8.143",
-    "framer-motion": "^12.7.4",
+    "framer-motion": "^12.10.5",
     "fuse.js": "^7.1.0",
     "geist": "^1.4.2",
     "input-otp": "^1.4.2",

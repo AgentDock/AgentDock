@@ -76,36 +76,36 @@ describe('AgentNode', () => {
       LLMOrchestrationService: jest.requireActual('../../llm/llm-orchestration-service').LLMOrchestrationService,
     }));
 
-    // Refresh the OrchestrationService mock implementation to use the new mockStreamWithOrchestration
-    jest.mock('../../llm/llm-orchestration-service', () => ({
-      LLMOrchestrationService: jest.fn().mockImplementation(() => ({
-        streamWithOrchestration: mockStreamWithOrchestration,
-      }))
-    }));
-  });
+  // Refresh the OrchestrationService mock implementation to use the new mockStreamWithOrchestration
+  jest.mock('../../llm/llm-orchestration-service', () => ({
+    LLMOrchestrationService: jest.fn().mockImplementation(() => ({
+      streamWithOrchestration: mockStreamWithOrchestration,
+    }))
+  }));
+});
 
-  it('should inject current date and time into system prompt', async () => {
-    // Create a mock config
-    const config = {
-      agentConfig: createAgentConfig({
-        version: '1',
-        agentId: 'test-agent',
-        name: 'Test Agent',
-        description: 'A test agent',
-        personality: 'I am a helpful assistant' as ValidatedPersonality,
-        nodes: [],
-        nodeConfigurations: {},
-        chatSettings: {},
-        options: {
-          maxSteps: 3
-        }
-      }),
-      apiKey: 'sk-ant-test-api-key'
-    };
+it('should inject current date and time into system prompt', async () => {
+  // Create a mock config
+  const config = {
+    agentConfig: createAgentConfig({
+      version: '1',
+      agentId: 'test-agent',
+      name: 'Test Agent',
+      description: 'A test agent',
+      personality: 'I am a helpful assistant' as ValidatedPersonality,
+      nodes: [],
+      nodeConfigurations: {},
+      chatSettings: {},
+      options: {
+        maxSteps: 3
+      }
+    }),
+    apiKey: 'sk-ant-test-api-key'
+  };
 
     // Create an instance of AgentNode
     const agentNode = new AgentNode('test-agent', config);
-
+  
     // Create mock messages with proper type
     const messages: Message[] = [
       { 
@@ -117,7 +117,7 @@ describe('AgentNode', () => {
     ];
 
     // Call handleMessage
-    await agentNode.handleMessage({ 
+    await agentNode.handleMessage({
       messages,
       sessionId: 'test-session-123',
       orchestrationManager: mockOrchestrationManager 
@@ -125,10 +125,10 @@ describe('AgentNode', () => {
 
     // Verify that streamText was called
     expect(mockStreamWithOrchestration).toHaveBeenCalled();
-    
+
     // Get the streamText call arguments
     const streamTextArgs = mockStreamWithOrchestration.mock.calls[0][0];
-    
+
     // Check if system is passed directly as an option
     if (streamTextArgs.system) {
       // Verify system option contains the expected content
@@ -187,7 +187,7 @@ describe('AgentNode', () => {
     const customSystem = 'Custom system message';
 
     // Call handleMessage with custom system
-    await agentNode.handleMessage({ 
+    await agentNode.handleMessage({
       messages,
       systemOverride: customSystem,
       sessionId: 'test-session-123',
@@ -196,10 +196,10 @@ describe('AgentNode', () => {
 
     // Verify that streamText was called
     expect(mockStreamWithOrchestration).toHaveBeenCalled();
-    
+
     // Get the streamText call arguments
     const streamTextArgs = mockStreamWithOrchestration.mock.calls[0][0];
-    
+
     // Check if system is passed directly as an option
     if (streamTextArgs.system) {
       // Verify system option contains the expected content
@@ -210,13 +210,13 @@ describe('AgentNode', () => {
     } else {
       // Extract the system message from messages array if present
       const systemMessage = streamTextArgs.messages.find((msg: any) => msg.role === 'system');
-      
+
       // Verify that the system message contains the custom message and date/time
       expect(systemMessage).toBeDefined();
       expect(systemMessage.content).toContain('Custom system message');
       expect(systemMessage.content).toContain('Current date:');
       expect(systemMessage.content).toContain('Current time:');
       expect(systemMessage.content).not.toContain('Default personality');
-    }
+   }
   });
-}); 
+});

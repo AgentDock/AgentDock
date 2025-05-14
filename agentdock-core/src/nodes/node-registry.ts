@@ -60,7 +60,7 @@ export interface NodeRegistryMetadata {
 export class NodeRegistry {
   /** Map of registered core nodes */
   private static nodes: Map<string, NodeRegistration> = new Map();
-  
+
   /** Map of registered custom nodes */
   private static customNodes: Map<string, NodeRegistration> = new Map();
 
@@ -74,7 +74,7 @@ export class NodeRegistry {
     options: ToolRegistrationOptions = {}
   ): void {
     const metadata = nodeClass.getNodeMetadata();
-    
+
     // Validate node category
     if (metadata.category !== expectedCategory) {
       throw createError(
@@ -123,8 +123,8 @@ export class NodeRegistry {
       version,
       isTool: options.isTool,
       parameters: options.parameters,
-      description: options.description || nodeClass.getNodeMetadata().description
-    });
+     description: options.description || nodeClass.getNodeMetadata().description
+  });
   }
 
   /**
@@ -282,4 +282,4 @@ export class NodeRegistry {
     this.nodes.clear();
     this.customNodes.clear();
   }
-} 
+}

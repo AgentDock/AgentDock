@@ -29,7 +29,8 @@ export class ModelRegistry {
         ['openai', []],
         ['gemini', []],
         ['deepseek', []],
-        ['groq', []]
+        ['groq', []],
+        ['cerebras', []]
       ]);
     }
     return this._modelsByProvider;
@@ -39,21 +40,24 @@ export class ModelRegistry {
    * Register models with the registry
    * Only updates if models are different from existing ones
    */
-  static registerModels(provider: LLMProvider, newModels: ModelMetadata[]): void {
+  static registerModels(
+    provider: LLMProvider,
+    newModels: ModelMetadata[]
+  ): void {
     const currentModels = this.getModelsForProvider(provider);
-    
+
     // If models are the same, skip registration
     if (this.areModelsEqual(currentModels, newModels)) {
       logger.debug(LogCategory.LLM, 'ModelRegistry', `Models unchanged for provider: ${provider}`);
       return;
     }
-    
+
     // Clear existing models only if we have new ones to register
     if (newModels.length > 0) {
       this.clearModelsForProvider(provider);
-      
+
       // Register new models
-      newModels.forEach(model => {
+      newModels.forEach((model) => {
         this.models.set(model.id, model);
         const providerModels = this.modelsByProvider.get(provider) || [];
         if (!providerModels.includes(model.id)) {
@@ -61,7 +65,7 @@ export class ModelRegistry {
           this.modelsByProvider.set(provider, providerModels);
         }
       });
-      
+
       logger.debug(LogCategory.LLM, 'ModelRegistry', `Registered ${newModels.length} models for provider: ${provider}`);
     }
   }
@@ -71,14 +75,14 @@ export class ModelRegistry {
    */
   private static areModelsEqual(models1: ModelMetadata[], models2: ModelMetadata[]): boolean {
     if (models1.length !== models2.length) return false;
-    
+
     const sortedModels1 = [...models1].sort((a, b) => a.id.localeCompare(b.id));
     const sortedModels2 = [...models2].sort((a, b) => a.id.localeCompare(b.id));
-    
+
     return sortedModels1.every((model, index) => 
-      model.id === sortedModels2[index].id &&
-      model.displayName === sortedModels2[index].displayName &&
-      model.contextWindow === sortedModels2[index].contextWindow
+        model.id === sortedModels2[index].id &&
+        model.displayName === sortedModels2[index].displayName &&
+        model.contextWindow === sortedModels2[index].contextWindow
     );
   }
 
@@ -112,11 +116,11 @@ export class ModelRegistry {
    * @param providers Array of providers to reset, or undefined for all providers
    */
   static resetModels(providers?: LLMProvider[]): void {
-    const providersToReset = providers || Array.from(this.modelsByProvider.keys());
+      const providersToReset = providers || Array.from(this.modelsByProvider.keys());
     
-    providersToReset.forEach(provider => {
-      this.clearModelsForProvider(provider);
-      logger.debug(LogCategory.LLM, 'ModelRegistry', `Reset models for provider: ${provider}`);
+      providersToReset.forEach(provider => {
+        this.clearModelsForProvider(provider);
+        logger.debug(LogCategory.LLM, 'ModelRegistry', `Reset models for provider: ${provider}`); 
     });
   }
 
@@ -126,15 +130,15 @@ export class ModelRegistry {
    */
   private static clearModelsForProvider(provider: LLMProvider): void {
     const modelIds = this.modelsByProvider.get(provider) || [];
-    
+
     // Remove models from the models map
     modelIds.forEach(id => {
       this.models.delete(id);
     });
-    
+
     // Clear the provider's model list
     this.modelsByProvider.set(provider, []);
-    
+
     logger.debug(LogCategory.LLM, 'ModelRegistry', `Cleared ${modelIds.length} models for provider: ${provider}`);
   }
-} 
+}

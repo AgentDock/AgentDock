@@ -15,7 +15,7 @@ export interface TokenUsage {
 /**
  * LLM provider types
  */
-export type LLMProvider = 'anthropic' | 'openai' | 'gemini' | 'deepseek' | 'groq';
+export type LLMProvider = 'anthropic' | 'openai' | 'gemini' | 'deepseek' | 'groq' | 'cerebras';
 
 /**
  * LLM configuration
@@ -124,7 +124,17 @@ export interface GroqConfig extends LLMConfig {
   extractReasoning?: boolean;
 }
 
-export type ProviderConfig = AnthropicConfig | OpenAIConfig | GeminiConfig | DeepSeekConfig | GroqConfig;
+/**
+ * Cerebras configuration
+ */
+export interface CerebrasConfig extends LLMConfig {
+  /** Provider must be 'cerebras' */
+  provider: "cerebras";
+  /** Future custom settings (optional) */
+  extractReasoning?: boolean; // If you plan to support it
+}
+
+export type ProviderConfig = AnthropicConfig | OpenAIConfig | GeminiConfig | DeepSeekConfig | GroqConfig | CerebrasConfig;
 
 /**
  * LLM provider interface
@@ -168,4 +178,6 @@ export interface ProviderMetadata {
   defaultModel: string;
   /** Apply provider-specific configurations to the base config */
   applyConfig?: (baseConfig: any, modelConfig: any, options?: any) => void;
-} 
+  /** Fetch available models for this provider */
+  fetchModels?: (apiKey: string) => Promise<ModelMetadata[]>;
+}

@@ -12,6 +12,8 @@ import { logger, LogCategory } from '../logging';
  * This is designed to be framework-agnostic
  */
 export class ModelService {
+  private static models: Record<string, ModelMetadata[]> = {};
+
   /**
    * Get models for a provider from the registry
    * This does NOT fetch models from the API
@@ -71,5 +73,9 @@ export class ModelService {
       logger.error(LogCategory.LLM, '[ModelService]', 'Error getting all models:', { error });
       return [];
     }
+  }
+
+  static clearModels(): void {
+    this.models = {};
   }
 } 

@@ -13,7 +13,14 @@ const CEREBRAS_API_BASE = process.env.CEREBRAS_API_URL || "https://api.cerebras.
  */
 function normalizeApiKey(apiKey: string): string {
   // The Cerebras API accepts both csk- and csk_ formats
-  return apiKey.startsWith("csk_") ? apiKey : apiKey.replace("csk-", "csk_");
+  // But we'll standardize on csk- format
+  const normalized = apiKey.startsWith("csk_") ? apiKey.replace("csk_", "csk-") : apiKey;
+  logger.debug(
+    LogCategory.LLM,
+    "[CerebrasAdapter]",
+    `Normalized API key format: ${normalized.substring(0, 7)}...`
+  );
+  return normalized;
 }
 
 /**

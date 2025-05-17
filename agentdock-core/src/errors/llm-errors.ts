@@ -68,7 +68,7 @@ const ERROR_PATTERNS: Record<LLMProvider | 'byok', ProviderErrorPattern[]> = {
       userMessage: "Anthropic service is currently unavailable. Please try again later."
     }
   ],
-  
+
   // OpenAI error patterns
   openai: [
     {
@@ -96,7 +96,7 @@ const ERROR_PATTERNS: Record<LLMProvider | 'byok', ProviderErrorPattern[]> = {
       userMessage: "OpenAI service is currently unavailable. Please try again later."
     }
   ],
-  
+
   // Google (Gemini) error patterns
   gemini: [
     {
@@ -124,11 +124,11 @@ const ERROR_PATTERNS: Record<LLMProvider | 'byok', ProviderErrorPattern[]> = {
       userMessage: "Google Gemini service is currently unavailable. Please try again later."
     }
   ],
-  
+
   // DeepSeek error patterns
   deepseek: [
     {
-      pattern: /rate\s*limit/i, 
+      pattern: /rate\s*limit/i,
       errorCode: ErrorCodes.LLM_RATE_LIMIT,
       statusCode: 429,
       userMessage: "You've reached the rate limit for DeepSeek API. Please try again later."
@@ -146,7 +146,7 @@ const ERROR_PATTERNS: Record<LLMProvider | 'byok', ProviderErrorPattern[]> = {
       userMessage: "Invalid DeepSeek API key. Please check your credentials."
     }
   ],
-  
+
   // Groq error patterns
   groq: [
     {
@@ -157,7 +157,7 @@ const ERROR_PATTERNS: Record<LLMProvider | 'byok', ProviderErrorPattern[]> = {
     },
     {
       pattern: /context\s*length|maximum\s*context\s*length|token\s*limit/i,
-      errorCode: ErrorCodes.LLM_EXECUTION, 
+      errorCode: ErrorCodes.LLM_EXECUTION,
       statusCode: 400,
       userMessage: "The prompt exceeds Groq's maximum context length. Please reduce your input."
     },
@@ -168,16 +168,27 @@ const ERROR_PATTERNS: Record<LLMProvider | 'byok', ProviderErrorPattern[]> = {
       userMessage: "Invalid Groq API key. Please check your credentials."
     }
   ],
-  
+
   // BYOK mode error patterns
   byok: [
     {
       pattern: /api\s*key\s*required|no\s*api\s*key/i,
       errorCode: ErrorCodes.LLM_API_KEY,
       statusCode: 401,
-      userMessage: "API key required. In BYOK mode, you must provide your own API key."
-    }
-  ]
+      userMessage:
+        "API key required. In BYOK mode, you must provide your own API key.",
+    },
+  ],
+
+  // Cerebras error patterns
+  cerebras: [
+    {
+      pattern: /invalid\s*api\s*key|unauthorized/i,
+      errorCode: ErrorCodes.LLM_API_KEY,
+      statusCode: 401,
+      userMessage: "Invalid Cerebras API key. Please check your credentials.",
+    },
+  ],
 };
 
 /**
@@ -188,7 +199,7 @@ const ERROR_PATTERNS: Record<LLMProvider | 'byok', ProviderErrorPattern[]> = {
  * @returns An AgentError with standardized error code and message
  */
 export function parseProviderError(
-  error: unknown, 
+  error: unknown,
   provider: LLMProvider,
   isByokMode: boolean = false
 ): AgentError {
@@ -197,7 +208,7 @@ export function parseProviderError(
     LogCategory.LLM,
     'parseProviderError',
     'Raw error object received',
-    { 
+    {
       rawError: JSON.stringify(error, Object.getOwnPropertyNames(error)), // Log all properties
       errorType: typeof error,
       isErrorInstance: error instanceof Error
@@ -237,16 +248,16 @@ export function parseProviderError(
       if ('message' in error && typeof (error as any).message === 'string' && (error as any).message) {
         errorMessage = String((error as any).message);
       } else if ('error' in error && error.error) {
-         // Handle cases where error is nested like { error: { message: ... } } or { error: "..." }
-         const nestedError = error.error;
-         // Check if nested message exists and is string-like
+        // Handle cases where error is nested like { error: { message: ... } } or { error: "..." }
+        const nestedError = error.error;
+        // Check if nested message exists and is string-like
          if (nestedError && typeof nestedError === 'object' && 'message' in nestedError && typeof (nestedError as any).message === 'string' && (nestedError as any).message) {
-            errorMessage = String((nestedError as any).message);
+          errorMessage = String((nestedError as any).message);
          } else if (typeof nestedError === 'string') {
-            errorMessage = nestedError;
-         } else {
-            errorMessage = JSON.stringify(error); // Fallback for complex objects
-         }
+          errorMessage = nestedError;
+        } else {
+          errorMessage = JSON.stringify(error); // Fallback for complex objects
+        }
       } else if ('response' in error && error.response) { // Axios-like errors
         const response = (error as any).response;
         if (response.data?.error?.message) {
@@ -256,18 +267,18 @@ export function parseProviderError(
         } else if (response.data) {
            errorMessage = typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
         } else {
-           errorMessage = `HTTP Error ${response.status}`; 
+          errorMessage = `HTTP Error ${response.status}`;
         }
       } else {
         errorMessage = JSON.stringify(error); // Fallback stringify
       }
     }
   } catch (extractionError) {
-     // Fallback in case the extraction logic itself throws an error
+    // Fallback in case the extraction logic itself throws an error
      errorMessage = 'Failed to process error details.';
      logger.warn(LogCategory.LLM, 'parseProviderError', 'Error during error message extraction', { extractionError });
   }
-  
+
   // Handle missing API key in BYOK mode first
   if (isByokMode && /no\s*api\s*key|api\s*key\s*required|api\s*key\s*missing/i.test(errorMessage)) {
     const byokPatterns = ERROR_PATTERNS.byok;
@@ -276,7 +287,7 @@ export function parseProviderError(
         ? pattern.pattern.test(errorMessage)
         : errorMessage.includes(pattern.pattern)
     );
-    
+
     if (matchingPattern) {
       return createError(
         'llm',
@@ -287,32 +298,32 @@ export function parseProviderError(
       );
     }
   }
-  
+
   // Check provider-specific patterns
   const providerPatterns = ERROR_PATTERNS[provider] || [];
-  
+
   // Trim the errorMessage before matching to handle potential hidden whitespace/characters
   const trimmedErrorMessage = errorMessage.trim();
-  
+
   const matchingPattern = providerPatterns.find(pattern => 
     (pattern.pattern instanceof RegExp) 
       ? pattern.pattern.test(trimmedErrorMessage)
       : trimmedErrorMessage.includes(pattern.pattern)
   );
-  
+
   // Log the error for debugging
   logger.debug(
     LogCategory.LLM,
     'parseProviderError',
     'Parsing provider error',
-    { 
+    {
       provider,
       originalErrorMessage: errorMessage,
       trimmedErrorMessage: trimmedErrorMessage,
       matchedPattern: matchingPattern?.pattern.toString() || 'none'
     }
   );
-  
+
   // Return structured error
   if (matchingPattern) {
     return createError(
@@ -323,7 +334,7 @@ export function parseProviderError(
       matchingPattern.statusCode || 500
     );
   }
-  
+
   // Default case - unknown LLM error
   return createError(
     'llm',
@@ -351,16 +362,16 @@ export function normalizeError(error: unknown): ErrorResponse {
   let errorMessage = 'An unknown error occurred';
   let errorCode: string = ErrorCodes.UNKNOWN;
   let errorDetails: Record<string, any> = {};
-  
+
   // Handle different error types
   if (error instanceof Error) {
     errorMessage = error.message;
-    
+
     // Handle our custom error types
     if ('code' in error && typeof error.code === 'string') {
       errorCode = error.code;
     }
-    
+
     // Extract additional details if available
     if ('details' in error && typeof error.details === 'object') {
       errorDetails = error.details as Record<string, any>;
@@ -372,32 +383,32 @@ export function normalizeError(error: unknown): ErrorResponse {
     if ('message' in error && error.message) {
       errorMessage = String(error.message);
     }
-    
+
     if ('code' in error && error.code) {
       errorCode = String(error.code);
     }
-    
+
     // Extract any details
     if ('details' in error) {
       errorDetails = { ...(error.details as Record<string, any> || {}) };
     }
-    
+
     // Extract from nested error objects (like Axios errors)
     if ('response' in error && (error as any).response) {
       const response = (error as any).response;
-      
+
       if (response.data?.error?.message) {
         errorMessage = String(response.data.error.message);
       }
-      
+
       if (response.data?.error?.type) {
         errorDetails.errorType = String(response.data.error.type);
       }
-      
+
       errorDetails.status = response.status;
     }
   }
-  
+
   // Map specific errors to user-friendly messages
   if (errorCode === ErrorCodes.LLM_API_KEY) {
     if (errorMessage.includes('BYOK') || errorMessage.toLowerCase().includes('bring your own')) {
@@ -410,11 +421,11 @@ export function normalizeError(error: unknown): ErrorResponse {
   } else if (errorCode === ErrorCodes.SERVICE_UNAVAILABLE) {
     errorMessage = 'Service currently unavailable. Please try again later.';
   }
-  
+
   // Always ensure the error is a string to prevent "error parts expect a string value"
   return {
     error: String(errorMessage),
     code: String(errorCode),
     details: process.env.NODE_ENV === 'development' ? errorDetails : undefined
   };
-} 
+}

@@ -16,6 +16,6 @@
       "agentdock-core/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "src/llm/providers/.ts"],
   "exclude": ["**/__tests__/**/*", "node_modules"]
 }

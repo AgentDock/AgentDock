@@ -36,6 +36,7 @@ AgentDock currently supports these LLM providers:
 - **Google** - Gemini models
 - **DeepSeek** - DeepSeek models
 - **Groq** - Fast inference for various models
+- **Cerebras** - LLaMA and other open source models
 
 ## Error Handling
 
@@ -54,4 +55,4 @@ Behind the scenes, AgentDock:
 3. Manages streaming connections appropriately for each provider
 4. Normalizes responses and errors back to a standard format
 
-This abstraction layer means that applications using AgentDock don't need to know the details of each provider's API. 
+This abstraction layer means that applications using AgentDock don't need to know the details of each provider's API.

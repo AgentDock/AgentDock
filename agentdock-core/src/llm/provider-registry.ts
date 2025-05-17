@@ -5,6 +5,7 @@
 
 import { LLMProvider, ProviderMetadata } from './types';
 import { logger, LogCategory } from '../logging';
+import { fetchCerebrasModels } from './providers/cerebras-adapter';
 
 // Default provider metadata
 const DEFAULT_PROVIDERS: Record<LLMProvider, ProviderMetadata> = {
@@ -38,41 +39,41 @@ const DEFAULT_PROVIDERS: Record<LLMProvider, ProviderMetadata> = {
     validateApiKey: (key: string) => key.length > 0, // Google API keys don't have a specific format to validate
     applyConfig: (baseConfig, modelConfig, options) => {
       // Apply Gemini-specific configurations
-      
+
       // First check options (highest priority)
       if (options) {
         // Add search grounding if specified in options
         if (options.useSearchGrounding !== undefined) {
           baseConfig.useSearchGrounding = options.useSearchGrounding;
         }
-        
+
         // Add safety settings if specified in options
         if (options.safetySettings) {
           baseConfig.safetySettings = options.safetySettings;
         }
-        
+
         // Add dynamic retrieval config if specified in options
         if (options.dynamicRetrievalConfig) {
           baseConfig.dynamicRetrievalConfig = options.dynamicRetrievalConfig;
         }
       }
-      
+
       // Then check model config (lower priority, only if not already set)
       // Add search grounding if enabled and not already set
       if (modelConfig?.useSearchGrounding !== undefined && baseConfig.useSearchGrounding === undefined) {
         baseConfig.useSearchGrounding = modelConfig.useSearchGrounding;
       }
-      
+
       // Add dynamic retrieval config if provided and not already set
       if (modelConfig?.dynamicRetrievalConfig && !baseConfig.dynamicRetrievalConfig) {
         baseConfig.dynamicRetrievalConfig = modelConfig.dynamicRetrievalConfig;
       }
-      
+
       // Add safety settings if provided and not already set
       if (modelConfig?.safetySettings && !baseConfig.safetySettings) {
         baseConfig.safetySettings = modelConfig.safetySettings;
       }
-      
+
       // Default to true for search grounding if not specified anywhere
       if (baseConfig.useSearchGrounding === undefined) {
         baseConfig.useSearchGrounding = true;
@@ -86,19 +87,19 @@ const DEFAULT_PROVIDERS: Record<LLMProvider, ProviderMetadata> = {
     defaultModel: 'deepseek-chat',
     validateApiKey: (key: string) => key.length > 0, // DeepSeek API keys don't have a specific format to validate
     applyConfig: (baseConfig, modelConfig, options) => {
-      // Apply DeepSeek-specific configurations
+       // Apply DeepSeek-specific configurations
       
       // Add safety settings if provided in options
       if (options?.safetySettings) {
         baseConfig.safetySettings = options.safetySettings;
       }
-      
-      // Add safety settings from model config if not already set
+
+       // Add safety settings from model config if not already set
       if (modelConfig?.safetySettings && !baseConfig.safetySettings) {
         baseConfig.safetySettings = modelConfig.safetySettings;
       }
-      
-      // Add reasoning extraction if enabled
+
+       // Add reasoning extraction if enabled
       if (modelConfig?.extractReasoning !== undefined) {
         baseConfig.extractReasoning = modelConfig.extractReasoning;
       }
@@ -110,7 +111,7 @@ const DEFAULT_PROVIDERS: Record<LLMProvider, ProviderMetadata> = {
     description: 'Groq API for ultra-fast LLM inference with models like Llama 3',
     defaultModel: 'llama-3.1-8b-instant',
     validateApiKey: (key: string) => key.startsWith('gsk_') || key.length > 25, // Groq API keys start with gsk_
-    applyConfig: (baseConfig, modelConfig, options) => {
+    applyConfig: (baseConfig, modelConfig, options) => {  
       // Apply Groq-specific configurations
       
       // Add reasoning extraction if enabled
@@ -123,7 +124,39 @@ const DEFAULT_PROVIDERS: Record<LLMProvider, ProviderMetadata> = {
         baseConfig.extractReasoning = options.extractReasoning;
       }
     }
-  }
+  },
+  cerebras: {
+    id: 'cerebras',
+    displayName: 'Cerebras',
+    description: 'Run Llama models on Cerebras high-performance inference endpoint.',
+    defaultModel: 'llama-4-scout-17b-16e-instruct',
+    validateApiKey: (key: string) => key.startsWith('csk_') || key.startsWith('csk-'),
+    fetchModels: fetchCerebrasModels,
+    applyConfig: (baseConfig, modelConfig, options) => {
+      Object.assign(baseConfig, modelConfig);
+      baseConfig.apiEndpoint = baseConfig.apiEndpoint || 'https://api.cerebras.ai/v1';
+      if (baseConfig.apiKey && baseConfig.apiKey.startsWith('csk_')) {
+        baseConfig.apiKey = baseConfig.apiKey.replace('csk_', 'csk-');
+        logger.debug(LogCategory.LLM, '[CerebrasProvider]', 'Normalized API key format from csk_ to csk-');
+      }
+      baseConfig.headers = {
+        ...baseConfig.headers,
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${baseConfig.apiKey}`,
+      };
+      baseConfig.temperature = baseConfig.temperature ?? 0.7;
+      baseConfig.maxTokens = baseConfig.maxTokens ?? 2048;
+      baseConfig.topP = baseConfig.topP ?? 1;
+      baseConfig.frequencyPenalty = baseConfig.frequencyPenalty ?? 0;
+      baseConfig.presencePenalty = baseConfig.presencePenalty ?? 0;
+      baseConfig.onError = (error: any) => {
+        logger.error(LogCategory.LLM, '[CerebrasProvider]', 'API Error:', {
+          error: error instanceof Error ? error.message : String(error),
+        });
+        throw error;
+      };
+    },
+  },
 };
 
 /**
@@ -175,6 +208,9 @@ export class ProviderRegistry {
     if (nodeType === 'llm.groq') {
       return 'groq';
     }
+    if (nodeType === 'llm.cerebras') {
+      return 'cerebras';
+    }
     return 'anthropic';
   }
 
@@ -193,6 +229,9 @@ export class ProviderRegistry {
     }
     if (provider === 'groq') {
       return 'llm.groq';
+    }
+    if (provider === 'cerebras') {
+      return 'llm.cerebras';
     }
     return 'llm.anthropic';
   }
@@ -213,10 +252,13 @@ export class ProviderRegistry {
     if (nodes.includes('llm.groq')) {
       return 'groq';
     }
+    if (nodes.includes('llm.cerebras')) {
+      return 'cerebras';
+    }
     return 'anthropic';
   }
 
-  /**
+ /**
    * Validate API key for provider
    */
   static validateApiKey(provider: LLMProvider, apiKey: string): boolean {
@@ -227,4 +269,4 @@ export class ProviderRegistry {
     }
     return providerMetadata.validateApiKey(apiKey);
   }
-} 
+}

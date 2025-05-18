@@ -66,8 +66,11 @@ function safelyHandleError(error: unknown, topic: string): ToolResult {
     errorMessage = 'Unknown error occurred (null or undefined)';
   } else {
     try {
-      // Try to stringify the error if it's an object
-      errorMessage = JSON.stringify(error);
+      const safeError = {
+        type: typeof error,
+        info: 'Error details were sanitized for security',
+      };
+      errorMessage = JSON.stringify(safeError);
     } catch {
       // If JSON stringify fails, provide a fallback
       errorMessage = 'Error: Could not format error details';

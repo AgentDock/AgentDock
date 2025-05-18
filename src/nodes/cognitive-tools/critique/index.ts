@@ -86,7 +86,14 @@ function safelyHandleError(error: unknown, subject: string): never {
     errorMessage = 'Unknown error occurred (null or undefined)';
   } else {
     try {
-      errorMessage = JSON.stringify(error);
+      const safeError = {
+        type: typeof error,
+        message:
+          error && typeof error === 'object' && 'message' in error
+            ? String(error.message)
+            : 'Unknown error format',
+      };
+      errorMessage = JSON.stringify(safeError);
     } catch {
       errorMessage = 'Error: Could not format error details';
     }

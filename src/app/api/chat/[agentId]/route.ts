@@ -654,7 +654,14 @@ export async function POST(
     }
 
     // Return error response using agentdock-core's normalizeError
-    return new Response(JSON.stringify(normalizeError(parsedError)), {
+    const safeError = {
+      message: parsedError instanceof Error ? parsedError.message : 'An error occurred',
+      code: parsedError instanceof APIError ? parsedError.code : 'UNKNOWN_ERROR',
+      status: parsedError instanceof APIError ? parsedError.httpStatus : 500,
+      type: parsedError instanceof APIError ? 'api_error' : 'internal_error',
+    };
+
+    return new Response(JSON.stringify(safeError), {
       status: parsedError instanceof APIError ? parsedError.httpStatus : 500,
       headers: { 'Content-Type': 'application/json' },
     });

@@ -30,6 +30,13 @@ interface RoutesManifest {
   }>;
 }
 
+/**
+ * Escapes special regex characters in a string
+ */
+function escapeRegExp(string: string): string {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 async function generateRoutesManifest() {
   try {
     const appManifestPath = join(process.cwd(), '.next/server/app-paths-manifest.json');
@@ -59,16 +66,16 @@ async function generateRoutesManifest() {
         // Dynamic route
         const dynamicRoute = {
           page: route,
-          regex: `^${route.replace(/\[([^\]]+)\]/g, '([^/]+)')}/?$`,
+          regex: `^${escapeRegExp(route).replace(/\\\[([^\]]+)\\\]/g, '([^/]+)')}/?$`,
           routeKeys: {},
-          namedRegex: `^${route.replace(/\[([^\]]+)\]/g, '(?<$1>[^/]+)')}/?$`,
+          namedRegex: `^${escapeRegExp(route).replace(/\\\[([^\]]+)\\\]/g, '(?<$1>[^/]+)')}/?$`,
         };
         routesManifest.dynamicRoutes.push(dynamicRoute);
       } else {
         // Static route
         routesManifest.staticRoutes.push({
           page: route,
-          regex: `^${route.replace(/\//g, '\\/')}/?$`,
+          regex: `^${escapeRegExp(route)}/?$`,
         });
       }
       routesManifest.pages[route] = { page: file, regex: route };
@@ -79,12 +86,12 @@ async function generateRoutesManifest() {
       if (route.includes('[') && route.includes(']')) {
         routesManifest.dynamicRoutes.push({
           page: route,
-          regex: `^${route.replace(/\[([^\]]+)\]/g, '([^/]+)')}/?$`,
+          regex: `^${escapeRegExp(route).replace(/\\\[([^\]]+)\\\]/g, '([^/]+)')}/?$`,
         });
       } else {
         routesManifest.staticRoutes.push({
           page: route,
-          regex: `^${route.replace(/\//g, '\\/')}/?$`,
+          regex: `^${escapeRegExp(route)}/?$`,
         });
       }
       routesManifest.pages[route] = { page: file, regex: route };

@@ -14,7 +14,7 @@ async function runCommand(command: string): Promise<ValidationResult> {
   } catch (error) {
     return {
       passed: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
 }
@@ -34,6 +34,11 @@ async function validateTests(): Promise<ValidationResult> {
   return runCommand('pnpm test:unit');
 }
 
+async function validateFormat(): Promise<ValidationResult> {
+  console.log(chalk.blue('💅 Checking code formatting...'));
+  return runCommand('pnpm format:check');
+}
+
 async function main() {
   try {
     // Run validations in sequence
@@ -47,6 +52,11 @@ async function main() {
       throw new Error(`Lint check failed: ${lint.error}`);
     }
 
+    const format = await validateFormat();
+    if (!format.passed) {
+      throw new Error(`Format check failed: ${format.error}`);
+    }
+
     const tests = await validateTests();
     if (!tests.passed) {
       throw new Error(`Tests failed: ${tests.error}`);
@@ -55,16 +65,11 @@ async function main() {
     console.log(chalk.green('✅ All pre-push checks passed!'));
     process.exit(0);
   } catch (error) {
-    logger.error(
-      LogCategory.SYSTEM,
-      'GitHooks',
-      'Pre-push validation failed',
-      { error }
-    );
+    logger.error(LogCategory.SYSTEM, 'GitHooks', 'Pre-push validation failed', { error });
     console.error(chalk.red('❌ Pre-push checks failed'));
     console.error(error instanceof Error ? error.message : 'Unknown error');
     process.exit(1);
   }
 }
 
-main(); 
+main();

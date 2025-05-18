@@ -11,8 +11,8 @@ To create a custom evaluator, you need to define a class that implements the `Ev
 ```typescript
 // Conceptual representation (refer to actual types in agentdock-core)
 interface Evaluator<ConfigType = any, InputType = any, ResultType = any> {
-  /** 
-   * A unique string identifier for this evaluator type. 
+  /**
+   * A unique string identifier for this evaluator type.
    * This is used in EvaluationRunConfig to specify which evaluator to use.
    */
   type: string;
@@ -25,21 +25,21 @@ interface Evaluator<ConfigType = any, InputType = any, ResultType = any> {
    * @returns A Promise resolving to an array of EvaluationResult objects.
    */
   evaluate(
-    input: EvaluationInput<InputType>, 
-    criteria: EvaluationCriteria[], 
-    config: ConfigType
+    input: EvaluationInput<InputType>,
+    criteria: EvaluationCriteria[],
+    config: ConfigType,
   ): Promise<EvaluationResult<ResultType>[]>;
 }
 ```
 
 Key aspects:
 
-*   **`type` (string):** This is a crucial static or instance property. It must be a unique string that identifies your custom evaluator. This `type` string is what users will specify in the `EvaluationRunConfig` to select your evaluator.
-*   **`evaluate(input, criteria, config)` (method):** This asynchronous method contains your core evaluation logic. It receives:
-    *   `input: EvaluationInput`: The complete input data for the evaluation (agent response, prompt, history, context, etc.).
-    *   `criteria: EvaluationCriteria[]`: An array of criteria that this evaluator instance is responsible for assessing. Your evaluator should iterate through these and produce a result for each one it's configured to handle.
-    *   `config: ConfigType`: The specific configuration object for this evaluator, as provided in the `evaluatorConfigs` array in `EvaluationRunConfig`. This allows you to parameterize your evaluator.
-    *   It must return a `Promise` that resolves to an array of `EvaluationResult` objects.
+- **`type` (string):** This is a crucial static or instance property. It must be a unique string that identifies your custom evaluator. This `type` string is what users will specify in the `EvaluationRunConfig` to select your evaluator.
+- **`evaluate(input, criteria, config)` (method):** This asynchronous method contains your core evaluation logic. It receives:
+  - `input: EvaluationInput`: The complete input data for the evaluation (agent response, prompt, history, context, etc.).
+  - `criteria: EvaluationCriteria[]`: An array of criteria that this evaluator instance is responsible for assessing. Your evaluator should iterate through these and produce a result for each one it's configured to handle.
+  - `config: ConfigType`: The specific configuration object for this evaluator, as provided in the `evaluatorConfigs` array in `EvaluationRunConfig`. This allows you to parameterize your evaluator.
+  - It must return a `Promise` that resolves to an array of `EvaluationResult` objects.
 
 ## Core Workflow of a Custom Evaluator
 
@@ -48,7 +48,7 @@ The following diagram illustrates the general workflow when a custom evaluator i
 ```mermaid
 graph TD
     ERC[EvaluationRunConfig] -- "Specifies 'CustomType' & Config" --> ER[EvaluationRunner]
-    
+
     subgraph CustomLogic
         CE[YourCustomEvaluator] -- "Implements" --> EIface[Evaluator Interface]
         EIface -.-> EvalMethod["evaluate(input, criteria, config)"]
@@ -68,18 +68,18 @@ graph TD
 
 ## Example: A Simple Custom Length Checker
 
-Let's imagine a custom evaluator that checks if a response length is *exactly* a specific value, different from the min/max range check of the built-in `RuleBasedEvaluator`.
+Let's imagine a custom evaluator that checks if a response length is _exactly_ a specific value, different from the min/max range check of the built-in `RuleBasedEvaluator`.
 
-```typescript
+````typescript
 // my-custom-evaluators.ts
-import type { 
-  Evaluator, 
-  EvaluationInput, 
-  EvaluationCriteria, 
-  EvaluationResult 
+import type {
+  Evaluator,
+  EvaluationInput,
+  EvaluationCriteria,
+  EvaluationResult
 } from 'agentdock-core'; // Adjust path as necessary
 // Assuming getInputText is exported from agentdock-core or a known utils path
-// For example: import { getInputText } from 'agentdock-core/evaluation/utils'; 
+// For example: import { getInputText } from 'agentdock-core/evaluation/utils';
 // Or if getInputText becomes part of the main agentdock-core exports:
 // import { getInputText } from 'agentdock-core';
 
@@ -122,8 +122,8 @@ class ExactLengthEvaluator implements Evaluator<ExactLengthConfig> {
       results.push({
         criterionName: criterion.name,
         score: passed,
-        reasoning: passed 
-          ? `Response length is exactly ${config.expectedLength}.` 
+        reasoning: passed
+          ? `Response length is exactly ${config.expectedLength}.`
           : `Expected length ${config.expectedLength}, got ${actualLength}.`,
         evaluatorType: this.type,
       });
@@ -154,9 +154,9 @@ describe('ExactLengthEvaluator', () => {
   });
 
   it('should pass when text length matches expected length', async () => {
-    const input: EvaluationInput = { 
+    const input: EvaluationInput = {
       response: '1234567890', // exactly 10 characters
-      criteria: mockCriteria 
+      criteria: mockCriteria
     };
     const results = await evaluator.evaluate(input, mockCriteria, mockConfig);
     expect(results.length).toBe(1);
@@ -165,9 +165,9 @@ describe('ExactLengthEvaluator', () => {
   });
 
   it('should fail when text length differs from expected length', async () => {
-    const input: EvaluationInput = { 
+    const input: EvaluationInput = {
       response: '12345', // only 5 characters
-      criteria: mockCriteria 
+      criteria: mockCriteria
     };
     const results = await evaluator.evaluate(input, mockCriteria, mockConfig);
     expect(results.length).toBe(1);
@@ -176,9 +176,9 @@ describe('ExactLengthEvaluator', () => {
   });
 
   it('should handle undefined textToEvaluate gracefully', async () => {
-    const input: EvaluationInput = { 
+    const input: EvaluationInput = {
       response: { complex: 'object' }, // Not a string, and getInputText might return undefined
-      criteria: mockCriteria 
+      criteria: mockCriteria
     };
     // Assuming config.sourceField is not set, so getInputText defaults to 'response'
     const results = await evaluator.evaluate(input, mockCriteria, mockConfig);
@@ -199,7 +199,7 @@ Once defined, you would use your custom evaluator in an `EvaluationRunConfig` by
 // import { EvaluationRunner, type EvaluationRunConfig ... } from 'agentdock-core';
 
 // If your custom evaluator isn't automatically discoverable by EvaluationRunner via its type,
-// you might need to pass an instance directly if the runner supports it, 
+// you might need to pass an instance directly if the runner supports it,
 // or ensure your bundler includes it if type-based instantiation is used.
 // The current EvaluationRunner instantiates evaluators based on their 'type' string matching
 // a known set of built-in evaluators. For true custom external evaluators, the runner
@@ -222,6 +222,6 @@ const runConfig: EvaluationRunConfig = {
 };
 
 // const results = await runEvaluation(myInput, runConfig);
-```
+````
 
-Building custom evaluators empowers you to tailor the AgentDock Evaluation Framework precisely to your needs, ensuring that your agent's quality is measured against the metrics that matter most for your application. 
+Building custom evaluators empowers you to tailor the AgentDock Evaluation Framework precisely to your needs, ensuring that your agent's quality is measured against the metrics that matter most for your application.

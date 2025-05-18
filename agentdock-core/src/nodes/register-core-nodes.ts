@@ -15,5 +15,4 @@ export function registerCoreNodes(): void {
 }
 
 // Auto-registration removed to prevent duplicate registrations
-// registerCoreNodes(); 
- 
+// registerCoreNodes();

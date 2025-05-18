@@ -18,15 +18,15 @@ The stock price tool can be used by AI agents to get current stock price informa
 // Example usage in an agent
 const result = await stockPriceTool.execute({
   symbol: 'AAPL',
-  apiKey: 'your_alphavantage_api_key' // Optional
+  apiKey: 'your_alphavantage_api_key', // Optional
 });
 ```
 
 ## Parameters
 
-| Parameter | Type   | Required | Description                                                |
-|-----------|--------|----------|------------------------------------------------------------|
-| symbol    | string | Yes      | Stock symbol to look up (e.g., AAPL, MSFT, GOOGL)          |
+| Parameter | Type   | Required | Description                                                  |
+| --------- | ------ | -------- | ------------------------------------------------------------ |
+| symbol    | string | Yes      | Stock symbol to look up (e.g., AAPL, MSFT, GOOGL)            |
 | apiKey    | string | No       | Optional AlphaVantage API key (uses env var if not provided) |
 
 ## Response
@@ -80,4 +80,4 @@ _Data provided by Alpha Vantage_
 
 - AlphaVantage API
 - Zod for parameter validation
-- AgentDock Core for logging 
+- AgentDock Core for logging

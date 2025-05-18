@@ -1,24 +1,28 @@
-import { 
+import {
   Message,
   MessageRole,
   createMessage as createCoreMessage,
-  createToolMessage as createCoreToolMessage
+  createToolMessage as createCoreToolMessage,
 } from 'agentdock-core';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Create a new message with the given role and content
- * 
+ *
  * This is a wrapper around the core createMessage function
  * that adds some additional convenience
  */
-export function createMessage(role: MessageRole, content: string, additionalProps: Partial<Message> = {}): Message {
+export function createMessage(
+  role: MessageRole,
+  content: string,
+  additionalProps: Partial<Message> = {},
+): Message {
   return createCoreMessage({
     role,
     content,
     id: additionalProps.id || uuidv4(),
     createdAt: additionalProps.createdAt || new Date(),
-    ...additionalProps
+    ...additionalProps,
   });
 }
 
@@ -52,6 +56,6 @@ export function createToolMessage(content: string, toolCallId: string, toolName:
     toolCallId,
     toolName,
     id: uuidv4(),
-    createdAt: new Date()
+    createdAt: new Date(),
   });
-} 
+}

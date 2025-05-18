@@ -39,41 +39,41 @@ This tool accesses arXiv.org, an open-access archive for scholarly articles in p
   parameters: ArxivSearchSchema,
   execute: async (params: ArxivSearchParams, options: ToolExecutionOptions) => {
     try {
-      logger.debug(LogCategory.NODE, '[ArxivAPI]', 'Starting arXiv search', { 
+      logger.debug(LogCategory.NODE, '[ArxivAPI]', 'Starting arXiv search', {
         query: params.query,
         toolCallId: options.toolCallId,
       });
-      
+
       const results = await searchArxiv(params);
       const markdown = formatSearchResultsAsMarkdown(params.query, results);
-      
+
       return {
         type: 'arxiv_search_result',
         content: markdown,
         data: {
           papers: results.papers,
           query: params.query,
-          total: results.total
-        }
+          total: results.total,
+        },
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      
+
       logger.error(LogCategory.NODE, '[ArxivAPI]', 'Error in arxiv_search tool', {
         error: errorMessage,
         params,
       });
-      
+
       return {
         type: 'arxiv_search_result',
         content: `## arXiv Search Error\n\nUnable to search arXiv for "${params.query}": ${errorMessage}`,
         data: {
           error: errorMessage,
-          query: params.query
-        }
+          query: params.query,
+        },
       };
     }
-  }
+  },
 };
 
 /**
@@ -99,40 +99,40 @@ This tool accesses arXiv.org, an open-access archive for scholarly articles in p
   parameters: ArxivFetchSchema,
   execute: async (params: ArxivFetchParams, options: ToolExecutionOptions) => {
     try {
-      logger.debug(LogCategory.NODE, '[ArxivAPI]', 'Starting arXiv fetch', { 
+      logger.debug(LogCategory.NODE, '[ArxivAPI]', 'Starting arXiv fetch', {
         id: params.id,
         format: params.format,
         toolCallId: options.toolCallId,
       });
-      
+
       const paper = await fetchArxivPaper(params);
       const markdown = formatPaperAsMarkdown(paper);
-      
+
       return {
         type: 'arxiv_paper_result',
         content: markdown,
         data: {
-          paper
-        }
+          paper,
+        },
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      
+
       logger.error(LogCategory.NODE, '[ArxivAPI]', 'Error in arxiv_fetch tool', {
         error: errorMessage,
         params,
       });
-      
+
       return {
         type: 'arxiv_paper_result',
         content: `## arXiv Paper Fetch Error\n\nUnable to retrieve paper with ID "${params.id}": ${errorMessage}`,
         data: {
           error: errorMessage,
-          id: params.id
-        }
+          id: params.id,
+        },
       };
     }
-  }
+  },
 };
 
 /**
@@ -140,5 +140,5 @@ This tool accesses arXiv.org, an open-access archive for scholarly articles in p
  */
 export const tools = {
   arxiv_search: arxivSearchTool,
-  arxiv_fetch: arxivFetchTool
-}; 
+  arxiv_fetch: arxivFetchTool,
+};

@@ -2,7 +2,7 @@
 
 The capability to build AI agents is rapidly becoming commoditized. The real differentiator lies in the ability to systematically and reliably measure agent quality. Without robust evaluation, "improvement" is guesswork, and "reliability" is a marketing slogan. Experience in deploying these systems has consistently shown that what isn't measured, isn't managed, and certainly isn't improved in a way that stands up to real-world demands.
 
-AgentDock Core now includes a foundational, extensible **Evaluation Framework** designed to address this critical need. This isn't about chasing every possible academic metric; it's about providing a practical, adaptable toolkit for developers to define what quality means for *their* agents and to measure it consistently.
+AgentDock Core now includes a foundational, extensible **Evaluation Framework** designed to address this critical need. This isn't about chasing every possible academic metric; it's about providing a practical, adaptable toolkit for developers to define what quality means for _their_ agents and to measure it consistently.
 
 ## Core Philosophy: Practicality and Extensibility
 
@@ -49,7 +49,7 @@ graph TD
     ER -- uses --> E[Evaluator Interface]
     E -- processes w/ --> A_crit
     E -- produces --> RES[EvaluationResult]
-    
+
     ER -- aggregates --> AGG[AggregatedEvaluationResult]
     RES --> AGG
 
@@ -60,13 +60,13 @@ graph TD
     style ARC fill:#lightgrey,stroke:#333
 ```
 
-*   **`EvaluationInput`**: This is the data packet for an evaluation. It's a rich structure containing not just the agent's `response`, but also the `prompt`, `groundTruth` (if available), `messageHistory`, `context`, `agentConfig`, and the `criteria` to be assessed. Providing comprehensive input enables more nuanced and context-aware evaluations.
-*   **`EvaluationCriteria`**: Defines *what* you're measuring. Each criterion has a `name`, `description`, and an `EvaluationScale` (e.g., `binary`, `likert5`, `numeric`, `pass/fail`). This allows for both quantitative and qualitative assessments.
-*   **`Evaluator` Interface**: The heart of the system's extensibility. Any class implementing this interface can be plugged into the framework. It defines a `type` identifier and an `evaluate` method that takes an `EvaluationInput` and `EvaluationCriteria[]`, returning `EvaluationResult[]`.
-*   **`EvaluationResult`**: The output from a single evaluator for a single criterion. It includes the `criterionName`, the `score` (which can be a number, boolean, or string), optional `reasoning`, and the `evaluatorType`.
-*   **`EvaluationRunConfig`**: Configures an evaluation run. It specifies the `evaluatorConfigs` (which evaluators to use and their specific settings), includes the optional `storageProvider (optional)`, and can include run-level `metadata`.
-*   **`EvaluationRunner`**: The orchestrator. The `runEvaluation(input: EvaluationInput, config: EvaluationRunConfig)` function takes the input and configuration, instantiates the necessary evaluators, executes them, and aggregates their findings.
-*   **`AggregatedEvaluationResult`**: The final output of `runEvaluation`. It contains an optional `overallScore` (if applicable through normalization and weighting of criteria), a list of all individual `EvaluationResult` objects, a snapshot of the input and configuration, and metadata for the run.
+- **`EvaluationInput`**: This is the data packet for an evaluation. It's a rich structure containing not just the agent's `response`, but also the `prompt`, `groundTruth` (if available), `messageHistory`, `context`, `agentConfig`, and the `criteria` to be assessed. Providing comprehensive input enables more nuanced and context-aware evaluations.
+- **`EvaluationCriteria`**: Defines _what_ you're measuring. Each criterion has a `name`, `description`, and an `EvaluationScale` (e.g., `binary`, `likert5`, `numeric`, `pass/fail`). This allows for both quantitative and qualitative assessments.
+- **`Evaluator` Interface**: The heart of the system's extensibility. Any class implementing this interface can be plugged into the framework. It defines a `type` identifier and an `evaluate` method that takes an `EvaluationInput` and `EvaluationCriteria[]`, returning `EvaluationResult[]`.
+- **`EvaluationResult`**: The output from a single evaluator for a single criterion. It includes the `criterionName`, the `score` (which can be a number, boolean, or string), optional `reasoning`, and the `evaluatorType`.
+- **`EvaluationRunConfig`**: Configures an evaluation run. It specifies the `evaluatorConfigs` (which evaluators to use and their specific settings), includes the optional `storageProvider (optional)`, and can include run-level `metadata`.
+- **`EvaluationRunner`**: The orchestrator. The `runEvaluation(input: EvaluationInput, config: EvaluationRunConfig)` function takes the input and configuration, instantiates the necessary evaluators, executes them, and aggregates their findings.
+- **`AggregatedEvaluationResult`**: The final output of `runEvaluation`. It contains an optional `overallScore` (if applicable through normalization and weighting of criteria), a list of all individual `EvaluationResult` objects, a snapshot of the input and configuration, and metadata for the run.
 
 ## Getting Started: The `runEvaluation` Function
 
@@ -78,11 +78,23 @@ import { runEvaluation, type EvaluationInput, type EvaluationRunConfig } from 'a
 // ... import specific evaluator configs ...
 
 async function performMyEvaluation() {
-  const input: EvaluationInput = { /* ... your agent's output, criteria, etc. ... */ };
+  const input: EvaluationInput = {
+    /* ... your agent's output, criteria, etc. ... */
+  };
   const config: EvaluationRunConfig = {
     evaluatorConfigs: [
-      { type: 'RuleBased', rules: [/* ... your rules ... */] },
-      { type: 'LLMJudge', config: { /* ... your LLM judge setup ... */ } },
+      {
+        type: 'RuleBased',
+        rules: [
+          /* ... your rules ... */
+        ],
+      },
+      {
+        type: 'LLMJudge',
+        config: {
+          /* ... your LLM judge setup ... */
+        },
+      },
       // ... other evaluator configurations
     ],
     // For server-side scripts wanting to persist results, a storage mechanism can be provided:
@@ -141,15 +153,15 @@ While this direct file logging is practical for many use cases, the long-term vi
 
 The framework ships with a versatile set of built-in evaluators:
 
-*   [**Rule-Based Evaluator**](./evaluators/rule-based.md): For fast, deterministic checks based on predefined rules (length, regex, keywords, JSON parsing).
-*   [**LLM-as-Judge Evaluator**](./evaluators/llm-judge.md): Leverages a language model to provide nuanced, qualitative assessments.
-*   [**NLP Accuracy Evaluator**](./evaluators/nlp-accuracy.md): Measures semantic similarity between a response and ground truth using embeddings.
-*   [**Tool Usage Evaluator**](./evaluators/tool-usage.md): Assesses the correctness of an agent's tool invocations and argument handling.
-*   **Lexical Evaluators**: A suite of fast, non-LLM evaluators for common textual checks:
-    *   [**Lexical Similarity Evaluator**](./evaluators/lexical-similarity.md): Compares string similarity using various algorithms.
-    *   [**Keyword Coverage Evaluator**](./evaluators/keyword-coverage.md): Checks for the presence and coverage of specified keywords.
-    *   [**Sentiment Evaluator**](./evaluators/sentiment.md): Analyzes the sentiment (positive, negative, neutral) of the text.
-    *   [**Toxicity Evaluator**](./evaluators/toxicity.md): Scans text for predefined toxic terms.
+- [**Rule-Based Evaluator**](./evaluators/rule-based.md): For fast, deterministic checks based on predefined rules (length, regex, keywords, JSON parsing).
+- [**LLM-as-Judge Evaluator**](./evaluators/llm-judge.md): Leverages a language model to provide nuanced, qualitative assessments.
+- [**NLP Accuracy Evaluator**](./evaluators/nlp-accuracy.md): Measures semantic similarity between a response and ground truth using embeddings.
+- [**Tool Usage Evaluator**](./evaluators/tool-usage.md): Assesses the correctness of an agent's tool invocations and argument handling.
+- **Lexical Evaluators**: A suite of fast, non-LLM evaluators for common textual checks:
+  - [**Lexical Similarity Evaluator**](./evaluators/lexical-similarity.md): Compares string similarity using various algorithms.
+  - [**Keyword Coverage Evaluator**](./evaluators/keyword-coverage.md): Checks for the presence and coverage of specified keywords.
+  - [**Sentiment Evaluator**](./evaluators/sentiment.md): Analyzes the sentiment (positive, negative, neutral) of the text.
+  - [**Toxicity Evaluator**](./evaluators/toxicity.md): Scans text for predefined toxic terms.
 
 ## Next Steps
 
@@ -278,9 +290,7 @@ The following is an example output from a run that includes multiple types of ev
       "IsNotToxic"
     ],
     "storageProviderType": "external",
-    "metadataKeys": [
-      "testSuite"
-    ]
+    "metadataKeys": ["testSuite"]
   },
   "metadata": {
     "testSuite": "example_tsx_explicit_dotenv_local_script_with_nlp",
@@ -306,12 +316,7 @@ This example shows the output when specifically testing the `SentimentEvaluator`
         "rawScore": -11,
         "comparativeScore": -0.8461538461538461,
         "positiveWords": [],
-        "negativeWords": [
-          "unhappy",
-          "awful",
-          "terrible",
-          "hate"
-        ]
+        "negativeWords": ["unhappy", "awful", "terrible", "hate"]
       }
     }
   ],
@@ -328,14 +333,10 @@ This example shows the output when specifically testing the `SentimentEvaluator`
     "messageHistory": "[... message history truncated for README example ...]"
   },
   "evaluationConfigSnapshot": {
-    "evaluatorTypes": [
-      "Sentiment:NegativeResponseSentimentCategory"
-    ],
+    "evaluatorTypes": ["Sentiment:NegativeResponseSentimentCategory"],
     "criteriaNames": "[... criteria names truncated for README example ...]",
     "storageProviderType": "external",
-    "metadataKeys": [
-      "testSuite"
-    ]
+    "metadataKeys": ["testSuite"]
   },
   "metadata": {
     "testSuite": "negative_sentiment_category_test",
@@ -359,12 +360,7 @@ This example shows the output when specifically testing the `ToxicityEvaluator`.
       "reasoning": "Toxicity check for field 'response'. Found toxic terms: [hate, stupid, terrible, idiot]. Configured terms: [hate, stupid, terrible, awful, idiot]. Case sensitive: false, Match whole word: true.",
       "evaluatorType": "Toxicity",
       "metadata": {
-        "foundToxicTerms": [
-          "hate",
-          "stupid",
-          "terrible",
-          "idiot"
-        ]
+        "foundToxicTerms": ["hate", "stupid", "terrible", "idiot"]
       }
     }
   ],
@@ -381,14 +377,10 @@ This example shows the output when specifically testing the `ToxicityEvaluator`.
     "messageHistory": "[... message history truncated for README example ...]"
   },
   "evaluationConfigSnapshot": {
-    "evaluatorTypes": [
-      "Toxicity:IsNotToxic"
-    ],
+    "evaluatorTypes": ["Toxicity:IsNotToxic"],
     "criteriaNames": "[... criteria names truncated for README example ...]",
     "storageProviderType": "external",
-    "metadataKeys": [
-      "testSuite"
-    ]
+    "metadataKeys": ["testSuite"]
   },
   "metadata": {
     "testSuite": "toxic_response_test",
@@ -396,3 +388,4 @@ This example shows the output when specifically testing the `ToxicityEvaluator`.
     "durationMs": 0
   }
 }
+```

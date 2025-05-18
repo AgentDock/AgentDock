@@ -67,6 +67,7 @@ The `debate` tool itself produces a `ToolResult` containing Markdown like this, 
 Universal Basic Income (UBI) represents...
 
 ### PERSPECTIVE 1: Economic Freedom Advocate
+
 **ARGUMENTS:**
 ...
 **COUNTER-ARGUMENTS:**
@@ -75,9 +76,11 @@ Universal Basic Income (UBI) represents...
 ...
 
 ### PERSPECTIVE 2: Social Welfare Proponent
+
 ...
 
 ### **SYNTHESIS:**
+
 Areas of potential agreement...
 
 **CONCLUSION:**

@@ -6,11 +6,11 @@ This document explains how AgentDock manages conversation history to optimize co
 
 AgentDock supports three history policies:
 
-| Policy | Description |
-|--------|-------------|
+| Policy  | Description                                                               |
+| ------- | ------------------------------------------------------------------------- |
 | `lastN` | Keep the last N user messages and their corresponding assistant responses |
-| `all` | Keep all messages (no trimming) |
-| `none` | Remove all history (stateless conversations) |
+| `all`   | Keep all messages (no trimming)                                           |
+| `none`  | Remove all history (stateless conversations)                              |
 
 ## Message Trimming Visualization
 
@@ -46,18 +46,19 @@ The core message trimming is handled by the `applyHistoryPolicy` function:
 
 ```typescript
 export function applyHistoryPolicy(
-  messages: CoreMessage[], 
-  options: { 
-    historyPolicy?: 'none' | 'lastN' | 'all',
-    historyLength?: number,
-    preserveSystemMessages?: boolean
-  }
+  messages: CoreMessage[],
+  options: {
+    historyPolicy?: 'none' | 'lastN' | 'all';
+    historyLength?: number;
+    preserveSystemMessages?: boolean;
+  },
 ): CoreMessage[] {
   // Implementation details...
 }
 ```
 
 When the `historyPolicy` is set to `lastN`, the system:
+
 1. Preserves all system messages (if `preserveSystemMessages` is true).
 2. Identifies the conversation messages (excluding system messages).
 3. Finds the starting point in the conversation messages that includes exactly the last `N` user messages and any subsequent assistant messages.
@@ -68,6 +69,7 @@ This approach ensures that the context sent to the LLM contains precisely the sy
 ### Special Case: historyLength=0
 
 When `historyLength` is set to 0 and `historyPolicy` is `lastN`, the system treats this case as if `historyLength` were set to 1.
+
 - This ensures that the last user message and any subsequent assistant responses are kept, along with system messages.
 - This prevents errors caused by sending only system messages to the LLM and ensures minimal context is always provided.
 
@@ -102,10 +104,10 @@ NEXT_PUBLIC_DEFAULT_HISTORY_LENGTH=20
 
 Control message history settings via URL parameters:
 
-| Parameter | Description | Valid Values | Example |
-|-----------|-------------|--------------|---------|
-| `historyPolicy` | The message history retention policy | `none`, `lastN`, `all` | `?historyPolicy=lastN` |
-| `historyLength` | The number of user messages to retain | Any non-negative number | `?historyLength=5` |
+| Parameter       | Description                           | Valid Values            | Example                |
+| --------------- | ------------------------------------- | ----------------------- | ---------------------- |
+| `historyPolicy` | The message history retention policy  | `none`, `lastN`, `all`  | `?historyPolicy=lastN` |
+| `historyLength` | The number of user messages to retain | Any non-negative number | `?historyLength=5`     |
 
 #### Examples
 
@@ -162,4 +164,4 @@ The debug panel (accessible by adding `?debug=true` to your URL) displays curren
 - **Source**: Where the settings came from (environment, URL, default)
 - **Messages**: Current number of messages in the conversation
 
-This helps diagnose potential issues with message trimming and verify security precedence. 
+This helps diagnose potential issues with message trimming and verify security precedence.

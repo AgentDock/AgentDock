@@ -11,13 +11,7 @@
     "You have access to search and deep_research tools. Use them to help answer questions.",
     "For complex research questions, first use search to get initial information, then use deep_research for more comprehensive analysis."
   ],
-  "nodes": [
-    "llm.anthropic",
-    "weather",
-    "stock_price",
-    "search",
-    "deep_research"
-  ],
+  "nodes": ["llm.anthropic", "weather", "stock_price", "search", "deep_research"],
   "nodeConfigurations": {
     "llm.anthropic": {
       "model": "claude-3-7-sonnet-20250219",
@@ -44,5 +38,4 @@
   "options": {
     "maxSteps": 5
   }
-} 
- 
+}

@@ -21,7 +21,7 @@ graph TD
     ETCR --> TUEval
 
     TUEval -- "Extracts" --> ATC["Actual Tool Calls"]
-    
+
     subgraph ComparisonLogic
         direction LR
         ATC --> CheckName[Tool Name Check]
@@ -44,20 +44,20 @@ graph TD
 
 The `ToolUsageEvaluator` is essential for:
 
-*   Verifying that an agent calls a specific required tool.
-*   Ensuring that all arguments passed to a tool call are valid (e.g., correct type, within expected ranges, matching a pattern).
-*   Checking if a tool was called when it shouldn't have been.
-*   Validating the sequence or number of tool calls.
-*   Confirming that data returned by a tool is processed correctly by the agent in subsequent steps (though this might sometimes require a more complex evaluator).
+- Verifying that an agent calls a specific required tool.
+- Ensuring that all arguments passed to a tool call are valid (e.g., correct type, within expected ranges, matching a pattern).
+- Checking if a tool was called when it shouldn't have been.
+- Validating the sequence or number of tool calls.
+- Confirming that data returned by a tool is processed correctly by the agent in subsequent steps (though this might sometimes require a more complex evaluator).
 
 ## Configuration
 
 Configuration involves defining the expectations for tool usage:
 
-*   A list of expected tool calls, including the tool `name`.
-*   For each expected tool call, validation rules for its `arguments`.
-*   Rules for whether a tool call is `required` or `optional`.
-*   Potentially, checks for the `order` or `frequency` of calls.
+- A list of expected tool calls, including the tool `name`.
+- For each expected tool call, validation rules for its `arguments`.
+- Rules for whether a tool call is `required` or `optional`.
+- Potentially, checks for the `order` or `frequency` of calls.
 
 ```typescript
 // Example configuration
@@ -89,10 +89,10 @@ Configuration involves defining the expectations for tool usage:
 
 The `ToolUsageEvaluator` produces `EvaluationResult` objects for criteria related to tool usage:
 
-*   **`criterionName`**: Could be specific to a tool (e.g., "CorrectlyCalled_example_tool") or more general ("ValidToolArguments").
-*   **`score`**: Typically boolean (`true` if the check passes, `false` otherwise) or a numeric score representing the degree of correctness.
-*   **`reasoning`**: Details about why a tool usage check passed or failed (e.g., "Tool 'example_tool' not called", "Argument 'arg2' for tool 'example_tool' was not positive").
-*   **`evaluatorType`**: `'ToolUsage'`.
-*   **`error`**: For unexpected issues during evaluation, not for failed tool usage checks themselves.
+- **`criterionName`**: Could be specific to a tool (e.g., "CorrectlyCalled_example_tool") or more general ("ValidToolArguments").
+- **`score`**: Typically boolean (`true` if the check passes, `false` otherwise) or a numeric score representing the degree of correctness.
+- **`reasoning`**: Details about why a tool usage check passed or failed (e.g., "Tool 'example_tool' not called", "Argument 'arg2' for tool 'example_tool' was not positive").
+- **`evaluatorType`**: `'ToolUsage'`.
+- **`error`**: For unexpected issues during evaluation, not for failed tool usage checks themselves.
 
-Correct tool usage is a cornerstone of effective agent behavior, and this evaluator provides the means to systematically verify it. 
+Correct tool usage is a cornerstone of effective agent behavior, and this evaluator provides the means to systematically verify it.

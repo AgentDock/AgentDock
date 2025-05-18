@@ -27,4 +27,4 @@ Orchestration in AgentDock controls the flow of agent interactions and tool avai
 - [orchestration-config.md](./orchestration-config.md) - Configuration format and options
 - [step-sequencing.md](./step-sequencing.md) - Tool sequence enforcement and next-step prediction
 - [state-management.md](./state-management.md) - Optimized state management for orchestration
-- [conditional-transitions.md](./conditional-transitions.md) - How conditions work for transitioning between steps 
+- [conditional-transitions.md](./conditional-transitions.md) - How conditions work for transitioning between steps

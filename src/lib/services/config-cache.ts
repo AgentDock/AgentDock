@@ -26,14 +26,9 @@ export class ConfigCache {
   // Returns any as the cache can store various types of configurations
   async get(agentId: string, templateVersion: string): Promise<any | null> {
     const cached = this.cache.get(agentId);
-    
+
     if (!cached) {
-      await logger.debug(
-        LogCategory.CONFIG,
-        'ConfigCache',
-        'Cache miss',
-        { agentId }
-      );
+      await logger.debug(LogCategory.CONFIG, 'ConfigCache', 'Cache miss', { agentId });
       return null;
     }
 
@@ -43,11 +38,11 @@ export class ConfigCache {
         LogCategory.CONFIG,
         'ConfigCache',
         'Template version mismatch - invalidating',
-        { 
+        {
           agentId,
           cached: cached.templateVersion,
-          current: templateVersion
-        }
+          current: templateVersion,
+        },
       );
       this.cache.delete(agentId);
       return null;
@@ -55,29 +50,19 @@ export class ConfigCache {
 
     // Check TTL
     if (Date.now() - cached.timestamp > this.DEFAULT_TTL) {
-      await logger.debug(
-        LogCategory.CONFIG,
-        'ConfigCache',
-        'Cache expired',
-        { 
-          agentId,
-          age: Math.round((Date.now() - cached.timestamp) / 1000) + 's'
-        }
-      );
+      await logger.debug(LogCategory.CONFIG, 'ConfigCache', 'Cache expired', {
+        agentId,
+        age: Math.round((Date.now() - cached.timestamp) / 1000) + 's',
+      });
       this.cache.delete(agentId);
       return null;
     }
 
-    await logger.debug(
-      LogCategory.CONFIG,
-      'ConfigCache',
-      'Cache hit',
-      { 
-        agentId,
-        version: cached.templateVersion,
-        age: Math.round((Date.now() - cached.timestamp) / 1000) + 's'
-      }
-    );
+    await logger.debug(LogCategory.CONFIG, 'ConfigCache', 'Cache hit', {
+      agentId,
+      version: cached.templateVersion,
+      age: Math.round((Date.now() - cached.timestamp) / 1000) + 's',
+    });
 
     return cached.data;
   }
@@ -87,26 +72,17 @@ export class ConfigCache {
     this.cache.set(agentId, {
       data,
       timestamp: Date.now(),
-      templateVersion
+      templateVersion,
     });
 
-    await logger.debug(
-      LogCategory.CONFIG,
-      'ConfigCache',
-      'Cache updated',
-      { 
-        agentId,
-        version: templateVersion
-      }
-    );
+    await logger.debug(LogCategory.CONFIG, 'ConfigCache', 'Cache updated', {
+      agentId,
+      version: templateVersion,
+    });
   }
 
   async clear(): Promise<void> {
     this.cache.clear();
-    await logger.debug(
-      LogCategory.CONFIG,
-      'ConfigCache',
-      'Cache cleared'
-    );
+    await logger.debug(LogCategory.CONFIG, 'ConfigCache', 'Cache cleared');
   }
-} 
+}

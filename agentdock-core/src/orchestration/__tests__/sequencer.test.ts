@@ -10,42 +10,42 @@ jest.mock('../../logging', () => ({
     debug: jest.fn(),
     info: jest.fn(),
     warn: jest.fn(),
-    error: jest.fn()
+    error: jest.fn(),
   },
   LogCategory: {
-    ORCHESTRATION: 'orchestration'
-  }
+    ORCHESTRATION: 'orchestration',
+  },
 }));
 
 describe('StepSequencer', () => {
   let sequencer: StepSequencer;
   let mockStateManager: jest.Mocked<OrchestrationStateManager>;
   const sessionId: SessionId = 'test-session-id';
-  
+
   const stepWithSequence: OrchestrationStep = {
     name: 'test-step',
     description: 'A test step with a sequence',
     sequence: ['tool1', 'tool2', 'tool3'],
-    isDefault: false
+    isDefault: false,
   };
-  
+
   const stepWithoutSequence: OrchestrationStep = {
     name: 'no-sequence-step',
     description: 'A test step without a sequence',
-    isDefault: true
+    isDefault: true,
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     mockStateManager = {
       getState: jest.fn(),
       setState: jest.fn(),
       updateState: jest.fn(),
       clearState: jest.fn(),
-      addUsedTool: jest.fn()
+      addUsedTool: jest.fn(),
     } as unknown as jest.Mocked<OrchestrationStateManager>;
-    
+
     sequencer = new StepSequencer(mockStateManager);
   });
 
@@ -61,7 +61,7 @@ describe('StepSequencer', () => {
         recentlyUsedTools: [],
         sequenceIndex: 3, // Beyond the length of the sequence (0-2)
         lastAccessed: Date.now(),
-        ttl: 3600000
+        ttl: 3600000,
       });
 
       const result = await sequencer.hasActiveSequence(stepWithSequence, sessionId);
@@ -74,7 +74,7 @@ describe('StepSequencer', () => {
         recentlyUsedTools: [],
         sequenceIndex: 1, // Within the sequence (0-2)
         lastAccessed: Date.now(),
-        ttl: 3600000
+        ttl: 3600000,
       });
 
       const result = await sequencer.hasActiveSequence(stepWithSequence, sessionId);
@@ -85,7 +85,7 @@ describe('StepSequencer', () => {
       mockStateManager.getState.mockResolvedValueOnce(null);
 
       const result = await sequencer.hasActiveSequence(stepWithSequence, sessionId);
-      
+
       expect(result).toBe(true);
       expect(mockStateManager.updateState).toHaveBeenCalledWith(sessionId, { sequenceIndex: 0 });
     });
@@ -95,11 +95,11 @@ describe('StepSequencer', () => {
         sessionId,
         recentlyUsedTools: [],
         lastAccessed: Date.now(),
-        ttl: 3600000
+        ttl: 3600000,
       });
 
       const result = await sequencer.hasActiveSequence(stepWithSequence, sessionId);
-      
+
       expect(result).toBe(true);
       expect(mockStateManager.updateState).toHaveBeenCalledWith(sessionId, { sequenceIndex: 0 });
     });
@@ -120,13 +120,13 @@ describe('StepSequencer', () => {
 
     it('should return the current tool in the sequence', async () => {
       jest.spyOn(sequencer, 'hasActiveSequence').mockResolvedValueOnce(true);
-      
+
       mockStateManager.getState.mockResolvedValueOnce({
         sessionId,
         recentlyUsedTools: [],
         sequenceIndex: 1, // Second tool in sequence (0-indexed)
         lastAccessed: Date.now(),
-        ttl: 3600000
+        ttl: 3600000,
       });
 
       const result = await sequencer.getCurrentSequenceTool(stepWithSequence, sessionId);
@@ -135,7 +135,7 @@ describe('StepSequencer', () => {
 
     it('should return first tool as fallback if state is missing after hasActiveSequence check', async () => {
       jest.spyOn(sequencer, 'hasActiveSequence').mockResolvedValueOnce(true);
-      
+
       mockStateManager.getState.mockResolvedValueOnce(null);
 
       const result = await sequencer.getCurrentSequenceTool(stepWithSequence, sessionId);
@@ -145,12 +145,12 @@ describe('StepSequencer', () => {
 
     it('should return first tool as fallback if sequenceIndex is undefined after hasActiveSequence check', async () => {
       jest.spyOn(sequencer, 'hasActiveSequence').mockResolvedValueOnce(true);
-      
+
       mockStateManager.getState.mockResolvedValueOnce({
         sessionId,
         recentlyUsedTools: [],
         lastAccessed: Date.now(),
-        ttl: 3600000
+        ttl: 3600000,
       });
 
       const result = await sequencer.getCurrentSequenceTool(stepWithSequence, sessionId);
@@ -178,11 +178,11 @@ describe('StepSequencer', () => {
         recentlyUsedTools: [],
         sequenceIndex: 1,
         lastAccessed: Date.now(),
-        ttl: 3600000
+        ttl: 3600000,
       });
 
       const result = await sequencer.advanceSequence(stepWithSequence, sessionId);
-      
+
       expect(result).toBe(true);
       expect(mockStateManager.updateState).toHaveBeenCalledWith(sessionId, { sequenceIndex: 2 });
       expect(logger.debug).toHaveBeenCalled();
@@ -193,11 +193,11 @@ describe('StepSequencer', () => {
         sessionId,
         recentlyUsedTools: [],
         lastAccessed: Date.now(),
-        ttl: 3600000
+        ttl: 3600000,
       });
 
       const result = await sequencer.advanceSequence(stepWithSequence, sessionId);
-      
+
       expect(result).toBe(true);
       expect(mockStateManager.updateState).toHaveBeenCalledWith(sessionId, { sequenceIndex: 1 });
     });
@@ -209,11 +209,11 @@ describe('StepSequencer', () => {
         sessionId,
         recentlyUsedTools: [],
         lastAccessed: Date.now(),
-        ttl: 3600000
+        ttl: 3600000,
       });
 
       await sequencer.processTool(stepWithoutSequence, sessionId, 'some-tool');
-      
+
       expect(mockStateManager.addUsedTool).toHaveBeenCalledWith(sessionId, 'some-tool');
     });
 
@@ -231,23 +231,23 @@ describe('StepSequencer', () => {
 
     it('should advance sequence and return true if tool matches current sequence tool', async () => {
       jest.spyOn(sequencer, 'getCurrentSequenceTool').mockResolvedValueOnce('tool1');
-      
+
       jest.spyOn(sequencer, 'advanceSequence').mockResolvedValueOnce(true);
 
       const result = await sequencer.processTool(stepWithSequence, sessionId, 'tool1');
-      
+
       expect(result).toBe(true);
       expect(sequencer.advanceSequence).toHaveBeenCalledWith(stepWithSequence, sessionId);
     });
 
     it('should return false if tool does not match current sequence tool', async () => {
       jest.spyOn(sequencer, 'getCurrentSequenceTool').mockResolvedValueOnce('tool1');
-      
+
       const mockAdvanceSequence = jest.fn();
       sequencer.advanceSequence = mockAdvanceSequence;
 
       const result = await sequencer.processTool(stepWithSequence, sessionId, 'wrong-tool');
-      
+
       expect(result).toBe(false);
       expect(logger.warn).toHaveBeenCalled();
       expect(mockAdvanceSequence).not.toHaveBeenCalled();
@@ -258,7 +258,11 @@ describe('StepSequencer', () => {
     const allToolIds = ['tool1', 'tool2', 'tool3', 'tool4', 'tool5'];
 
     it('should return all tools if step has no sequence', async () => {
-      const result = await sequencer.filterToolsBySequence(stepWithoutSequence, sessionId, allToolIds);
+      const result = await sequencer.filterToolsBySequence(
+        stepWithoutSequence,
+        sessionId,
+        allToolIds,
+      );
       expect(result).toEqual(allToolIds);
     });
 
@@ -271,7 +275,7 @@ describe('StepSequencer', () => {
 
     it('should return all tools if current tool is null (sequence complete)', async () => {
       jest.spyOn(sequencer, 'hasActiveSequence').mockResolvedValueOnce(true);
-      
+
       jest.spyOn(sequencer, 'getCurrentSequenceTool').mockResolvedValueOnce(null);
 
       const result = await sequencer.filterToolsBySequence(stepWithSequence, sessionId, allToolIds);
@@ -281,7 +285,7 @@ describe('StepSequencer', () => {
 
     it('should return only the current sequence tool if it is available', async () => {
       jest.spyOn(sequencer, 'hasActiveSequence').mockResolvedValueOnce(true);
-      
+
       jest.spyOn(sequencer, 'getCurrentSequenceTool').mockResolvedValueOnce('tool2');
 
       const result = await sequencer.filterToolsBySequence(stepWithSequence, sessionId, allToolIds);
@@ -291,7 +295,7 @@ describe('StepSequencer', () => {
 
     it('should return empty array if current sequence tool is not available', async () => {
       jest.spyOn(sequencer, 'hasActiveSequence').mockResolvedValueOnce(true);
-      
+
       jest.spyOn(sequencer, 'getCurrentSequenceTool').mockResolvedValueOnce('unavailable-tool');
 
       const result = await sequencer.filterToolsBySequence(stepWithSequence, sessionId, allToolIds);

@@ -1,5 +1,9 @@
 import { NLPAccuracyEvaluator, type NLPAccuracyEvaluatorConfig } from '../accuracy';
-import { type EvaluationResult, type EvaluationInput, type EvaluationCriteria } from '../../../types';
+import {
+  type EvaluationResult,
+  type EvaluationInput,
+  type EvaluationCriteria,
+} from '../../../types';
 import { type Message as AgentMessage } from '../../../../types/messages';
 import { embed, type EmbeddingModel } from 'ai';
 
@@ -13,7 +17,9 @@ const mockEmbed = embed as jest.Mock;
 // Function to calculate cosine similarity between two vectors
 function cosineSimilarity(vecA: number[], vecB: number[]): number {
   if (!vecA || !vecB || vecA.length === 0 || vecA.length !== vecB.length) return 0;
-  let dotProduct = 0, normA = 0, normB = 0;
+  let dotProduct = 0,
+    normA = 0,
+    normB = 0;
   for (let i = 0; i < vecA.length; i++) {
     dotProduct += vecA[i] * vecB[i];
     normA += vecA[i] * vecA[i];
@@ -40,27 +46,29 @@ describe('NLPAccuracyEvaluator - Input Type Handling', () => {
     const arr = Array(10).fill(0);
     if (text === '') return arr;
     for (let i = 0; i < Math.min(text.length, 10); i++) {
-      arr[i] = (text.charCodeAt(i) / 128) - 0.5;
+      arr[i] = text.charCodeAt(i) / 128 - 0.5;
     }
     const magnitude = Math.sqrt(arr.reduce((sum, val) => sum + val * val, 0));
     if (magnitude === 0 && text.length > 0) return arr.map(() => 0.1);
     if (magnitude === 0) return arr;
-    return arr.map(x => x / (magnitude || 1));
+    return arr.map((x) => x / (magnitude || 1));
   };
 
   const createTestInput = (
-    response: any, 
+    response: any,
     groundTruth: any,
-    criterionScale: 'binary' | 'numeric' | 'pass/fail' = 'binary'
+    criterionScale: 'binary' | 'numeric' | 'pass/fail' = 'binary',
   ): EvaluationInput => {
-    const criteria: EvaluationCriteria[] = [{
-      name: evaluatorConfig.criterionName,
-      description: 'Test criterion for input types',
-      scale: criterionScale,
-    }];
+    const criteria: EvaluationCriteria[] = [
+      {
+        name: evaluatorConfig.criterionName,
+        description: 'Test criterion for input types',
+        scale: criterionScale,
+      },
+    ];
     return {
-      response: response as (string | AgentMessage),
-      groundTruth: groundTruth as (string | any),
+      response: response as string | AgentMessage,
+      groundTruth: groundTruth as string | any,
       criteria,
     };
   };
@@ -72,18 +80,27 @@ describe('NLPAccuracyEvaluator - Input Type Handling', () => {
     const expectedStrGt = String(gtArr);
 
     mockEmbed
-      .mockResolvedValueOnce({ embedding: mockEmbedding(strRespObj), usage: { promptTokens: 1, totalTokens: 1 } })
-      .mockResolvedValueOnce({ embedding: mockEmbedding(expectedStrGt), usage: { promptTokens: 1, totalTokens: 1 } });
+      .mockResolvedValueOnce({
+        embedding: mockEmbedding(strRespObj),
+        usage: { promptTokens: 1, totalTokens: 1 },
+      })
+      .mockResolvedValueOnce({
+        embedding: mockEmbedding(expectedStrGt),
+        usage: { promptTokens: 1, totalTokens: 1 },
+      });
 
     const input = createTestInput(respObj, gtArr);
     const results = await evaluator.evaluate(input, input.criteria!);
     expect(results.length).toBe(1);
     const result = results[0];
-    
-    const actualSimilarity = cosineSimilarity(mockEmbedding(strRespObj), mockEmbedding(expectedStrGt));
+
+    const actualSimilarity = cosineSimilarity(
+      mockEmbedding(strRespObj),
+      mockEmbedding(expectedStrGt),
+    );
     expect(result.score).toBe(actualSimilarity >= (evaluatorConfig.similarityThreshold || 0));
     expect(result.reasoning).toContain(`Cosine similarity: ${actualSimilarity.toFixed(4)}.`);
-    
+
     expect(mockEmbed).toHaveBeenNthCalledWith(1, expect.objectContaining({ value: strRespObj }));
     expect(mockEmbed).toHaveBeenNthCalledWith(2, expect.objectContaining({ value: expectedStrGt }));
   });
@@ -108,8 +125,14 @@ describe('NLPAccuracyEvaluator - Input Type Handling', () => {
     const strGroundTruthMessage = String(groundTruthMessage); // Corrected: Use String()
 
     mockEmbed
-      .mockResolvedValueOnce({ embedding: mockEmbedding(strResponseMessage), usage: { promptTokens: 1, totalTokens: 1 } })
-      .mockResolvedValueOnce({ embedding: mockEmbedding(strGroundTruthMessage), usage: { promptTokens: 1, totalTokens: 1 } }); // Use corrected strGroundTruthMessage
+      .mockResolvedValueOnce({
+        embedding: mockEmbedding(strResponseMessage),
+        usage: { promptTokens: 1, totalTokens: 1 },
+      })
+      .mockResolvedValueOnce({
+        embedding: mockEmbedding(strGroundTruthMessage),
+        usage: { promptTokens: 1, totalTokens: 1 },
+      }); // Use corrected strGroundTruthMessage
 
     const input = createTestInput(responseMessage, groundTruthMessage);
     const results = await evaluator.evaluate(input, input.criteria!);
@@ -117,29 +140,43 @@ describe('NLPAccuracyEvaluator - Input Type Handling', () => {
     const result = results[0];
 
     // Similarity will be based on the actual string representations used by the evaluator
-    const expectedSimilarity = cosineSimilarity(mockEmbedding(strResponseMessage), mockEmbedding(strGroundTruthMessage));
+    const expectedSimilarity = cosineSimilarity(
+      mockEmbedding(strResponseMessage),
+      mockEmbedding(strGroundTruthMessage),
+    );
     expect(result.score).toBe(expectedSimilarity >= (evaluatorConfig.similarityThreshold || 0));
     expect(result.reasoning).toContain(`Cosine similarity: ${expectedSimilarity.toFixed(4)}.`);
-        
-    expect(mockEmbed).toHaveBeenNthCalledWith(1, expect.objectContaining({ value: strResponseMessage }));
-    expect(mockEmbed).toHaveBeenNthCalledWith(2, expect.objectContaining({ value: strGroundTruthMessage })); // Expect String(groundTruthMessage)
+
+    expect(mockEmbed).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ value: strResponseMessage }),
+    );
+    expect(mockEmbed).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ value: strGroundTruthMessage }),
+    ); // Expect String(groundTruthMessage)
   });
 
   it('should produce a similarity of 0 if embeddings are orthogonal', async () => {
     const embeddingA = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0]; // Vector A
     const embeddingB = [0, 1, 0, 0, 0, 0, 0, 0, 0, 0]; // Vector B (orthogonal to A)
-    
+
     mockEmbed
       .mockResolvedValueOnce({ embedding: embeddingA, usage: { promptTokens: 1, totalTokens: 1 } })
       .mockResolvedValueOnce({ embedding: embeddingB, usage: { promptTokens: 1, totalTokens: 1 } });
 
     // Input texts don't matter as much as the mocked embeddings for this test
-    const input = createTestInput('textA produces orthogonal embedding', 'textB produces other orthogonal embedding');
+    const input = createTestInput(
+      'textA produces orthogonal embedding',
+      'textB produces other orthogonal embedding',
+    );
     const results = await evaluator.evaluate(input, input.criteria!);
     expect(results.length).toBe(1);
     const result = results[0];
     expect(result.score).toBe(false); // Cosine is 0, 0 < threshold (0.8) -> false
     expect(result.reasoning).toContain('Cosine similarity: 0.0000.');
-    expect(result.reasoning).toContain(`Threshold: ${evaluatorConfig.similarityThreshold}. Outcome: Fail.`);
+    expect(result.reasoning).toContain(
+      `Threshold: ${evaluatorConfig.similarityThreshold}. Outcome: Fail.`,
+    );
   });
-}); 
+});

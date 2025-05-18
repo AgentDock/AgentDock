@@ -44,7 +44,7 @@ import { fetchWeatherData } from './utils';
 // Parameter schema for the weather tool
 const weatherSchema = z.object({
   location: z.string().describe('City name or location to get weather for'),
-  days: z.number().optional().default(3).describe('Number of days to forecast (1-7)')
+  days: z.number().optional().default(3).describe('Number of days to forecast (1-7)'),
 });
 
 // Weather tool implementation
@@ -58,37 +58,37 @@ export const weatherTool: Tool = {
       if (!location) {
         return createToolResult(
           'weather_error',
-          formatErrorMessage('Error', 'Location is required')
+          formatErrorMessage('Error', 'Location is required'),
         );
       }
 
       // Limit days to a reasonable range
       const forecastDays = Math.min(Math.max(days, 1), 7);
-      
+
       // Fetch weather data
       const weatherData = await fetchWeatherData(location, forecastDays);
-      
+
       // Return formatted results
       return WeatherForecast({
         location: weatherData.location.name,
-        days: weatherData.forecast.forecastday
+        days: weatherData.forecast.forecastday,
       });
     } catch (error) {
       // Log and handle errors
       logger.error(LogCategory.NODE, '[Weather]', 'Weather tool error:', { error, location });
       const errorMessage = error instanceof Error ? error.message : String(error);
-      
+
       return createToolResult(
         'weather_error',
-        formatErrorMessage('Error', `Unable to get weather for "${location}": ${errorMessage}`)
+        formatErrorMessage('Error', `Unable to get weather for "${location}": ${errorMessage}`),
       );
     }
-  }
+  },
 };
 
 // Export for auto-registration
 export const tools = {
-  weather: weatherTool
+  weather: weatherTool,
 };
 ```
 
@@ -96,7 +96,13 @@ export const tools = {
 
 ```typescript
 // components.tsx
-import { formatBold, formatHeader, formatItalic, joinSections, createToolResult } from '@/lib/utils/markdown-utils';
+import {
+  formatBold,
+  formatHeader,
+  formatItalic,
+  joinSections,
+  createToolResult,
+} from '@/lib/utils/markdown-utils';
 
 // Types for weather data
 export interface WeatherDay {
@@ -120,28 +126,25 @@ export interface WeatherForecastProps {
 // Component to format weather forecast output
 export function WeatherForecast(props: WeatherForecastProps) {
   const { location, days } = props;
-  
+
   // Format each day's forecast
-  const forecastDays = days.map(day => {
+  const forecastDays = days.map((day) => {
     const date = new Date(day.date).toLocaleDateString('en-US', {
       weekday: 'long',
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
     });
-    
+
     return `${formatBold(date)}
 Temperature: ${day.day.mintemp_c}°C to ${day.day.maxtemp_c}°C
 Condition: ${day.day.condition.text}
 Chance of rain: ${day.day.daily_chance_of_rain}%`;
   });
-  
+
   // Combine into a single result
   return createToolResult(
     'weather_forecast',
-    joinSections(
-      formatHeader(`Weather forecast for ${location}`),
-      forecastDays.join('\n\n')
-    )
+    joinSections(formatHeader(`Weather forecast for ${location}`), forecastDays.join('\n\n')),
   );
 }
 ```
@@ -160,19 +163,21 @@ const weatherResponseSchema = z.object({
     country: z.string(),
   }),
   forecast: z.object({
-    forecastday: z.array(z.object({
-      date: z.string(),
-      day: z.object({
-        maxtemp_c: z.number(),
-        mintemp_c: z.number(),
-        condition: z.object({
-          text: z.string(),
-          icon: z.string(),
+    forecastday: z.array(
+      z.object({
+        date: z.string(),
+        day: z.object({
+          maxtemp_c: z.number(),
+          mintemp_c: z.number(),
+          condition: z.object({
+            text: z.string(),
+            icon: z.string(),
+          }),
+          daily_chance_of_rain: z.number(),
         }),
-        daily_chance_of_rain: z.number(),
-      })
-    }))
-  })
+      }),
+    ),
+  }),
 });
 
 // Function to fetch weather data from API
@@ -182,12 +187,12 @@ export async function fetchWeatherData(location: string, days: number) {
   if (!apiKey) {
     throw new Error('Weather API key not configured');
   }
-  
+
   // Make API request
   const response = await fetch(
-    `https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${encodeURIComponent(location)}&days=${days}&aqi=no&alerts=no`
+    `https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${encodeURIComponent(location)}&days=${days}&aqi=no&alerts=no`,
   );
-  
+
   // Handle API errors
   if (!response.ok) {
     let errorText = `API error: ${response.status}`;
@@ -201,7 +206,7 @@ export async function fetchWeatherData(location: string, days: number) {
     }
     throw new Error(errorText);
   }
-  
+
   // Parse and validate response
   const data = await response.json();
   return weatherResponseSchema.parse(data);
@@ -218,14 +223,14 @@ async execute({ query }, options) {
   try {
     // Fetch news articles
     const articles = await fetchNewsArticles(query);
-    
+
     // Use LLM to generate a summary if available
     if (options.llmContext?.llm) {
       // Format articles for the LLM
-      const articlesText = articles.map(a => 
+      const articlesText = articles.map(a =>
         `TITLE: ${a.title}\nSUMMARY: ${a.description}`
       ).join('\n\n');
-      
+
       // Create prompt for the LLM
       const messages = [
         {
@@ -237,25 +242,25 @@ async execute({ query }, options) {
           content: `Topic: ${query}\n\nArticles:\n${articlesText}\n\nPlease create a concise summary of these news articles.`
         }
       ];
-      
+
       // Generate summary with the LLM
-      const result = await options.llmContext.llm.generateText({ 
+      const result = await options.llmContext.llm.generateText({
         messages,
         temperature: 0.3,
         maxTokens: 500
       });
-      
+
       // Return formatted result
-      return NewsSummary({ 
-        query, 
+      return NewsSummary({
+        query,
         articles,
         summary: result.text
       });
     }
-    
+
     // Fallback if LLM is not available
-    return NewsSummary({ 
-      query, 
+    return NewsSummary({
+      query,
       articles,
       summary: "AI-generated summary not available. Please review the article excerpts below."
     });
@@ -312,27 +317,27 @@ export const researchTool: Tool = {
   async execute({ query, depth = 2 }, options) {
     // First, search for information
     const searchResults = await searchWeb(query);
-    
+
     // Then, analyze the results with the LLM
     if (options.llmContext?.llm) {
       const analysis = await options.llmContext.llm.generateText({
         messages: [
           {
             role: 'system',
-            content: 'Analyze these search results and identify key insights.'
+            content: 'Analyze these search results and identify key insights.',
           },
           {
             role: 'user',
-            content: `Analyze these search results about "${query}": ${JSON.stringify(searchResults)}`
-          }
-        ]
+            content: `Analyze these search results about "${query}": ${JSON.stringify(searchResults)}`,
+          },
+        ],
       });
-      
+
       return ResearchResults({ query, results: searchResults, analysis: analysis.text });
     }
-    
+
     return ResearchResults({ query, results: searchResults });
-  }
+  },
 };
 ```
 
@@ -350,42 +355,42 @@ export const dataAnalysisTool: Tool = {
     try {
       // Step 1: Load and validate data
       const data = await loadDataset(dataset);
-      
+
       // Step 2: Perform statistical analysis
       const stats = performStatisticalAnalysis(data, analysis_type);
-      
+
       // Step 3: Generate insights with LLM
-      let insights = "Statistical analysis complete";
+      let insights = 'Statistical analysis complete';
       if (options.llmContext?.llm) {
         const result = await options.llmContext.llm.generateText({
           messages: [
             {
               role: 'system',
-              content: `You are a data analysis expert. Generate insights based on the statistical analysis of a dataset.`
+              content: `You are a data analysis expert. Generate insights based on the statistical analysis of a dataset.`,
             },
             {
               role: 'user',
-              content: `Dataset: ${dataset}\nAnalysis Type: ${analysis_type}\nStatistics: ${JSON.stringify(stats)}\n\nWhat insights can we draw from this analysis?`
-            }
-          ]
+              content: `Dataset: ${dataset}\nAnalysis Type: ${analysis_type}\nStatistics: ${JSON.stringify(stats)}\n\nWhat insights can we draw from this analysis?`,
+            },
+          ],
         });
         insights = result.text;
       }
-      
+
       // Return formatted results
       return DataAnalysisResults({
         dataset,
         analysis_type,
         statistics: stats,
-        insights
+        insights,
       });
     } catch (error) {
       return createToolResult(
         'analysis_error',
-        formatErrorMessage('Error', `Analysis failed: ${error.message}`)
+        formatErrorMessage('Error', `Analysis failed: ${error.message}`),
       );
     }
-  }
+  },
 };
 ```
 
@@ -398,9 +403,10 @@ Always validate inputs with Zod schemas:
 ```typescript
 const stockPriceSchema = z.object({
   symbol: z.string().describe('Stock ticker symbol (e.g., AAPL, MSFT)'),
-  period: z.enum(['1d', '1w', '1m', '3m', '6m', '1y', '5y'])
+  period: z
+    .enum(['1d', '1w', '1m', '3m', '6m', '1y', '5y'])
     .default('1m')
-    .describe('Time period for historical data')
+    .describe('Time period for historical data'),
 });
 ```
 
@@ -413,7 +419,7 @@ try {
   // Tool logic
 } catch (error) {
   logger.error(LogCategory.NODE, '[MyTool]', 'Execution error:', { error });
-  
+
   // Provide user-friendly error messages
   let errorMessage = 'An unexpected error occurred';
   if (error instanceof Error) {
@@ -421,11 +427,8 @@ try {
   } else if (typeof error === 'string') {
     errorMessage = error;
   }
-  
-  return createToolResult(
-    'error',
-    formatErrorMessage('Error', errorMessage)
-  );
+
+  return createToolResult('error', formatErrorMessage('Error', errorMessage));
 }
 ```
 
@@ -439,8 +442,8 @@ return createToolResult(
   joinSections(
     formatHeader(`Results for ${query}`),
     formatBold('Key Findings:'),
-    results.join('\n\n')
-  )
+    results.join('\n\n'),
+  ),
 );
 ```
 
@@ -456,7 +459,9 @@ if (!apiKey) {
 }
 
 // Use HTTPS for all external requests
-const response = await fetch(`https://api.example.com/data?key=${apiKey}&q=${encodeURIComponent(query)}`);
+const response = await fetch(
+  `https://api.example.com/data?key=${apiKey}&q=${encodeURIComponent(query)}`,
+);
 
 // Validate API responses
 if (!response.ok) {
@@ -497,7 +502,7 @@ If your tool isn't appearing in the agent:
 ```typescript
 // Make sure you're exporting the tools object
 export const tools = {
-  my_tool: myTool
+  my_tool: myTool,
 };
 
 // Check that your tool is imported in src/nodes/init.ts
@@ -542,9 +547,10 @@ import { fetchStockData } from './utils';
 
 const stockPriceSchema = z.object({
   symbol: z.string().describe('Stock ticker symbol (e.g., AAPL, MSFT)'),
-  period: z.enum(['1d', '1w', '1m', '3m', '6m', '1y', '5y'])
+  period: z
+    .enum(['1d', '1w', '1m', '3m', '6m', '1y', '5y'])
     .default('1m')
-    .describe('Time period for historical data')
+    .describe('Time period for historical data'),
 });
 
 export const stockPriceTool: Tool = {
@@ -558,14 +564,14 @@ export const stockPriceTool: Tool = {
     } catch (error) {
       return createToolResult(
         'stock_price_error',
-        formatErrorMessage('Error', `Unable to get stock data for ${symbol}: ${error.message}`)
+        formatErrorMessage('Error', `Unable to get stock data for ${symbol}: ${error.message}`),
       );
     }
-  }
+  },
 };
 
 export const tools = {
-  stock_price: stockPriceTool
+  stock_price: stockPriceTool,
 };
 ```
 
@@ -580,9 +586,10 @@ import { ImageAnalysisResults } from './components';
 
 const imageAnalysisSchema = z.object({
   url: z.string().url().describe('URL of the image to analyze'),
-  analysis_type: z.enum(['objects', 'faces', 'text', 'colors'])
+  analysis_type: z
+    .enum(['objects', 'faces', 'text', 'colors'])
     .default('objects')
-    .describe('Type of analysis to perform on the image')
+    .describe('Type of analysis to perform on the image'),
 });
 
 export const imageAnalysisTool: Tool = {
@@ -596,14 +603,14 @@ export const imageAnalysisTool: Tool = {
     } catch (error) {
       return createToolResult(
         'image_analysis_error',
-        formatErrorMessage('Error', `Image analysis failed: ${error.message}`)
+        formatErrorMessage('Error', `Image analysis failed: ${error.message}`),
       );
     }
-  }
+  },
 };
 
 export const tools = {
-  analyze_image: imageAnalysisTool
+  analyze_image: imageAnalysisTool,
 };
 ```
 
@@ -611,4 +618,4 @@ export const tools = {
 
 Custom tools are a powerful way to extend AgentDock's capabilities. By following the patterns and practices outlined in this guide, you can create sophisticated tools that enhance your AI agents with specialized functionality.
 
-For more information, refer to the Node System documentation and the AgentDock Core API reference. 
+For more information, refer to the Node System documentation and the AgentDock Core API reference.

@@ -48,16 +48,16 @@ export function MermaidDiagram({ content }: MermaidDiagramProps) {
       });
       mermaidInitialized = true;
     }
-    
+
     // Cleanup on unmount - remove any error elements
     return () => {
       if (panzoomInstanceRef.current) {
         panzoomInstanceRef.current.dispose();
         panzoomInstanceRef.current = null;
       }
-      
+
       // Clean up any error elements
-      document.querySelectorAll('body > [id*="mermaid-err"]').forEach(el => {
+      document.querySelectorAll('body > [id*="mermaid-err"]').forEach((el) => {
         if (el.parentNode === document.body) {
           el.remove();
         }
@@ -68,24 +68,24 @@ export function MermaidDiagram({ content }: MermaidDiagramProps) {
   // Function to render the diagram
   const renderDiagram = async () => {
     if (!containerRef.current) return;
-    
+
     try {
       // Dispose of existing panzoom instance if it exists
       if (panzoomInstanceRef.current) {
         panzoomInstanceRef.current.dispose();
         panzoomInstanceRef.current = null;
       }
-      
+
       // Clear existing content and set opacity to 0 during rendering
       containerRef.current.innerHTML = '';
       containerRef.current.style.opacity = '0';
-      
+
       // Render the diagram
       const { svg } = await mermaid.render(svgId, content);
-      
+
       if (containerRef.current) {
         containerRef.current.innerHTML = svg;
-        
+
         // Apply styles to SVG
         const svgElement = containerRef.current.querySelector('svg');
         if (svgElement) {
@@ -98,7 +98,7 @@ export function MermaidDiagram({ content }: MermaidDiagramProps) {
             svgElement.style.maxWidth = '100%';
             svgElement.style.height = 'auto';
           }
-          
+
           // Initialize panzoom with a slight delay to ensure rendering is complete
           setTimeout(() => {
             if (svgElement && !panzoomInstanceRef.current) {
@@ -110,24 +110,24 @@ export function MermaidDiagram({ content }: MermaidDiagramProps) {
                 },
                 minZoom: 0.1,
                 maxZoom: 10,
-                zoomSpeed: 0.12
+                zoomSpeed: 0.12,
               });
-              
+
               // Add grab cursor
               svgElement.style.cursor = 'grab';
-              
+
               // Add event listeners for cursor style
               svgElement.addEventListener('mousedown', () => {
                 svgElement.style.cursor = 'grabbing';
               });
-              
+
               document.addEventListener('mouseup', () => {
                 if (svgElement) {
                   svgElement.style.cursor = 'grab';
                 }
               });
             }
-            
+
             // Fade in the diagram
             if (containerRef.current) {
               containerRef.current.style.opacity = '1';
@@ -135,12 +135,12 @@ export function MermaidDiagram({ content }: MermaidDiagramProps) {
           }, 50);
         }
       }
-      
+
       setError(null);
     } catch (err) {
       console.error('Failed to render mermaid diagram:', err);
       setError(err instanceof Error ? err.message : String(err));
-      
+
       // Show container even on error
       if (containerRef.current) {
         containerRef.current.style.opacity = '1';
@@ -153,14 +153,14 @@ export function MermaidDiagram({ content }: MermaidDiagramProps) {
     const timeoutId = setTimeout(() => {
       renderDiagram();
     }, 50);
-    
+
     return () => {
       clearTimeout(timeoutId);
       if (panzoomInstanceRef.current) {
         panzoomInstanceRef.current.dispose();
         panzoomInstanceRef.current = null;
       }
-      
+
       document.removeEventListener('mouseup', () => {});
     };
   }, [content, svgId]);
@@ -177,42 +177,42 @@ export function MermaidDiagram({ content }: MermaidDiagramProps) {
     return (
       <div className="rounded-md bg-amber-50 p-4 text-amber-800 border border-amber-200 dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-800/50">
         <p className="font-medium">Diagram rendering error</p>
-        <pre className="mt-2 text-sm bg-amber-100/50 p-2 rounded overflow-auto dark:bg-amber-900/50">{error}</pre>
+        <pre className="mt-2 text-sm bg-amber-100/50 p-2 rounded overflow-auto dark:bg-amber-900/50">
+          {error}
+        </pre>
       </div>
     );
   }
 
   return (
     <div className="relative mb-4">
-      <div
-        className="mermaid-container border rounded-md p-4 bg-white dark:bg-slate-900 dark:border-slate-700"
-      >
-        <div 
+      <div className="mermaid-container border rounded-md p-4 bg-white dark:bg-slate-900 dark:border-slate-700">
+        <div
           ref={containerRef}
           className="mermaid-content"
-          style={{ 
+          style={{
             opacity: 0,
-            transition: 'opacity 0.3s ease-in'
+            transition: 'opacity 0.3s ease-in',
           }}
         />
-        
+
         {/* Reset zoom/pan button positioned at bottom right - smaller */}
         <div className="absolute bottom-3 right-3 z-10">
-          <button 
+          <button
             onClick={handleReset}
             className="bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-md shadow-md p-1 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
             title="Reset zoom and position"
             aria-label="Reset diagram view"
           >
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              width="12" 
-              height="12" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
               strokeLinejoin="round"
             >
               <path d="M1 4v6h6"></path>
@@ -225,4 +225,4 @@ export function MermaidDiagram({ content }: MermaidDiagramProps) {
   );
 }
 
-export default MermaidDiagram; 
+export default MermaidDiagram;

@@ -11,6 +11,7 @@ Please submit all security concerns through our dedicated security advisory port
 ### What to Include
 
 For efficient investigation, please provide:
+
 - Vulnerability category (injection attack, authentication bypass, etc.)
 - Affected components and file paths
 - Code location references (commit hash, branch)

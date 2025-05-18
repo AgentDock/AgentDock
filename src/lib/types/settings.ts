@@ -14,7 +14,7 @@ export interface AgentSettings {
   apiKey: string;
   temperature: string;
   maxTokens: string;
-  
+
   // Optional settings
   systemPrompt?: string;
   instructions?: string;
@@ -35,4 +35,4 @@ export interface GlobalSettings {
 }
 
 // Use ChatRuntimeConfig from shared types
-export type RuntimeConfig = ChatRuntimeConfig; 
+export type RuntimeConfig = ChatRuntimeConfig;

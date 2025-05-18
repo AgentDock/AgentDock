@@ -31,18 +31,18 @@ graph TD
 
 The `ToxicityEvaluator` is primarily used for:
 
-*   Flagging agent responses that contain offensive or inappropriate language.
-*   Ensuring compliance with content policies that forbid certain terms.
-*   Basic safety screening of user inputs if the agent is designed to process them in sensitive ways (though this is less common for the evaluator's direct use).
+- Flagging agent responses that contain offensive or inappropriate language.
+- Ensuring compliance with content policies that forbid certain terms.
+- Basic safety screening of user inputs if the agent is designed to process them in sensitive ways (though this is less common for the evaluator's direct use).
 
 ## Configuration
 
 Configuration typically involves defining the list of toxic terms and matching behavior:
 
-*   `blockList`: An array of strings or regular expressions representing toxic terms/patterns.
-*   `caseSensitive`: Boolean, defaults to `false`.
-*   `matchWholeWord`: Boolean, to avoid flagging substrings within non-toxic words.
-*   `sourceField`: Specifies which field from `EvaluationInput` to check (defaults to 'response').
+- `blockList`: An array of strings or regular expressions representing toxic terms/patterns.
+- `caseSensitive`: Boolean, defaults to `false`.
+- `matchWholeWord`: Boolean, to avoid flagging substrings within non-toxic words.
+- `sourceField`: Specifies which field from `EvaluationInput` to check (defaults to 'response').
 
 ```typescript
 // Example configuration structure (to be detailed)
@@ -59,10 +59,10 @@ Configuration typically involves defining the list of toxic terms and matching b
 
 The `ToxicityEvaluator` produces an `EvaluationResult`:
 
-*   **`criterionName`**: Reflects the toxicity check (e.g., "IsNonToxic").
-*   **`score`**: Typically boolean (`true` if no toxic terms found, `false` if toxic terms are present) or a count of toxic terms found.
-*   **`reasoning`**: Details about which toxic terms were found, if any.
-*   **`evaluatorType`**: `'Toxicity'`.
-*   **`error`**: For configuration errors or issues accessing the text.
+- **`criterionName`**: Reflects the toxicity check (e.g., "IsNonToxic").
+- **`score`**: Typically boolean (`true` if no toxic terms found, `false` if toxic terms are present) or a count of toxic terms found.
+- **`reasoning`**: Details about which toxic terms were found, if any.
+- **`evaluatorType`**: `'Toxicity'`.
+- **`error`**: For configuration errors or issues accessing the text.
 
-This provides a direct mechanism for identifying and flagging potentially harmful content based on a defined set of rules. 
+This provides a direct mechanism for identifying and flagging potentially harmful content based on a defined set of rules.

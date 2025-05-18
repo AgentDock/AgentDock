@@ -22,12 +22,7 @@ export const tools: ToolCollection = {
 };
 
 // Log initialization
-logger.info(
-  LogCategory.NODE,
-  'ScienceTools',
-  'Initialized science tools module',
-  {
-    toolCount: Object.keys(tools).length,
-    availableTools: Object.keys(tools).join(', ')
-  }
-); 
+logger.info(LogCategory.NODE, 'ScienceTools', 'Initialized science tools module', {
+  toolCount: Object.keys(tools).length,
+  availableTools: Object.keys(tools).join(', '),
+});

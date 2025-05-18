@@ -124,4 +124,4 @@ While Calorie Vision strives for accuracy, users should be aware of these limita
 - "What's a lower-carb alternative for this dish?"
 - "How does this meal fit into a Mediterranean diet?"
 
-Calorie Vision is your personal nutrition expert, providing detailed insights from simple food photos with confidence and precision. 
+Calorie Vision is your personal nutrition expert, providing detailed insights from simple food photos with confidence and precision.

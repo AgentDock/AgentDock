@@ -18,15 +18,13 @@ const customJestConfig: Config = {
   transform: {
     '^.+\\.(ts|tsx)$': 'ts-jest',
   },
-  transformIgnorePatterns: [
-    '/node_modules/(?!node-fetch)',
-  ],
+  transformIgnorePatterns: ['/node_modules/(?!node-fetch)'],
   testMatch: [
     '<rootDir>/tests/**/*.test.ts',
     '<rootDir>/tests/**/*.test.tsx',
-    '<rootDir>/agentdock-core/src/**/*.test.ts'
+    '<rootDir>/agentdock-core/src/**/*.test.ts',
   ],
 };
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
-export default createJestConfig(customJestConfig); 
+export default createJestConfig(customJestConfig);

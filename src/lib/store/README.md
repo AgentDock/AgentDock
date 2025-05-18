@@ -25,7 +25,7 @@ function MyComponent() {
   // Or with the hooks API
   const agents = useAgents();
   const { isInitialized, initialize } = useAppState();
-  
+
   useEffect(() => {
     if (!isInitialized) {
       initialize();
@@ -34,10 +34,8 @@ function MyComponent() {
 
   return (
     <div>
-      {agents.map(agent => (
-        <div key={agent.id}>
-          {agent.name}
-        </div>
+      {agents.map((agent) => (
+        <div key={agent.id}>{agent.name}</div>
       ))}
     </div>
   );
@@ -47,6 +45,7 @@ function MyComponent() {
 ## State Structure
 
 The store manages:
+
 - List of agents
 - Initialization state
 - Template validation status
@@ -61,12 +60,14 @@ The store manages:
 ## Agent Templates
 
 Agent templates are loaded from the generated templates:
+
 ```
 /generated/templates.ts
 ```
 
 Each template defines:
+
 - Agent name, ID, and description
 - Personality configuration
 - Node configurations and model settings
-- Tools and chat settings 
+- Tools and chat settings

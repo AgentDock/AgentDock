@@ -23,4 +23,4 @@ export interface AgentDockConfig {
   serviceKeyEndpoint?: string;
 }
 
-export * from './agent-config'; 
+export * from './agent-config';

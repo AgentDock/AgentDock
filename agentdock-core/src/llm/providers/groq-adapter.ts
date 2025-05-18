@@ -13,18 +13,18 @@ import { logger, LogCategory } from '../../logging';
 export async function validateGroqApiKey(apiKey: string): Promise<boolean> {
   try {
     if (!apiKey) return false;
-    
+
     const response = await fetch('https://api.groq.com/openai/v1/models', {
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
-      }
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
     });
-    
+
     return response.ok;
   } catch (error) {
-    logger.error(LogCategory.LLM, '[GroqAdapter]', 'Error validating API key:', { 
-      error: error instanceof Error ? error.message : String(error) 
+    logger.error(LogCategory.LLM, '[GroqAdapter]', 'Error validating API key:', {
+      error: error instanceof Error ? error.message : String(error),
     });
     return false;
   }
@@ -42,9 +42,9 @@ export async function fetchGroqModels(apiKey: string): Promise<ModelMetadata[]> 
     // Fetch models directly from Groq API
     const response = await fetch('https://api.groq.com/openai/v1/models', {
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
-      }
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
     });
 
     if (!response.ok) {
@@ -52,7 +52,7 @@ export async function fetchGroqModels(apiKey: string): Promise<ModelMetadata[]> 
     }
 
     const data = await response.json();
-    
+
     if (!data.data || !Array.isArray(data.data)) {
       throw new Error('Invalid response from Groq API');
     }
@@ -65,7 +65,7 @@ export async function fetchGroqModels(apiKey: string): Promise<ModelMetadata[]> 
       contextWindow: model.context_window || 8192,
       defaultTemperature: 0.7,
       defaultMaxTokens: 2048,
-      capabilities: ['text']
+      capabilities: ['text'],
     }));
 
     // Register models with the registry
@@ -75,9 +75,9 @@ export async function fetchGroqModels(apiKey: string): Promise<ModelMetadata[]> 
 
     return ModelService.getModels('groq');
   } catch (error) {
-    logger.error(LogCategory.LLM, '[GroqAdapter]', 'Error fetching models:', { 
-      error: error instanceof Error ? error.message : String(error) 
+    logger.error(LogCategory.LLM, '[GroqAdapter]', 'Error fetching models:', {
+      error: error instanceof Error ? error.message : String(error),
     });
     throw error;
   }
-} 
+}

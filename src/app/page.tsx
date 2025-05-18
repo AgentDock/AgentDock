@@ -3,10 +3,10 @@
  * Implements server-side redirect with proper dynamic directive
  */
 
-import { redirect } from "next/navigation";
-import { Metadata } from "next";
-import { generatePageMetadata } from "@/lib/metadata-utils";
-import { siteConfig } from "@/lib/config";
+import { redirect } from 'next/navigation';
+import { Metadata } from 'next';
+import { generatePageMetadata } from '@/lib/metadata-utils';
+import { siteConfig } from '@/lib/config';
 
 // Ensure dynamic rendering for proper redirects
 export const dynamic = 'force-dynamic';
@@ -19,7 +19,7 @@ export const metadata: Metadata = generatePageMetadata({
   description: siteConfig.description,
   ogImageParams: {
     title: siteConfig.description,
-  }
+  },
 });
 
 /**
@@ -27,5 +27,5 @@ export const metadata: Metadata = generatePageMetadata({
  */
 export default function HomePage() {
   // Redirect to agents page
-  redirect("/agents");
+  redirect('/agents');
 }

@@ -1,6 +1,6 @@
 /**
  * @fileoverview Tool types that match both Core and Vercel AI SDK requirements
- * 
+ *
  * In AgentDock, tools are a specialized type of node that can be used by AI agents.
  * This file defines the types for these custom tools, ensuring compatibility with
  * both the AgentDock Core framework and the Vercel AI SDK.
@@ -76,5 +76,5 @@ export function errorHandler(error: unknown): string {
 export const DEFAULT_TOOL_CONFIG = {
   maxSteps: 5,
   toolCallStreaming: true,
-  getErrorMessage: errorHandler
-}; 
+  getErrorMessage: errorHandler,
+};

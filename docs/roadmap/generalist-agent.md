@@ -29,7 +29,7 @@ graph LR
     B --> C[BrowserNode]
     C --> D[StagehandNode]
     C --> E[BrowserUseNode]
-    
+
     style B fill:#0066cc,color:#ffffff,stroke:#0033cc
     style C fill:#e6f2ff,stroke:#99ccff
 ```
@@ -46,7 +46,7 @@ graph TD
     F --> G[Data Collection]
     G --> H[Response Synthesis]
     H --> I[User Response]
-    
+
     style B fill:#0066cc,color:#ffffff,stroke:#0033cc
     style D fill:#e6f2ff,stroke:#99ccff
 ```
@@ -57,18 +57,18 @@ graph TD
 graph TD
     A[User Query] --> B[Generalist Agent]
     B --> C{Needs Web Access?}
-    
+
     C -->|Yes| D[Browser Node]
     C -->|No| E[Direct Response]
-    
+
     D --> F[Execute Web Task]
     F --> G[Extract Information]
-    
+
     G --> H[Process Results]
     E --> H
-    
+
     H --> I[Return Response]
-    
+
     style B fill:#0066cc,color:#ffffff,stroke:#0033cc
     style D fill:#e6f2ff,stroke:#99ccff
 ```
@@ -82,22 +82,19 @@ The Generalist AI Agent system will be implemented with the following components
 abstract class BrowserNode extends PlatformNode {
   // Navigate to a URL
   abstract navigateTo(url: string): Promise<void>;
-  
+
   // Execute action on web page
   abstract executeAction(
-    instruction: string, 
-    options?: BrowserActionOptions
-  ): Promise<BrowserActionResult>;
-  
-  // Extract data from web page
-  abstract extractData(
     instruction: string,
-    schema?: DataSchema
-  ): Promise<Record<string, any>>;
-  
+    options?: BrowserActionOptions,
+  ): Promise<BrowserActionResult>;
+
+  // Extract data from web page
+  abstract extractData(instruction: string, schema?: DataSchema): Promise<Record<string, any>>;
+
   // Take screenshot of current page
   abstract takeScreenshot(): Promise<Buffer>;
-  
+
   // Initialize browser provider
   abstract initializeBrowserProvider(config: BrowserProviderConfig): Promise<void>;
 }
@@ -131,7 +128,7 @@ import { createStagehandNode } from '@/lib/browser/stagehand-factory';
 const browserNode = createStagehandNode('browser-1', agentNode, {
   provider: 'stagehand',
   apiKey: process.env.STAGEHAND_API_KEY!,
-  headless: true
+  headless: true,
 });
 
 // Navigate to a website
@@ -151,17 +148,14 @@ import { createBrowserUseNode } from '@/lib/browser/browseruse-factory';
 const browserNode = createBrowserUseNode('browser-2', agentNode, {
   provider: 'browseruse',
   headless: false,
-  timeout: 30000
+  timeout: 30000,
 });
 
 // Extract data from a website
-const data = await browserNode.extractData(
-  'Extract all product names and prices from this page',
-  {
-    productName: 'string',
-    price: 'number'
-  }
-);
+const data = await browserNode.extractData('Extract all product names and prices from this page', {
+  productName: 'string',
+  price: 'number',
+});
 ```
 
 ## Key Features
@@ -203,14 +197,14 @@ The Generalist AI Agent feature delivers several important benefits:
 
 ## Timeline
 
-| Phase | Status | Description |
-|-------|--------|-------------|
-| Design & Architecture | Planned | Core architecture design |
-| Browser Node Abstract Class | Planned | Base class implementation |
-| Stagehand Integration | Planned | Initial browser provider |
-| Browser Use Integration | Planned | Additional browser provider |
-| Generalist Agent Implementation | Planned | Core agent capabilities |
-| Advanced Web Capabilities | Future | Enhanced web interaction features |
+| Phase                           | Status  | Description                       |
+| ------------------------------- | ------- | --------------------------------- |
+| Design & Architecture           | Planned | Core architecture design          |
+| Browser Node Abstract Class     | Planned | Base class implementation         |
+| Stagehand Integration           | Planned | Initial browser provider          |
+| Browser Use Integration         | Planned | Additional browser provider       |
+| Generalist Agent Implementation | Planned | Core agent capabilities           |
+| Advanced Web Capabilities       | Future  | Enhanced web interaction features |
 
 ## Connection to Other Roadmap Items
 
@@ -236,7 +230,7 @@ graph TD
     E --> F[Extract Key Information]
     F --> G[Synthesize Findings]
     G --> H[Create Research Report]
-    
+
     style B fill:#0066cc,color:#ffffff,stroke:#0033cc
     style C fill:#e6f2ff,stroke:#99ccff
 ```
@@ -253,7 +247,7 @@ graph LR
     D --> E[Reviews Analysis]
     E --> F[Purchase Recommendation]
     F --> G[Checkout Assistance]
-    
+
     style B fill:#0066cc,color:#ffffff,stroke:#0033cc
     style F fill:#e6f2ff,stroke:#99ccff
 ```
@@ -270,7 +264,7 @@ graph TD
     D --> E[Data Extraction]
     E --> F[Data Transformation]
     F --> G[Result Compilation]
-    
+
     style B fill:#0066cc,color:#ffffff,stroke:#0033cc
     style E fill:#e6f2ff,stroke:#99ccff
-``` 
+```

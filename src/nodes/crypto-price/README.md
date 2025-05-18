@@ -20,12 +20,12 @@ The cryptocurrency price tool can be used by AI agents to get current cryptocurr
 const result = await cryptoPriceTool.execute({
   id: 'bitcoin',
   currency: 'usd',
-  apiKey: 'your_coingecko_api_key' // Optional
+  apiKey: 'your_coingecko_api_key', // Optional
 });
 
 // Example usage for trending cryptocurrencies
 const trending = await trendingCryptosTool.execute({
-  apiKey: 'your_coingecko_api_key' // Optional
+  apiKey: 'your_coingecko_api_key', // Optional
 });
 ```
 
@@ -34,16 +34,16 @@ const trending = await trendingCryptosTool.execute({
 ### Crypto Price Tool
 
 | Parameter | Type   | Required | Description                                                |
-|-----------|--------|----------|------------------------------------------------------------|
+| --------- | ------ | -------- | ---------------------------------------------------------- |
 | id        | string | Yes      | Cryptocurrency ID or symbol (e.g., bitcoin, ethereum, BTC) |
 | currency  | string | No       | Currency to display price in (e.g., usd, eur, btc)         |
 | apiKey    | string | No       | Optional CoinGecko API key (uses env var if not provided)  |
 
 ### Trending Cryptos Tool
 
-| Parameter | Type   | Required | Description                                                |
-|-----------|--------|----------|------------------------------------------------------------|
-| apiKey    | string | No       | Optional CoinGecko API key (uses env var if not provided)  |
+| Parameter | Type   | Required | Description                                               |
+| --------- | ------ | -------- | --------------------------------------------------------- |
+| apiKey    | string | No       | Optional CoinGecko API key (uses env var if not provided) |
 
 ## Response
 
@@ -78,12 +78,14 @@ To get an API key for higher rate limits, visit [CoinGecko](https://www.coingeck
 The tool uses the CoinGecko public API to fetch cryptocurrency price data. It formats the response using the CryptoPrice component for consistent presentation.
 
 For the free tier, the following endpoints are used:
+
 - `/coins/markets` - For cryptocurrency price and market data
 - `/search/trending` - For trending cryptocurrencies
 
 ## Rate Limits
 
 The free tier of CoinGecko API has the following limitations:
+
 - Approximately 30 calls per minute (varies based on server load)
 - No API key required
 
@@ -133,4 +135,4 @@ _Data provided by CoinGecko_
 
 - CoinGecko API
 - Zod for parameter validation
-- AgentDock Core for logging 
+- AgentDock Core for logging

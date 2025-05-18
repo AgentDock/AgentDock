@@ -64,4 +64,4 @@ export function getPortDisplayType(port: NodePort): string {
  */
 export function getPortLabel(port: NodePort): string {
   return `${port.label}${port.required ? ' *' : ''}`;
-} 
+}

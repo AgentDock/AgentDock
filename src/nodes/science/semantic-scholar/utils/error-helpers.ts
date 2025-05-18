@@ -15,37 +15,27 @@ export function handleApiError(error: unknown): string {
     logger.error(LogCategory.NODE, '[SemanticScholarAPI]', 'API Error (string)', { error });
     return error;
   }
-  
+
   // If the error is an Error object, return its message
   if (error instanceof Error) {
-    logger.error(
-      LogCategory.NODE, 
-      '[SemanticScholarAPI]', 
-      'API Error (Error)', 
-      { 
-        error: error.message,
-        stack: error.stack
-      }
-    );
+    logger.error(LogCategory.NODE, '[SemanticScholarAPI]', 'API Error (Error)', {
+      error: error.message,
+      stack: error.stack,
+    });
     return error.message;
   }
-  
+
   // If the error is a Response object from fetch
   if (error && typeof error === 'object' && 'status' in error && 'statusText' in error) {
     const response = error as Response;
     const status = response.status;
-    
+
     // Log the error with appropriate level
-    logger.error(
-      LogCategory.NODE,
-      '[SemanticScholarAPI]',
-      'API Error (Response)',
-      {
-        status,
-        statusText: response.statusText
-      }
-    );
-    
+    logger.error(LogCategory.NODE, '[SemanticScholarAPI]', 'API Error (Response)', {
+      status,
+      statusText: response.statusText,
+    });
+
     // Return a user-friendly message based on status code
     if (status === 429) {
       return 'Rate limit exceeded. Please try again later.';
@@ -59,9 +49,11 @@ export function handleApiError(error: unknown): string {
       return `API request failed with status ${status}`;
     }
   }
-  
+
   // For any other type of error, convert to string
   const errorString = String(error);
-  logger.error(LogCategory.NODE, '[SemanticScholarAPI]', 'Unknown API Error', { error: errorString });
+  logger.error(LogCategory.NODE, '[SemanticScholarAPI]', 'Unknown API Error', {
+    error: errorString,
+  });
   return `Unknown error: ${errorString}`;
-} 
+}

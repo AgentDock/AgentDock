@@ -20,6 +20,7 @@ The Science Translator agent specializes in bridging the gap between complex sci
 ## Nodes
 
 The agent uses the following nodes:
+
 - **search**: Quick lookup of scientific information on the web
 - **pubmed_search**: Find medical and biological scientific papers
 - **pubmed_fetch**: Retrieve detailed information about specific medical papers
@@ -36,31 +37,41 @@ The agent uses the following nodes:
 The agent intelligently selects the appropriate research flow based on the scientific domain:
 
 ### Medical Science Research Flow
+
 For medicine, biology, health sciences:
+
 1. Initial web search for context
 2. PubMed search for medical literature
 3. Detailed retrieval of medical papers
 
 ### Physics and Computer Science Research Flow
+
 For physics, math, computer science, engineering:
+
 1. Initial web search for context
 2. arXiv search for papers
 3. Detailed retrieval of technical papers
 
 ### Interdisciplinary Science Research Flow
+
 For cognitive science, psychology, philosophy, etc.:
+
 1. Initial web search for context
 2. Semantic Scholar search for interdisciplinary papers
 3. Detailed paper and author information
 
 ### General Academic Research Flow
+
 For broad academic topics:
+
 1. Initial web search for context
 2. OpenAlex search for diverse academic literature
 3. Detailed paper retrieval
 
 ### Comprehensive Research Flow
+
 For topics requiring multiple perspectives:
+
 - Access to all scientific databases
 - Synthesis of information across disciplines
 
@@ -71,12 +82,14 @@ See `template.json` for the full configuration.
 ## Translation Capabilities
 
 1. **Scientific Simplification**
+
    - Technical jargon conversion to everyday language
    - Complex concept breakdown
    - Visual descriptions of abstract ideas
    - Analogy creation for relatable understanding
 
 2. **Multi-Database Integration**
+
    - Domain-appropriate database selection
    - Cross-database synthesis
    - Comparative analysis of findings
@@ -94,19 +107,23 @@ See `template.json` for the full configuration.
 const agent = new AgentNode('science-translator', config);
 await agent.initialize();
 
-const response = await agent.execute('Can you explain the latest research on quantum computing in simple terms?');
+const response = await agent.execute(
+  'Can you explain the latest research on quantum computing in simple terms?',
+);
 console.log(response);
 ```
 
 ## Best Practices
 
 1. **Topic Specification**
+
    - Be specific about the scientific topic you're interested in
    - Mention any specific papers you want translated
    - Indicate your background knowledge level for appropriate explanations
    - Specify if you need research from a particular time period
 
 2. **Research Requests**
+
    - Specify if you want comprehensive research across multiple sources
    - Ask for specific types of studies if relevant
    - Request specific aspects of papers (methods, results, implications)
@@ -120,4 +137,4 @@ console.log(response);
 
 ## Disclaimer
 
-This agent simplifies scientific content for better understanding but is not a replacement for reading original research papers for academic purposes. While it maintains accuracy, some nuance may be lost in translation. For academic citations, always refer to the original papers. 
+This agent simplifies scientific content for better understanding but is not a replacement for reading original research papers for academic purposes. While it maintains accuracy, some nuance may be lost in translation. For academic citations, always refer to the original papers.

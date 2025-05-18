@@ -65,7 +65,7 @@ The `compare` tool itself produces a `ToolResult` containing Markdown like this,
 ```markdown
 ## ⚖️ Comparing: Serverless vs. Container-based Architectures
 
-**DEFINE:** 
+**DEFINE:**
 This analysis examines two cloud-native application deployment models...
 
 **CRITERIA:**
@@ -73,10 +73,11 @@ This analysis examines two cloud-native application deployment models...
 
 **ANALYSIS:**
 
-| Aspect | Serverless | Containers |
-| --- | --- | --- |
+| Aspect     | Serverless           | Containers           |
+| ---------- | -------------------- | -------------------- |
 | Cost Model | Pay-per-execution... | Pay for allocated... |
-| Scaling | ✓ Automatic... | ✓ Highly scalable... |
+| Scaling    | ✓ Automatic...       | ✓ Highly scalable... |
+
 ...
 
 **STRENGTHS & WEAKNESSES:**
@@ -93,4 +94,4 @@ Serverless is ideal for...
 
 ## Cognitive Tools Suite
 
-Part of a suite including: Think, Reflect, Critique, Debate, Brainstorm. 
+Part of a suite including: Think, Reflect, Critique, Debate, Brainstorm.

@@ -8,28 +8,37 @@ export * from './anthropic-adapter';
 export * from './openai-adapter';
 export * from './gemini-adapter';
 export * from './groq-adapter';
-export * from './deepseek-adapter'; 
+export * from './deepseek-adapter';
 
 import { LLMProvider, ModelMetadata } from '../types';
 import { logger, LogCategory } from '../../logging';
-import { 
-  validateAnthropicApiKey, fetchAnthropicModels,
-  validateOpenAIApiKey, fetchOpenAIModels,
-  validateGeminiApiKey, fetchGeminiModels,
-  validateDeepSeekApiKey, fetchDeepSeekModels,
-  validateGroqApiKey, fetchGroqModels
+import {
+  validateAnthropicApiKey,
+  fetchAnthropicModels,
+  validateOpenAIApiKey,
+  fetchOpenAIModels,
+  validateGeminiApiKey,
+  fetchGeminiModels,
+  validateDeepSeekApiKey,
+  fetchDeepSeekModels,
+  validateGroqApiKey,
+  fetchGroqModels,
 } from '.';
 
 /**
  * Validate an API key for the specified provider
  */
 export async function validateProviderApiKey(
-  providerId: LLMProvider, 
-  apiKey: string
+  providerId: LLMProvider,
+  apiKey: string,
 ): Promise<boolean> {
   try {
-    logger.debug(LogCategory.LLM, 'ProviderAdapter', `Validating API key for provider: ${providerId}`);
-    
+    logger.debug(
+      LogCategory.LLM,
+      'ProviderAdapter',
+      `Validating API key for provider: ${providerId}`,
+    );
+
     switch (providerId) {
       case 'anthropic':
         return validateAnthropicApiKey(apiKey);
@@ -47,10 +56,10 @@ export async function validateProviderApiKey(
     }
   } catch (error) {
     logger.error(
-      LogCategory.LLM, 
-      'ProviderAdapter', 
-      `Error validating API key for ${providerId}:`, 
-      { error: error instanceof Error ? error.message : String(error) }
+      LogCategory.LLM,
+      'ProviderAdapter',
+      `Error validating API key for ${providerId}:`,
+      { error: error instanceof Error ? error.message : String(error) },
     );
     return false;
   }
@@ -60,12 +69,12 @@ export async function validateProviderApiKey(
  * Fetch models for the specified provider
  */
 export async function fetchProviderModels(
-  providerId: LLMProvider, 
-  apiKey: string
+  providerId: LLMProvider,
+  apiKey: string,
 ): Promise<ModelMetadata[]> {
   try {
     logger.debug(LogCategory.LLM, 'ProviderAdapter', `Fetching models for provider: ${providerId}`);
-    
+
     switch (providerId) {
       case 'anthropic':
         return fetchAnthropicModels(apiKey);
@@ -82,12 +91,9 @@ export async function fetchProviderModels(
         return [];
     }
   } catch (error) {
-    logger.error(
-      LogCategory.LLM, 
-      'ProviderAdapter', 
-      `Error fetching models for ${providerId}:`, 
-      { error: error instanceof Error ? error.message : String(error) }
-    );
+    logger.error(LogCategory.LLM, 'ProviderAdapter', `Error fetching models for ${providerId}:`, {
+      error: error instanceof Error ? error.message : String(error),
+    });
     throw error;
   }
-} 
+}

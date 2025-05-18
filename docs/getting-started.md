@@ -51,9 +51,11 @@ This repository includes both components, allowing you to use them together or s
 
    - **Start Services:**
      Navigate to the root of the cloned repository where `docker-compose.yaml` is located and run:
+
      ```bash
      docker compose up -d
      ```
+
      This command starts Redis (and related services like Redis Commander for viewing data) in the background.
 
    - **Stopping Redis:**
@@ -69,36 +71,41 @@ This repository includes both components, allowing you to use them together or s
    ```bash
    # Option 1: Create .env.local
    cp .env.example .env.local
-   
+
    # Option 2: Create .env
    cp .env.example .env
    ```
 
    Edit your environment file:
+
    - Add your LLM provider API keys (at least one is required).
    - **(If using Docker/Redis from step 4)** Choose ONE storage configuration option below:
-     
+
      **Option A: Direct Redis Connection (Recommended for most local development)**
+
      ```dotenv
-     # --- Key-Value Storage --- 
+     # --- Key-Value Storage ---
      # Connect directly to the Redis container
      KV_STORE_PROVIDER=redis
-     REDIS_URL="redis://localhost:6380" 
+     REDIS_URL="redis://localhost:6380"
      # REDIS_TOKEN=... (Leave commented out unless you set a password in docker-compose.yaml)
      ```
-     
+
      **Option B: Redis HTTP Proxy Connection (For simulating edge/serverless environments locally)**
      The `docker-compose.yaml` also starts `redis-http-proxy` (on port 8079), which provides an HTTP interface to Redis, similar to services like Upstash used in production/edge deployments. Use this if you specifically need to test interaction via an HTTP proxy.
+
      ```dotenv
-     # --- Key-Value Storage --- 
+     # --- Key-Value Storage ---
      # Connect via the local Redis HTTP Proxy container
-     KV_STORE_PROVIDER=redis 
+     KV_STORE_PROVIDER=redis
      REDIS_URL="http://localhost:8079" # Note: Using HTTP URL for the proxy
      REDIS_TOKEN="test_token" # Use the token defined for the proxy in docker-compose.yaml
      ```
+
    - **(If NOT using Docker/Redis)** The application will default to `KV_STORE_PROVIDER=memory`. Ensure this variable is either set to `memory` or omitted entirely.
 
    Example snippet for `.env.local` (using Option A - Direct Redis):
+
    ```dotenv
    # LLM Provider API Keys
    ANTHROPIC_API_KEY=sk-ant-xxxxxxx
@@ -145,13 +152,9 @@ Create a `template.json` file in this directory with your agent configuration:
     "You are designed to be helpful and informative.",
     "You can help users with weather information and web searches.",
     "Use the weather tool to get current conditions and forecasts for any location worldwide.",
-    "Use the search tool to find information on any topic. The tool will return relevant web search results that you can use to answer user questions.",
+    "Use the search tool to find information on any topic. The tool will return relevant web search results that you can use to answer user questions."
   ],
-  "nodes": [
-    "llm.anthropic",
-    "weather",
-    "search"
-  ],
+  "nodes": ["llm.anthropic", "weather", "search"],
   "nodeConfigurations": {
     "llm.anthropic": {
       "model": "claude-3-haiku-20240307",
@@ -270,28 +273,28 @@ If you want to use just the AgentDock Core library in your own project:
 
    ```typescript
    import { AgentNode } from 'agentdock-core';
-   
+
    async function createAgent() {
      // Create an agent configuration
      const config = {
-       id: "my-agent",
-       name: "My Agent",
-       systemPrompt: "You are a helpful assistant.",
-       tools: ["search"]
+       id: 'my-agent',
+       name: 'My Agent',
+       systemPrompt: 'You are a helpful assistant.',
+       tools: ['search'],
      };
-     
+
      // Create an agent
      const agent = new AgentNode('my-agent', {
        agentConfig: config,
        apiKey: process.env.ANTHROPIC_API_KEY,
-       provider: 'anthropic'
+       provider: 'anthropic',
      });
-     
+
      // Handle a message
      const result = await agent.handleMessage({
-       messages: [{ role: 'user', content: 'Hello, how can you help me?' }]
+       messages: [{ role: 'user', content: 'Hello, how can you help me?' }],
      });
-     
+
      console.log(result.text);
    }
    ```
@@ -311,13 +314,16 @@ Now that you have AgentDock running, you can explore:
 ### Common Issues
 
 1. **"Cannot find module 'pnpm'"**
+
    - Make sure you have pnpm installed globally or via corepack
 
 2. **API Key Errors**
+
    - Verify that you've added the correct API keys to your `.env.local` file
    - Check that the API key format is correct for the provider you're using
 
 3. **Agent not appearing after creation**
+
    - Make sure you restart the development server after creating a new agent
    - Check that your template.json file is valid JSON with all required fields
 
@@ -327,6 +333,7 @@ Now that you have AgentDock running, you can explore:
 ### Getting Help
 
 If you encounter problems not covered here, please:
+
 - Check existing issues in the GitHub repository
 - Open a new issue with detailed information about your problem
 
@@ -350,7 +357,7 @@ While this guide focuses on the reference Next.js client, `agentdock-core` is de
 
 ### Using AgentDock from Other Languages (Python, Rust, etc.)
 
-You cannot directly use the `agentdock-core` TypeScript library in non-JavaScript/TypeScript environments. However, you can interact with AgentDock agents from *any* language or platform:
+You cannot directly use the `agentdock-core` TypeScript library in non-JavaScript/TypeScript environments. However, you can interact with AgentDock agents from _any_ language or platform:
 
 1.  **Build an API:** Create a backend service using Node.js and `agentdock-core` (as described above) that exposes an HTTP API (e.g., REST).
 2.  **Consume the API:** From your Python, Rust, Java, frontend application, or any other client, make standard HTTP requests to your AgentDock backend API endpoints to interact with your agents.
@@ -359,6 +366,6 @@ This API-centric approach allows AgentDock's core capabilities to be leveraged a
 
 ## Next Steps
 
--   Explore the [Agent Templates](agent-templates.md) to understand configuration.
--   Learn about the [Node System](../nodes/README.md) in detail.
--   Dive into the [Core Architecture](../architecture/README.md). 
+- Explore the [Agent Templates](agent-templates.md) to understand configuration.
+- Learn about the [Node System](../nodes/README.md) in detail.
+- Dive into the [Core Architecture](../architecture/README.md).

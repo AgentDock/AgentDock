@@ -1,6 +1,6 @@
 /**
  * Cognitive Tools Index
- * 
+ *
  * This file exports all cognitive enhancement tools that improve LLM reasoning
  * without requiring external API calls or retrieving external data.
  */
@@ -22,5 +22,5 @@ export const tools = {
   ...compareTools,
   ...critiqueTools,
   ...debateTools,
-  ...brainstormTools
-}; 
+  ...brainstormTools,
+};

@@ -8,12 +8,12 @@ Manual code reviews are essential for maintaining code quality, but they are oft
 
 An AI Code Reviewer agent built with AgentDock that automates the code review process. This agent will:
 
--   **Analyze Code:** Accept code snippets or links to code files/PRs (future enhancement).
--   **Identify Issues:** Detect common bugs, logic errors, performance bottlenecks, and potential security vulnerabilities (like SQL injection, XSS).
--   **Check Style & Best Practices:** Verify code against configurable style guides (e.g., PEP 8 for Python, standard JavaScript practices) and language-specific best practices.
--   **Suggest Improvements:** Offer concrete, actionable suggestions for refactoring, improving clarity, and enhancing performance.
--   **Explain Findings:** Clearly articulate the reasoning behind its suggestions, citing principles or potential consequences.
--   **Be Constructive:** Deliver feedback in a helpful, objective, and non-confrontational manner.
+- **Analyze Code:** Accept code snippets or links to code files/PRs (future enhancement).
+- **Identify Issues:** Detect common bugs, logic errors, performance bottlenecks, and potential security vulnerabilities (like SQL injection, XSS).
+- **Check Style & Best Practices:** Verify code against configurable style guides (e.g., PEP 8 for Python, standard JavaScript practices) and language-specific best practices.
+- **Suggest Improvements:** Offer concrete, actionable suggestions for refactoring, improving clarity, and enhancing performance.
+- **Explain Findings:** Clearly articulate the reasoning behind its suggestions, citing principles or potential consequences.
+- **Be Constructive:** Deliver feedback in a helpful, objective, and non-confrontational manner.
 
 ## 3. Proposed Architecture
 
@@ -35,8 +35,8 @@ The core logic resides within the configured AI's ability to understand and crit
 
 ### Recommended Nodes
 
--   **LLM Node (e.g., `llm.openai`, `llm.anthropic`, `llm.gemini`, `llm.groq`):** The heart of the agent. Choose a provider node corresponding to the AI service you want to use.
-    -   **Model Selection:** Crucially, select a **state-of-the-art large language model** known for exceptional performance on coding and code analysis tasks. Model capabilities evolve rapidly, so prioritize using the most advanced models available to you at the time of implementation.
+- **LLM Node (e.g., `llm.openai`, `llm.anthropic`, `llm.gemini`, `llm.groq`):** The heart of the agent. Choose a provider node corresponding to the AI service you want to use.
+  - **Model Selection:** Crucially, select a **state-of-the-art large language model** known for exceptional performance on coding and code analysis tasks. Model capabilities evolve rapidly, so prioritize using the most advanced models available to you at the time of implementation.
 
 ### Example `template.json` Structure
 
@@ -62,7 +62,8 @@ The core logic resides within the configured AI's ability to understand and crit
     "llm.openai" // Or your chosen provider node, e.g., "llm.anthropic"
   ],
   "nodeConfigurations": {
-    "llm.openai": { // Adjust key based on chosen provider node
+    "llm.openai": {
+      // Adjust key based on chosen provider node
       "model": "YOUR_CHOSEN_STATE_OF_THE_ART_CODING_MODEL", // Specify the best model available to you
       "temperature": 0.3, // Lower temperature for more deterministic analysis
       "maxTokens": 4096 // Allow ample space for code and review
@@ -86,13 +87,14 @@ The core logic resides within the configured AI's ability to understand and crit
 
 ### Key Considerations
 
--   **Prompt Engineering:** The `personality` prompt is critical. It needs to guide the LLM to perform a comprehensive review and deliver feedback effectively.
--   **Model Choice:** Success heavily depends on using a frontier model with strong coding capabilities.
--   **Temperature:** Use a lower temperature (e.g., 0.2-0.5) for more factual and less creative code analysis.
+- **Prompt Engineering:** The `personality` prompt is critical. It needs to guide the LLM to perform a comprehensive review and deliver feedback effectively.
+- **Model Choice:** Success heavily depends on using a frontier model with strong coding capabilities.
+- **Temperature:** Use a lower temperature (e.g., 0.2-0.5) for more factual and less creative code analysis.
 
 ## 5. Example Conversation
 
 **User:** Review this Python code please:
+
 ```python
 def process_data(data_list):
     results = []
@@ -109,14 +111,17 @@ print(process_data(data))
 **Agent:** Okay, I've reviewed the Python code snippet. Here's my analysis:
 
 1.  **Iterating by Index:** The code iterates using `range(len(data_list))`. While functional, iterating directly over the list elements is generally considered more Pythonic and readable.
-    *   *Suggestion:* Use `for item in data_list:` instead.
+
+    - _Suggestion:_ Use `for item in data_list:` instead.
 
 2.  **String Concatenation:** The line `results.append(item['name'] + " processed")` uses basic string concatenation. For more complex formatting or better readability, f-strings are preferred in modern Python (3.6+).
-    *   *Suggestion:* Use `results.append(f"{item['name']} processed")`
+
+    - _Suggestion:_ Use `results.append(f"{item['name']} processed")`
 
 3.  **Readability:** The code is quite clear, but the direct iteration suggested above would slightly improve it. No major bugs or security issues were detected in this snippet.
 
 Here's the revised code incorporating the suggestions:
+
 ```python
 def process_data(data_list):
     results = []
@@ -128,12 +133,13 @@ def process_data(data_list):
 data = [{'name': 'A', 'value': 5}, {'name': 'B', 'value': 15}, {'name': 'C', 'value': 20}]
 print(process_data(data))
 ```
+
 This revised version is slightly cleaner and follows common Python idioms more closely.
 
 ## 6. Resources & Contributing
 
--   [AgentDock Core Documentation](/docs/)
--   [Agent Templates Guide](/docs/agent-templates)
--   [Contributing Agents Guide](/docs/rfa/add-agent)
+- [AgentDock Core Documentation](/docs/)
+- [Agent Templates Guide](/docs/agent-templates)
+- [Contributing Agents Guide](/docs/rfa/add-agent)
 
-We encourage the community to build this agent! A robust AI Code Reviewer would be a valuable asset for any developer using AgentDock. Submit your implementation for a chance to be featured. 
+We encourage the community to build this agent! A robust AI Code Reviewer would be a valuable asset for any developer using AgentDock. Submit your implementation for a chance to be featured.

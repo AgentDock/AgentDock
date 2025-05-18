@@ -18,9 +18,15 @@ The library provides a set of standardized error classes:
 
 ```typescript
 // Example of the error types (conceptual, not actual implementation)
-class AgentError extends Error { /* Base error class */ }
-class APIError extends AgentError { /* API-related errors */ }
-class ValidationError extends AgentError { /* Input validation errors */ }
+class AgentError extends Error {
+  /* Base error class */
+}
+class APIError extends AgentError {
+  /* API-related errors */
+}
+class ValidationError extends AgentError {
+  /* Input validation errors */
+}
 ```
 
 ## Provider Error Handling
@@ -28,11 +34,13 @@ class ValidationError extends AgentError { /* Input validation errors */ }
 A key feature of agentdock-core is consistent error handling across different LLM providers:
 
 1. **Provider Pattern Detection**
+
    - Each provider returns errors in different formats
    - Core library maps these to standardized patterns
    - Pattern detection uses string matching and error codes
 
 2. **Error Normalization**
+
    - All provider errors are normalized to a consistent format
    - Error messages are made user-friendly
    - Status codes and error types are standardized
@@ -61,11 +69,12 @@ Normalized errors follow this structure:
 Applications that use agentdock-core can leverage this error system:
 
 1. **Detecting Error Types**
+
    ```typescript
    try {
      // Use agentdock-core functionality
    } catch (error) {
-     if (error instanceof APIError && error.code === "LLM_API_KEY_ERROR") {
+     if (error instanceof APIError && error.code === 'LLM_API_KEY_ERROR') {
        // Handle API key errors
      }
    }

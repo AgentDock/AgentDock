@@ -14,9 +14,9 @@ export async function getBlockNumber(apiKey?: string): Promise<string> {
     'proxy',
     'eth_blockNumber',
     {},
-    apiKey
+    apiKey,
   );
-  
+
   return response.result;
 }
 
@@ -30,21 +30,21 @@ export async function getBlockNumber(apiKey?: string): Promise<string> {
 export async function getBlockByNumber(
   tag: string | number,
   boolean: boolean = true,
-  apiKey?: string
+  apiKey?: string,
 ): Promise<any> {
   // Convert number to hex if needed
   const blockTag = typeof tag === 'number' ? `0x${tag.toString(16)}` : tag;
-  
+
   const response = await makeRequest<SnowtraceResponse<any>>(
     'proxy',
     'eth_getBlockByNumber',
     {
       tag: blockTag,
-      boolean: boolean.toString()
+      boolean: boolean.toString(),
     },
-    apiKey
+    apiKey,
   );
-  
+
   return response.result;
 }
 
@@ -59,9 +59,9 @@ export async function getTransactionByHash(txhash: string, apiKey?: string): Pro
     'proxy',
     'eth_getTransactionByHash',
     { txhash },
-    apiKey
+    apiKey,
   );
-  
+
   return response.result;
 }
 
@@ -76,9 +76,9 @@ export async function getTransactionReceipt(txhash: string, apiKey?: string): Pr
     'proxy',
     'eth_getTransactionReceipt',
     { txhash },
-    apiKey
+    apiKey,
   );
-  
+
   return response.result;
 }
 
@@ -94,7 +94,7 @@ export async function call(
   to: string,
   data: string,
   tag: string = 'latest',
-  apiKey?: string
+  apiKey?: string,
 ): Promise<string> {
   const response = await makeRequest<SnowtraceResponse<string>>(
     'proxy',
@@ -102,11 +102,11 @@ export async function call(
     {
       to,
       data,
-      tag
+      tag,
     },
-    apiKey
+    apiKey,
   );
-  
+
   return response.result;
 }
 
@@ -120,17 +120,17 @@ export async function call(
 export async function getCode(
   address: string,
   tag: string = 'latest',
-  apiKey?: string
+  apiKey?: string,
 ): Promise<string> {
   const response = await makeRequest<SnowtraceResponse<string>>(
     'proxy',
     'eth_getCode',
     {
       address,
-      tag
+      tag,
     },
-    apiKey
+    apiKey,
   );
-  
+
   return response.result;
-} 
+}

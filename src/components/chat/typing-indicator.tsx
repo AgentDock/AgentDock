@@ -1,7 +1,7 @@
-"use client"
+'use client';
 
-import React from "react"
-import { cn } from "@/lib/utils"
+import React from 'react';
+import { cn } from '@/lib/utils';
 
 /**
  * Animated typing indicator that shows when a message is being generated
@@ -9,10 +9,8 @@ import { cn } from "@/lib/utils"
  */
 export const TypingIndicator = React.memo(() => {
   return (
-    <div 
-      className={cn(
-        "inline-flex items-center rounded-3xl p-4 bg-muted text-foreground max-w-fit"
-      )}
+    <div
+      className={cn('inline-flex items-center rounded-3xl p-4 bg-muted text-foreground max-w-fit')}
       role="status"
       aria-label="Assistant is typing"
     >
@@ -23,7 +21,7 @@ export const TypingIndicator = React.memo(() => {
         <span className="sr-only">Agent is typing...</span>
       </div>
     </div>
-  )
-})
+  );
+});
 
-TypingIndicator.displayName = "TypingIndicator" 
+TypingIndicator.displayName = 'TypingIndicator';

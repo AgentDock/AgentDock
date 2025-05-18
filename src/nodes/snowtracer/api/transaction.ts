@@ -26,9 +26,9 @@ export async function getTransactionStatus(txhash: string, apiKey?: string): Pro
     'transaction',
     'gettxreceiptstatus',
     { txhash },
-    apiKey
+    apiKey,
   );
-  
+
   return response.result.status;
 }
 
@@ -43,8 +43,8 @@ export async function getTransactionExecutionStatus(txhash: string, apiKey?: str
     'transaction',
     'getstatus',
     { txhash },
-    apiKey
+    apiKey,
   );
-  
+
   return response.result;
-} 
+}

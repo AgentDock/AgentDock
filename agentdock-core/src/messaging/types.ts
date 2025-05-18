@@ -44,4 +44,4 @@ export interface MessageBus {
   unsubscribe(type: string): void;
   /** Clear all subscriptions */
   clear(): void;
-} 
+}

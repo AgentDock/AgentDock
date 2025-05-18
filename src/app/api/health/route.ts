@@ -5,6 +5,6 @@ export const runtime = 'edge';
 export async function GET() {
   return NextResponse.json({
     status: 'ok',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
-} 
+}

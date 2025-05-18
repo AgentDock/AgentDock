@@ -39,8 +39,14 @@ Your comparison should be balanced, objective, and utilize formatting to enhance
  * Schema for compare tool parameters
  */
 const compareSchema = z.object({
-  adTopic: z.string().min(1, "Topic must not be empty").describe('Brief description of what is being compared'),
-  comparison: z.string().min(1, "Comparison content must be provided.").describe('Detailed structured comparison with Markdown formatting for tables and emphasis')
+  adTopic: z
+    .string()
+    .min(1, 'Topic must not be empty')
+    .describe('Brief description of what is being compared'),
+  comparison: z
+    .string()
+    .min(1, 'Comparison content must be provided.')
+    .describe('Detailed structured comparison with Markdown formatting for tables and emphasis'),
 });
 
 /**
@@ -51,10 +57,11 @@ type CompareParams = z.infer<typeof compareSchema>;
 /**
  * Handle tool errors by throwing a standard Error.
  */
-function safelyHandleError(error: unknown, topic: string): never { // Return type 'never' signifies it always throws
+function safelyHandleError(error: unknown, topic: string): never {
+  // Return type 'never' signifies it always throws
   // Ensure error is properly converted to string in all cases
   let errorMessage: string;
-  
+
   if (error instanceof Error) {
     errorMessage = error.message;
   } else if (typeof error === 'string') {
@@ -68,9 +75,11 @@ function safelyHandleError(error: unknown, topic: string): never { // Return typ
       errorMessage = 'Error: Could not format error details';
     }
   }
-  
-  logger.error(LogCategory.NODE, '[Compare]', 'Execution error (throwing):', { error: errorMessage });
-  
+
+  logger.error(LogCategory.NODE, '[Compare]', 'Execution error (throwing):', {
+    error: errorMessage,
+  });
+
   // Throw a standard Error instead of returning a ToolResult
   throw new Error(`Error during comparison on "${topic}": ${errorMessage}`);
 }
@@ -86,41 +95,50 @@ export const compareTool: Tool = {
     try {
       const validation = compareSchema.safeParse(params);
       if (!validation.success) {
-        const errorMsg = validation.error.errors.map(e => `${e.path.join('.')} - ${e.message}`).join(', ');
-        logger.warn(LogCategory.NODE, '[Compare]', 'Invalid parameters received (throwing)', { errors: errorMsg });
+        const errorMsg = validation.error.errors
+          .map((e) => `${e.path.join('.')} - ${e.message}`)
+          .join(', ');
+        logger.warn(LogCategory.NODE, '[Compare]', 'Invalid parameters received (throwing)', {
+          errors: errorMsg,
+        });
         // Throw the validation error using the helper
         safelyHandleError(`Invalid parameters: ${errorMsg}`, params.adTopic || 'Unknown Topic');
       }
-      
+
       const { adTopic, comparison } = validation.data;
-      
-      logger.debug(LogCategory.NODE, '[Compare]', `Formatting comparison for: "${adTopic}"`, { 
+
+      logger.debug(LogCategory.NODE, '[Compare]', `Formatting comparison for: "${adTopic}"`, {
         toolCallId: options.toolCallId,
         comparisonLength: comparison.length,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-      
+
       // Call the component function ONLY for successful formatting
       const result = CompareComponent({ topic: adTopic, comparison });
-      
-      logger.debug(LogCategory.NODE, '[Compare]', 'Returning formatted comparison via CompareComponent', {
-        topic: adTopic,
-        comparisonLength: comparison.length,
-        timestamp: new Date().toISOString()
-      });
-      
+
+      logger.debug(
+        LogCategory.NODE,
+        '[Compare]',
+        'Returning formatted comparison via CompareComponent',
+        {
+          topic: adTopic,
+          comparisonLength: comparison.length,
+          timestamp: new Date().toISOString(),
+        },
+      );
+
       return result;
     } catch (error) {
       const topic = typeof params?.adTopic === 'string' ? params.adTopic : 'Unknown Topic';
       // Use the helper to throw the error consistently
       safelyHandleError(error, topic);
     }
-  }
+  },
 };
 
 /**
  * Export tools for registry
  */
 export const tools = {
-  compare: compareTool
-}; 
+  compare: compareTool,
+};

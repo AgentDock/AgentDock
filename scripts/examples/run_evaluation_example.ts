@@ -17,10 +17,10 @@ import {
   type ToxicityEvaluatorConfig,
   type AgentMessage,
   type MessageContent,
-  type AggregatedEvaluationResult
+  type AggregatedEvaluationResult,
 } from '../../agentdock-core'; // Corrected import path (up two levels)
 
-// TODO: [Phase 2] Refactor agentdock-core to re-export JsonFileStorageProvider from a public entry point 
+// TODO: [Phase 2] Refactor agentdock-core to re-export JsonFileStorageProvider from a public entry point
 // (e.g., 'agentdock-core/evaluation') and update this import to avoid deep relative paths.
 // Direct import for server-side use
 import { JsonFileStorageProvider } from '../../agentdock-core/src/evaluation/storage/json_file_storage'; // Corrected import path (up two levels)
@@ -42,7 +42,7 @@ async function main() {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     console.warn(
-      'Warning: OPENAI_API_KEY environment variable is not found after loading .env.local. LLM-based evaluations may fail. Ensure it is correctly set in .env.local.'
+      'Warning: OPENAI_API_KEY environment variable is not found after loading .env.local. LLM-based evaluations may fail. Ensure it is correctly set in .env.local.',
     );
   }
 
@@ -53,7 +53,7 @@ async function main() {
   const agentDockLLMConfig: LLMConfig = {
     provider: 'openai',
     model: 'gpt-3.5-turbo',
-    apiKey: apiKey || 'not_set_in_env', 
+    apiKey: apiKey || 'not_set_in_env',
   };
 
   const coreLLMInstance = new CoreLLM({ model: vercelOpenAIChatModel, config: agentDockLLMConfig });
@@ -86,7 +86,8 @@ async function main() {
     },
     {
       name: 'UsedSearchToolCorrectly',
-      description: 'The agent should use the "search_web" tool with valid arguments when information is requested.',
+      description:
+        'The agent should use the "search_web" tool with valid arguments when information is requested.',
       scale: 'binary',
       weight: 0.15,
     },
@@ -100,13 +101,13 @@ async function main() {
       name: 'LexicalResponseMatch',
       description: 'The agent response should be lexically similar to the ground truth.',
       scale: 'numeric',
-      weight: 0.10,
+      weight: 0.1,
     },
     {
       name: 'ResponseKeywordCoverage',
       description: 'The agent response should cover key terms expected for the query.',
       scale: 'numeric',
-      weight: 0.10,
+      weight: 0.1,
     },
     {
       name: 'ResponseSentiment',
@@ -118,7 +119,7 @@ async function main() {
       name: 'IsNotToxic',
       description: 'The agent response should not contain toxic terms.',
       scale: 'binary',
-      weight: 0.10,
+      weight: 0.1,
     },
   ];
 
@@ -129,7 +130,7 @@ async function main() {
       role: 'user',
       createdAt: new Date(),
       content: 'Hello, can you find the weather in London?',
-      contentParts: [{ type: 'text', text: 'Hello, can you find the weather in London?' }]
+      contentParts: [{ type: 'text', text: 'Hello, can you find the weather in London?' }],
     },
     {
       id: 'msg2',
@@ -142,9 +143,9 @@ async function main() {
           type: 'tool_call',
           toolCallId: 'tc1',
           toolName: 'search_web',
-          args: { query: 'weather in London' }
-        }
-      ]
+          args: { query: 'weather in London' },
+        },
+      ],
     },
     {
       id: 'msg3',
@@ -156,31 +157,37 @@ async function main() {
         {
           type: 'tool_result',
           toolCallId: 'tc1',
-          result: { temperature: '15C', condition: 'Cloudy' }
-        }
-      ]
+          result: { temperature: '15C', condition: 'Cloudy' },
+        },
+      ],
     },
     {
       id: 'msg4',
       role: 'assistant',
       createdAt: new Date(),
-      content: 'The weather in London is 15C and Cloudy. I will now finalize this task. [Tool Call: finalize_task]',
+      content:
+        'The weather in London is 15C and Cloudy. I will now finalize this task. [Tool Call: finalize_task]',
       contentParts: [
-        { type: 'text', text: 'The weather in London is 15C and Cloudy. I will now finalize this task.' },
+        {
+          type: 'text',
+          text: 'The weather in London is 15C and Cloudy. I will now finalize this task.',
+        },
         {
           type: 'tool_call',
           toolCallId: 'tc2',
           toolName: 'finalize_task',
-          args: { summary: 'Provided weather in London.' }
-        }
-      ]
-    }
+          args: { summary: 'Provided weather in London.' },
+        },
+      ],
+    },
   ];
 
   const sampleInput: EvaluationInput = {
     prompt: 'Hello, what can you do for me? And find weather in London.',
-    response: 'I am an AgentDock assistant. I found the weather for you. The weather in London is 15C and Cloudy. I have finalized the task.',
-    groundTruth: 'As an AgentDock helper, I can assist you with various activities. The weather in London is currently 15C and cloudy.',
+    response:
+      'I am an AgentDock assistant. I found the weather for you. The weather in London is 15C and Cloudy. I have finalized the task.',
+    groundTruth:
+      'As an AgentDock helper, I can assist you with various activities. The weather in London is currently 15C and cloudy.',
     criteria: criteria,
     agentId: 'example-agent-tsx-002',
     sessionId: `example-session-tsx-${Date.now()}`,
@@ -227,30 +234,42 @@ async function main() {
     {
       criterionName: 'UsedSearchToolCorrectly',
       expectedToolName: 'search_web',
-      argumentChecks: (args: Record<string, any> | undefined): { isValid: boolean; reason?: string } => {
+      argumentChecks: (
+        args: Record<string, any> | undefined,
+      ): { isValid: boolean; reason?: string } => {
         if (!args || typeof args.query !== 'string' || args.query.length === 0) {
           return { isValid: false, reason: 'Query argument missing or invalid for search_web.' };
         }
         return { isValid: true };
       },
-      isRequired: false, 
+      isRequired: false,
     },
     {
       criterionName: 'UsedRequiredFinalizeTool',
       expectedToolName: 'finalize_task',
-      argumentChecks: (args: Record<string, any> | undefined): { isValid: boolean; reason?: string } => {
-        if (!args || typeof args.summary !== 'string' || !args.summary.includes('weather in London')) {
-          return { isValid: false, reason: 'Summary argument missing, invalid, or did not mention weather for finalize_task.' };
+      argumentChecks: (
+        args: Record<string, any> | undefined,
+      ): { isValid: boolean; reason?: string } => {
+        if (
+          !args ||
+          typeof args.summary !== 'string' ||
+          !args.summary.includes('weather in London')
+        ) {
+          return {
+            isValid: false,
+            reason:
+              'Summary argument missing, invalid, or did not mention weather for finalize_task.',
+          };
         }
         return { isValid: true };
       },
-      isRequired: true, 
+      isRequired: true,
     },
   ];
 
   const toolUsageEvaluatorConfig: ToolUsageEvaluatorConfig = {
     rules: toolUsageRules,
-    toolDataSource: 'messageHistory'
+    toolDataSource: 'messageHistory',
   };
 
   const lexicalSimilarityConfig: LexicalSimilarityEvaluatorConfig = {
@@ -290,7 +309,7 @@ async function main() {
       { type: 'LexicalSimilarity', config: lexicalSimilarityConfig },
       { type: 'KeywordCoverage', config: keywordCoverageConfig },
       { type: 'Sentiment', config: sentimentConfig },
-      { type: 'Toxicity', config: toxicityConfig }
+      { type: 'Toxicity', config: toxicityConfig },
     ],
     storageProvider: myFileLogger,
     metadata: { testSuite: 'example_tsx_explicit_dotenv_local_script_with_nlp' },
@@ -299,18 +318,18 @@ async function main() {
   // Let's test a negative sentiment sentence with category output type
   const negativeSentimentInput: EvaluationInput = {
     ...sampleInput,
-    response: "I hate this. This is terrible and awful and I am very unhappy.",
+    response: 'I hate this. This is terrible and awful and I am very unhappy.',
     agentId: 'example-agent-tsx-003',
     sessionId: `example-session-tsx-neg-${Date.now()}`,
     criteria: [
-        ...criteria.filter(c => c.name !== 'ResponseSentiment'),
-        {
-            name: 'NegativeResponseSentimentCategory',
-            description: 'The agent response should be categorized correctly based on sentiment.',
-            scale: 'string',
-            weight: 1.0,
-        }
-    ]
+      ...criteria.filter((c) => c.name !== 'ResponseSentiment'),
+      {
+        name: 'NegativeResponseSentimentCategory',
+        description: 'The agent response should be categorized correctly based on sentiment.',
+        scale: 'string',
+        weight: 1.0,
+      },
+    ],
   };
 
   const sentimentCategoryConfig: SentimentEvaluatorConfig = {
@@ -322,13 +341,18 @@ async function main() {
   // Input designed to fail toxicity check
   const toxicResponseInput: EvaluationInput = {
     ...sampleInput,
-    response: "You are a stupid idiot and I hate this terrible service.",
+    response: 'You are a stupid idiot and I hate this terrible service.',
     agentId: 'example-agent-tsx-004',
     sessionId: `example-session-tsx-toxic-${Date.now()}`,
     criteria: [
-        ...criteria.filter(c => c.name !== 'IsNotToxic'),
-        { name: 'IsNotToxic', description: 'Response should not be toxic.', scale: 'binary', weight: 1.0 }
-    ]
+      ...criteria.filter((c) => c.name !== 'IsNotToxic'),
+      {
+        name: 'IsNotToxic',
+        description: 'Response should not be toxic.',
+        scale: 'binary',
+        weight: 1.0,
+      },
+    ],
   };
 
   // 5. Run Evaluation
@@ -341,11 +365,9 @@ async function main() {
     // Run evaluation for the negative sentiment test case
     console.log('\nExecuting runEvaluation for Negative Sentiment Test...');
     const negativeRunConfig: EvaluationRunConfig = {
-        evaluatorConfigs: [
-            { type: 'Sentiment', config: sentimentCategoryConfig }
-        ],
-        storageProvider: myFileLogger,
-        metadata: { testSuite: 'negative_sentiment_category_test' }
+      evaluatorConfigs: [{ type: 'Sentiment', config: sentimentCategoryConfig }],
+      storageProvider: myFileLogger,
+      metadata: { testSuite: 'negative_sentiment_category_test' },
     };
     const negativeAggregatedResult = await runEvaluation(negativeSentimentInput, negativeRunConfig);
     console.log('\n--- Aggregated Evaluation Result (Negative Sentiment Test) ---');
@@ -354,11 +376,9 @@ async function main() {
     // Run evaluation for the toxic response test case
     console.log('\nExecuting runEvaluation for Toxic Response Test...');
     const toxicRunConfig: EvaluationRunConfig = {
-        evaluatorConfigs: [
-            { type: 'Toxicity', config: toxicityConfig }
-        ],
-        storageProvider: myFileLogger,
-        metadata: { testSuite: 'toxic_response_test' }
+      evaluatorConfigs: [{ type: 'Toxicity', config: toxicityConfig }],
+      storageProvider: myFileLogger,
+      metadata: { testSuite: 'toxic_response_test' },
     };
     const toxicAggregatedResult = await runEvaluation(toxicResponseInput, toxicRunConfig);
     console.log('\n--- Aggregated Evaluation Result (Toxic Response Test) ---');
@@ -379,6 +399,6 @@ async function main() {
   console.log('\nAgentDock Evaluation Framework Example Run (tsx, .env.local) Finished.');
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error('Unhandled error in main execution of example script (tsx, .env.local):', err);
-}); 
+});

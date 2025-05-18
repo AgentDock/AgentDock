@@ -49,4 +49,4 @@ export const AUTHOR_FIELDS = [
 
 // Rate limits (100 requests per 5 minutes without API key)
 export const RATE_LIMIT_MS = 300; // Conservative 300ms per request
-export const MAX_REQUESTS_PER_MINUTE = 20; // Conservative 20 requests per minute 
+export const MAX_REQUESTS_PER_MINUTE = 20; // Conservative 20 requests per minute

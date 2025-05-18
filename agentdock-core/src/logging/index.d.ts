@@ -6,7 +6,7 @@ export enum LogLevel {
   DEBUG = 'debug',
   INFO = 'info',
   WARN = 'warn',
-  ERROR = 'error'
+  ERROR = 'error',
 }
 
 export enum LogCategory {
@@ -16,7 +16,7 @@ export enum LogCategory {
   LLM = 'llm',
   API = 'api',
   STORAGE = 'storage',
-  SYSTEM = 'system'
+  SYSTEM = 'system',
 }
 
 export interface LogEntry {
@@ -28,7 +28,7 @@ export interface LogEntry {
   timestamp: Date;
 }
 
-export type CommonOperation = 
+export type CommonOperation =
   | 'initialize'
   | 'execute'
   | 'cleanup'
@@ -56,7 +56,7 @@ export class Logger {
     category: LogCategory,
     component: string,
     operation: CommonOperation,
-    metadata?: BaseMetadata & Record<string, unknown>
+    metadata?: BaseMetadata & Record<string, unknown>,
   ): Promise<void>;
 
   logAPI(
@@ -67,20 +67,40 @@ export class Logger {
       status?: number;
       requestId?: string;
       duration?: number;
-    }
+    },
   ): Promise<void>;
 
   logError(
     category: LogCategory,
     component: string,
     error: unknown,
-    metadata?: BaseMetadata & Record<string, unknown>
+    metadata?: BaseMetadata & Record<string, unknown>,
   ): Promise<void>;
 
-  debug(category: LogCategory, component: string, message: string, metadata?: Record<string, unknown>): Promise<void>;
-  info(category: LogCategory, component: string, message: string, metadata?: Record<string, unknown>): Promise<void>;
-  warn(category: LogCategory, component: string, message: string, metadata?: Record<string, unknown>): Promise<void>;
-  error(category: LogCategory, component: string, message: string, metadata?: Record<string, unknown>): Promise<void>;
+  debug(
+    category: LogCategory,
+    component: string,
+    message: string,
+    metadata?: Record<string, unknown>,
+  ): Promise<void>;
+  info(
+    category: LogCategory,
+    component: string,
+    message: string,
+    metadata?: Record<string, unknown>,
+  ): Promise<void>;
+  warn(
+    category: LogCategory,
+    component: string,
+    message: string,
+    metadata?: Record<string, unknown>,
+  ): Promise<void>;
+  error(
+    category: LogCategory,
+    component: string,
+    message: string,
+    metadata?: Record<string, unknown>,
+  ): Promise<void>;
 }
 
-export const logger: Logger; 
+export const logger: Logger;

@@ -17,26 +17,31 @@ The custom tools system follows these principles:
 ## Architecture Principles
 
 ### 1. Simplified Architecture
+
 - Custom tools follow the Vercel AI SDK pattern
 - Each tool is self-contained in its own directory
 - Tools are automatically registered at runtime
 
 ### 2. Component-Based Output
+
 - Each tool provides its own UI components for rendering results
 - Components are exported from the tool's directory
 - This ensures consistent rendering across the application
 
 ### 3. Auto-Registration
+
 - Tools are automatically registered when imported
 - No manual registration is required
 - This simplifies the development process
 
 ### 4. Server-Side Execution
+
 - Tools are executed on the server side
 - Results are streamed to the client
 - This ensures security and performance
 
 ### 5. Multi-Step Tool Calls
+
 - Tools can be called in sequence by the AI
 - The framework supports up to 5 sequential tool calls by default
 - This enables complex workflows and reasoning chains
@@ -54,7 +59,7 @@ import { MyComponent } from './components';
 
 // 1. Define parameters schema
 const myToolSchema = z.object({
-  input: z.string().describe('What this input does')
+  input: z.string().describe('What this input does'),
 });
 
 // 2. Create and export your tool
@@ -65,15 +70,15 @@ export const myTool: Tool = {
   async execute({ input }) {
     // 3. Get your data
     const data = await fetchData(input);
-    
+
     // 4. Use your component to format output
     return MyComponent(data);
-  }
+  },
 };
 
 // 5. Export for auto-registration
 export const tools = {
-  my_tool: myTool
+  my_tool: myTool,
 };
 ```
 
@@ -89,10 +94,11 @@ export const tools = {
 For detailed information on how to contribute custom tools, please refer to the [Custom Tool Contributions Guide](./custom-tool-contributions.md).
 
 The guide covers:
+
 - Core principles
 - Contribution process
 - Tool implementation pattern
 - Component-based architecture
 - API access and security
 - Best practices
-- Real examples 
+- Real examples

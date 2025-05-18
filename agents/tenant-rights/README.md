@@ -60,4 +60,4 @@ sequenceDiagram
 - Create proper documentation trail
 - Follow appropriate legal procedures
 - Communicate effectively with landlords
-- Know when to seek additional legal help 
+- Know when to seek additional legal help

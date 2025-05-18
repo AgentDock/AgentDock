@@ -12,13 +12,13 @@ import { z } from 'zod';
 export interface AIOrchestrationState {
   /** Unique session ID */
   sessionId: string;
-  
+
   /** Recently used tools in this session */
   recentlyUsedTools: string[];
-  
+
   /** Current active step name */
   activeStep?: string;
-  
+
   /** Current position in a tool sequence, if applicable */
   sequenceIndex?: number;
 
@@ -35,9 +35,7 @@ export interface AIOrchestrationState {
  * Note: We've simplified this to only include tool usage tracking.
  * The LLM understands context naturally without regex or string matching.
  */
-export type OrchestrationConditionType = 
-  | 'tool_used'
-  | 'sequence_match';
+export type OrchestrationConditionType = 'tool_used' | 'sequence_match';
 
 /**
  * Condition that determines when a step should be activated
@@ -45,10 +43,10 @@ export type OrchestrationConditionType =
 export interface OrchestrationCondition {
   /** Type of condition */
   type: OrchestrationConditionType;
-  
+
   /** Value to match against (meaning depends on condition type) */
   value?: string;
-  
+
   /** Optional description of the condition */
   description?: string;
 }
@@ -59,7 +57,7 @@ export interface OrchestrationCondition {
 export interface ToolAvailability {
   /** List of tools or tool patterns that are explicitly allowed */
   allowed?: string[];
-  
+
   /** List of tools or tool patterns that are explicitly denied */
   denied?: string[];
 }
@@ -70,16 +68,16 @@ export interface ToolAvailability {
 export interface OrchestrationStep {
   /** Unique name for the step */
   name: string;
-  
+
   /** Description of what the step does */
   description: string;
-  
+
   /** Conditions that determine when this step should activate */
   conditions?: OrchestrationCondition[];
-  
+
   /** Tool availability for this step */
   availableTools?: ToolAvailability;
-  
+
   /** Whether this is the default step when no other conditions match */
   isDefault?: boolean;
 
@@ -93,7 +91,7 @@ export interface OrchestrationStep {
 export interface OrchestrationConfig {
   /** Ordered sequence of steps */
   steps: OrchestrationStep[];
-  
+
   /** Optional description of the overall orchestration (string or array of strings) */
   description?: string | string[];
 }
@@ -101,26 +99,34 @@ export interface OrchestrationConfig {
 /**
  * Zod schema for validating the orchestration condition
  */
-export const OrchestrationConditionSchema = z.object({
-  type: z.enum(['tool_used', 'sequence_match']),
-  value: z.string().optional(),
-  description: z.string().optional()
-}).refine(data => {
-  if (data.type === 'tool_used' && (typeof data.value !== 'string' || data.value.length === 0)) {
-    return false;
-  }
-  return true;
-}, {
-  message: "Condition value is required when type is 'tool_used'",
-  path: ['value'],
-});
+export const OrchestrationConditionSchema = z
+  .object({
+    type: z.enum(['tool_used', 'sequence_match']),
+    value: z.string().optional(),
+    description: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      if (
+        data.type === 'tool_used' &&
+        (typeof data.value !== 'string' || data.value.length === 0)
+      ) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Condition value is required when type is 'tool_used'",
+      path: ['value'],
+    },
+  );
 
 /**
  * Zod schema for validating tool availability
  */
 export const ToolAvailabilitySchema = z.object({
   allowed: z.array(z.string()).optional(),
-  denied: z.array(z.string()).optional()
+  denied: z.array(z.string()).optional(),
 });
 
 /**
@@ -132,7 +138,7 @@ export const OrchestrationStepSchema = z.object({
   conditions: z.array(OrchestrationConditionSchema).optional(),
   availableTools: ToolAvailabilitySchema.optional(),
   isDefault: z.boolean().optional(),
-  sequence: z.array(z.string()).optional()
+  sequence: z.array(z.string()).optional(),
 });
 
 /**
@@ -140,7 +146,7 @@ export const OrchestrationStepSchema = z.object({
  */
 export const OrchestrationSchema = z.object({
   steps: z.array(OrchestrationStepSchema),
-  description: z.union([z.string(), z.array(z.string())]).optional()
+  description: z.union([z.string(), z.array(z.string())]).optional(),
 });
 
 /**
@@ -157,9 +163,9 @@ export function createOrchestrationStep(step: Partial<OrchestrationStep>): Orche
   const defaultStep: OrchestrationStep = {
     name: '',
     description: '',
-    conditions: []
+    conditions: [],
   };
-  
+
   return { ...defaultStep, ...step };
 }
 
@@ -169,9 +175,9 @@ export function createOrchestrationStep(step: Partial<OrchestrationStep>): Orche
 export function createOrchestration(config: Partial<OrchestrationConfig>): OrchestrationConfig {
   const defaultConfig: OrchestrationConfig = {
     steps: [],
-    description: 'Default orchestration'
+    description: 'Default orchestration',
   };
-  
+
   return { ...defaultConfig, ...config };
 }
 
@@ -186,7 +192,7 @@ export interface TokenOptimizationOptions {
 export interface AgentConfigOptions {
   /** Maximum number of steps to allow in a conversation */
   maxSteps?: number;
-  
+
   /** Token optimization options */
   tokenOptimization?: TokenOptimizationOptions;
-} 
+}

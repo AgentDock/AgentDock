@@ -8,15 +8,15 @@ The Mental Health Guide agent is designed to provide supportive guidance, coping
 
 ## Key Features
 
-*   **Supportive Guidance:** Offers information on coping mechanisms for stress, anxiety, and low mood.
-*   **Resource Navigation:** Helps find relevant articles, support organizations, and general information.
-*   **Empathy & Safety:** Interacts with a compassionate tone and prioritizes user safety.
-*   **Ethical Boundaries:** Clearly states limitations and directs users to professional help when needed.
+- **Supportive Guidance:** Offers information on coping mechanisms for stress, anxiety, and low mood.
+- **Resource Navigation:** Helps find relevant articles, support organizations, and general information.
+- **Empathy & Safety:** Interacts with a compassionate tone and prioritizes user safety.
+- **Ethical Boundaries:** Clearly states limitations and directs users to professional help when needed.
 
 ## Core Components
 
-*   **LLM:** `llm.gemini` (Utilizes Gemini Pro via Google AI)
-*   **Tools:** `search` (For finding general information and resources)
+- **LLM:** `llm.gemini` (Utilizes Gemini Pro via Google AI)
+- **Tools:** `search` (For finding general information and resources)
 
 ## Basic Workflow Diagram
 
@@ -26,9 +26,9 @@ graph TD
     B --> C{llm.gemini};
     B --> D[search Tool];
     C --> E[Response];
-    D --> C; 
+    D --> C;
 ```
 
 ## Usage
 
-Engage with the agent for general information on mental wellness topics, learning coping strategies, or finding potential resources. Always remember its limitations and seek professional help for personal diagnosis, treatment, or crisis situations. 
+Engage with the agent for general information on mental wellness topics, learning coping strategies, or finding potential resources. Always remember its limitations and seek professional help for personal diagnosis, treatment, or crisis situations.

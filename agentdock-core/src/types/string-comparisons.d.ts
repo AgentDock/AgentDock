@@ -17,4 +17,4 @@ declare module 'string-comparisons' {
   // export const Cosine: { similarity: (s1: string, s2: string) => number; };
   // export const Jaccard: { similarity: (s1: string, s2: string) => number; };
   // export const HammingDistance: { similarity: (s1: string, s2: string) => number; }; // Returns distance
-} 
+}

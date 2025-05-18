@@ -6,11 +6,11 @@
 
 AgentDock is a framework for building sophisticated AI agents that deliver complex tasks with **configurable determinism**. It consists of two main components:
 
-1. **AgentDock Core**: An open-source, backend-first framework for building and deploying AI agents. It's designed to be *framework-agnostic* and *provider-independent*, giving you complete control over your agent's implementation.
+1. **AgentDock Core**: An open-source, backend-first framework for building and deploying AI agents. It's designed to be _framework-agnostic_ and _provider-independent_, giving you complete control over your agent's implementation.
 
 2. **Open Source Client**: A complete Next.js application that serves as a reference implementation and consumer of the AgentDock Core framework. You can see it in action at [https://hub.agentdock.ai](https://hub.agentdock.ai)
 
-Built with TypeScript, AgentDock emphasizes *simplicity*, *extensibility*, and ***configurable determinism*** - making it ideal for building reliable and predictable AI systems that can operate with minimal supervision.
+Built with TypeScript, AgentDock emphasizes _simplicity_, _extensibility_, and **_configurable determinism_** - making it ideal for building reliable and predictable AI systems that can operate with minimal supervision.
 
 ## Design Principles
 
@@ -19,18 +19,18 @@ AgentDock is built on these core principles:
 - **Simplicity First**: Minimal code required to create functional agents
 - **Node-Based Architecture**: All capabilities implemented as nodes
 - **Tools as Specialized Nodes**: Tools extend the node system for agent capabilities
-- ****Configurable Determinism****: Control the predictability of agent behavior
+- \***\*Configurable Determinism\*\***: Control the predictability of agent behavior
 - **Type Safety**: Comprehensive TypeScript types throughout
 
 ### Configurable Determinism
 
-***Configurable determinism*** is a cornerstone of AgentDock's design philosophy, enabling you to balance creative AI capabilities with predictable system behavior:
+**_Configurable determinism_** is a cornerstone of AgentDock's design philosophy, enabling you to balance creative AI capabilities with predictable system behavior:
 
 - AgentNodes are inherently non-deterministic as LLMs may generate different responses each time
-- Workflows can be made more deterministic through *defined tool execution paths* or by connecting sequences of deterministic nodes.
+- Workflows can be made more deterministic through _defined tool execution paths_ or by connecting sequences of deterministic nodes.
 - Developers can **control the level of determinism** by configuring which parts of the system use LLM inference versus defined logic.
 - Even with LLM components, the overall system behavior remains **predictable** through structured interactions and deterministic node execution where specified.
-- This balanced approach enables both *creativity* and **reliability** in your AI applications
+- This balanced approach enables both _creativity_ and **reliability** in your AI applications
 
 #### Deterministic Workflows
 
@@ -38,16 +38,16 @@ AgentDock allows you to create fully deterministic processing flows where the ex
 
 ```mermaid
 flowchart LR
-  Input[Data Input] --> Prepare[Prepare Data] 
+  Input[Data Input] --> Prepare[Prepare Data]
   Prepare --> Process[Process Node]
   Process --> Database[(Database)]
   Process --> Format[Format Output]
   Format --> Output[Data Output]
-  
+
   style Input fill:#f9f9f9,stroke:#333,stroke-width:1px
   style Output fill:#f9f9f9,stroke:#333,stroke-width:1px
   style Process fill:#d4f1f9,stroke:#333,stroke-width:1px
-  style Prepare fill:#d4f1f9,stroke:#333,stroke-width:1px 
+  style Prepare fill:#d4f1f9,stroke:#333,stroke-width:1px
   style Format fill:#d4f1f9,stroke:#333,stroke-width:1px
   style Database fill:#e8e8e8,stroke:#333,stroke-width:1px
 ```
@@ -66,7 +66,7 @@ flowchart TD
   ToolA --> Response[Final Response]
   ToolB --> Response
   ToolC --> Response
-  
+
   style Input fill:#f9f9f9,stroke:#333,stroke-width:1px
   style Agent fill:#ffdfba,stroke:#333,stroke-width:1px
   style ToolChoice fill:#ffdfba,stroke:#333,stroke-width:1px
@@ -78,7 +78,7 @@ flowchart TD
 
 #### Non-Deterministic Agents with Deterministic Sub-Workflows
 
-AgentDock gives you the ***best of both worlds*** by combining non-deterministic agent intelligence with deterministic workflow execution:
+AgentDock gives you the **_best of both worlds_** by combining non-deterministic agent intelligence with deterministic workflow execution:
 
 ```mermaid
 flowchart TD
@@ -87,14 +87,14 @@ flowchart TD
   FlowChoice -->|"Decision A"| Flow1[Deterministic Workflow 1]
   FlowChoice -->|"Decision B"| Flow2[Deterministic Workflow 2]
   FlowChoice -->|"Decision C"| DirectResponse[Generate Response]
-  
+
   Flow1 --> |"Step 1 → 2 → 3 → ... → 200"| Flow1Result[Workflow 1 Result]
   Flow2 --> |"Step 1 → 2 → 3 → ... → 100"| Flow2Result[Workflow 2 Result]
-  
+
   Flow1Result --> Response[Final Response]
   Flow2Result --> Response
   DirectResponse --> Response
-  
+
   style Input fill:#f9f9f9,stroke:#333,stroke-width:1px
   style Agent fill:#ffdfba,stroke:#333,stroke-width:1px
   style FlowChoice fill:#ffdfba,stroke:#333,stroke-width:1px
@@ -108,10 +108,9 @@ flowchart TD
 
 This approach enables complex multi-step workflows (potentially involving hundreds of deterministic steps implemented within tools or as node sequences) to be invoked by intelligent agent decisions. While the open-source core provides the foundation for these workflows, [AgentDock Pro](agentdock-pro.md) aims to provide advanced tooling, such as visual builders, to simplify their creation and management.
 
-#### TL;DR on Configurable Determinism 
+#### TL;DR on Configurable Determinism
 
-Think of it like driving. Sometimes you need the AI's creativity (like navigating city streets - non-deterministic), and sometimes you need reliable, step-by-step processes (like following highway signs - deterministic). AgentDock lets you build systems that use *both*, choosing the right approach for each part of a task. You get the AI's smarts *and* predictable results where needed.
-
+Think of it like driving. Sometimes you need the AI's creativity (like navigating city streets - non-deterministic), and sometimes you need reliable, step-by-step processes (like following highway signs - deterministic). AgentDock lets you build systems that use _both_, choosing the right approach for each part of a task. You get the AI's smarts _and_ predictable results where needed.
 
 ## Core Architecture
 
@@ -124,10 +123,10 @@ The framework is built around a powerful node-based system:
 - **Session Management**: State isolation between concurrent conversations
 - **Orchestration Framework**: Context-aware control of agent behavior
 - **Evaluation Framework**: Provides tools for systematic agent assessment. Key components include:
-    -   `EvaluationRunner`: Orchestrates evaluation execution.
-    -   `Evaluators`: A suite of methods (RuleBased, LLMJudge, NLP, Lexical, ToolUsage) to measure different quality aspects.
-    -   `EvaluationCriteria`: Defines what to measure.
-    -   `EvaluationStorageProvider`: Persists results.
+  - `EvaluationRunner`: Orchestrates evaluation execution.
+  - `Evaluators`: A suite of methods (RuleBased, LLMJudge, NLP, Lexical, ToolUsage) to measure different quality aspects.
+  - `EvaluationCriteria`: Defines what to measure.
+  - `EvaluationStorageProvider`: Persists results.
     Details in the [Evaluation Documentation](./evaluations/README.md).
 
 ---
@@ -135,44 +134,45 @@ The framework is built around a powerful node-based system:
 ## What You Can Build
 
 ### 1. AI-Powered Applications
-   - Custom chatbots with any frontend
-   - Command-line AI assistants
-   - *Automated data processing* pipelines
-   - Backend service integrations
+
+- Custom chatbots with any frontend
+- Command-line AI assistants
+- _Automated data processing_ pipelines
+- Backend service integrations
 
 ### 2. Integration Capabilities
-   - Any AI provider (OpenAI, Anthropic, etc.)
-   - Any frontend framework
-   - Any backend service
-   - *Custom data sources* and APIs
+
+- Any AI provider (OpenAI, Anthropic, etc.)
+- Any frontend framework
+- Any backend service
+- _Custom data sources_ and APIs
 
 ### 3. Automation Systems
-   - Data processing workflows
-   - Document analysis pipelines
-   - *Automated reporting* systems
-   - Task automation agents
 
+- Data processing workflows
+- Document analysis pipelines
+- _Automated reporting_ systems
+- Task automation agents
 
 ## Key Features
 
-| Feature | Description |
-|---------|-------------|
-| 🔌 **Framework Agnostic** | AgentDock Core works with *any tech stack* |
-| 🧩 **Modular Design** | Build complex systems from simple nodes |
-| 🛠️ **Extensible** | Create custom nodes for any functionality |
-| 🔒 **Secure** | Built-in security features for API keys and data |
-| 🔑 **BYOK** | Use your *own API keys* for LLM providers |
-| 📦 **Self-Contained** | Core framework has minimal dependencies |
-| ⚙️ **Multi-Step Tool Calls** | Support for *complex reasoning chains* |
-| 📊 **Structured Logging** | Detailed insights into agent execution |
-| 🛡️ **Robust Error Handling** | Predictable behavior and simplified debugging |
-| 📝 **TypeScript First** | Type safety and enhanced developer experience |
-| 🌐 **Open Source Client** | Complete Next.js reference implementation included |
-| 🔄 **Orchestration** | *Dynamic control* of agent behavior based on context |
-| 💾 **Session Management** | Isolated state for concurrent conversations |
-| 🎮 **Configurable Determinism** | Precise control over agent predictability |
-| 📊 **Evaluation Framework** | Robust tools to define, run, and analyze agent performance evaluations |
-
+| Feature                         | Description                                                            |
+| ------------------------------- | ---------------------------------------------------------------------- |
+| 🔌 **Framework Agnostic**       | AgentDock Core works with _any tech stack_                             |
+| 🧩 **Modular Design**           | Build complex systems from simple nodes                                |
+| 🛠️ **Extensible**               | Create custom nodes for any functionality                              |
+| 🔒 **Secure**                   | Built-in security features for API keys and data                       |
+| 🔑 **BYOK**                     | Use your _own API keys_ for LLM providers                              |
+| 📦 **Self-Contained**           | Core framework has minimal dependencies                                |
+| ⚙️ **Multi-Step Tool Calls**    | Support for _complex reasoning chains_                                 |
+| 📊 **Structured Logging**       | Detailed insights into agent execution                                 |
+| 🛡️ **Robust Error Handling**    | Predictable behavior and simplified debugging                          |
+| 📝 **TypeScript First**         | Type safety and enhanced developer experience                          |
+| 🌐 **Open Source Client**       | Complete Next.js reference implementation included                     |
+| 🔄 **Orchestration**            | _Dynamic control_ of agent behavior based on context                   |
+| 💾 **Session Management**       | Isolated state for concurrent conversations                            |
+| 🎮 **Configurable Determinism** | Precise control over agent predictability                              |
+| 📊 **Evaluation Framework**     | Robust tools to define, run, and analyze agent performance evaluations |
 
 ## Getting Started
 

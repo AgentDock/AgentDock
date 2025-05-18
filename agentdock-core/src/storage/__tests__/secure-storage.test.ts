@@ -4,7 +4,12 @@
 
 import { SecureStorage } from '../secure-storage';
 import { ErrorCode } from '../../errors';
-import { mockCrypto, mockLocalStorage, base64ToArrayBuffer, arrayBufferToBase64 } from '../../test/setup';
+import {
+  mockCrypto,
+  mockLocalStorage,
+  base64ToArrayBuffer,
+  arrayBufferToBase64,
+} from '../../test/setup';
 
 describe('SecureStorage', () => {
   let storage: SecureStorage;
@@ -20,11 +25,13 @@ describe('SecureStorage', () => {
       type: 'secret',
       extractable: true,
       algorithm: { name: 'AES-GCM' },
-      usages: ['encrypt', 'decrypt']
+      usages: ['encrypt', 'decrypt'],
     }));
 
     mockCrypto.subtle.encrypt.mockImplementation(async () => new ArrayBuffer(32));
-    mockCrypto.subtle.decrypt.mockImplementation(async () => new TextEncoder().encode(JSON.stringify(testValue)));
+    mockCrypto.subtle.decrypt.mockImplementation(async () =>
+      new TextEncoder().encode(JSON.stringify(testValue)),
+    );
     mockCrypto.subtle.sign.mockImplementation(async () => new ArrayBuffer(32));
     mockCrypto.getRandomValues.mockImplementation(() => new Uint8Array(12));
   });
@@ -43,7 +50,7 @@ describe('SecureStorage', () => {
       mockCrypto.subtle.encrypt.mockRejectedValueOnce(new Error('Encryption failed'));
 
       await expect(storage.set(testKey, testValue)).rejects.toMatchObject({
-        code: ErrorCode.STORAGE_WRITE
+        code: ErrorCode.STORAGE_WRITE,
       });
     });
 
@@ -52,7 +59,7 @@ describe('SecureStorage', () => {
       circularRef.self = circularRef;
 
       await expect(storage.set(testKey, circularRef)).rejects.toMatchObject({
-        code: ErrorCode.STORAGE_WRITE
+        code: ErrorCode.STORAGE_WRITE,
       });
     });
   });
@@ -63,7 +70,7 @@ describe('SecureStorage', () => {
       hmac: arrayBufferToBase64(new ArrayBuffer(32)),
       iv: arrayBufferToBase64(new ArrayBuffer(12)),
       version: '1.0',
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     beforeEach(() => {
@@ -89,7 +96,7 @@ describe('SecureStorage', () => {
       mockCrypto.subtle.decrypt.mockRejectedValueOnce(new Error('Decryption failed'));
 
       await expect(storage.get(testKey)).rejects.toMatchObject({
-        code: ErrorCode.STORAGE_READ
+        code: ErrorCode.STORAGE_READ,
       });
     });
 
@@ -98,7 +105,7 @@ describe('SecureStorage', () => {
       mockCrypto.subtle.sign.mockImplementationOnce(async () => new ArrayBuffer(16));
 
       await expect(storage.get(testKey)).rejects.toMatchObject({
-        code: ErrorCode.TAMPERING_DETECTED
+        code: ErrorCode.TAMPERING_DETECTED,
       });
     });
 
@@ -108,23 +115,23 @@ describe('SecureStorage', () => {
       // Attempt multiple times
       for (let i = 0; i < 3; i++) {
         await expect(storage.get(testKey)).rejects.toMatchObject({
-          code: ErrorCode.STORAGE_READ
+          code: ErrorCode.STORAGE_READ,
         });
       }
 
       // Next attempt should fail with MAX_RETRIES_EXCEEDED
       await expect(storage.get(testKey)).rejects.toMatchObject({
-        code: ErrorCode.MAX_RETRIES_EXCEEDED
+        code: ErrorCode.MAX_RETRIES_EXCEEDED,
       });
     });
 
     it('should handle version mismatch', async () => {
-      mockLocalStorage.getItem.mockImplementationOnce(() => 
-        JSON.stringify({ ...mockStoredData, version: '0.9' })
+      mockLocalStorage.getItem.mockImplementationOnce(() =>
+        JSON.stringify({ ...mockStoredData, version: '0.9' }),
       );
 
       await expect(storage.get(testKey)).rejects.toMatchObject({
-        code: ErrorCode.STORAGE_READ
+        code: ErrorCode.STORAGE_READ,
       });
     });
   });
@@ -142,7 +149,7 @@ describe('SecureStorage', () => {
       });
 
       await expect(storage.remove(testKey)).rejects.toMatchObject({
-        code: ErrorCode.STORAGE_DELETE
+        code: ErrorCode.STORAGE_DELETE,
       });
     });
   });
@@ -150,9 +157,7 @@ describe('SecureStorage', () => {
   describe('clear', () => {
     beforeEach(() => {
       mockLocalStorage.length = 2;
-      mockLocalStorage.key
-        .mockReturnValueOnce('test:key1')
-        .mockReturnValueOnce('other:key2');
+      mockLocalStorage.key.mockReturnValueOnce('test:key1').mockReturnValueOnce('other:key2');
     });
 
     it('should clear only namespaced items', async () => {
@@ -168,7 +173,7 @@ describe('SecureStorage', () => {
       });
 
       await expect(storage.clear()).rejects.toMatchObject({
-        code: ErrorCode.STORAGE_DELETE
+        code: ErrorCode.STORAGE_DELETE,
       });
     });
   });
@@ -183,10 +188,12 @@ describe('SecureStorage', () => {
         type: 'secret',
         extractable: true,
         algorithm: { name: 'AES-GCM' },
-        usages: ['encrypt', 'decrypt']
+        usages: ['encrypt', 'decrypt'],
       }));
       mockCrypto.subtle.encrypt.mockImplementation(async () => new ArrayBuffer(32));
-      mockCrypto.subtle.decrypt.mockImplementation(async () => new TextEncoder().encode(JSON.stringify(testValue)));
+      mockCrypto.subtle.decrypt.mockImplementation(async () =>
+        new TextEncoder().encode(JSON.stringify(testValue)),
+      );
       mockCrypto.subtle.sign.mockImplementation(async () => new ArrayBuffer(32));
       mockCrypto.getRandomValues.mockImplementation(() => new Uint8Array(12));
     });
@@ -205,7 +212,7 @@ describe('SecureStorage', () => {
 
       // Simulate tampering detection
       mockCrypto.subtle.sign.mockImplementationOnce(async () => new ArrayBuffer(16));
-      
+
       try {
         await storage.get(testKey);
       } catch (error) {
@@ -218,4 +225,4 @@ describe('SecureStorage', () => {
       expect(totalCalls - initialCalls).toBe(2); // Should generate 2 new keys
     });
   });
-}); 
+});

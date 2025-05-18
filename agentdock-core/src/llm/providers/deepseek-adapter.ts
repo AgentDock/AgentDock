@@ -15,19 +15,19 @@ import OpenAI from 'openai';
 export async function validateDeepSeekApiKey(apiKey: string): Promise<boolean> {
   try {
     if (!apiKey) return false;
-    
+
     // Create OpenAI client with DeepSeek baseURL
     const deepseek = new OpenAI({
       apiKey,
-      baseURL: 'https://api.deepseek.com/v1'
+      baseURL: 'https://api.deepseek.com/v1',
     });
-    
+
     // Try to list models
     const response = await deepseek.models.list();
     return Array.isArray(response.data);
   } catch (error) {
-    logger.error(LogCategory.LLM, '[DeepSeekAdapter]', 'Error validating API key:', { 
-      error: error instanceof Error ? error.message : String(error) 
+    logger.error(LogCategory.LLM, '[DeepSeekAdapter]', 'Error validating API key:', {
+      error: error instanceof Error ? error.message : String(error),
     });
     return false;
   }
@@ -45,24 +45,23 @@ export async function fetchDeepSeekModels(apiKey: string): Promise<ModelMetadata
     // Create OpenAI client with DeepSeek baseURL
     const deepseek = new OpenAI({
       apiKey,
-      baseURL: 'https://api.deepseek.com/v1'
+      baseURL: 'https://api.deepseek.com/v1',
     });
 
     // Fetch available models
     const response = await deepseek.models.list();
-    
+
     // Filter and format models
-    const models = response.data
-      .map(model => ({
-        id: model.id,
-        displayName: model.id,
-        description: 'DeepSeek language model',
-        // Default context window sizes
-        contextWindow: model.id.includes('128k') ? 131072 : 32768,
-        defaultTemperature: 0.7,
-        defaultMaxTokens: 2048,
-        capabilities: ['text', 'code']
-      }));
+    const models = response.data.map((model) => ({
+      id: model.id,
+      displayName: model.id,
+      description: 'DeepSeek language model',
+      // Default context window sizes
+      contextWindow: model.id.includes('128k') ? 131072 : 32768,
+      defaultTemperature: 0.7,
+      defaultMaxTokens: 2048,
+      capabilities: ['text', 'code'],
+    }));
 
     // Register models with the registry
     ModelService.registerModels('deepseek', models);
@@ -71,10 +70,10 @@ export async function fetchDeepSeekModels(apiKey: string): Promise<ModelMetadata
 
     return ModelService.getModels('deepseek');
   } catch (error) {
-    logger.error(LogCategory.LLM, '[DeepSeekAdapter]', 'Error fetching models:', { 
-      error: error instanceof Error ? error.message : String(error) 
+    logger.error(LogCategory.LLM, '[DeepSeekAdapter]', 'Error fetching models:', {
+      error: error instanceof Error ? error.message : String(error),
     });
-    
+
     // If API call fails, provide fallback models
     try {
       const fallbackModels = [
@@ -85,7 +84,7 @@ export async function fetchDeepSeekModels(apiKey: string): Promise<ModelMetadata
           contextWindow: 32768,
           defaultTemperature: 0.7,
           defaultMaxTokens: 2048,
-          capabilities: ['text', 'code']
+          capabilities: ['text', 'code'],
         },
         {
           id: 'deepseek-chat',
@@ -94,22 +93,22 @@ export async function fetchDeepSeekModels(apiKey: string): Promise<ModelMetadata
           contextWindow: 32768,
           defaultTemperature: 0.7,
           defaultMaxTokens: 2048,
-          capabilities: ['text']
-        }
+          capabilities: ['text'],
+        },
       ];
-      
+
       ModelService.registerModels('deepseek', fallbackModels);
-      
+
       logger.warn(
-        LogCategory.LLM, 
-        '[DeepSeekAdapter]', 
+        LogCategory.LLM,
+        '[DeepSeekAdapter]',
         'Failed to fetch models from API, using fallback models',
-        { error: error instanceof Error ? error.message : 'Unknown error' }
+        { error: error instanceof Error ? error.message : 'Unknown error' },
       );
-      
+
       return ModelService.getModels('deepseek');
     } catch {
       throw error;
     }
   }
-} 
+}

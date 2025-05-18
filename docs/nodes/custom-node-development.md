@@ -25,56 +25,56 @@ interface MyNodeConfig {
 
 export class MyCustomNode extends BaseNode<MyNodeConfig> {
   readonly type = 'custom.myNode';
-  
+
   constructor(id: string, config: MyNodeConfig) {
     super(id, config);
   }
-  
+
   protected getCategory(): NodeCategory {
     return NodeCategory.CUSTOM;
   }
-  
+
   protected getLabel(): string {
     return 'My Custom Node';
   }
-  
+
   protected getDescription(): string {
     return 'Description of what my node does';
   }
-  
+
   protected getVersion(): string {
     return '1.0.0';
   }
-  
+
   protected getCompatibility() {
     return {
       core: true,
       pro: false,
-      custom: true
+      custom: true,
     };
   }
-  
+
   protected getInputs(): NodePort[] {
     return [
       {
         id: 'input',
         type: 'string',
         label: 'Input',
-        required: true
-      }
+        required: true,
+      },
     ];
   }
-  
+
   protected getOutputs(): NodePort[] {
     return [
       {
         id: 'output',
         type: 'string',
-        label: 'Output'
-      }
+        label: 'Output',
+      },
     ];
   }
-  
+
   async execute(input: unknown): Promise<unknown> {
     // Implementation goes here
     return `Processed: ${input}`;
@@ -93,7 +93,7 @@ getNodeRegistry().registerNode(MyCustomNode);
 
 // Create an instance
 const myNode = getNodeRegistry().createNode('custom.myNode', 'instance-id', {
-  parameter: 'value'
+  parameter: 'value',
 });
 ```
 

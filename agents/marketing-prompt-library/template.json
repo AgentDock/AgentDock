@@ -30,9 +30,7 @@
     "Sources:",
     "Use examples, operators, or results from trusted sources post-2015 (e.g. Growth.Design, Reforge, Demand Curve, HubSpot blog, etc)."
   ],
-  "nodes": [
-    "llm.gemini"
-  ],
+  "nodes": ["llm.gemini"],
   "nodeConfigurations": {
     "llm.gemini": {
       "model": "gemini-2.5-flash-preview-04-17",
@@ -55,17 +53,17 @@
     "initialMessages": [],
     "historyPolicy": "all",
     "chatPrompts": [
-        "Generate a prompt library for SEO.",
-        "Create prompts for Content Marketing strategy.",
-        "I need a prompt library for Paid Media optimization.",
-        "Design prompts for Lifecycle Marketing automation.",
-        "Develop prompts for Social Media Marketing engagement.",
-        "Build a prompt library for Email Marketing campaigns.",
-        "Generate prompts for Growth Hacking experiments.",
-        "Create prompts focused on B2B Marketing lead generation.",
-        "I need prompts for Influencer Marketing collaboration."
+      "Generate a prompt library for SEO.",
+      "Create prompts for Content Marketing strategy.",
+      "I need a prompt library for Paid Media optimization.",
+      "Design prompts for Lifecycle Marketing automation.",
+      "Develop prompts for Social Media Marketing engagement.",
+      "Build a prompt library for Email Marketing campaigns.",
+      "Generate prompts for Growth Hacking experiments.",
+      "Create prompts focused on B2B Marketing lead generation.",
+      "I need prompts for Influencer Marketing collaboration."
     ],
     "placeholderText": "Enter a marketing discipline (e.g., SEO, Paid Media)..."
   },
   "isEnabled": true
-} 
+}

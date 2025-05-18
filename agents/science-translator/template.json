@@ -1,130 +1,163 @@
 {
-    "version": "1.0",
-    "agentId": "science-translator",
-    "name": "Science Translator",
-    "description": "Translates complex scientific papers into simple explanations using multiple scientific databases",
-    "tags": ["science", "research", "education", "translation", "featured"],
-    "priority": 12,
-    "personality": [
-        "You are Science Translator, an AI agent specialized in making complex scientific papers accessible to everyone.",
-        "Your primary mission is to find scientific papers using various databases and explain them in simple language without losing accuracy.",
-        "You excel at breaking down complex scientific concepts into easy-to-understand explanations.",
-        "You maintain scientific accuracy while eliminating jargon and simplifying language to a level appropriate for your audience.",
-        "You're passionate about making science accessible to all education levels.",
-        "When asked about a scientific topic, you use the appropriate scientific database tools to find relevant papers.",
-        "You use different databases based on the field: PubMed for medicine/biology, arXiv for physics/computer science/math, Semantic Scholar for interdisciplinary research, and OpenAlex for broad academic literature.",
-        "After finding papers, you translate the complex content into clear, simple explanations that retain the core findings and significance.",
-        "You include appropriate citations and references to maintain academic integrity.",
-        "You can adapt your explanation level based on the audience (e.g., high school, undergraduate, general public).",
-        "You use analogies, examples, and visual descriptions to make complex concepts more relatable.",
-        "You're honest about the limitations of studies and avoid oversimplification that might lead to misunderstandings of scientific findings."
-    ],
-    "nodes": [
-        "llm.gemini",
-        "search",
-        "pubmed_search",
-        "pubmed_fetch",
-        "openalex_search",
-        "openalex_fetch",
-        "arxiv_search",
-        "arxiv_fetch",
-        "semantic_scholar_search",
-        "semantic_scholar_paper",
-        "semantic_scholar_author"
-    ],
-    "nodeConfigurations": {
-        "llm.gemini": { 
-          "model": "gemini-2.5-flash-preview-04-17",
-          "temperature": 0.7,
-          "maxTokens": 4096,
-          "useCustomApiKey": false,
-          "useSearchGrounding": false
+  "version": "1.0",
+  "agentId": "science-translator",
+  "name": "Science Translator",
+  "description": "Translates complex scientific papers into simple explanations using multiple scientific databases",
+  "tags": ["science", "research", "education", "translation", "featured"],
+  "priority": 12,
+  "personality": [
+    "You are Science Translator, an AI agent specialized in making complex scientific papers accessible to everyone.",
+    "Your primary mission is to find scientific papers using various databases and explain them in simple language without losing accuracy.",
+    "You excel at breaking down complex scientific concepts into easy-to-understand explanations.",
+    "You maintain scientific accuracy while eliminating jargon and simplifying language to a level appropriate for your audience.",
+    "You're passionate about making science accessible to all education levels.",
+    "When asked about a scientific topic, you use the appropriate scientific database tools to find relevant papers.",
+    "You use different databases based on the field: PubMed for medicine/biology, arXiv for physics/computer science/math, Semantic Scholar for interdisciplinary research, and OpenAlex for broad academic literature.",
+    "After finding papers, you translate the complex content into clear, simple explanations that retain the core findings and significance.",
+    "You include appropriate citations and references to maintain academic integrity.",
+    "You can adapt your explanation level based on the audience (e.g., high school, undergraduate, general public).",
+    "You use analogies, examples, and visual descriptions to make complex concepts more relatable.",
+    "You're honest about the limitations of studies and avoid oversimplification that might lead to misunderstandings of scientific findings."
+  ],
+  "nodes": [
+    "llm.gemini",
+    "search",
+    "pubmed_search",
+    "pubmed_fetch",
+    "openalex_search",
+    "openalex_fetch",
+    "arxiv_search",
+    "arxiv_fetch",
+    "semantic_scholar_search",
+    "semantic_scholar_paper",
+    "semantic_scholar_author"
+  ],
+  "nodeConfigurations": {
+    "llm.gemini": {
+      "model": "gemini-2.5-flash-preview-04-17",
+      "temperature": 0.7,
+      "maxTokens": 4096,
+      "useCustomApiKey": false,
+      "useSearchGrounding": false
+    }
+  },
+  "options": {
+    "maxSteps": 15
+  },
+  "orchestration": {
+    "description": "Scientific paper search and translation workflows",
+    "steps": [
+      {
+        "name": "Initial Consultation",
+        "description": "Start with a consultation to understand what scientific topic the user wants explained",
+        "isDefault": true
+      },
+      {
+        "name": "Medical Science Research",
+        "description": "Research flow for medical and biological sciences using PubMed",
+        "sequence": ["search", "pubmed_search", "pubmed_fetch"],
+        "availableTools": {
+          "allowed": ["search", "pubmed_search", "pubmed_fetch"]
         }
       },
-    "options": {
-        "maxSteps": 15
-    },
-    "orchestration": {
-        "description": "Scientific paper search and translation workflows",
-        "steps": [
-            {
-                "name": "Initial Consultation",
-                "description": "Start with a consultation to understand what scientific topic the user wants explained",
-                "isDefault": true
-            },
-            {
-                "name": "Medical Science Research",
-                "description": "Research flow for medical and biological sciences using PubMed",
-                "sequence": ["search", "pubmed_search", "pubmed_fetch"],
-                "availableTools": {
-                    "allowed": ["search", "pubmed_search", "pubmed_fetch"]
-                }
-            },
-            {
-                "name": "Physics and Computer Science Research",
-                "description": "Research flow for physics, math, and computer science using arXiv",
-                "sequence": ["search", "arxiv_search", "arxiv_fetch"],
-                "availableTools": {
-                    "allowed": ["search", "arxiv_search", "arxiv_fetch"]
-                }
-            },
-            {
-                "name": "Interdisciplinary Science Research",
-                "description": "Research flow for interdisciplinary science using Semantic Scholar",
-                "sequence": ["search", "semantic_scholar_search", "semantic_scholar_paper", "semantic_scholar_author"],
-                "availableTools": {
-                    "allowed": ["search", "semantic_scholar_search", "semantic_scholar_paper", "semantic_scholar_author"]
-                }
-            },
-            {
-                "name": "General Academic Research",
-                "description": "Research flow for general academic literature using OpenAlex",
-                "sequence": ["search", "openalex_search", "openalex_fetch"],
-                "availableTools": {
-                    "allowed": ["search", "openalex_search", "openalex_fetch"]
-                }
-            },
-            {
-                "name": "Comprehensive Scientific Research",
-                "description": "In-depth research using all available scientific databases",
-                "sequence": ["search", "pubmed_search", "arxiv_search", "semantic_scholar_search", "openalex_search"],
-                "availableTools": {
-                    "allowed": ["search", "pubmed_search", "pubmed_fetch", "arxiv_search", "arxiv_fetch", "semantic_scholar_search", "semantic_scholar_paper", "semantic_scholar_author", "openalex_search", "openalex_fetch"]
-                }
-            },
-            {
-                "name": "Author Research",
-                "description": "Find information about specific researchers and their publications",
-                "sequence": ["search", "semantic_scholar_author", "semantic_scholar_paper"],
-                "availableTools": {
-                    "allowed": ["search", "semantic_scholar_author", "semantic_scholar_paper"]
-                }
-            },
-            {
-                "name": "Specific Paper Translation",
-                "description": "Find and translate a specific scientific paper",
-                "availableTools": {
-                    "allowed": ["search", "pubmed_fetch", "arxiv_fetch", "semantic_scholar_paper", "openalex_fetch"]
-                }
-            }
-        ]
-    },
-    "chatSettings": {
-        "historyPolicy": "lastN",
-        "historyLength": 20,
-        "initialMessages": [
-            "Hello! I'm Science Translator, your guide to making complex scientific research understandable. Tell me what scientific topic or paper you're interested in, and I'll search academic databases to find relevant research and explain it in simple terms. I can access medical research through PubMed, physics and computer science papers through arXiv, interdisciplinary research via Semantic Scholar, and general academic literature through OpenAlex. What would you like me to translate today?"
+      {
+        "name": "Physics and Computer Science Research",
+        "description": "Research flow for physics, math, and computer science using arXiv",
+        "sequence": ["search", "arxiv_search", "arxiv_fetch"],
+        "availableTools": {
+          "allowed": ["search", "arxiv_search", "arxiv_fetch"]
+        }
+      },
+      {
+        "name": "Interdisciplinary Science Research",
+        "description": "Research flow for interdisciplinary science using Semantic Scholar",
+        "sequence": [
+          "search",
+          "semantic_scholar_search",
+          "semantic_scholar_paper",
+          "semantic_scholar_author"
         ],
-        "chatPrompts": [
-            "Can you explain the latest research on mRNA vaccines in simple terms?",
-            "Translate the most significant recent papers on quantum computing for a high school student",
-            "I need a simple explanation of this paper: 10.1126/science.abd0831",
-            "What does recent research say about climate change impacts on agriculture?",
-            "Explain machine learning transformer models in a way my grandmother would understand",
-            "Find information about the researcher Geoffrey Hinton and his most influential papers",
-            "What do the most cited papers in cognitive science tell us about decision making?",
-            "Translate the key findings from recent CRISPR research for non-biologists",
-            "Find comprehensive research on sustainable energy and explain the main approaches"
-        ]
-    }
-} 
+        "availableTools": {
+          "allowed": [
+            "search",
+            "semantic_scholar_search",
+            "semantic_scholar_paper",
+            "semantic_scholar_author"
+          ]
+        }
+      },
+      {
+        "name": "General Academic Research",
+        "description": "Research flow for general academic literature using OpenAlex",
+        "sequence": ["search", "openalex_search", "openalex_fetch"],
+        "availableTools": {
+          "allowed": ["search", "openalex_search", "openalex_fetch"]
+        }
+      },
+      {
+        "name": "Comprehensive Scientific Research",
+        "description": "In-depth research using all available scientific databases",
+        "sequence": [
+          "search",
+          "pubmed_search",
+          "arxiv_search",
+          "semantic_scholar_search",
+          "openalex_search"
+        ],
+        "availableTools": {
+          "allowed": [
+            "search",
+            "pubmed_search",
+            "pubmed_fetch",
+            "arxiv_search",
+            "arxiv_fetch",
+            "semantic_scholar_search",
+            "semantic_scholar_paper",
+            "semantic_scholar_author",
+            "openalex_search",
+            "openalex_fetch"
+          ]
+        }
+      },
+      {
+        "name": "Author Research",
+        "description": "Find information about specific researchers and their publications",
+        "sequence": ["search", "semantic_scholar_author", "semantic_scholar_paper"],
+        "availableTools": {
+          "allowed": ["search", "semantic_scholar_author", "semantic_scholar_paper"]
+        }
+      },
+      {
+        "name": "Specific Paper Translation",
+        "description": "Find and translate a specific scientific paper",
+        "availableTools": {
+          "allowed": [
+            "search",
+            "pubmed_fetch",
+            "arxiv_fetch",
+            "semantic_scholar_paper",
+            "openalex_fetch"
+          ]
+        }
+      }
+    ]
+  },
+  "chatSettings": {
+    "historyPolicy": "lastN",
+    "historyLength": 20,
+    "initialMessages": [
+      "Hello! I'm Science Translator, your guide to making complex scientific research understandable. Tell me what scientific topic or paper you're interested in, and I'll search academic databases to find relevant research and explain it in simple terms. I can access medical research through PubMed, physics and computer science papers through arXiv, interdisciplinary research via Semantic Scholar, and general academic literature through OpenAlex. What would you like me to translate today?"
+    ],
+    "chatPrompts": [
+      "Can you explain the latest research on mRNA vaccines in simple terms?",
+      "Translate the most significant recent papers on quantum computing for a high school student",
+      "I need a simple explanation of this paper: 10.1126/science.abd0831",
+      "What does recent research say about climate change impacts on agriculture?",
+      "Explain machine learning transformer models in a way my grandmother would understand",
+      "Find information about the researcher Geoffrey Hinton and his most influential papers",
+      "What do the most cited papers in cognitive science tell us about decision making?",
+      "Translate the key findings from recent CRISPR research for non-biologists",
+      "Find comprehensive research on sustainable energy and explain the main approaches"
+    ]
+  }
+}

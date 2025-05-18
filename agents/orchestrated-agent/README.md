@@ -58,4 +58,4 @@ To use this agent as a template, you can:
 
 1. Copy and modify the template.json file
 2. Customize the orchestration steps, conditions, and tool availability
-3. Adapt the personality and node configurations to your needs 
+3. Adapt the personality and node configurations to your needs

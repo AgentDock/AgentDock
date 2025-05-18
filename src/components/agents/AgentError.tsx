@@ -1,9 +1,9 @@
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 interface AgentErrorProps {
-  error: string
-  onRetry?: () => void
+  error: string;
+  onRetry?: () => void;
 }
 
 export function AgentError({ error, onRetry }: AgentErrorProps) {
@@ -16,9 +16,9 @@ export function AgentError({ error, onRetry }: AgentErrorProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex gap-4">
-            <Button 
-              onClick={onRetry || (() => window.location.reload())} 
-              variant="default" 
+            <Button
+              onClick={onRetry || (() => window.location.reload())}
+              variant="default"
               className="bg-red-600 hover:bg-red-700"
             >
               Try Again
@@ -27,5 +27,5 @@ export function AgentError({ error, onRetry }: AgentErrorProps) {
         </CardContent>
       </Card>
     </div>
-  )
-} 
+  );
+}

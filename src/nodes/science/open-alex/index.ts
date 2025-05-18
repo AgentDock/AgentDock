@@ -40,11 +40,11 @@ This tool accesses OpenAlex, an open and comprehensive index of scholarly papers
   parameters: OpenAlexSearchSchema,
   execute: async (params: OpenAlexSearchParams, options: ToolExecutionOptions) => {
     try {
-      logger.debug(LogCategory.NODE, '[OpenAlexAPI]', 'Starting OpenAlex search', { 
+      logger.debug(LogCategory.NODE, '[OpenAlexAPI]', 'Starting OpenAlex search', {
         query: params.query,
-        toolCallId: options.toolCallId
+        toolCallId: options.toolCallId,
       });
-      
+
       const results = await searchOpenAlex(params);
       const markdown = formatSearchResultsAsMarkdown(params.query, {
         query: params.query,
@@ -54,37 +54,37 @@ This tool accesses OpenAlex, an open and comprehensive index of scholarly papers
           open_access: params.filter === 'open_access',
           recent: params.filter === 'recent',
           highly_cited: params.filter === 'highly_cited',
-        }
+        },
       });
-      
+
       return {
         type: 'openalex_search_result',
         content: markdown,
         data: {
           works: results.works,
           query: params.query,
-          total: results.total
-        }
+          total: results.total,
+        },
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      
+
       // Only log essential error information
       logger.error(LogCategory.NODE, '[OpenAlexAPI]', 'Error in openalex_search tool', {
         error: errorMessage,
-        query: params.query
+        query: params.query,
       });
-      
+
       return {
         type: 'openalex_search_result',
         content: `## OpenAlex Search Error\n\nUnable to search OpenAlex for "${params.query}": ${errorMessage}`,
         data: {
           error: errorMessage,
-          query: params.query
-        }
+          query: params.query,
+        },
       };
     }
-  }
+  },
 };
 
 /**
@@ -110,40 +110,40 @@ This tool accesses OpenAlex, an open and comprehensive index of scholarly papers
   parameters: OpenAlexFetchSchema,
   execute: async (params: OpenAlexFetchParams, options: ToolExecutionOptions) => {
     try {
-      logger.debug(LogCategory.NODE, '[OpenAlexAPI]', 'Starting OpenAlex fetch', { 
+      logger.debug(LogCategory.NODE, '[OpenAlexAPI]', 'Starting OpenAlex fetch', {
         id: params.id,
         format: params.format,
         toolCallId: options.toolCallId,
       });
-      
+
       const work = await fetchOpenAlexWork(params);
       const markdown = formatWorkAsMarkdown(work);
-      
+
       return {
         type: 'openAlex_work_result',
         content: markdown,
         data: {
-          work
-        }
+          work,
+        },
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      
+
       logger.error(LogCategory.NODE, '[OpenAlexAPI]', 'Error in openAlex_fetch tool', {
         error: errorMessage,
         params,
       });
-      
+
       return {
         type: 'openAlex_work_result',
         content: `## OpenAlex Work Fetch Error\n\nUnable to retrieve work with ID "${params.id}": ${errorMessage}`,
         data: {
           error: errorMessage,
-          id: params.id
-        }
+          id: params.id,
+        },
       };
     }
-  }
+  },
 };
 
 /**
@@ -151,5 +151,5 @@ This tool accesses OpenAlex, an open and comprehensive index of scholarly papers
  */
 export const tools = {
   openalex_search: openAlexSearchTool,
-  openalex_fetch: openAlexFetchTool
-}; 
+  openalex_fetch: openAlexFetchTool,
+};

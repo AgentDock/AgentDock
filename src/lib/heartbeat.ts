@@ -12,7 +12,7 @@ export function useElapsedTime(): [string, number] {
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const startTimeRef = useRef<number>(performance.now());
   const animationFrameRef = useRef<number | null>(null);
-  
+
   useEffect(() => {
     const updateTimer = () => {
       const now = performance.now();
@@ -20,10 +20,10 @@ export function useElapsedTime(): [string, number] {
       setElapsedTime(elapsed);
       animationFrameRef.current = requestAnimationFrame(updateTimer);
     };
-    
+
     // Start the animation frame loop
     animationFrameRef.current = requestAnimationFrame(updateTimer);
-    
+
     // Cleanup function to cancel animation frame
     return () => {
       if (animationFrameRef.current) {
@@ -31,7 +31,7 @@ export function useElapsedTime(): [string, number] {
       }
     };
   }, []);
-  
+
   return [formatElapsedTime(elapsedTime), elapsedTime];
 }
 
@@ -48,17 +48,19 @@ export function formatElapsedTime(ms: number): string {
  * CSS props for applying the heartbeat gradient animation
  */
 export const heartbeatGradientProps = {
-  className: "absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/30 to-primary/5 -z-10 opacity-85",
+  className:
+    'absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/30 to-primary/5 -z-10 opacity-85',
   style: {
-    animation: "pulse-gradient 2s infinite ease-in-out",
-    backgroundSize: "200% 100%",
-  }
+    animation: 'pulse-gradient 2s infinite ease-in-out',
+    backgroundSize: '200% 100%',
+  },
 };
 
 /**
  * Timer display component props
  */
 export const timerDisplayProps = {
-  className: "text-xs font-mono bg-primary/10 text-primary px-2 py-0.5 rounded-full absolute top-2 right-3",
-  style: {}
-}; 
+  className:
+    'text-xs font-mono bg-primary/10 text-primary px-2 py-0.5 rounded-full absolute top-2 right-3',
+  style: {},
+};

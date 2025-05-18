@@ -33,19 +33,14 @@ export interface AVAXPriceData {
  * @returns Promise with AVAX price data
  */
 export async function getAVAXPrice(apiKey?: string): Promise<AVAXPriceData> {
-  const response = await makeRequest<AVAXPriceResponse>(
-    'stats',
-    'ethprice',
-    {},
-    apiKey
-  );
-  
+  const response = await makeRequest<AVAXPriceResponse>('stats', 'ethprice', {}, apiKey);
+
   const timestamp = parseInt(response.result.ethbtc_timestamp) * 1000;
-  
+
   return {
     avaxBTC: parseFloat(response.result.ethbtc),
     avaxUSD: parseFloat(response.result.ethusd),
-    lastUpdated: new Date(timestamp)
+    lastUpdated: new Date(timestamp),
   };
 }
 
@@ -55,13 +50,8 @@ export async function getAVAXPrice(apiKey?: string): Promise<AVAXPriceData> {
  * @returns Promise with AVAX supply
  */
 export async function getAVAXSupply(apiKey?: string): Promise<string> {
-  const response = await makeRequest<SnowtraceResponse<string>>(
-    'stats',
-    'ethsupply',
-    {},
-    apiKey
-  );
-  
+  const response = await makeRequest<SnowtraceResponse<string>>('stats', 'ethsupply', {}, apiKey);
+
   return response.result;
 }
 
@@ -71,12 +61,7 @@ export async function getAVAXSupply(apiKey?: string): Promise<string> {
  * @returns Promise with node count
  */
 export async function getNodeCount(apiKey?: string): Promise<any> {
-  const response = await makeRequest<SnowtraceResponse<any>>(
-    'stats',
-    'nodecount',
-    {},
-    apiKey
-  );
-  
+  const response = await makeRequest<SnowtraceResponse<any>>('stats', 'nodecount', {}, apiKey);
+
   return response.result;
-} 
+}

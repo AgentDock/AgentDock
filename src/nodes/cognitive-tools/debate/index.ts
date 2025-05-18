@@ -12,8 +12,14 @@ import { logger, LogCategory } from 'agentdock-core';
  * Schema for debate tool parameters
  */
 const debateSchema = z.object({
-  topic: z.string().min(1, "Topic is required").describe("The controversial or complex topic to debate"),
-  perspectives: z.string().min(1, "Perspectives content must be provided.").describe("Multi-perspective analysis with arguments from different viewpoints")
+  topic: z
+    .string()
+    .min(1, 'Topic is required')
+    .describe('The controversial or complex topic to debate'),
+  perspectives: z
+    .string()
+    .min(1, 'Perspectives content must be provided.')
+    .describe('Multi-perspective analysis with arguments from different viewpoints'),
 });
 
 /**
@@ -33,18 +39,15 @@ function formatDebatePerspectives(perspectives: string): string {
 /**
  * Debate component function - simplified to just combine title and trimmed content
  */
-function DebateComponent({ 
-  topic = "", 
-  perspectives = ""
-}: DebateParams): ToolResult {
+function DebateComponent({ topic = '', perspectives = '' }: DebateParams): ToolResult {
   // Format title and content
   const title = `## ⚖️ Debate on: ${topic}`;
   const formattedPerspectives = formatDebatePerspectives(perspectives);
-  
+
   // Return formatted markdown result
   return createToolResult(
     'debate_result',
-    `${title}\n\n${formattedPerspectives}` // Pass trimmed perspectives directly
+    `${title}\n\n${formattedPerspectives}`, // Pass trimmed perspectives directly
   );
 }
 
@@ -82,10 +85,11 @@ Your debate should be balanced, nuanced, and present multiple viewpoints fairly.
 /**
  * Handle tool errors by throwing a standard Error.
  */
-function safelyHandleError(error: unknown, topic: string): never { // Return type 'never' signifies it always throws
+function safelyHandleError(error: unknown, topic: string): never {
+  // Return type 'never' signifies it always throws
   // Ensure error is properly converted to string in all cases
   let errorMessage: string;
-  
+
   if (error instanceof Error) {
     errorMessage = error.message;
   } else if (typeof error === 'string') {
@@ -99,9 +103,11 @@ function safelyHandleError(error: unknown, topic: string): never { // Return typ
       errorMessage = 'Error: Could not format error details';
     }
   }
-  
-  logger.error(LogCategory.NODE, '[Debate]', 'Execution error (throwing):', { error: errorMessage });
-  
+
+  logger.error(LogCategory.NODE, '[Debate]', 'Execution error (throwing):', {
+    error: errorMessage,
+  });
+
   // Throw a standard Error instead of returning a ToolResult
   throw new Error(`Error during debate on "${topic}": ${errorMessage}`);
 }
@@ -117,41 +123,45 @@ export const debateTool: Tool = {
     try {
       const validation = debateSchema.safeParse(params);
       if (!validation.success) {
-        const errorMsg = validation.error.errors.map(e => `${e.path.join('.')} - ${e.message}`).join(', ');
-        logger.warn(LogCategory.NODE, '[Debate]', 'Invalid parameters received (throwing)', { errors: errorMsg });
+        const errorMsg = validation.error.errors
+          .map((e) => `${e.path.join('.')} - ${e.message}`)
+          .join(', ');
+        logger.warn(LogCategory.NODE, '[Debate]', 'Invalid parameters received (throwing)', {
+          errors: errorMsg,
+        });
         // Throw the validation error using the helper
         safelyHandleError(`Invalid parameters: ${errorMsg}`, params.topic || 'Unknown Topic');
       }
-      
+
       const { topic, perspectives } = validation.data;
-      
-      logger.debug(LogCategory.NODE, '[Debate]', `Formatting debate for: "${topic}"`, { 
+
+      logger.debug(LogCategory.NODE, '[Debate]', `Formatting debate for: "${topic}"`, {
         toolCallId: options.toolCallId,
         perspectivesLength: perspectives.length,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-      
+
       // Call the component function ONLY for successful formatting
       const result = DebateComponent({ topic, perspectives });
-      
+
       logger.debug(LogCategory.NODE, '[Debate]', 'Returning formatted debate via DebateComponent', {
         topic,
         perspectivesLength: perspectives.length,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-      
+
       return result;
     } catch (error) {
       const topic = typeof params?.topic === 'string' ? params.topic : 'Unknown Topic';
       // Use the helper to throw the error consistently
       safelyHandleError(error, topic);
     }
-  }
+  },
 };
 
 /**
  * Export tools for registry
  */
 export const tools = {
-  debate: debateTool
+  debate: debateTool,
 };

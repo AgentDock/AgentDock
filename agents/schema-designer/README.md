@@ -65,4 +65,4 @@ sequenceDiagram
 - Clear visualization of data relationships
 - Standards-compliant database structures
 - Prevention of common data modeling errors
-- Scalable foundation for applications 
+- Scalable foundation for applications

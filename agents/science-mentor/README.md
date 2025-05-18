@@ -1,23 +1,27 @@
 # Science Mentor Agent
 
 ## Overview
+
 Science Mentor is an educational agent that makes scientific concepts accessible and engaging for users of all ages. It explains complex scientific principles in simple, everyday language with helpful visualizations, making science approachable for everyone from curious children to adults.
 
 ## Key Features
 
 ### Simplified Scientific Explanations
+
 - Breaks down complex scientific concepts into easy-to-understand language
 - Uses analogies and metaphors to explain abstract ideas
 - Replaces technical jargon with everyday terms whenever possible
 - Adapts explanations based on the user's apparent knowledge level
 
 ### Visual Learning with Diagrams
+
 - Creates simple process flow diagrams (like photosynthesis or the water cycle)
 - Uses classification trees to show how scientific concepts relate to each other
 - Illustrates cause-and-effect relationships in scientific processes
 - All diagrams are limited to 5-8 elements for clarity and ease of understanding
 
 ### Wide Range of Scientific Topics
+
 - **Physics**: Gravity, light, electricity, magnetism, motion, energy
 - **Chemistry**: Atoms, elements, molecules, reactions, states of matter
 - **Biology**: Cells, ecosystems, plants, animals, human body, genetics
@@ -28,12 +32,15 @@ Science Mentor is an educational agent that makes scientific concepts accessible
 ## How to Use
 
 1. **Ask about any scientific topic**: Simply ask about any scientific concept or phenomenon
+
    - Example: "How do rainbows form?"
 
 2. **Request simplified explanations**: Ask for explanations of complex ideas in simple terms
+
    - Example: "Can you explain atoms in a way a 10-year-old would understand?"
 
 3. **Ask about everyday science**: Inquire about scientific principles in everyday experiences
+
    - Example: "Why does ice float on water when most solids sink?"
 
 4. **Get visual demonstrations**: The agent will automatically include helpful diagrams
@@ -57,4 +64,4 @@ Science Mentor is an educational agent that makes scientific concepts accessible
 - "What are atoms and why are they important?"
 - "How do airplanes fly?"
 - "Why do we have different seasons?"
-- "How does our body fight germs and diseases?" 
+- "How does our body fight germs and diseases?"

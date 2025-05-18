@@ -61,4 +61,4 @@ sequenceDiagram
 - Create effective documentation
 - Communicate clearly with companies
 - Follow structured escalation paths
-- Know when regulatory help is needed 
+- Know when regulatory help is needed

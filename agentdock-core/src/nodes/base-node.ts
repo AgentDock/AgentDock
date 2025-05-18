@@ -24,9 +24,9 @@ export interface NodeMetadata {
   readonly version: string;
   /** Compatibility information */
   readonly compatibility: {
-    core: boolean;    // Works with Core
-    pro: boolean;     // Works with Pro
-    custom: boolean;  // Available for custom implementations
+    core: boolean; // Works with Core
+    pro: boolean; // Works with Pro
+    custom: boolean; // Available for custom implementations
   };
 }
 
@@ -55,13 +55,13 @@ export interface NodePort {
 export abstract class BaseNode<TConfig = unknown> {
   /** Unique identifier for the node */
   readonly id: string;
-  
+
   /** Unique type identifier for the node */
   abstract readonly type: string;
-  
+
   /** Node configuration (immutable after construction) */
   protected config: TConfig;
-  
+
   /** Node metadata (immutable after construction) */
   readonly metadata: NodeMetadata;
 
@@ -89,7 +89,7 @@ export abstract class BaseNode<TConfig = unknown> {
       inputs: this.prototype.getInputs(),
       outputs: this.prototype.getOutputs(),
       version: this.prototype.getVersion(),
-      compatibility: this.prototype.getCompatibility()
+      compatibility: this.prototype.getCompatibility(),
     };
   }
 
@@ -108,7 +108,7 @@ export abstract class BaseNode<TConfig = unknown> {
     targetId: string,
     type: string,
     payload: T,
-    priority: 'low' | 'normal' | 'high' = 'normal'
+    priority: 'low' | 'normal' | 'high' = 'normal',
   ): Promise<string> {
     if (!this.messageBus) {
       throw new Error('Message bus not initialized');
@@ -121,7 +121,7 @@ export abstract class BaseNode<TConfig = unknown> {
       payload,
       priority,
       retryCount: 0,
-      maxRetries: 3
+      maxRetries: 3,
     });
   }
 
@@ -130,7 +130,7 @@ export abstract class BaseNode<TConfig = unknown> {
    */
   protected registerMessageHandlers(): void {
     if (!this.messageBus) return;
-    
+
     // Convert Map entries to array for iteration
     Array.from(this.handlers.entries()).forEach(([type, handler]) => {
       this.messageBus?.subscribe(type, handler);
@@ -166,28 +166,28 @@ export abstract class BaseNode<TConfig = unknown> {
       inputs: Object.freeze(this.getInputs()),
       outputs: Object.freeze(this.getOutputs()),
       version: this.getVersion(),
-      compatibility: this.getCompatibility()
+      compatibility: this.getCompatibility(),
     };
   }
 
   /** Get the node category (core or custom) */
   protected abstract getCategory(): NodeCategory;
-  
+
   /** Get the display name of the node */
   protected abstract getLabel(): string;
-  
+
   /** Get the node description */
   protected abstract getDescription(): string;
-  
+
   /** Get the node version */
   protected abstract getVersion(): string;
-  
+
   /** Get compatibility information */
   protected abstract getCompatibility(): NodeMetadata['compatibility'];
-  
+
   /** Define the node's input ports */
   protected abstract getInputs(): readonly NodePort[];
-  
+
   /** Define the node's output ports */
   protected abstract getOutputs(): readonly NodePort[];
 
@@ -234,7 +234,7 @@ export abstract class BaseNode<TConfig = unknown> {
       id: this.id,
       type: this.type,
       config: this.config,
-      metadata: this.metadata
+      metadata: this.metadata,
     };
   }
 }
@@ -245,4 +245,4 @@ export abstract class BaseNode<TConfig = unknown> {
 export interface BaseNodeConstructor {
   new (id: string, config: any): BaseNode;
   getNodeMetadata(): NodeMetadata;
-} 
+}

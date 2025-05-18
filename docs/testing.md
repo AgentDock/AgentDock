@@ -34,11 +34,11 @@ jest.mock('../../logging', () => ({
     debug: jest.fn(),
     info: jest.fn(),
     warn: jest.fn(),
-    error: jest.fn()
+    error: jest.fn(),
   },
   LogCategory: {
-    NODE: 'node'
-  }
+    NODE: 'node',
+  },
 }));
 ```
 
@@ -74,7 +74,7 @@ import { createMockCoreLLM, createMockOrchestrationManager } from '../../test/se
 
 const mockLLM = createMockCoreLLM({
   provider: 'anthropic',
-  modelId: 'claude-3-opus-20240229'
+  modelId: 'claude-3-opus-20240229',
 });
 
 const mockOrchestrationManager = createMockOrchestrationManager();

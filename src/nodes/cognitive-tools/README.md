@@ -26,10 +26,10 @@ The Cognitive Tools Suite includes formatting tools for:
 Each cognitive tool now follows this pattern:
 
 1. **Schema Definition**: Defines required parameters (topic/subject/challenge and the pre-generated content) using Zod.
-2. **Execution Logic**: 
-    - Validates that the required parameters (including the main content) are provided.
-    - If valid: Trims the content, adds a standard title (e.g., `## 🧠 Thinking about: ...`), and wraps the resulting Markdown in a `ToolResult`.
-    - If invalid or on other errors: Throws a standard `Error` to be handled by the API route.
+2. **Execution Logic**:
+   - Validates that the required parameters (including the main content) are provided.
+   - If valid: Trims the content, adds a standard title (e.g., `## 🧠 Thinking about: ...`), and wraps the resulting Markdown in a `ToolResult`.
+   - If invalid or on other errors: Throws a standard `Error` to be handled by the API route.
 3. **Minimal Formatting**: The tools primarily handle adding the title and basic trimming. Complex Markdown rendering (like tables) is expected in the input content and handled by the `ChatMarkdown` component.
 
 ## Integration
@@ -38,7 +38,7 @@ Cognitive tools can be added to any agent by including their names in the `nodes
 
 ```json
 {
-  "nodes": ["think", "reflect", "critique", "compare", "brainstorm", "debate", /* other nodes */]
+  "nodes": ["think", "reflect", "critique", "compare", "brainstorm", "debate" /* other nodes */]
 }
 ```
 
@@ -55,8 +55,8 @@ The refactored Cognitive Tools Suite focuses on:
 
 For optimal results:
 
-1. **Agent Instructions**: Instruct the agent LLM to generate the *full* cognitive output (reasoning, comparison, critique, etc.) first.
-2. **Tool Call**: Instruct the agent to then call the *appropriate* cognitive tool, passing the generated content as the required parameter (e.g., `reasoning`, `comparison`, `analysis`).
+1. **Agent Instructions**: Instruct the agent LLM to generate the _full_ cognitive output (reasoning, comparison, critique, etc.) first.
+2. **Tool Call**: Instruct the agent to then call the _appropriate_ cognitive tool, passing the generated content as the required parameter (e.g., `reasoning`, `comparison`, `analysis`).
 3. **Content Structure**: Encourage the agent to use appropriate Markdown within the generated content (e.g., headings, lists, tables for comparisons) which will be rendered by the UI.
 
 ## Common Implementation Features
@@ -74,4 +74,4 @@ Potential future directions could include:
 
 1. **More Sophisticated Formatters**: Tools that might parse and restructure the provided content more deeply (though this adds complexity).
 2. **Visualization Tools**: Tools that format output specifically for charts or graphs.
-3. **Workflow Tools**: Tools designed to manage multi-step cognitive processes explicitly. 
+3. **Workflow Tools**: Tools designed to manage multi-step cognitive processes explicitly.

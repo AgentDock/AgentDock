@@ -27,5 +27,5 @@ export function getElementText(doc: Document, tagName: string): string {
  */
 export function getElementsText(doc: Document, tagName: string): string[] {
   const elements = doc.getElementsByTagName(tagName);
-  return Array.from(elements).map(el => el.textContent || '');
-} 
+  return Array.from(elements).map((el) => el.textContent || '');
+}

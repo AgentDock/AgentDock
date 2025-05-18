@@ -9,4 +9,4 @@ describe('Message Role', () => {
     expect(values).toContain('system');
     expect(values).toContain('data');
   });
-}); 
+});

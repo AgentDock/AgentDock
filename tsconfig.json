@@ -25,6 +25,12 @@
       "agentdock-core/*": ["./agentdock-core/src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "agentdock-core/**/*.ts"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "agentdock-core/**/*.ts"
+  ],
   "exclude": ["node_modules"]
-} 
+}

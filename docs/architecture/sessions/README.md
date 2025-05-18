@@ -16,4 +16,4 @@ Sessions in AgentDock provide isolation between concurrent conversations and mai
 - [session-overview.md](./session-overview.md) - Core concepts and architecture of the session system
 - [session-implementation.md](./session-implementation.md) - Technical implementation details and API
 - [session-optimization.md](./session-optimization.md) - Performance optimizations and memory management
-- [nextjs-integration.md](./nextjs-integration.md) - How sessions integrate with Next.js applications 
+- [nextjs-integration.md](./nextjs-integration.md) - How sessions integrate with Next.js applications

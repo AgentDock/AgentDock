@@ -16,7 +16,7 @@ export interface SessionInfoData {
 
 /**
  * Custom hook to fetch and manage session information.
- * 
+ *
  * @param sessionId The ID of the session to fetch data for.
  * @returns An object containing session data, loading state, error state, and a refresh function.
  */
@@ -29,12 +29,13 @@ export function useSessionInfo(sessionId: string | null | undefined) {
    * Fetches the session information from the API.
    * Returns the fetched data or null if fetch fails or no sessionId.
    */
-  const fetchSessionInfo = useCallback(async (): Promise<SessionInfoData | null> => { // Return data or null
+  const fetchSessionInfo = useCallback(async (): Promise<SessionInfoData | null> => {
+    // Return data or null
     // Don't attempt to fetch if sessionId is not valid
     if (!sessionId) {
       setSessionData(null); // Clear any stale data
-      setError(null);       // Clear any stale error
-      setIsLoading(false);  // Ensure loading is false
+      setError(null); // Clear any stale error
+      setIsLoading(false); // Ensure loading is false
       return null; // Return null if no ID
     }
 
@@ -53,26 +54,28 @@ export function useSessionInfo(sessionId: string | null | undefined) {
           errorMsg = errorData.error || errorMsg;
         } catch (jsonError) {
           // Ignore if the error response wasn't valid JSON
-          console.warn("Could not parse error response JSON:", jsonError);
+          console.warn('Could not parse error response JSON:', jsonError);
         }
         throw new Error(errorMsg);
       }
 
       const data: SessionInfoData = await response.json();
-      
+
       // Ensure cumulativeTokenUsage exists, providing defaults if not
       if (!data.cumulativeTokenUsage) {
-          console.warn('Cumulative usage data not found in session response, setting defaults.');
-          data.cumulativeTokenUsage = { promptTokens: 0, completionTokens: 0, totalTokens: 0 };
+        console.warn('Cumulative usage data not found in session response, setting defaults.');
+        data.cumulativeTokenUsage = { promptTokens: 0, completionTokens: 0, totalTokens: 0 };
       }
 
       setSessionData(data); // Still update state for other consumers
       setError(null); // Clear error on successful fetch
       return data; // Return the fetched data
-
     } catch (err) {
-      console.error("Failed to fetch session info:", err);
-      const errorMessage = err instanceof Error ? err.message : "An unknown error occurred while fetching session info.";
+      console.error('Failed to fetch session info:', err);
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : 'An unknown error occurred while fetching session info.';
       setError(errorMessage);
       setSessionData(null); // Clear data on error to avoid showing stale info
       return null; // Return null on error
@@ -89,7 +92,7 @@ export function useSessionInfo(sessionId: string | null | undefined) {
     }
     // We only want this effect to run when the sessionId truly changes from invalid to valid,
     // or specifically when we want an initial load based on a newly available ID.
-  }, [sessionId, fetchSessionInfo]); // Removed sessionData, error, isLoading from deps 
+  }, [sessionId, fetchSessionInfo]); // Removed sessionData, error, isLoading from deps
 
   // Return the state variables and the fetch function exposed as 'refresh'
   return {

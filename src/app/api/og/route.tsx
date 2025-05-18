@@ -11,17 +11,17 @@ const HEIGHT = 630;
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    
+
     // Get title from search params or use description as default instead of name
     const title = searchParams.get('title') || siteConfig.description;
     // Get gradient colors or use defaults
     const gradientFrom = searchParams.get('from') || '0062F0';
     const gradientTo = searchParams.get('to') || '091E3B';
-    
+
     // Use the existing favicon.svg as the logo
     const logoUrl = new URL('../../../../public/favicon.svg', import.meta.url);
-    const logo = await fetch(logoUrl).then(res => res.text());
-    
+    const logo = await fetch(logoUrl).then((res) => res.text());
+
     return new ImageResponse(
       (
         <div
@@ -71,7 +71,7 @@ export async function GET(req: NextRequest) {
               {title}
             </div>
           </div>
-          
+
           {/* Logo and brand at the bottom */}
           <div
             style={{
@@ -88,7 +88,7 @@ export async function GET(req: NextRequest) {
               bottom: '30px',
             }}
           >
-            <img 
+            <img
               src={`data:image/svg+xml;base64,${Buffer.from(logo).toString('base64')}`}
               width="50"
               height="50"
@@ -112,10 +112,13 @@ export async function GET(req: NextRequest) {
       {
         width: WIDTH,
         height: HEIGHT,
-      }
+      },
     );
   } catch (error) {
     console.error('Error generating OG image:', error);
-    return new Response(`Failed to generate OG image: ${error instanceof Error ? error.message : 'Unknown error'}`, { status: 500 });
+    return new Response(
+      `Failed to generate OG image: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      { status: 500 },
+    );
   }
-} 
+}

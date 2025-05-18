@@ -17,6 +17,7 @@ This agent specializes in helping users conceptualize, design, and implement AI-
 ## Nodes
 
 The agent uses the following nodes:
+
 - search: Web search for up-to-date Avalanche ecosystem information
 - deep-research: Comprehensive research on technical topics and implementation approaches (prioritized for complex queries)
 
@@ -27,6 +28,7 @@ See `template.json` for the full configuration. The agent is configured to prior
 ## Capabilities
 
 1. Project Ideation
+
    - AI agent concept development for Avalanche
    - Use case identification
    - Ecosystem fit analysis
@@ -34,6 +36,7 @@ See `template.json` for the full configuration. The agent is configured to prior
    - Research-backed solution design
 
 2. Technical Design
+
    - Architecture recommendations using AgentDock's node system
    - Custom tool implementation patterns
    - Component-based rendering approaches
@@ -52,12 +55,14 @@ See `template.json` for the full configuration. The agent is configured to prior
 This agent provides guidance on:
 
 1. **Node-Based Architecture**
+
    - Understanding nodes as foundational building blocks
    - Tools as specialized nodes used by AI agents
    - Node configuration and connections
    - Node Registry and Tool Registry systems
 
 2. **Custom Tool Development**
+
    - Implementing tools in the `src/nodes/` directory
    - Following the Vercel AI SDK pattern
    - Parameter schema definition with zod
@@ -65,12 +70,14 @@ This agent provides guidance on:
    - Clear separation between logic and presentation
 
 3. **Component-Based Rendering**
+
    - Creating components that format tool output
    - Using shared markdown utilities
    - Consistent formatting across tools
    - UI rendering across different platforms
 
 4. **API Integration**
+
    - Server-side API calls to Avalanche endpoints
    - Environment variables for API keys
    - Error handling and rate limiting
@@ -89,13 +96,16 @@ This agent provides guidance on:
 const agent = new AgentNode('avalanche-builder', config);
 await agent.initialize();
 
-const response = await agent.execute('Help me design a coin-operated agent for automated liquidity management on Avalanche using AgentDock.');
+const response = await agent.execute(
+  'Help me design a coin-operated agent for automated liquidity management on Avalanche using AgentDock.',
+);
 console.log(response);
 ```
 
 ## Best Practices
 
 1. Project Development
+
    - Clearly define the AI capabilities needed
    - Consider Avalanche-specific features and limitations
    - Focus on practical implementation paths
@@ -103,6 +113,7 @@ console.log(response);
    - Leverage deep research for complex problems
 
 2. Technical Implementation
+
    - Follow AgentDock's custom tool contribution guidelines
    - Implement proper error handling
    - Use component-based rendering for consistent output
@@ -114,4 +125,4 @@ console.log(response);
    - Configure appropriate nodes for required capabilities
    - Structure agent templates with appropriate personality traits
    - Document implementation following best practices
-   - Utilize deep research for comprehensive solutions 
+   - Utilize deep research for comprehensive solutions

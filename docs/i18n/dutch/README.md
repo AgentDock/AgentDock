@@ -10,31 +10,31 @@
 
 AgentDock is een framework voor het bouwen van geavanceerde AI-agenten die complexe taken uitvoeren met **configureerbaar determinisme**. Het bestaat uit twee hoofdcomponenten:
 
-1.  **AgentDock Core**: Een open-source, backend-first framework voor het bouwen en implementeren van AI-agenten. Het is ontworpen om *framework-agnostisch* en *provider-agnostisch* te zijn, waardoor je volledige controle hebt over de implementatie van je agent.
+1.  **AgentDock Core**: Een open-source, backend-first framework voor het bouwen en implementeren van AI-agenten. Het is ontworpen om _framework-agnostisch_ en _provider-agnostisch_ te zijn, waardoor je volledige controle hebt over de implementatie van je agent.
 
 2.  **Open Source Client**: Een volledige Next.js-applicatie die dient als referentie-implementatie en consument van het AgentDock Core-framework. Je kunt het in actie zien op [https://hub.agentdock.ai](https://hub.agentdock.ai)
 
-Gebouwd met TypeScript, legt AgentDock de nadruk op *eenvoud*, *uitbreidbaarheid* en ***configureerbaar determinisme***, waardoor het ideaal is voor het bouwen van betrouwbare, voorspelbare AI-systemen die met minimale supervisie kunnen werken.
+Gebouwd met TypeScript, legt AgentDock de nadruk op _eenvoud_, _uitbreidbaarheid_ en **_configureerbaar determinisme_**, waardoor het ideaal is voor het bouwen van betrouwbare, voorspelbare AI-systemen die met minimale supervisie kunnen werken.
 
 ## 🧠 Ontwerpprincipes
 
 AgentDock is gebouwd op deze kernprincipes:
 
--   **Eenvoud Eerst**: Minimale code vereist om functionele agenten te creëren
--   **Op nodes gebaseerde architectuur**: Alle capaciteiten worden geïmplementeerd als nodes
--   **Tools als Gespecialiseerde Nodes**: Tools breiden het nodesysteem uit voor agentcapaciteiten
--   **Configureerbaar Determinisme**: Beheer de voorspelbaarheid van agentgedrag
--   **Typeveiligheid**: Volledige TypeScript-types overal
+- **Eenvoud Eerst**: Minimale code vereist om functionele agenten te creëren
+- **Op nodes gebaseerde architectuur**: Alle capaciteiten worden geïmplementeerd als nodes
+- **Tools als Gespecialiseerde Nodes**: Tools breiden het nodesysteem uit voor agentcapaciteiten
+- **Configureerbaar Determinisme**: Beheer de voorspelbaarheid van agentgedrag
+- **Typeveiligheid**: Volledige TypeScript-types overal
 
 ### Configureerbaar Determinisme
 
-***Configureerbaar determinisme*** is een hoeksteen van de ontwerpfilosofie van AgentDock, waardoor je de creatieve capaciteiten van AI kunt balanceren met voorspelbaar systeemgedrag:
+**_Configureerbaar determinisme_** is een hoeksteen van de ontwerpfilosofie van AgentDock, waardoor je de creatieve capaciteiten van AI kunt balanceren met voorspelbaar systeemgedrag:
 
--   `AgentNode`s zijn inherent niet-deterministisch aangezien LLM's elke keer verschillende reacties kunnen genereren
--   Workflows kunnen deterministischer worden gemaakt via *gedefinieerde tool-uitvoeringspaden*
--   Ontwikkelaars kunnen **het niveau van determinisme controleren** door te configureren welke delen van het systeem LLM-inferentie gebruiken
--   Zelfs met LLM-componenten blijft het algehele systeemgedrag **voorspelbaar** door gestructureerde tool-interacties
--   Met deze aanpak kunnen zowel *creativiteit* als **betrouwbaarheid** in je AI-applicaties worden bereikt
+- `AgentNode`s zijn inherent niet-deterministisch aangezien LLM's elke keer verschillende reacties kunnen genereren
+- Workflows kunnen deterministischer worden gemaakt via _gedefinieerde tool-uitvoeringspaden_
+- Ontwikkelaars kunnen **het niveau van determinisme controleren** door te configureren welke delen van het systeem LLM-inferentie gebruiken
+- Zelfs met LLM-componenten blijft het algehele systeemgedrag **voorspelbaar** door gestructureerde tool-interacties
+- Met deze aanpak kunnen zowel _creativiteit_ als **betrouwbaarheid** in je AI-applicaties worden bereikt
 
 #### Deterministische Workflows
 
@@ -78,7 +78,7 @@ flowchart TD
 
 #### Niet-Deterministische Agenten met Deterministische Sub-Workflows
 
-AgentDock biedt je het ***beste van twee werelden*** door niet-deterministische agentintelligentie te combineren met deterministische workflow-uitvoering:
+AgentDock biedt je het **_beste van twee werelden_** door niet-deterministische agentintelligentie te combineren met deterministische workflow-uitvoering:
 
 ```mermaid
 flowchart TD
@@ -112,15 +112,15 @@ Voor meer geavanceerde AI-agent workflows en multi-stage verwerkingspipelines bo
 
 #### Kort samengevat (TL;DR): Configureerbaar Determinisme
 
-Vergelijk het met autorijden. Soms heb je de creativiteit van AI nodig (zoals navigeren door stadsstraten - niet-deterministisch), en soms heb je betrouwbare, stapsgewijze processen nodig (zoals het volgen van snelwegborden - deterministisch). Met AgentDock kun je systemen bouwen die *beide* gebruiken, waarbij je de juiste aanpak kiest voor elk deel van een taak. Je krijgt de intelligentie van AI *en* voorspelbare resultaten waar nodig.
+Vergelijk het met autorijden. Soms heb je de creativiteit van AI nodig (zoals navigeren door stadsstraten - niet-deterministisch), en soms heb je betrouwbare, stapsgewijze processen nodig (zoals het volgen van snelwegborden - deterministisch). Met AgentDock kun je systemen bouwen die _beide_ gebruiken, waarbij je de juiste aanpak kiest voor elk deel van een taak. Je krijgt de intelligentie van AI _en_ voorspelbare resultaten waar nodig.
 
 ## 🏗️ Kernarchitectuur
 
 Het framework is gebouwd rond een krachtig, modulair, op nodes gebaseerd systeem, dat dient als basis voor alle agentfunctionaliteit. Deze architectuur gebruikt verschillende node-typen als bouwstenen:
 
--   **`BaseNode`**: De fundamentele klasse die de kerninterface en mogelijkheden voor alle nodes vastlegt.
--   **`AgentNode`**: Een gespecialiseerde kern-node die LLM-interacties, toolgebruik en agentlogica orkestreert.
--   **Tools en Aangepaste Nodes**: Ontwikkelaars implementeren agentcapaciteiten en aangepaste logica als nodes die `BaseNode` uitbreiden.
+- **`BaseNode`**: De fundamentele klasse die de kerninterface en mogelijkheden voor alle nodes vastlegt.
+- **`AgentNode`**: Een gespecialiseerde kern-node die LLM-interacties, toolgebruik en agentlogica orkestreert.
+- **Tools en Aangepaste Nodes**: Ontwikkelaars implementeren agentcapaciteiten en aangepaste logica als nodes die `BaseNode` uitbreiden.
 
 Deze nodes interageren via beheerde registers en kunnen worden verbonden (gebruikmakend van kernarchitectuurpoorten en een potentiële message bus) om complexe, configureerbare en potentieel deterministische agentgedragingen en workflows mogelijk te maken.
 
@@ -132,9 +132,9 @@ Voor een uitgebreide gids, zie de [Getting Started Gids](../../docs/getting-star
 
 ### Vereisten
 
-*   Node.js ≥ 20.11.0 (LTS)
-*   pnpm ≥ 9.15.0 (Vereist)
-*   API-sleutels voor LLM-providers (Anthropic, OpenAI, etc.)
+- Node.js ≥ 20.11.0 (LTS)
+- pnpm ≥ 9.15.0 (Vereist)
+- API-sleutels voor LLM-providers (Anthropic, OpenAI, etc.)
 
 ### Installatie
 
@@ -188,11 +188,11 @@ Voor een uitgebreide gids, zie de [Getting Started Gids](../../docs/getting-star
 
 ### Geavanceerde Mogelijkheden
 
-| Mogelijkheid             | Beschrijving                                                                                  | Documentatie                                                                     |
-| :----------------------- | :-------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------- |
-| **Sessiebeheer**         | Geïsoleerd, high-performance state management voor conversaties                             | [Sessiedocumentatie](../../docs/architecture/sessions/README.md)                 |
-| **Orkestratieframework** | Controle over agentgedrag en toolbeschikbaarheid op basis van context                          | [Orkestratiedocumentatie](../../docs/architecture/orchestration/README.md)       |
-| **Opslagabstractie**     | Flexibel opslagsysteem met pluggable providers voor KV, Vector en Secure Storage             | [Opslagdocumentatie](../../docs/storage/README.md)                               |
+| Mogelijkheid             | Beschrijving                                                                     | Documentatie                                                               |
+| :----------------------- | :------------------------------------------------------------------------------- | :------------------------------------------------------------------------- |
+| **Sessiebeheer**         | Geïsoleerd, high-performance state management voor conversaties                  | [Sessiedocumentatie](../../docs/architecture/sessions/README.md)           |
+| **Orkestratieframework** | Controle over agentgedrag en toolbeschikbaarheid op basis van context            | [Orkestratiedocumentatie](../../docs/architecture/orchestration/README.md) |
+| **Opslagabstractie**     | Flexibel opslagsysteem met pluggable providers voor KV, Vector en Secure Storage | [Opslagdocumentatie](../../docs/storage/README.md)                         |
 
 Het opslagsysteem evolueert momenteel met key-value opslag (Memory, Redis, Vercel KV providers) en client-side secure storage, terwijl vectoropslag en extra backends in ontwikkeling zijn.
 
@@ -200,10 +200,10 @@ Het opslagsysteem evolueert momenteel met key-value opslag (Memory, Redis, Verce
 
 De documentatie voor het AgentDock-framework is beschikbaar op [hub.agentdock.ai/docs](https://hub.agentdock.ai/docs) en in de `/docs/` map van deze repository. De documentatie omvat:
 
--   Getting started-gidsen
--   API-referenties
--   Tutorials voor het bouwen van nodes
--   Integratievoorbeelden
+- Getting started-gidsen
+- API-referenties
+- Tutorials voor het bouwen van nodes
+- Integratievoorbeelden
 
 ## 📂 Repository Structuur
 
@@ -223,13 +223,13 @@ AgentDock bevat verschillende vooraf geconfigureerde agent templates. Verken ze 
 
 Voorbeeldimplementaties tonen gespecialiseerde use cases en geavanceerde functionaliteit:
 
-| Implementatie             | Beschrijving                                                                                 | Status       |
-| :------------------------ | :------------------------------------------------------------------------------------------- | :----------- |
-| **Georkestreerde Agent**  | Voorbeeldagent die orkestratie gebruikt om gedrag aan te passen op basis van context         | Beschikbaar  |
-| **Cognitieve Redeneerder**| Pakt complexe problemen aan met gestructureerd redeneren en cognitieve tools                 | Beschikbaar  |
-| **Agent Planner**         | Gespecialiseerde agent voor het ontwerpen en implementeren van andere AI-agenten              | Beschikbaar  |
-| [**Code Playground**](../../docs/roadmap/code-playground.md)| In sandbox uitgevoerde codegeneratie en uitvoering met rijke visualisatiemogelijkheden             | Gepland      |
-| [**Generalistische AI-Agent**](../../docs/roadmap/generalist-agent.md)| Manus-achtige agent die de browser kan gebruiken en complexe taken kan uitvoeren               | Gepland      |
+| Implementatie                                                          | Beschrijving                                                                           | Status      |
+| :--------------------------------------------------------------------- | :------------------------------------------------------------------------------------- | :---------- |
+| **Georkestreerde Agent**                                               | Voorbeeldagent die orkestratie gebruikt om gedrag aan te passen op basis van context   | Beschikbaar |
+| **Cognitieve Redeneerder**                                             | Pakt complexe problemen aan met gestructureerd redeneren en cognitieve tools           | Beschikbaar |
+| **Agent Planner**                                                      | Gespecialiseerde agent voor het ontwerpen en implementeren van andere AI-agenten       | Beschikbaar |
+| [**Code Playground**](../../docs/roadmap/code-playground.md)           | In sandbox uitgevoerde codegeneratie en uitvoering met rijke visualisatiemogelijkheden | Gepland     |
+| [**Generalistische AI-Agent**](../../docs/roadmap/generalist-agent.md) | Manus-achtige agent die de browser kan gebruiken en complexe taken kan uitvoeren       | Gepland     |
 
 ## 🔐 Omgevingsconfiguratie Details
 
@@ -279,62 +279,64 @@ AgentDock volgt een BYOK (Bring Your Own Key) model:
 
 ## 📦 Pakketbeheerder
 
-Dit project *vereist* het gebruik van `pnpm` voor consistent afhankelijkheidsbeheer. `npm` en `yarn` worden niet ondersteund.
+Dit project _vereist_ het gebruik van `pnpm` voor consistent afhankelijkheidsbeheer. `npm` en `yarn` worden niet ondersteund.
 
 ## 💡 Wat Je Kunt Bouwen
 
 1.  **AI-Aangedreven Applicaties**
-    -   Aangepaste chatbots met elke frontend
-    -   Command-line AI-assistenten
-    -   Geautomatiseerde dataverwerkingspipelines
-    -   Backend service-integraties
+
+    - Aangepaste chatbots met elke frontend
+    - Command-line AI-assistenten
+    - Geautomatiseerde dataverwerkingspipelines
+    - Backend service-integraties
 
 2.  **Integratiemogelijkheden**
-    -   Elke AI-provider (OpenAI, Anthropic, etc.)
-    -   Elk frontend framework
-    -   Elke backend service
-    -   Aangepaste databronnen en API's
+
+    - Elke AI-provider (OpenAI, Anthropic, etc.)
+    - Elk frontend framework
+    - Elke backend service
+    - Aangepaste databronnen en API's
 
 3.  **Automatiseringssystemen**
-    -   Dataverwerkingsworkflows
-    -   Documentanalyse pipelines
-    -   Geautomatiseerde rapportagesystemen
-    -   Taakautomatiseringsagenten
+    - Dataverwerkingsworkflows
+    - Documentanalyse pipelines
+    - Geautomatiseerde rapportagesystemen
+    - Taakautomatiseringsagenten
 
 ## Kernfuncties
 
-| Functie                       | Beschrijving                                                                                 |
-| :---------------------------- | :------------------------------------------------------------------------------------------- |
-| 🔌 **Framework-Agnostisch (Node.js Backend)**| De kernbibliotheek integreert met Node.js backend stacks.                                  |
-| 🧩 **Modulair Ontwerp**       | Bouw complexe systemen van eenvoudige nodes                                                  |
-| 🛠️ **Uitbreidbaar**           | Creëer aangepaste nodes voor elke functionaliteit                                            |
-| 🔒 **Veilig**                 | Ingebouwde beveiligingsfuncties voor API-sleutels en data                                  |
-| 🔑 **BYOK**                   | Gebruik je *eigen API-sleutels* voor LLM-providers                                                     |
-| 📦 **Zelfstandig**            | Het kernframework kent slechts weinig afhankelijkheden                                               |
-| ⚙️ **Multi-Step Tool Calls** | Ondersteuning voor *complexe redeneerketens*                                                         |
-| 📊 **Gestructureerde Logging**| Gedetailleerde inzichten in agentuitvoering                                                        |
-| 🛡️ **Robuuste Foutafhandeling**| Voorspelbaar gedrag en vereenvoudigde debugging                                            |
-| 📝 **TypeScript Eerst**       | Typeveiligheid en verbeterde ontwikkelaarservaring                                          |
-| 🌐 **Open Source Client**     | Bevat volledige Next.js referentie-implementatie                                             |
-| 🔄 **Orkestratie**            | *Dynamische controle* over agentgedrag op basis van context                                |
-| 💾 **Sessiebeheer**           | Geïsoleerde state voor gelijktijdige conversaties                                           |
-| 🎮 **Configureerbaar Determinisme**| Balanceer AI-creativiteit en voorspelbaarheid via node/workflow-logica.                   |
+| Functie                                       | Beschrijving                                                            |
+| :-------------------------------------------- | :---------------------------------------------------------------------- |
+| 🔌 **Framework-Agnostisch (Node.js Backend)** | De kernbibliotheek integreert met Node.js backend stacks.               |
+| 🧩 **Modulair Ontwerp**                       | Bouw complexe systemen van eenvoudige nodes                             |
+| 🛠️ **Uitbreidbaar**                           | Creëer aangepaste nodes voor elke functionaliteit                       |
+| 🔒 **Veilig**                                 | Ingebouwde beveiligingsfuncties voor API-sleutels en data               |
+| 🔑 **BYOK**                                   | Gebruik je _eigen API-sleutels_ voor LLM-providers                      |
+| 📦 **Zelfstandig**                            | Het kernframework kent slechts weinig afhankelijkheden                  |
+| ⚙️ **Multi-Step Tool Calls**                  | Ondersteuning voor _complexe redeneerketens_                            |
+| 📊 **Gestructureerde Logging**                | Gedetailleerde inzichten in agentuitvoering                             |
+| 🛡️ **Robuuste Foutafhandeling**               | Voorspelbaar gedrag en vereenvoudigde debugging                         |
+| 📝 **TypeScript Eerst**                       | Typeveiligheid en verbeterde ontwikkelaarservaring                      |
+| 🌐 **Open Source Client**                     | Bevat volledige Next.js referentie-implementatie                        |
+| 🔄 **Orkestratie**                            | _Dynamische controle_ over agentgedrag op basis van context             |
+| 💾 **Sessiebeheer**                           | Geïsoleerde state voor gelijktijdige conversaties                       |
+| 🎮 **Configureerbaar Determinisme**           | Balanceer AI-creativiteit en voorspelbaarheid via node/workflow-logica. |
 
 ## 🧰 Componenten
 
 De modulaire architectuur van AgentDock is gebouwd op deze kerncomponenten:
 
-*   **BaseNode**: De basis voor alle nodes in het systeem
-*   **AgentNode**: De hoofdabstractie voor agentfunctionaliteit
-*   **Tools en Aangepaste Nodes**: Aanroepbare capaciteiten en aangepaste logica geïmplementeerd als nodes.
-*   **Node Registry**: Beheert de registratie en het ophalen van alle node-typen
-*   **Tool Registry**: Beheert de beschikbaarheid van tools voor agenten
-*   **CoreLLM**: Uniforme interface voor interactie met LLM-providers
-*   **Provider Registry**: Beheert LLM-providerconfiguraties
-*   **Foutafhandeling**: Systeem voor het afhandelen van fouten en het waarborgen van voorspelbaar gedrag
-*   **Logging**: Gestructureerd loggingsysteem voor monitoring en debugging
-*   **Orkestratie**: Controleert toolbeschikbaarheid en gedrag op basis van conversatiecontext
-*   **Sessies**: Beheert state-isolatie tussen gelijktijdige conversaties
+- **BaseNode**: De basis voor alle nodes in het systeem
+- **AgentNode**: De hoofdabstractie voor agentfunctionaliteit
+- **Tools en Aangepaste Nodes**: Aanroepbare capaciteiten en aangepaste logica geïmplementeerd als nodes.
+- **Node Registry**: Beheert de registratie en het ophalen van alle node-typen
+- **Tool Registry**: Beheert de beschikbaarheid van tools voor agenten
+- **CoreLLM**: Uniforme interface voor interactie met LLM-providers
+- **Provider Registry**: Beheert LLM-providerconfiguraties
+- **Foutafhandeling**: Systeem voor het afhandelen van fouten en het waarborgen van voorspelbaar gedrag
+- **Logging**: Gestructureerd loggingsysteem voor monitoring en debugging
+- **Orkestratie**: Controleert toolbeschikbaarheid en gedrag op basis van conversatiecontext
+- **Sessies**: Beheert state-isolatie tussen gelijktijdige conversaties
 
 Voor gedetailleerde technische documentatie over deze componenten, zie het [Architectuuroverzicht](../../docs/architecture/README.md).
 
@@ -342,21 +344,21 @@ Voor gedetailleerde technische documentatie over deze componenten, zie het [Arch
 
 Hieronder staat onze ontwikkelingsroadmap voor AgentDock. De meeste hier genoemde verbeteringen hebben betrekking op het AgentDock-kernframework (`agentdock-core`), dat momenteel lokaal wordt ontwikkeld en als een geversioneerd NPM-pakket zal worden gepubliceerd zodra een stabiele release is bereikt. Sommige roadmap-items kunnen ook verbeteringen aan de open-source client-implementatie met zich meebrengen.
 
-| Functie                                                                   | Beschrijving                                                                                    | Categorie      |
-| :------------------------------------------------------------------------ | :---------------------------------------------------------------------------------------------- | :------------- |
-| [**Opslagabstractielaag**](../../docs/roadmap/storage-abstraction.md)      | Flexibel opslagsysteem met pluggable providers                                                | **In Uitvoering**|
-| [**Geavanceerde Geheugensystemen**](../../docs/roadmap/advanced-memory.md)    | Lange-termijn contextbeheer                                                                   | **In Uitvoering**|
-| [**Vector Opslag Integratie**](../../docs/roadmap/vector-storage.md)       | Embedding-gebaseerde retrieval voor documenten en geheugen                                    | **In Uitvoering**|
-| [**Evaluatie voor AI-Agenten**](../../docs/roadmap/evaluation-framework.md) | Uitgebreid test- en evaluatieframework                                                        | **In Uitvoering**|
-| [**Platform Integratie**](../../docs/roadmap/platform-integration.md)      | Ondersteuning voor Telegram, WhatsApp en andere berichtenplatforms                            | **Gepland**    |
-| [**Multi-Agent Samenwerking**](../../docs/roadmap/multi-agent-collaboration.md)| Agenten laten samenwerken                                                                     | **Gepland**    |
-| [**Model Context Protocol (MCP) Integratie**](../../docs/roadmap/mcp-integration.md)| Ondersteuning voor het ontdekken en gebruiken van externe tools via MCP                       | **Gepland**    |
-| [**Voice AI Agenten**](../../docs/roadmap/voice-agents.md)                | AI-agenten die spraakinterfaces en telefoonnummers gebruiken via AgentNode                    | **Gepland**    |
-| [**Telemetrie en Traceerbaarheid**](../../docs/roadmap/telemetry.md)       | Geavanceerde logging en prestatietracering                                                     | **Gepland**    |
-| [**Workflow Runtime & Node Types**](../../docs/roadmap/workflow-nodes.md) | Kern runtime, node types en orkestratielogica voor complexe automatiseringen | **Gepland** |
-| [**AgentDock Pro**](../../docs/agentdock-pro.md)                         | Uitgebreid enterprise cloud platform voor het schalen van AI-agenten & workflows             | **Cloud**      |
-| [**Natuurlijke Taal AI Agent Bouwer**](../../docs/roadmap/nl-agent-builder.md)| Visuele bouwer + natuurlijke taal agent & workflow constructie                               | **Cloud**      |
-| [**Agent Marktplaats**](../../docs/roadmap/agent-marketplace.md)          | Monetiseerbare agent templates                                                                | **Cloud**      |
+| Functie                                                                              | Beschrijving                                                                     | Categorie         |
+| :----------------------------------------------------------------------------------- | :------------------------------------------------------------------------------- | :---------------- |
+| [**Opslagabstractielaag**](../../docs/roadmap/storage-abstraction.md)                | Flexibel opslagsysteem met pluggable providers                                   | **In Uitvoering** |
+| [**Geavanceerde Geheugensystemen**](../../docs/roadmap/advanced-memory.md)           | Lange-termijn contextbeheer                                                      | **In Uitvoering** |
+| [**Vector Opslag Integratie**](../../docs/roadmap/vector-storage.md)                 | Embedding-gebaseerde retrieval voor documenten en geheugen                       | **In Uitvoering** |
+| [**Evaluatie voor AI-Agenten**](../../docs/roadmap/evaluation-framework.md)          | Uitgebreid test- en evaluatieframework                                           | **In Uitvoering** |
+| [**Platform Integratie**](../../docs/roadmap/platform-integration.md)                | Ondersteuning voor Telegram, WhatsApp en andere berichtenplatforms               | **Gepland**       |
+| [**Multi-Agent Samenwerking**](../../docs/roadmap/multi-agent-collaboration.md)      | Agenten laten samenwerken                                                        | **Gepland**       |
+| [**Model Context Protocol (MCP) Integratie**](../../docs/roadmap/mcp-integration.md) | Ondersteuning voor het ontdekken en gebruiken van externe tools via MCP          | **Gepland**       |
+| [**Voice AI Agenten**](../../docs/roadmap/voice-agents.md)                           | AI-agenten die spraakinterfaces en telefoonnummers gebruiken via AgentNode       | **Gepland**       |
+| [**Telemetrie en Traceerbaarheid**](../../docs/roadmap/telemetry.md)                 | Geavanceerde logging en prestatietracering                                       | **Gepland**       |
+| [**Workflow Runtime & Node Types**](../../docs/roadmap/workflow-nodes.md)            | Kern runtime, node types en orkestratielogica voor complexe automatiseringen     | **Gepland**       |
+| [**AgentDock Pro**](../../docs/agentdock-pro.md)                                     | Uitgebreid enterprise cloud platform voor het schalen van AI-agenten & workflows | **Cloud**         |
+| [**Natuurlijke Taal AI Agent Bouwer**](../../docs/roadmap/nl-agent-builder.md)       | Visuele bouwer + natuurlijke taal agent & workflow constructie                   | **Cloud**         |
+| [**Agent Marktplaats**](../../docs/roadmap/agent-marketplace.md)                     | Monetiseerbare agent templates                                                   | **Cloud**         |
 
 ## 👥 Bijdragen
 
@@ -371,4 +373,5 @@ AgentDock wordt uitgebracht onder de [MIT Licentie](../../LICENSE).
 AgentDock biedt de basis om vrijwel elke AI-aangedreven applicatie of automatisering te bouwen die je je kunt voorstellen. We moedigen je aan om het framework te verkennen, innovatieve agenten te bouwen en bij te dragen aan de community. Laten we samen de toekomst van AI-interactie bouwen!
 
 ---
+
 [Terug naar Vertalingsindex](/docs/i18n/README.md)

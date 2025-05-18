@@ -96,4 +96,4 @@ export interface Tool<TParams = unknown, TResult = unknown> extends BaseNode {
   description: string;
   parameters: JSONSchema;
   execute(params: TParams): Promise<ToolResult>;
-} 
+}

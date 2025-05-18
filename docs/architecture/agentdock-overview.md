@@ -51,12 +51,14 @@ The Node Registry and Tool Registry work together to provide a comprehensive sys
 ## What You Can Build
 
 1. **AI-Powered Applications**
+
    - Custom chatbots with any frontend
    - Command-line AI assistants
    - Automated data processing pipelines
    - Backend service integrations
 
 2. **Integration Capabilities**
+
    - Any AI provider (OpenAI, Anthropic, etc.)
    - Any frontend framework
    - Any backend service
@@ -82,13 +84,13 @@ The Node Registry and Tool Registry work together to provide a comprehensive sys
 
 For more detailed documentation on specific architecture components:
 
-| Component | Documentation |
-|-----------|---------------|
-| Agent Node | [Agent Node Architecture](./agent_node.md) |
-| Error Handling | [Core Error Handling](./core-error-handling.md) |
-| Provider Abstraction | [Provider-Agnostic API](./provider-agnostic-api.md) |
-| Orchestration | [Orchestration Framework](./orchestration/README.md) |
-| Sessions | [Session Management](./sessions/README.md) |
+| Component            | Documentation                                        |
+| -------------------- | ---------------------------------------------------- |
+| Agent Node           | [Agent Node Architecture](./agent_node.md)           |
+| Error Handling       | [Core Error Handling](./core-error-handling.md)      |
+| Provider Abstraction | [Provider-Agnostic API](./provider-agnostic-api.md)  |
+| Orchestration        | [Orchestration Framework](./orchestration/README.md) |
+| Sessions             | [Session Management](./sessions/README.md)           |
 
 ## Getting Started
 
@@ -105,4 +107,4 @@ For more detailed documentation on specific architecture components:
 - Enhanced execution systems
 - Managed integrations
 
-AgentDock provides the foundation for building sophisticated AI agent systems while maintaining complete control over your implementation and infrastructure. 
+AgentDock provides the foundation for building sophisticated AI agent systems while maintaining complete control over your implementation and infrastructure.

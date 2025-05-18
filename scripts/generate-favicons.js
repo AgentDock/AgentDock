@@ -8,7 +8,7 @@ const sizes = {
   'favicon-32x32.png': 32,
   'apple-touch-icon.png': 180,
   'android-chrome-192x192.png': 192,
-  'android-chrome-512x512.png': 512
+  'android-chrome-512x512.png': 512,
 };
 
 async function generateFavicons() {
@@ -18,12 +18,10 @@ async function generateFavicons() {
 
   for (const [filename, size] of Object.entries(sizes)) {
     const outputPath = path.join(publicDir, filename);
-    await sharp(svgBuffer)
-      .resize(size, size)
-      .toFile(outputPath);
-    
+    await sharp(svgBuffer).resize(size, size).toFile(outputPath);
+
     console.log(`Generated ${filename}`);
-    
+
     // Collect buffers for ICO generation (only 16x16 and 32x32)
     if (size === 16 || size === 32) {
       pngBuffers.push(fs.readFileSync(outputPath));
@@ -41,4 +39,4 @@ async function generateFavicons() {
   }
 }
 
-generateFavicons().catch(console.error); 
+generateFavicons().catch(console.error);

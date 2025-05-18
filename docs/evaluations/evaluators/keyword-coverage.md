@@ -31,19 +31,19 @@ graph TD
 
 The `KeywordCoverageEvaluator` is valuable for:
 
-*   Ensuring product names, disclaimers, or specific instructions are mentioned.
-*   Verifying that all topics from a checklist are addressed.
-*   Basic checking for forbidden words (though `ToxicityEvaluator` might be more specialized).
-*   Counting occurrences of specific terms for analytical purposes.
+- Ensuring product names, disclaimers, or specific instructions are mentioned.
+- Verifying that all topics from a checklist are addressed.
+- Basic checking for forbidden words (though `ToxicityEvaluator` might be more specialized).
+- Counting occurrences of specific terms for analytical purposes.
 
 ## Configuration
 
 Configuration involves defining the keywords and the matching logic:
 
-*   `keywords`: An array of strings or patterns to search for.
-*   `caseSensitive`: Boolean, defaults to `false`.
-*   `expectedOutcome`: Defines what constitutes a pass (e.g., 'any' keyword found, 'all' keywords found, 'none' found, or a specific count/frequency).
-*   `sourceField`: Specifies which field from `EvaluationInput` to check (defaults to 'response').
+- `keywords`: An array of strings or patterns to search for.
+- `caseSensitive`: Boolean, defaults to `false`.
+- `expectedOutcome`: Defines what constitutes a pass (e.g., 'any' keyword found, 'all' keywords found, 'none' found, or a specific count/frequency).
+- `sourceField`: Specifies which field from `EvaluationInput` to check (defaults to 'response').
 
 ```typescript
 // Example configuration structure (to be detailed)
@@ -60,10 +60,10 @@ Configuration involves defining the keywords and the matching logic:
 
 The `KeywordCoverageEvaluator` produces an `EvaluationResult`:
 
-*   **`criterionName`**: Reflects the keyword check being performed (e.g., "IncludesMandatoryTerms").
-*   **`score`**: Typically boolean (`true`/`false`) or a numeric score (e.g., percentage of keywords found, count of occurrences).
-*   **`reasoning`**: Details about which keywords were found/missing, or counts.
-*   **`evaluatorType`**: `'KeywordCoverage'`.
-*   **`error`**: For configuration errors or issues accessing the text.
+- **`criterionName`**: Reflects the keyword check being performed (e.g., "IncludesMandatoryTerms").
+- **`score`**: Typically boolean (`true`/`false`) or a numeric score (e.g., percentage of keywords found, count of occurrences).
+- **`reasoning`**: Details about which keywords were found/missing, or counts.
+- **`evaluatorType`**: `'KeywordCoverage'`.
+- **`error`**: For configuration errors or issues accessing the text.
 
-This evaluator offers a simple way to enforce content requirements based on keyword presence. 
+This evaluator offers a simple way to enforce content requirements based on keyword presence.

@@ -2,14 +2,14 @@
  * @fileoverview Environment configuration types
  * These types define the shape of our environment configuration and provide centralized
  * access to environment variables throughout the application.
- * 
+ *
  * Environment Variables Usage:
  * 1. Add environment variables to your .env.local file (for development)
  * 2. Set up environment variables in your deployment platform (for production)
- * 
+ *
  * Required Environment Variables:
  * - At least one LLM provider API key (ANTHROPIC_API_KEY, OPENAI_API_KEY, etc.)
- * 
+ *
  * Optional Environment Variables:
  * - FALLBACK_API_KEY: Used as a backup when primary API keys fail
  * - MAX_DURATION: Maximum duration for Edge functions in seconds (default: 300)
@@ -27,16 +27,19 @@ const envSchema = z.object({
   GEMINI_API_KEY: z.string().min(1).optional(),
   DEEPSEEK_API_KEY: z.string().min(1).optional(),
   GROQ_API_KEY: z.string().min(1).startsWith('gsk_').optional(),
-  
+
   // Other API keys
   SERPER_API_KEY: z.string().min(1).optional(),
   FIRECRAWL_API_KEY: z.string().min(1).optional(),
   ALPHAVANTAGE_API_KEY: z.string().min(1).optional(),
-  
+
   // Application configuration
   NODE_ENV: z.enum(['development', 'production', 'test']).optional(),
   FALLBACK_API_KEY: z.string().optional(),
-  MAX_DURATION: z.string().transform(val => parseInt(val, 10)).optional(),
+  MAX_DURATION: z
+    .string()
+    .transform((val) => parseInt(val, 10))
+    .optional(),
   NEXT_PUBLIC_API_URL: z.string().url().optional(),
 });
 
@@ -45,7 +48,7 @@ type EnvConfig = z.infer<typeof envSchema>;
 
 /**
  * Get environment configuration with validation
- * 
+ *
  * @returns EnvConfig object containing all environment variables
  */
 export function getEnvConfig(): EnvConfig {
@@ -58,19 +61,19 @@ export function getEnvConfig(): EnvConfig {
       GEMINI_API_KEY: process.env.GEMINI_API_KEY,
       DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY,
       GROQ_API_KEY: process.env.GROQ_API_KEY,
-      
+
       // Other API keys
       SERPER_API_KEY: process.env.SERPER_API_KEY,
       FIRECRAWL_API_KEY: process.env.FIRECRAWL_API_KEY,
       ALPHAVANTAGE_API_KEY: process.env.ALPHAVANTAGE_API_KEY,
-      
+
       // Application configuration
       NODE_ENV: process.env.NODE_ENV,
       FALLBACK_API_KEY: process.env.FALLBACK_API_KEY,
       MAX_DURATION: process.env.MAX_DURATION,
       NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
     });
-    
+
     return env;
   } catch (error) {
     // Always return raw environment variables when validation fails
@@ -87,40 +90,40 @@ export function getEnvConfig(): EnvConfig {
       NODE_ENV: process.env.NODE_ENV as any,
       FALLBACK_API_KEY: process.env.FALLBACK_API_KEY,
       MAX_DURATION: process.env.MAX_DURATION ? parseInt(process.env.MAX_DURATION) : undefined,
-      NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL
+      NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
     } as EnvConfig;
   }
 }
 
 /**
  * Get provider API key from environment variables or local storage
- * 
+ *
  * This function centralizes access to LLM provider API keys, making it the
  * preferred way to access these keys throughout the application.
- * 
+ *
  * @param provider LLM provider ID (e.g., 'anthropic', 'openai', 'gemini')
  * @param options Optional configuration
  * @returns The API key string or null if not found
  */
 export function getProviderApiKey(
   provider: LLMProvider,
-  options?: { byokOnly?: boolean }
+  options?: { byokOnly?: boolean },
 ): string | null {
   // If BYOK mode is explicitly enabled via options, don't use environment variables
   if (options?.byokOnly === true) {
     return null;
   }
-  
+
   // Try to get API key from localStorage if available
   try {
     if (typeof window !== 'undefined' || typeof globalThis.localStorage !== 'undefined') {
       // Use localStorage directly
       const globalSettingsJson = localStorage.getItem('agentdock:global_settings');
-      
+
       if (globalSettingsJson) {
         try {
           const globalSettings = JSON.parse(globalSettingsJson);
-          
+
           // If we have API keys in settings
           if (globalSettings?.apiKeys && globalSettings.apiKeys[provider]) {
             return globalSettings.apiKeys[provider];
@@ -134,16 +137,16 @@ export function getProviderApiKey(
   } catch (error) {
     // localStorage not available
   }
-  
+
   // Direct access to environment variables as fallback
   const envVarMap: Record<string, string | undefined> = {
-    'anthropic': process.env.ANTHROPIC_API_KEY,
-    'openai': process.env.OPENAI_API_KEY, 
-    'gemini': process.env.GEMINI_API_KEY,
-    'deepseek': process.env.DEEPSEEK_API_KEY,
-    'groq': process.env.GROQ_API_KEY
+    anthropic: process.env.ANTHROPIC_API_KEY,
+    openai: process.env.OPENAI_API_KEY,
+    gemini: process.env.GEMINI_API_KEY,
+    deepseek: process.env.DEEPSEEK_API_KEY,
+    groq: process.env.GROQ_API_KEY,
   };
-  
+
   return envVarMap[provider] || null;
 }
 
@@ -161,28 +164,28 @@ export function getProviderApiKey(
 export function debugDirectEnvAccess(provider: LLMProvider): string | null {
   // Map provider to environment variable name
   const envVarMap: Record<string, string> = {
-    'anthropic': 'ANTHROPIC_API_KEY',
-    'openai': 'OPENAI_API_KEY',
-    'gemini': 'GEMINI_API_KEY',
-    'deepseek': 'DEEPSEEK_API_KEY',
-    'groq': 'GROQ_API_KEY'
+    anthropic: 'ANTHROPIC_API_KEY',
+    openai: 'OPENAI_API_KEY',
+    gemini: 'GEMINI_API_KEY',
+    deepseek: 'DEEPSEEK_API_KEY',
+    groq: 'GROQ_API_KEY',
   };
-  
+
   const envVar = envVarMap[provider];
   if (!envVar) return null;
-  
+
   // Direct access from process.env, bypassing validation
   const value = process.env[envVar];
-  
+
   // Log result (safely)
   if (process.env.NODE_ENV === 'development') {
     console.log(`Direct environment access for ${provider}:`, {
       envVar,
       exists: !!value,
       length: value?.length || 0,
-      prefix: value?.substring(0, 4) || ''
+      prefix: value?.substring(0, 4) || '',
     });
   }
-  
+
   return value || null;
-} 
+}

@@ -11,10 +11,9 @@ import { OrchestrationConfig, OrchestrationSchema } from './orchestration';
  * Personality schema with validation and transformation
  * Uses branded types for type safety
  */
-export const PersonalitySchema = z.union([
-  z.string(),
-  z.array(z.string()).transform(arr => arr.join('\n'))
-]).brand<'validated-personality'>();
+export const PersonalitySchema = z
+  .union([z.string(), z.array(z.string()).transform((arr) => arr.join('\n'))])
+  .brand<'validated-personality'>();
 
 /**
  * Infer the type for use in interfaces
@@ -41,27 +40,27 @@ function ensureString(value: unknown): string {
 export interface AgentConfig {
   /** Version of the agent configuration format */
   version: string;
-  
+
   /** Unique identifier for the agent */
   agentId: string;
-  
+
   /** Display name of the agent */
   name: string;
-  
+
   /** Optional description */
   description: string;
-  
+
   /** Agent personality/system prompt - validated string */
   personality: ValidatedPersonality;
-  
+
   /** Enabled nodes/capabilities */
   nodes: string[];
-  
+
   /** Node-specific configurations */
   nodeConfigurations: {
     [nodeType: string]: any;
   };
-  
+
   /** Chat-specific settings */
   chatSettings: {
     /** Initial messages to send when chat starts */
@@ -73,13 +72,13 @@ export interface AgentConfig {
     /** Chat prompt suggestions to display when chat is empty */
     chatPrompts?: string[];
   };
-  
+
   /** Agent orchestration configuration for structured tool usage */
   orchestration?: OrchestrationConfig;
-  
+
   /** Maximum concurrent node executions */
   maxConcurrency?: number;
-  
+
   /** Custom configuration options */
   options?: Record<string, unknown>;
 }
@@ -103,7 +102,7 @@ export const AgentConfigSchema = z.object({
   }),
   orchestration: OrchestrationSchema.optional(),
   maxConcurrency: z.number().optional(),
-  options: z.record(z.unknown()).optional()
+  options: z.record(z.unknown()).optional(),
 });
 
 /**
@@ -125,12 +124,12 @@ export function createAgentConfig(config: Partial<AgentConfig>): AgentConfig {
     personality: PersonalitySchema.parse(''),
     nodes: [],
     nodeConfigurations: {},
-    chatSettings: {}
+    chatSettings: {},
   };
 
   // Create a merged config with defaults
   const mergedConfig = { ...defaultConfig, ...config };
-  
+
   // Ensure personality is validated
   if (config.personality !== undefined) {
     mergedConfig.personality = PersonalitySchema.parse(config.personality);

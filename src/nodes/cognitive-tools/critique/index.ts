@@ -13,8 +13,13 @@ import { CritiqueSchema, CritiqueParameters } from './schema';
  * Schema for critique tool parameters
  */
 const critiqueSchema = z.object({
-  subject: z.string().min(1, "Subject is required").describe("What is being critiqued"),
-  analysis: z.string().min(1, "Analysis content must be provided.").describe("Detailed critique analysis with understanding, strengths, issues, suggestions, and assessment")
+  subject: z.string().min(1, 'Subject is required').describe('What is being critiqued'),
+  analysis: z
+    .string()
+    .min(1, 'Analysis content must be provided.')
+    .describe(
+      'Detailed critique analysis with understanding, strengths, issues, suggestions, and assessment',
+    ),
 });
 
 /**
@@ -33,10 +38,7 @@ function formatCritiqueAnalysis(analysis: string): string {
 /**
  * Critique component function
  */
-function CritiqueComponent({ 
-  subject = "", 
-  analysis = ""
-}: CritiqueParams): ToolResult {
+function CritiqueComponent({ subject = '', analysis = '' }: CritiqueParams): ToolResult {
   const formattedAnalysis = formatCritiqueAnalysis(analysis);
   const title = `## 🔍 Critique of: ${subject}`;
   const markdownContent = `${title}\n\n${formattedAnalysis}`;
@@ -75,7 +77,7 @@ Your critique should be constructive, specific, and provide clear guidance for i
  */
 function safelyHandleError(error: unknown, subject: string): never {
   let errorMessage: string;
-  
+
   if (error instanceof Error) {
     errorMessage = error.message;
   } else if (typeof error === 'string') {
@@ -89,9 +91,11 @@ function safelyHandleError(error: unknown, subject: string): never {
       errorMessage = 'Error: Could not format error details';
     }
   }
-  
-  logger.error(LogCategory.NODE, '[Critique]', 'Execution error (throwing):', { error: errorMessage });
-  
+
+  logger.error(LogCategory.NODE, '[Critique]', 'Execution error (throwing):', {
+    error: errorMessage,
+  });
+
   throw new Error(`Error during critique of "${subject}": ${errorMessage}`);
 }
 
@@ -102,42 +106,54 @@ export const critiqueTool: Tool = {
   name: 'critique',
   description: critiqueToolDescription,
   parameters: CritiqueSchema,
-  execute: async (params: CritiqueParameters, options: ToolExecutionOptions): Promise<ToolResult> => {
+  execute: async (
+    params: CritiqueParameters,
+    options: ToolExecutionOptions,
+  ): Promise<ToolResult> => {
     try {
       const validation = CritiqueSchema.safeParse(params);
       if (!validation.success) {
-        const errorMsg = validation.error.errors.map(e => `${e.path.join('.')} - ${e.message}`).join(', ');
-        logger.warn(LogCategory.NODE, '[Critique]', 'Invalid parameters received (throwing)', { errors: errorMsg });
+        const errorMsg = validation.error.errors
+          .map((e) => `${e.path.join('.')} - ${e.message}`)
+          .join(', ');
+        logger.warn(LogCategory.NODE, '[Critique]', 'Invalid parameters received (throwing)', {
+          errors: errorMsg,
+        });
         safelyHandleError(`Invalid parameters: ${errorMsg}`, params.subject || 'Unknown Subject');
       }
-      
+
       const { subject, analysis } = validation.data;
-      
-      logger.debug(LogCategory.NODE, '[Critique]', `Formatting critique for: "${subject}"`, { 
+
+      logger.debug(LogCategory.NODE, '[Critique]', `Formatting critique for: "${subject}"`, {
         toolCallId: options.toolCallId,
         analysisLength: analysis.length,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-      
+
       const result = CritiqueComponent({ subject, analysis });
-      
-      logger.debug(LogCategory.NODE, '[Critique]', 'Returning formatted critique via local Component', {
-        subject,
-        analysisLength: analysis.length, 
-        timestamp: new Date().toISOString()
-      });
-      
+
+      logger.debug(
+        LogCategory.NODE,
+        '[Critique]',
+        'Returning formatted critique via local Component',
+        {
+          subject,
+          analysisLength: analysis.length,
+          timestamp: new Date().toISOString(),
+        },
+      );
+
       return result;
     } catch (error) {
       const subject = typeof params?.subject === 'string' ? params.subject : 'Unknown Subject';
       safelyHandleError(error, subject);
     }
-  }
+  },
 };
 
 /**
  * Export tools for registry
  */
 export const tools = {
-  critique: critiqueTool
+  critique: critiqueTool,
 };

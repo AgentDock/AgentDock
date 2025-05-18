@@ -4,13 +4,13 @@ The `AgentNode` class (`agentdock-core/src/nodes/agent-node.ts`) is the primary 
 
 ## Core Responsibilities
 
--   **Message Processing:** Handles incoming message arrays via its primary `handleMessage` method.
--   **LLM Interaction:** Manages communication with language models via `CoreLLM`, utilizing the Vercel AI SDK's `streamText` function for generation, streaming, and tool execution.
--   **Tool Integration:** Determines available tools based on the agent template and orchestration state, then prepares them for execution through the LLM.
--   **State Management:** Updates orchestration state (token usage, recently used tools) through callbacks.
--   **Configuration:** Reads agent behavior rules from the `AgentConfig` object and accepts runtime overrides.
--   **Context Injection:** Adds current time and other relevant context to the LLM prompt.
--   **Provider Fallbacks:** Supports fallback providers for enhanced reliability.
+- **Message Processing:** Handles incoming message arrays via its primary `handleMessage` method.
+- **LLM Interaction:** Manages communication with language models via `CoreLLM`, utilizing the Vercel AI SDK's `streamText` function for generation, streaming, and tool execution.
+- **Tool Integration:** Determines available tools based on the agent template and orchestration state, then prepares them for execution through the LLM.
+- **State Management:** Updates orchestration state (token usage, recently used tools) through callbacks.
+- **Configuration:** Reads agent behavior rules from the `AgentConfig` object and accepts runtime overrides.
+- **Context Injection:** Adds current time and other relevant context to the LLM prompt.
+- **Provider Fallbacks:** Supports fallback providers for enhanced reliability.
 
 ## Key Interactions
 
@@ -77,4 +77,4 @@ The `AgentNode` returns an `AgentDockStreamResult` from its `handleMessage` meth
 
 For detailed implementation, see [`agentdock-core/src/nodes/agent-node.ts`](../../agentdock-core/src/nodes/agent-node.ts).
 
-For more about streaming capabilities, see [Response Streaming Documentation](./core/response-streaming.md). 
+For more about streaming capabilities, see [Response Streaming Documentation](./core/response-streaming.md).

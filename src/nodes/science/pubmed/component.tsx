@@ -34,7 +34,7 @@ function formatDate(date: Date): string {
     return new Intl.DateTimeFormat('en-US', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
     }).format(date);
   } catch (e) {
     return date.toISOString().split('T')[0];
@@ -57,11 +57,15 @@ export function PubMedSearchResult({ articles, query, total }: PubMedSearchResul
   return (
     <div className="p-4 bg-muted/30 rounded-md">
       <h3 className="font-semibold mb-2">
-        PubMed Search: &quot;{query}&quot; ({total ? `${articles.length} of ${total}` : articles.length} results)
+        PubMed Search: &quot;{query}&quot; (
+        {total ? `${articles.length} of ${total}` : articles.length} results)
       </h3>
       <div className="space-y-4 mt-3">
         {articles.map((article) => (
-          <div key={article.pmid} className="border border-border p-3 rounded-md bg-white dark:bg-zinc-900">
+          <div
+            key={article.pmid}
+            className="border border-border p-3 rounded-md bg-white dark:bg-zinc-900"
+          >
             <h4 className="font-medium text-md">{article.title}</h4>
             <p className="mt-1 text-sm text-muted-foreground">
               {article.authors.slice(0, 3).join(', ')}
@@ -129,9 +133,7 @@ export function PubMedArticleDetail({ article }: PubMedArticleDetailProps) {
   return (
     <div className="p-4 bg-muted/30 rounded-md">
       <h3 className="font-semibold mb-2">{article.title}</h3>
-      <p className="mt-1 text-sm">
-        {article.authors.join(', ')}
-      </p>
+      <p className="mt-1 text-sm">{article.authors.join(', ')}</p>
       {article.journal && (
         <p className="mt-1 text-sm text-muted-foreground">
           {article.journal} {article.pubDate && `(${formatDate(new Date(article.pubDate))})`}
@@ -148,10 +150,7 @@ export function PubMedArticleDetail({ article }: PubMedArticleDetailProps) {
           <h4 className="font-medium mb-1 text-sm">Keywords</h4>
           <div className="flex flex-wrap gap-1">
             {article.keywords.map((keyword, idx) => (
-              <span
-                key={idx}
-                className="text-xs bg-muted px-2 py-1 rounded-full"
-              >
+              <span key={idx} className="text-xs bg-muted px-2 py-1 rounded-full">
                 {keyword}
               </span>
             ))}
@@ -183,4 +182,4 @@ export function PubMedArticleDetail({ article }: PubMedArticleDetailProps) {
       </div>
     </div>
   );
-} 
+}

@@ -18,7 +18,7 @@ let mockStreamWithOrchestration: jest.Mock;
 jest.mock('../../llm/llm-orchestration-service', () => ({
   LLMOrchestrationService: jest.fn().mockImplementation(() => ({
     streamWithOrchestration: mockStreamWithOrchestration,
-  }))
+  })),
 }));
 
 // Mock logger
@@ -27,11 +27,11 @@ jest.mock('../../logging', () => ({
     debug: jest.fn(),
     info: jest.fn(),
     warn: jest.fn(),
-    error: jest.fn()
+    error: jest.fn(),
   },
   LogCategory: {
-    NODE: 'node'
-  }
+    NODE: 'node',
+  },
 }));
 
 // Mock OrchestrationManager
@@ -53,7 +53,6 @@ const mockOrchestrationManager = {
 } as unknown as OrchestrationManager;
 
 describe('AgentNode', () => {
-
   // Configure mocks inside beforeEach using doMock
   beforeEach(() => {
     // Reset mocks
@@ -63,24 +62,31 @@ describe('AgentNode', () => {
     mockCoreLLMInstance = {
       getProvider: jest.fn().mockReturnValue('anthropic'),
       getModelId: jest.fn().mockReturnValue('claude-3-opus-20240229'),
-      getModel: jest.fn().mockReturnValue({ provider: 'anthropic', modelId: 'claude-3-opus-20240229' }),
-      streamText: jest.fn().mockResolvedValue({ /* ... */ })
+      getModel: jest
+        .fn()
+        .mockReturnValue({ provider: 'anthropic', modelId: 'claude-3-opus-20240229' }),
+      streamText: jest.fn().mockResolvedValue({
+        /* ... */
+      }),
     };
     mockCreateLLMInternal = jest.fn(() => mockCoreLLMInstance);
-    mockStreamWithOrchestration = jest.fn().mockResolvedValue({ /* ... */ });
+    mockStreamWithOrchestration = jest.fn().mockResolvedValue({
+      /* ... */
+    });
 
     // Use doMock to ensure it runs after variables are defined
     jest.doMock('../../llm', () => ({
       createLLM: mockCreateLLMInternal,
       // Ensure the actual service is exported alongside the mock createLLM
-      LLMOrchestrationService: jest.requireActual('../../llm/llm-orchestration-service').LLMOrchestrationService,
+      LLMOrchestrationService: jest.requireActual('../../llm/llm-orchestration-service')
+        .LLMOrchestrationService,
     }));
 
     // Refresh the OrchestrationService mock implementation to use the new mockStreamWithOrchestration
     jest.mock('../../llm/llm-orchestration-service', () => ({
       LLMOrchestrationService: jest.fn().mockImplementation(() => ({
         streamWithOrchestration: mockStreamWithOrchestration,
-      }))
+      })),
     }));
   });
 
@@ -97,10 +103,10 @@ describe('AgentNode', () => {
         nodeConfigurations: {},
         chatSettings: {},
         options: {
-          maxSteps: 3
-        }
+          maxSteps: 3,
+        },
       }),
-      apiKey: 'sk-ant-test-api-key'
+      apiKey: 'sk-ant-test-api-key',
     };
 
     // Create an instance of AgentNode
@@ -108,27 +114,27 @@ describe('AgentNode', () => {
 
     // Create mock messages with proper type
     const messages: Message[] = [
-      { 
+      {
         id: 'test-message-id',
-        role: 'user', 
+        role: 'user',
         content: 'Hello',
-        createdAt: new Date()
-      }
+        createdAt: new Date(),
+      },
     ];
 
     // Call handleMessage
-    await agentNode.handleMessage({ 
+    await agentNode.handleMessage({
       messages,
       sessionId: 'test-session-123',
-      orchestrationManager: mockOrchestrationManager 
+      orchestrationManager: mockOrchestrationManager,
     });
 
     // Verify that streamText was called
     expect(mockStreamWithOrchestration).toHaveBeenCalled();
-    
+
     // Get the streamText call arguments
     const streamTextArgs = mockStreamWithOrchestration.mock.calls[0][0];
-    
+
     // Check if system is passed directly as an option
     if (streamTextArgs.system) {
       // Verify system option contains the expected content
@@ -140,7 +146,7 @@ describe('AgentNode', () => {
     } else {
       // Extract the system message from messages array if present
       const systemMessage = streamTextArgs.messages.find((msg: any) => msg.role === 'system');
-      
+
       // Verify that the system message contains date and time information
       expect(systemMessage).toBeDefined();
       expect(systemMessage.content).toContain('I am a helpful assistant');
@@ -164,10 +170,10 @@ describe('AgentNode', () => {
         nodeConfigurations: {},
         chatSettings: {},
         options: {
-          maxSteps: 3
-        }
+          maxSteps: 3,
+        },
       }),
-      apiKey: 'sk-ant-test-api-key'
+      apiKey: 'sk-ant-test-api-key',
     };
 
     // Create an instance of AgentNode
@@ -175,31 +181,31 @@ describe('AgentNode', () => {
 
     // Create mock messages with proper type
     const messages: Message[] = [
-      { 
+      {
         id: 'test-message-id',
-        role: 'user', 
+        role: 'user',
         content: 'Hello',
-        createdAt: new Date()
-      }
+        createdAt: new Date(),
+      },
     ];
 
     // Custom system message
     const customSystem = 'Custom system message';
 
     // Call handleMessage with custom system
-    await agentNode.handleMessage({ 
+    await agentNode.handleMessage({
       messages,
       systemOverride: customSystem,
       sessionId: 'test-session-123',
-      orchestrationManager: mockOrchestrationManager
+      orchestrationManager: mockOrchestrationManager,
     });
 
     // Verify that streamText was called
     expect(mockStreamWithOrchestration).toHaveBeenCalled();
-    
+
     // Get the streamText call arguments
     const streamTextArgs = mockStreamWithOrchestration.mock.calls[0][0];
-    
+
     // Check if system is passed directly as an option
     if (streamTextArgs.system) {
       // Verify system option contains the expected content
@@ -210,7 +216,7 @@ describe('AgentNode', () => {
     } else {
       // Extract the system message from messages array if present
       const systemMessage = streamTextArgs.messages.find((msg: any) => msg.role === 'system');
-      
+
       // Verify that the system message contains the custom message and date/time
       expect(systemMessage).toBeDefined();
       expect(systemMessage.content).toContain('Custom system message');
@@ -219,4 +225,4 @@ describe('AgentNode', () => {
       expect(systemMessage.content).not.toContain('Default personality');
     }
   });
-}); 
+});

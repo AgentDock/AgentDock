@@ -21,38 +21,38 @@ When using this tool in your agent configuration, use the name: `snowtracer`
 // Get AVAX balance for an address
 snowtracer({
   action: 'address_balance',
-  address: '0x1234567890abcdef1234567890abcdef12345678'
-})
+  address: '0x1234567890abcdef1234567890abcdef12345678',
+});
 
 // Get transaction history
 snowtracer({
   action: 'transactions',
   address: '0x1234567890abcdef1234567890abcdef12345678',
-  limit: 5
-})
+  limit: 5,
+});
 
 // Get token transfers
 snowtracer({
   action: 'token_transfers',
   address: '0x1234567890abcdef1234567890abcdef12345678',
-  contractAddress: '0xabcdef1234567890abcdef1234567890abcdef12' // Optional
-})
+  contractAddress: '0xabcdef1234567890abcdef1234567890abcdef12', // Optional
+});
 
 // Get contract ABI
 snowtracer({
   action: 'contract_abi',
-  address: '0x1234567890abcdef1234567890abcdef12345678'
-})
+  address: '0x1234567890abcdef1234567890abcdef12345678',
+});
 
 // Get AVAX price
 snowtracer({
-  action: 'avax_price'
-})
+  action: 'avax_price',
+});
 
 // Get gas oracle data
 snowtracer({
-  action: 'gas_oracle'
-})
+  action: 'gas_oracle',
+});
 ```
 
 ## Agent Integration
@@ -71,11 +71,7 @@ To use the Snowtracer tool in your agent, add it to the `nodes` array in your ag
     "You know how to use the Snowtracer tool to fetch real-time blockchain data.",
     "When users ask about Avalanche addresses or transactions, proactively use the Snowtracer tool to fetch relevant data."
   ],
-  "nodes": [
-    "llm.anthropic",
-    "search",
-    "snowtracer"
-  ],
+  "nodes": ["llm.anthropic", "search", "snowtracer"],
   "nodeConfigurations": {
     "llm.anthropic": {
       "model": "claude-3-7-sonnet-20250219",
@@ -104,13 +100,13 @@ You can also add Snowtracer to existing agents by adding `"snowtracer"` to the `
 
 ## Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| action | string | Yes | Action to perform: 'address_balance', 'transactions', 'token_transfers', 'contract_abi', 'avax_price', 'gas_oracle' |
-| address | string | For address actions | Avalanche address to query |
-| contractAddress | string | No | Contract address for token transfers |
-| limit | number | No | Maximum number of results to return (default: 10) |
-| apiKey | string | No | Optional Snowtrace API key (will use environment variable if not provided) |
+| Parameter       | Type   | Required            | Description                                                                                                         |
+| --------------- | ------ | ------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| action          | string | Yes                 | Action to perform: 'address_balance', 'transactions', 'token_transfers', 'contract_abi', 'avax_price', 'gas_oracle' |
+| address         | string | For address actions | Avalanche address to query                                                                                          |
+| contractAddress | string | No                  | Contract address for token transfers                                                                                |
+| limit           | number | No                  | Maximum number of results to return (default: 10)                                                                   |
+| apiKey          | string | No                  | Optional Snowtrace API key (will use environment variable if not provided)                                          |
 
 ## Response
 
@@ -149,6 +145,7 @@ To use this tool, you need a Snowtrace API key. You can:
 ### API Rate Limits
 
 The free tier of the Snowtrace API allows:
+
 - 2 requests per second (rps)
 - Up to 10,000 calls per day
 
@@ -183,6 +180,7 @@ The gas oracle feature uses a dynamic approach to determine gas price tiers base
 This approach provides truly dynamic gas price recommendations that reflect actual network usage patterns rather than using fixed formulas or hardcoded values. The implementation automatically adjusts to changing network conditions and user behavior, providing reliable gas price estimates for different transaction priorities.
 
 The system includes multiple fallback mechanisms:
+
 - If no recent transactions are found, it uses the current network gas price as a base for calculations
 - If direct RPC calls fail, it falls back to using the Snowtrace API's `proxy/eth_gasPrice` endpoint
 - Base fee information is always retrieved to ensure gas prices never go below the network minimum
@@ -203,4 +201,4 @@ The tool handles various error scenarios:
 
 - Snowtrace API
 - Zod for parameter validation
-- Agentdock core utilities 
+- Agentdock core utilities

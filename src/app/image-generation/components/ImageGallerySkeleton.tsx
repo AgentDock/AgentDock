@@ -1,4 +1,4 @@
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface ImageGallerySkeletonProps {
   count?: number;
@@ -8,8 +8,8 @@ export function ImageGallerySkeleton({ count = 8 }: ImageGallerySkeletonProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
       {Array.from({ length: count }, (_, index) => (
-        <div 
-          key={index} 
+        <div
+          key={index}
           className="overflow-hidden rounded-xl border border-muted/40 bg-gradient-to-br from-card/80 to-muted/30 shadow-sm"
         >
           <div className="aspect-square relative overflow-hidden p-2">
@@ -26,4 +26,4 @@ export function ImageGallerySkeleton({ count = 8 }: ImageGallerySkeletonProps) {
       ))}
     </div>
   );
-} 
+}

@@ -1,23 +1,23 @@
-"use client"
+'use client';
 
-import * as React from "react"
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { AgentControls } from "./agent-controls"
-import { cn } from "@/lib/utils"
-import { Bot } from "lucide-react"
-import { Skeleton } from "@/components/ui/skeleton"
-import { ErrorBoundary } from "@/components/error-boundary"
-import { ErrorInfo } from "react"
+import * as React from 'react';
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { AgentControls } from './agent-controls';
+import { cn } from '@/lib/utils';
+import { Bot } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ErrorBoundary } from '@/components/error-boundary';
+import { ErrorInfo } from 'react';
 
 interface AgentCardProps {
-  className?: string
-  name: string
-  description: string
-  model: string
-  tools: number
-  lastUpdated: string
-  onChat?: () => void
-  onSettings?: () => void
+  className?: string;
+  name: string;
+  description: string;
+  model: string;
+  tools: number;
+  lastUpdated: string;
+  onChat?: () => void;
+  onSettings?: () => void;
 }
 
 export function AgentCardSkeleton() {
@@ -68,7 +68,7 @@ function BaseAgentCard({
   onSettings,
 }: AgentCardProps) {
   return (
-    <Card className={cn("relative overflow-hidden", className)}>
+    <Card className={cn('relative overflow-hidden', className)}>
       <CardHeader>
         <div className="flex items-start justify-between">
           <div className="space-y-1.5">
@@ -78,10 +78,7 @@ function BaseAgentCard({
             </div>
             <CardDescription>{description}</CardDescription>
           </div>
-          <AgentControls
-            onChat={onChat}
-            onSettings={onSettings}
-          />
+          <AgentControls onChat={onChat} onSettings={onSettings} />
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-4 text-sm text-muted-foreground">
@@ -100,7 +97,7 @@ function BaseAgentCard({
         </div>
       </CardHeader>
     </Card>
-  )
+  );
 }
 
 export function AgentCard(props: AgentCardProps) {
@@ -114,4 +111,4 @@ export function AgentCard(props: AgentCardProps) {
       <BaseAgentCard {...props} />
     </ErrorBoundary>
   );
-} 
+}

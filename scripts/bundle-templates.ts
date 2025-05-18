@@ -8,11 +8,7 @@ async function bundleTemplates() {
   const outputFile = path.join(process.cwd(), 'src/generated/templates.ts');
 
   try {
-    logger.debug(
-      LogCategory.CONFIG,
-      'Bundling templates',
-      JSON.stringify({ templatesDir })
-    );
+    logger.debug(LogCategory.CONFIG, 'Bundling templates', JSON.stringify({ templatesDir }));
 
     // Read all agent directories
     const agentDirs = await fs.readdir(templatesDir);
@@ -21,22 +17,25 @@ async function bundleTemplates() {
     // Load each template
     for (const agentId of agentDirs) {
       const templatePath = path.join(templatesDir, agentId, 'template.json');
-      
+
       try {
         const templateContent = await fs.readFile(templatePath, 'utf-8');
         const template = JSON.parse(templateContent);
         templates[agentId] = template;
-        
+
         logger.info(
           LogCategory.CONFIG,
           'Bundled template',
-          JSON.stringify({ agentId, name: templates[agentId].name })
+          JSON.stringify({ agentId, name: templates[agentId].name }),
         );
       } catch (error) {
         logger.warn(
           LogCategory.CONFIG,
           'Failed to bundle template',
-          JSON.stringify({ agentId, error: error instanceof Error ? error.message : 'Unknown error' })
+          JSON.stringify({
+            agentId,
+            error: error instanceof Error ? error.message : 'Unknown error',
+          }),
         );
       }
     }
@@ -79,16 +78,16 @@ export function getTemplate(id: TemplateId): AgentConfig {
     logger.info(
       LogCategory.CONFIG,
       'Templates bundled successfully',
-      JSON.stringify({ count: Object.keys(templates).length })
+      JSON.stringify({ count: Object.keys(templates).length }),
     );
   } catch (error) {
     logger.error(
       LogCategory.CONFIG,
       'Failed to bundle templates',
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' })
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
     );
     process.exit(1);
   }
 }
 
-bundleTemplates(); 
+bundleTemplates();

@@ -14,26 +14,26 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 export async function validateGeminiApiKey(apiKey: string): Promise<boolean> {
   try {
     if (!apiKey) return false;
-    
+
     // Try a direct API call to models endpoint
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`
+      `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`,
     );
-    
+
     if (response.ok) {
       return true;
     }
-    
+
     // If that fails, try using the SDK with a test model
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro-latest' });
-    
+
     // Make a simple request to validate the API key
     await model.generateContent('Test');
     return true;
   } catch (error) {
-    logger.error(LogCategory.LLM, '[GeminiAdapter]', 'Error validating API key:', { 
-      error: error instanceof Error ? error.message : String(error) 
+    logger.error(LogCategory.LLM, '[GeminiAdapter]', 'Error validating API key:', {
+      error: error instanceof Error ? error.message : String(error),
     });
     return false;
   }
@@ -51,27 +51,25 @@ export async function fetchGeminiModels(apiKey: string): Promise<ModelMetadata[]
     try {
       // Fetch models directly from Google AI API using native fetch
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`
+        `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`,
       );
-      
+
       if (!response.ok) {
         throw new Error(`API request failed with status ${response.status}`);
       }
-      
+
       const data = await response.json();
-      
+
       // Extract models from response
       const googleModels = data.models || [];
-      
+
       // Filter for Gemini models only
-      const geminiModels = googleModels.filter((model: any) => 
-        model.name.includes('gemini')
-      );
+      const geminiModels = googleModels.filter((model: any) => model.name.includes('gemini'));
 
       // Map to our model format
       const models = geminiModels.map((model: any) => {
         const modelId = model.name.split('/').pop();
-        
+
         // Determine capabilities based on model name
         const capabilities = ['text'];
         if (modelId.includes('pro') || modelId.includes('flash')) {
@@ -80,7 +78,7 @@ export async function fetchGeminiModels(apiKey: string): Promise<ModelMetadata[]
         if (modelId.includes('vision') || modelId.includes('pro') || modelId.includes('flash')) {
           capabilities.push('image');
         }
-        
+
         // Determine context window based on model version
         let contextWindow = 32768; // Default
         if (modelId.includes('1.5')) {
@@ -88,7 +86,7 @@ export async function fetchGeminiModels(apiKey: string): Promise<ModelMetadata[]
         } else if (modelId.includes('2.0')) {
           contextWindow = 1048576;
         }
-        
+
         return {
           id: modelId,
           displayName: modelId, // Use exact model ID as display name
@@ -96,21 +94,25 @@ export async function fetchGeminiModels(apiKey: string): Promise<ModelMetadata[]
           contextWindow: contextWindow,
           defaultTemperature: 1.0,
           defaultMaxTokens: 8192,
-          capabilities: capabilities
+          capabilities: capabilities,
         };
       });
 
       // Register models with the registry
       ModelService.registerModels('gemini', models);
 
-      logger.debug(LogCategory.LLM, '[GeminiAdapter]', `Fetched and processed ${models.length} models from Google AI API`);
+      logger.debug(
+        LogCategory.LLM,
+        '[GeminiAdapter]',
+        `Fetched and processed ${models.length} models from Google AI API`,
+      );
 
       return ModelService.getModels('gemini');
     } catch (error) {
       logger.error(LogCategory.LLM, '[GeminiAdapter]', 'Error fetching models from API', {
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
-      
+
       // If API call fails, provide fallback models
       const fallbackModels = [
         {
@@ -120,7 +122,7 @@ export async function fetchGeminiModels(apiKey: string): Promise<ModelMetadata[]
           contextWindow: 2000000,
           defaultTemperature: 1.0,
           defaultMaxTokens: 8192,
-          capabilities: ['text', 'image', 'code', 'reasoning']
+          capabilities: ['text', 'image', 'code', 'reasoning'],
         },
         {
           id: 'gemini-2.0-flash-exp',
@@ -129,25 +131,25 @@ export async function fetchGeminiModels(apiKey: string): Promise<ModelMetadata[]
           contextWindow: 1048576,
           defaultTemperature: 1.0,
           defaultMaxTokens: 8192,
-          capabilities: ['text', 'image', 'code', 'reasoning']
-        }
+          capabilities: ['text', 'image', 'code', 'reasoning'],
+        },
       ];
-      
+
       ModelService.registerModels('gemini', fallbackModels);
-      
+
       logger.warn(
-        LogCategory.LLM, 
-        '[GeminiAdapter]', 
+        LogCategory.LLM,
+        '[GeminiAdapter]',
         'Failed to fetch models from API, using fallback models',
-        { error: error instanceof Error ? error.message : 'Unknown error' }
+        { error: error instanceof Error ? error.message : 'Unknown error' },
       );
-      
+
       return ModelService.getModels('gemini');
     }
   } catch (error) {
-    logger.error(LogCategory.LLM, '[GeminiAdapter]', 'Error fetching models:', { 
-      error: error instanceof Error ? error.message : String(error) 
+    logger.error(LogCategory.LLM, '[GeminiAdapter]', 'Error fetching models:', {
+      error: error instanceof Error ? error.message : String(error),
     });
     throw error;
   }
-} 
+}

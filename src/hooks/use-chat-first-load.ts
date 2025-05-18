@@ -31,7 +31,7 @@ export function useChatFirstLoad() {
     // Check if this is the very first load
     const firstLoad = isVeryFirstLoad();
     setIsFirstLoad(firstLoad);
-    
+
     // If this is the first load, mark it as complete
     if (firstLoad) {
       markFirstLoadComplete();
@@ -39,6 +39,6 @@ export function useChatFirstLoad() {
   }, []);
 
   return {
-    isFirstLoad
+    isFirstLoad,
   };
-} 
+}

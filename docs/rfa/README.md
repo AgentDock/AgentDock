@@ -11,7 +11,7 @@ graph LR
     A[Problem Statement] --> B[Agent Architecture]
     B --> C[Node Configuration]
     C --> D[Working Agent]
-    
+
     style B fill:#e1f5fe,stroke:#81d4fa,stroke-width:2px
     style C fill:#e8f5e9,stroke:#a5d6a7,stroke-width:2px
 ```

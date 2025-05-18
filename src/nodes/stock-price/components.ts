@@ -11,7 +11,7 @@ import { StockData } from './api';
 export function formatCurrency(amount: number, currency: string): string {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: currency
+    currency: currency,
   }).format(amount);
 }
 
@@ -36,7 +36,7 @@ export function formatTimestamp(timestamp: string): string {
   return new Date(timestamp).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
-    day: 'numeric'
+    day: 'numeric',
   });
 }
 
@@ -59,11 +59,11 @@ export function StockPrice(props: StockPriceProps) {
   const formattedChangePercent = formatPercent(props.changePercent);
   const formattedVolume = formatNumber(props.volume);
   const formattedDate = formatTimestamp(props.latestTradingDay);
-  
+
   // Determine if price is up or down
   const priceDirection = props.change >= 0 ? '📈' : '📉';
   const changeSymbol = props.change >= 0 ? '▲' : '▼';
-  
+
   return {
     type: 'stock_price',
     content: `${priceDirection} **${props.symbol}** Stock Price
@@ -76,6 +76,6 @@ export function StockPrice(props: StockPriceProps) {
 **Previous Close:** ${formattedPrevClose}
 **Volume:** ${formattedVolume}
 
-_Data provided by Alpha Vantage_`
+_Data provided by Alpha Vantage_`,
   };
-} 
+}

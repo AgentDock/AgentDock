@@ -1,24 +1,34 @@
 import { LexicalSimilarityEvaluator, type LexicalSimilarityEvaluatorConfig } from '../similarity';
-import type { EvaluationInput, EvaluationCriteria, EvaluationResult, AgentMessage, TextContent, MessageContent } from '../../../types';
+import type {
+  EvaluationInput,
+  EvaluationCriteria,
+  EvaluationResult,
+  AgentMessage,
+  TextContent,
+  MessageContent,
+} from '../../../types';
 
 // Mock helper
 const createMockInput = (
-  response: string | AgentMessage, 
-  groundTruth?: string | any, 
-  context?: Record<string, any>, 
-  criteria?: EvaluationCriteria[]
+  response: string | AgentMessage,
+  groundTruth?: string | any,
+  context?: Record<string, any>,
+  criteria?: EvaluationCriteria[],
 ): EvaluationInput => {
   let finalResponse: string | AgentMessage;
-  if (typeof response === 'object' && 'role' in response && response.role === 'assistant') { // It's an AgentMessage
+  if (typeof response === 'object' && 'role' in response && response.role === 'assistant') {
+    // It's an AgentMessage
     const agentMsg = response as AgentMessage;
-    let contentString = agentMsg.content; 
+    let contentString = agentMsg.content;
     if (Array.isArray(agentMsg.contentParts) && agentMsg.contentParts.length > 0) {
-      const firstTextPart = agentMsg.contentParts.find((p: MessageContent) => p.type === 'text') as TextContent | undefined;
+      const firstTextPart = agentMsg.contentParts.find((p: MessageContent) => p.type === 'text') as
+        | TextContent
+        | undefined;
       if (firstTextPart && typeof firstTextPart.text === 'string') {
         contentString = firstTextPart.text;
       }
     }
-    finalResponse = { ...agentMsg, content: contentString || '' }; 
+    finalResponse = { ...agentMsg, content: contentString || '' };
   } else {
     finalResponse = response;
   }
@@ -31,19 +41,25 @@ const createMockInput = (
 };
 
 describe('LexicalSimilarityEvaluator', () => {
-  const mockCriterion: EvaluationCriteria = { name: 'LexSim', description: 'Test lexical similarity', scale: 'numeric' };
+  const mockCriterion: EvaluationCriteria = {
+    name: 'LexSim',
+    description: 'Test lexical similarity',
+    scale: 'numeric',
+  };
 
   describe('Constructor Error Handling', () => {
     it('should throw if criterionName is missing', () => {
       const config: Partial<LexicalSimilarityEvaluatorConfig> = {}; // Missing criterionName
-      expect(() => new LexicalSimilarityEvaluator(config as LexicalSimilarityEvaluatorConfig))
-        .toThrow('[LexicalSimilarityEvaluator] criterionName must be provided and non-empty.');
+      expect(
+        () => new LexicalSimilarityEvaluator(config as LexicalSimilarityEvaluatorConfig),
+      ).toThrow('[LexicalSimilarityEvaluator] criterionName must be provided and non-empty.');
     });
 
     it('should throw if criterionName is empty', () => {
       const config: LexicalSimilarityEvaluatorConfig = { criterionName: ' ' };
-      expect(() => new LexicalSimilarityEvaluator(config))
-        .toThrow('[LexicalSimilarityEvaluator] criterionName must be provided and non-empty.');
+      expect(() => new LexicalSimilarityEvaluator(config)).toThrow(
+        '[LexicalSimilarityEvaluator] criterionName must be provided and non-empty.',
+      );
     });
   });
 
@@ -77,7 +93,10 @@ describe('LexicalSimilarityEvaluator', () => {
     });
 
     it('should be case-sensitive when configured', async () => {
-      const caseSensitiveConfig: LexicalSimilarityEvaluatorConfig = { ...config, caseSensitive: true };
+      const caseSensitiveConfig: LexicalSimilarityEvaluatorConfig = {
+        ...config,
+        caseSensitive: true,
+      };
       const caseSensitiveEvaluator = new LexicalSimilarityEvaluator(caseSensitiveConfig);
       const input = createMockInput('Hello World', 'hello world');
       const results = await caseSensitiveEvaluator.evaluate(input, [mockCriterion]);
@@ -92,7 +111,10 @@ describe('LexicalSimilarityEvaluator', () => {
     });
 
     it('should NOT normalize whitespace when configured', async () => {
-      const noNormalizeConfig: LexicalSimilarityEvaluatorConfig = { ...config, normalizeWhitespace: false };
+      const noNormalizeConfig: LexicalSimilarityEvaluatorConfig = {
+        ...config,
+        normalizeWhitespace: false,
+      };
       const noNormalizeEvaluator = new LexicalSimilarityEvaluator(noNormalizeConfig);
       const input = createMockInput('hello\nworld', 'hello world');
       const results = await noNormalizeEvaluator.evaluate(input, [mockCriterion]);
@@ -102,21 +124,27 @@ describe('LexicalSimilarityEvaluator', () => {
 
   describe('Algorithm Selection', () => {
     it.skip('should use Jaro-Winkler when configured', async () => {
-      const config: LexicalSimilarityEvaluatorConfig = { criterionName: 'LexSim', algorithm: 'jaro-winkler' };
+      const config: LexicalSimilarityEvaluatorConfig = {
+        criterionName: 'LexSim',
+        algorithm: 'jaro-winkler',
+      };
       const evaluator = new LexicalSimilarityEvaluator(config);
-      const input = createMockInput('martha', 'marhta'); 
+      const input = createMockInput('martha', 'marhta');
       const results = await evaluator.evaluate(input, [mockCriterion]);
-      expect(results[0].reasoning).toContain('Jaro-Winkler'); 
-      expect(results[0].score).toBeCloseTo(0.961, 3); 
+      expect(results[0].reasoning).toContain('Jaro-Winkler');
+      expect(results[0].score).toBeCloseTo(0.961, 3);
     });
-    
+
     it('should use Levenshtein when configured (normalized)', async () => {
-      const config: LexicalSimilarityEvaluatorConfig = { criterionName: 'LexSim', algorithm: 'levenshtein' };
+      const config: LexicalSimilarityEvaluatorConfig = {
+        criterionName: 'LexSim',
+        algorithm: 'levenshtein',
+      };
       const evaluator = new LexicalSimilarityEvaluator(config);
       const input = createMockInput('kitten', 'sitting');
       const results = await evaluator.evaluate(input, [mockCriterion]);
       expect(results[0].reasoning).toContain('Levenshtein');
-      expect(results[0].score).toBeCloseTo(1 - (3 / 7), 3);
+      expect(results[0].score).toBeCloseTo(1 - 3 / 7, 3);
     });
   });
 
@@ -131,10 +159,10 @@ describe('LexicalSimilarityEvaluator', () => {
     });
 
     it('should use prompt as sourceField when configured', async () => {
-      const config: LexicalSimilarityEvaluatorConfig = { 
-        criterionName: 'LexSim', 
+      const config: LexicalSimilarityEvaluatorConfig = {
+        criterionName: 'LexSim',
         sourceField: 'prompt', // Use prompt as source
-        referenceField: 'groundTruth'
+        referenceField: 'groundTruth',
       };
       const evaluator = new LexicalSimilarityEvaluator(config);
       const input = createMockInput('response text', 'prompt text');
@@ -149,24 +177,22 @@ describe('LexicalSimilarityEvaluator', () => {
       const agentResponse: AgentMessage = {
         id: 'ar1',
         role: 'assistant',
-        content: 'context text match', 
-        contentParts: [{ type: 'text', text: 'context text match' }], 
+        content: 'context text match',
+        contentParts: [{ type: 'text', text: 'context text match' }],
         createdAt: new Date(),
       };
       const config: LexicalSimilarityEvaluatorConfig = {
         criterionName: 'LexSim',
         sourceField: 'context.data.source',
-        referenceField: 'response'
+        referenceField: 'response',
       };
       const evaluator = new LexicalSimilarityEvaluator(config);
-      const input = createMockInput(
-        agentResponse, 
-        'some groundtruth', 
-        { data: { source: 'context text match' }}
-      );
+      const input = createMockInput(agentResponse, 'some groundtruth', {
+        data: { source: 'context text match' },
+      });
       const results = await evaluator.evaluate(input, [mockCriterion]);
       // console.log('DEBUGGING similarity.test.ts - results[0].reasoning:', results[0].reasoning); // Keep this commented out
-      expect(results[0].score).toBeCloseTo(1); 
+      expect(results[0].score).toBeCloseTo(1);
       expect(results[0].reasoning).toContain("Comparing 'context.data.source' with 'response'");
     });
 
@@ -174,10 +200,10 @@ describe('LexicalSimilarityEvaluator', () => {
       const config: LexicalSimilarityEvaluatorConfig = {
         criterionName: 'LexSim',
         sourceField: 'response',
-        referenceField: 'context.data.ref'
+        referenceField: 'context.data.ref',
       };
       const evaluator = new LexicalSimilarityEvaluator(config);
-      const input = createMockInput('match me', 'some groundtruth', { data: { ref: 'match me' }});
+      const input = createMockInput('match me', 'some groundtruth', { data: { ref: 'match me' } });
       const results = await evaluator.evaluate(input, [mockCriterion]);
       expect(results[0].score).toBeCloseTo(1);
       expect(results[0].reasoning).toContain("Comparing 'response' with 'context.data.ref'");
@@ -190,14 +216,14 @@ describe('LexicalSimilarityEvaluator', () => {
       const config: LexicalSimilarityEvaluatorConfig = {
         criterionName: 'LexSim',
         sourceField: 'groundTruth.textValue',
-        referenceField: 'prompt'
+        referenceField: 'prompt',
       };
       const evaluator = new LexicalSimilarityEvaluator(config);
       const input = createMockInput(
-        'some response', 
+        'some response',
         { textValue: 'gt text' }, // groundTruth is an object
         {},
-        [mockCriterion]
+        [mockCriterion],
       );
       input.prompt = 'gt text';
 
@@ -211,12 +237,14 @@ describe('LexicalSimilarityEvaluator', () => {
       const evaluator = new LexicalSimilarityEvaluator(config);
       const input = createMockInput(
         { complex: 'object' } as any, // Source field (response) is wrong type
-        'expected text'
+        'expected text',
       );
       const results = await evaluator.evaluate(input, [mockCriterion]);
-      expect(results[0].score).toBe(0); 
+      expect(results[0].score).toBe(0);
       expect(results[0].error).toBeDefined();
-      expect(results[0].reasoning).toContain("Source text (from 'response') or reference text (from 'groundTruth') could not be extracted");
+      expect(results[0].reasoning).toContain(
+        "Source text (from 'response') or reference text (from 'groundTruth') could not be extracted",
+      );
       expect(results[0].reasoning).toContain('Source undefined: true');
     });
 
@@ -225,25 +253,30 @@ describe('LexicalSimilarityEvaluator', () => {
       const evaluator = new LexicalSimilarityEvaluator(config);
       const input = createMockInput(
         'actual text', // Source field is ok
-        undefined // Reference field (groundTruth) is missing
+        undefined, // Reference field (groundTruth) is missing
       );
       const results = await evaluator.evaluate(input, [mockCriterion]);
       expect(results[0].score).toBe(0);
       expect(results[0].error).toBeDefined();
-      expect(results[0].reasoning).toContain("Source text (from 'response') or reference text (from 'groundTruth') could not be extracted");
+      expect(results[0].reasoning).toContain(
+        "Source text (from 'response') or reference text (from 'groundTruth') could not be extracted",
+      );
       expect(results[0].reasoning).toContain('Reference undefined: true');
     });
-    
+
     it('should return empty array if criterion is not in input.criteria', async () => {
-        const config: LexicalSimilarityEvaluatorConfig = { criterionName: 'LexSim' };
-        const evaluator = new LexicalSimilarityEvaluator(config);
-        const otherCriterion: EvaluationCriteria = { name: 'Other', description:'', scale: 'binary' };
-        const input = createMockInput('hello', 'hello', {}, [otherCriterion]);
-        const results = await evaluator.evaluate(input, [otherCriterion]);
-        expect(results).toHaveLength(0);
+      const config: LexicalSimilarityEvaluatorConfig = { criterionName: 'LexSim' };
+      const evaluator = new LexicalSimilarityEvaluator(config);
+      const otherCriterion: EvaluationCriteria = {
+        name: 'Other',
+        description: '',
+        scale: 'binary',
+      };
+      const input = createMockInput('hello', 'hello', {}, [otherCriterion]);
+      const results = await evaluator.evaluate(input, [otherCriterion]);
+      expect(results).toHaveLength(0);
     });
   });
 
   // TODO: Add tests for other algorithms, field sourcing, etc.
-
-}); 
+});

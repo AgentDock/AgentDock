@@ -46,20 +46,21 @@ const enhancedResult = {
             return streamError._streamingErrorMessage;
           }
         }
-        
+
         // Standard error handling
         if (error instanceof Error) {
           return error.message;
         }
-        
+
         return typeof error === 'string' ? error : 'Unknown error occurred';
-      }
+      },
     });
-  }
+  },
 };
 ```
 
 This approach:
+
 1. Uses Vercel's recommended `getErrorMessage` pattern
 2. Extracts detailed error information from CoreLLM
 3. Ensures consistent error display in the UI
@@ -79,14 +80,14 @@ See the detailed documentation in [LLM Error Handling](./llm-error-handling.md).
 
 All errors in AgentDock are categorized into these standard types:
 
-| Category | Description | Examples |
-|----------|-------------|----------|
-| Security | Permission and authentication issues | Missing API keys, invalid credentials |
-| Network | API and connectivity problems | Rate limits, service unavailable |
-| Validation | Input validation failures | Invalid inputs, context window exceeded |
-| Storage | Local storage access issues | Failed to access secure storage |
-| Unknown | Fallback for other errors | Unexpected exceptions |
-| LLM | Model-specific errors | Quota exceeded, model unavailable |
+| Category   | Description                          | Examples                                |
+| ---------- | ------------------------------------ | --------------------------------------- |
+| Security   | Permission and authentication issues | Missing API keys, invalid credentials   |
+| Network    | API and connectivity problems        | Rate limits, service unavailable        |
+| Validation | Input validation failures            | Invalid inputs, context window exceeded |
+| Storage    | Local storage access issues          | Failed to access secure storage         |
+| Unknown    | Fallback for other errors            | Unexpected exceptions                   |
+| LLM        | Model-specific errors                | Quota exceeded, model unavailable       |
 
 ## Using the ErrorBoundary
 
@@ -124,15 +125,10 @@ import { ErrorBoundary } from "@/components/error-boundary";
 For handling API errors in chat interfaces:
 
 ```tsx
-import { ChatErrorOverlay } from "@/components/chat/chat-error-overlay";
+import { ChatErrorOverlay } from '@/components/chat/chat-error-overlay';
 
 // Basic usage within chat components
-<ChatErrorOverlay 
-  error={error}
-  onRetry={handleRetry}
-  onDismiss={clearError}
-  open={!!error}
-/>
+<ChatErrorOverlay error={error} onRetry={handleRetry} onDismiss={clearError} open={!!error} />;
 ```
 
 ## Best Practices
@@ -152,23 +148,28 @@ import { ChatErrorOverlay } from "@/components/chat/chat-error-overlay";
 The ErrorBoundary component provides specialized handling for different types of errors:
 
 ### Network Errors
+
 - Displays connectivity-related information
 - Provides reload options
 - Shows troubleshooting tips
 
 ### Security Errors
+
 - Handles permission-related issues
 - Provides clear guidance on fixing permissions
 
 ### Validation Errors
+
 - Shows detailed information about data validation failures
 - Provides guidance on fixing input data
 
 ### Storage Errors
+
 - Handles issues with browser storage
 - Suggests clearing cache or using a different browser
 
 ### LLM Errors
+
 - Shows detailed information from the LLM provider
 - Differentiates between quota issues, rate limits, and other errors
 - Provides relevant recovery actions
@@ -186,16 +187,19 @@ For API errors, particularly in chat interfaces:
 ## Future Roadmap
 
 ### 1. Error Tracking and Analytics
+
 - Implement integration with error tracking services
 - Add anonymous error reporting to improve the application
 - Create an error dashboard for administrators
 
 ### 2. Enhanced Recovery Strategies
+
 - Implement more sophisticated retry mechanisms
 - Add circuit breaker patterns for external services
 - Provide user-controlled recovery options
 
 ### 3. Context-Aware Error Boundaries
+
 - Create specialized error boundaries for different parts of the application
 - Implement context-aware error handling based on component type
-- Add custom recovery strategies for specific errors 
+- Add custom recovery strategies for specific errors

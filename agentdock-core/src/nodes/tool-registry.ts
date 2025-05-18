@@ -13,7 +13,7 @@ export interface ToolRegistry {
    * Register a tool with the registry
    */
   registerTool(name: string, tool: any): void;
-  
+
   /**
    * Get tools for a specific agent based on node names
    */
@@ -25,7 +25,7 @@ export interface ToolRegistry {
  */
 export class DefaultToolRegistry implements ToolRegistry {
   private tools: Record<string, any> = {};
-  
+
   /**
    * Register a tool
    */
@@ -41,13 +41,13 @@ export class DefaultToolRegistry implements ToolRegistry {
     );
     */
   }
-  
+
   /**
    * Get tools for a specific agent based on node names
    */
   getToolsForAgent(nodeNames: string[]): Record<string, any> {
     const result: Record<string, any> = {};
-    nodeNames.forEach(name => {
+    nodeNames.forEach((name) => {
       if (this.tools[name]) {
         // Make a copy of the tool and ensure its name matches its registry key
         const tool = { ...this.tools[name] };
@@ -56,28 +56,23 @@ export class DefaultToolRegistry implements ToolRegistry {
             LogCategory.NODE,
             'ToolRegistry',
             'Updating tool name to match registry key',
-            { 
+            {
               registryKey: name,
-              originalName: tool.name || 'undefined'
-            }
+              originalName: tool.name || 'undefined',
+            },
           );
           tool.name = name;
         }
         result[name] = tool;
       }
     });
-    
-    logger.debug(
-      LogCategory.NODE,
-      'ToolRegistry',
-      'Core: Got tools for agent',
-      { 
-        requestedTools: nodeNames.length,
-        availableTools: Object.keys(result).length,
-        tools: Object.keys(result).join(', ')
-      }
-    );
-    
+
+    logger.debug(LogCategory.NODE, 'ToolRegistry', 'Core: Got tools for agent', {
+      requestedTools: nodeNames.length,
+      availableTools: Object.keys(result).length,
+      tools: Object.keys(result).join(', '),
+    });
+
     return result;
   }
 }
@@ -97,7 +92,7 @@ export function getToolRegistry(): ToolRegistry {
     logger.debug(
       LogCategory.NODE,
       'ToolRegistry',
-      'Core: Created default tool registry instance on globalThis'
+      'Core: Created default tool registry instance on globalThis',
     );
   }
   return globalThis.__agentdockToolRegistryInstance;
@@ -111,7 +106,7 @@ export function setToolRegistry(registry: ToolRegistry): void {
   logger.debug(
     LogCategory.NODE,
     'ToolRegistry',
-    'Core: Set global tool registry instance on globalThis'
+    'Core: Set global tool registry instance on globalThis',
   );
 }
-// --- Singleton Implementation --- 
+// --- Singleton Implementation ---

@@ -3,7 +3,7 @@
 /**
  * @fileoverview Core state management implementation for AgentDock.
  * Uses Zustand for state management.
- * 
+ *
  * OPTIMIZATION OPPORTUNITIES:
  * 1. Move template validation to server components instead of client-side
  * 2. Use Zustand middleware for storage persistence instead of manual operations
@@ -46,16 +46,14 @@ export const useAgents = create<Store>((set) => ({
         throw new Error('No templates available');
       }
 
-      logger.info(
-        LogCategory.SYSTEM,
-        'Store',
-        'Templates validated successfully',
-        { count: templateArray.length }
-      );
+      logger.info(LogCategory.SYSTEM, 'Store', 'Templates validated successfully', {
+        count: templateArray.length,
+      });
 
       // OPTIMIZATION: Use middleware for storage operations
       // 3. Load runtime settings from storage
-      const storedSettings = await storage.get<Record<string, AgentRuntimeSettings>>('agent_runtime_settings') || {};
+      const storedSettings =
+        (await storage.get<Record<string, AgentRuntimeSettings>>('agent_runtime_settings')) || {};
 
       // 4. Create agents from validated templates
       const agents = templateArray.map((template) => {
@@ -67,14 +65,16 @@ export const useAgents = create<Store>((set) => ({
         const defaultChatSettings = {
           initialMessages: [] as string[],
           historyPolicy: 'lastN' as const,
-          historyLength: 50
+          historyLength: 50,
         };
 
-        const chatSettings = template.chatSettings ? {
-          initialMessages: [...template.chatSettings.initialMessages] as string[],
-          historyPolicy: template.chatSettings.historyPolicy as 'lastN' | 'all',
-          historyLength: (template.chatSettings as any).historyLength ?? 50
-        } : defaultChatSettings;
+        const chatSettings = template.chatSettings
+          ? {
+              initialMessages: [...template.chatSettings.initialMessages] as string[],
+              historyPolicy: template.chatSettings.historyPolicy as 'lastN' | 'all',
+              historyLength: (template.chatSettings as any).historyLength ?? 50,
+            }
+          : defaultChatSettings;
 
         return {
           agentId: template.agentId,
@@ -88,40 +88,32 @@ export const useAgents = create<Store>((set) => ({
           state: AgentState.CREATED,
           metadata: {
             created: Date.now(),
-            lastStateChange: Date.now()
+            lastStateChange: Date.now(),
           },
           runtimeSettings: storedSettings[template.agentId] || {
             temperature: getLLMInfo(template).config?.temperature || 0.7,
-            maxTokens: getLLMInfo(template).config?.maxTokens || 4096
-          }
+            maxTokens: getLLMInfo(template).config?.maxTokens || 4096,
+          },
         };
       });
 
-      set({ 
-        agents, 
+      set({
+        agents,
         isInitialized: true,
         templatesValidated: true,
-        templatesError: null
+        templatesError: null,
       });
 
-      logger.info(
-        LogCategory.SYSTEM,
-        'Store',
-        'Store initialized successfully',
-        { agentCount: agents.length }
-      );
+      logger.info(LogCategory.SYSTEM, 'Store', 'Store initialized successfully', {
+        agentCount: agents.length,
+      });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to initialize store';
-      logger.error(
-        LogCategory.SYSTEM,
-        'Store',
-        'Failed to initialize store',
-        { error: message }
-      );
-      set({ 
+      logger.error(LogCategory.SYSTEM, 'Store', 'Failed to initialize store', { error: message });
+      set({
         isInitialized: true,
         templatesValidated: false,
-        templatesError: message
+        templatesError: message,
       });
       toast.error('Failed to load templates');
     }
@@ -132,7 +124,7 @@ export const useAgents = create<Store>((set) => ({
       agents: [],
       isInitialized: false,
       templatesValidated: false,
-      templatesError: null
+      templatesError: null,
     });
   },
 
@@ -140,15 +132,16 @@ export const useAgents = create<Store>((set) => ({
   updateAgentRuntime: async (agentId, settings) => {
     try {
       // 1. Load current settings
-      const storedSettings = await storage.get<Record<string, AgentRuntimeSettings>>('agent_runtime_settings') || {};
-      
+      const storedSettings =
+        (await storage.get<Record<string, AgentRuntimeSettings>>('agent_runtime_settings')) || {};
+
       // 2. Update settings for this agent
       const updatedSettings = {
         ...storedSettings,
         [agentId]: {
           ...storedSettings[agentId],
-          ...settings
-        }
+          ...settings,
+        },
       };
 
       // 3. Save to storage
@@ -162,29 +155,24 @@ export const useAgents = create<Store>((set) => ({
                 ...agent,
                 runtimeSettings: {
                   ...agent.runtimeSettings,
-                  ...settings
-                }
+                  ...settings,
+                },
               }
-            : agent
-        )
+            : agent,
+        ),
       }));
 
-      logger.info(
-        LogCategory.SYSTEM,
-        'Store',
-        'Agent runtime settings updated',
-        { agentId, settings }
-      );
+      logger.info(LogCategory.SYSTEM, 'Store', 'Agent runtime settings updated', {
+        agentId,
+        settings,
+      });
     } catch (error) {
-      logger.error(
-        LogCategory.SYSTEM,
-        'Store',
-        'Failed to update agent runtime settings',
-        { error: error instanceof Error ? error.message : 'Unknown error' }
-      );
+      logger.error(LogCategory.SYSTEM, 'Store', 'Failed to update agent runtime settings', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
       throw error;
     }
-  }
+  },
 }));
 
-export type { Store, Agent, AgentState, AgentRuntimeSettings }; 
+export type { Store, Agent, AgentState, AgentRuntimeSettings };

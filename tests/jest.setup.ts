@@ -70,5 +70,5 @@ jest.mock('agentdock-core/src/logging', () => ({
   },
   // Re-export actual values for other things exported from the module if needed
   // e.g., if LogCategory is also exported and needed by tests:
-  LogCategory: jest.requireActual('agentdock-core/src/logging').LogCategory, 
+  LogCategory: jest.requireActual('agentdock-core/src/logging').LogCategory,
 }));

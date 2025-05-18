@@ -3,6 +3,7 @@
 AgentDock is expanding beyond conversational agents to enable the construction of sophisticated, custom automations. The goal is to allow users to orchestrate complex processes, connect diverse tools, and integrate AI logic using a structured, node-based system, reducing the need for extensive custom code for many common automation patterns.
 
 This capability relies on a flexible **node-based architecture**. Think of nodes as specialized building blocks:
+
 - Some initiate workflows based on **events**.
 - Others **manage or transform data**.
 - Some connect to **external services**.
@@ -25,9 +26,11 @@ This stability-focused approach ensures that when these features become availabl
 Workflows in AgentDock are constructed by connecting various types of nodes. Each node category serves a distinct purpose within the automation process. Here's an overview of the planned categories:
 
 ### 1. Event Nodes
-   - **Purpose**: Initiate workflows based on *external triggers*, *schedules*, or *system events*.
-   - **Characteristics**: Act as the starting point for automated workflows. They have outputs but no inputs and are activated by triggers (e.g., webhook, schedule, database change) rather than direct user interaction within the flow.
-   - **Examples**: `Webhook Trigger`, `Time Trigger`, `Database Watcher`.
+
+- **Purpose**: Initiate workflows based on _external triggers_, _schedules_, or _system events_.
+- **Characteristics**: Act as the starting point for automated workflows. They have outputs but no inputs and are activated by triggers (e.g., webhook, schedule, database change) rather than direct user interaction within the flow.
+- **Examples**: `Webhook Trigger`, `Time Trigger`, `Database Watcher`.
+
 ```mermaid
 graph TD
     A[Webhook: New Lead Received] --> B(Parse Lead Data);
@@ -36,9 +39,11 @@ graph TD
 ```
 
 ### 2. Agent Nodes
-   - **Purpose**: Integrate *interactive, conversational AI* capabilities directly into a workflow.
-   - **Characteristics**: Handle bidirectional communication (user input/output), maintain conversation memory/context, utilize tools, and leverage LLMs. These nodes are inherently *non-deterministic*.
-   - **Examples**: `Conversational Agent`, `Customer Support Agent`, `Research Assistant`.
+
+- **Purpose**: Integrate _interactive, conversational AI_ capabilities directly into a workflow.
+- **Characteristics**: Handle bidirectional communication (user input/output), maintain conversation memory/context, utilize tools, and leverage LLMs. These nodes are inherently _non-deterministic_.
+- **Examples**: `Conversational Agent`, `Customer Support Agent`, `Research Assistant`.
+
 ```mermaid
 graph TD
     A["User: 'Book flight to NY'"] --> B(Travel Agent);
@@ -48,9 +53,11 @@ graph TD
 ```
 
 ### 3. Transform Nodes
-   - **Purpose**: Process and manipulate data as it flows *between other nodes*.
-   - **Characteristics**: Accept input data, perform defined operations (e.g., formatting, parsing, filtering, calculations), and pass the results to the next node. Their effects are internal to the workflow state. Typically *deterministic*.
-   - **Examples**: `Text Formatter`, `JSON Parser`, `Data Filter`, `Math Operations`.
+
+- **Purpose**: Process and manipulate data as it flows _between other nodes_.
+- **Characteristics**: Accept input data, perform defined operations (e.g., formatting, parsing, filtering, calculations), and pass the results to the next node. Their effects are internal to the workflow state. Typically _deterministic_.
+- **Examples**: `Text Formatter`, `JSON Parser`, `Data Filter`, `Math Operations`.
+
 ```mermaid
 graph LR
     A[Raw User Input] --> B(Format Text: Uppercase Name);
@@ -59,9 +66,11 @@ graph LR
 ```
 
 ### 4. AI Inference Nodes
-   - **Purpose**: Execute specific, *non-conversational AI tasks* within a workflow.
-   - **Characteristics**: Perform focused AI inference tasks like summarization or classification. Unlike Agent Nodes, they don't manage conversations. Can be *semi-deterministic* depending on configuration (e.g., temperature settings).
-   - **Examples**: `Text Summarization`, `Image Classification`, `Sentiment Analysis`, `Data Extraction`.
+
+- **Purpose**: Execute specific, _non-conversational AI tasks_ within a workflow.
+- **Characteristics**: Perform focused AI inference tasks like summarization or classification. Unlike Agent Nodes, they don't manage conversations. Can be _semi-deterministic_ depending on configuration (e.g., temperature settings).
+- **Examples**: `Text Summarization`, `Image Classification`, `Sentiment Analysis`, `Data Extraction`.
+
 ```mermaid
 graph LR
     A[Product Description Text] --> B(AI Task: Extract Features);
@@ -70,9 +79,11 @@ graph LR
 ```
 
 ### 5. Connector Nodes
-   - **Purpose**: Interact with *external services and APIs*, primarily for **data retrieval**.
-   - **Characteristics**: Integrate with third-party systems (CRMs, databases, APIs, etc.). Often handle authentication and focus on fetching data *into* the workflow.
-   - **Examples**: `Google Sheets Reader`, `Salesforce Query`, `Weather API Fetcher`, `Database Connector`.
+
+- **Purpose**: Interact with _external services and APIs_, primarily for **data retrieval**.
+- **Characteristics**: Integrate with third-party systems (CRMs, databases, APIs, etc.). Often handle authentication and focus on fetching data _into_ the workflow.
+- **Examples**: `Google Sheets Reader`, `Salesforce Query`, `Weather API Fetcher`, `Database Connector`.
+
 ```mermaid
 graph LR
     A[Trigger: User Request] --> B(Connector: Fetch Weather API);
@@ -81,9 +92,11 @@ graph LR
 ```
 
 ### 6. Action Nodes
-   - **Purpose**: Perform operations that produce effects *outside the workflow itself*.
-   - **Characteristics**: Use data from the workflow to modify external systems (e.g., sending emails, updating database records, posting to APIs). Often represent the termination point or side-effect of a workflow branch.
-   - **Examples**: `Email Sender`, `Slack Notifier`, `Database Writer`, `API POST Request`.
+
+- **Purpose**: Perform operations that produce effects _outside the workflow itself_.
+- **Characteristics**: Use data from the workflow to modify external systems (e.g., sending emails, updating database records, posting to APIs). Often represent the termination point or side-effect of a workflow branch.
+- **Examples**: `Email Sender`, `Slack Notifier`, `Database Writer`, `API POST Request`.
+
 ```mermaid
 graph LR
     A[New Order Data] --> B(Action: Send Confirmation Email);
@@ -92,9 +105,11 @@ graph LR
 ```
 
 ### 7. Logic Nodes
-   - **Purpose**: Control the *execution flow* and branching within workflows.
-   - **Characteristics**: Determine which path(s) execution should follow based on defined conditions. Implement branching, merging, and looping constructs. Purely *deterministic*.
-   - **Examples**: `Conditional (If/Else)`, `Switch/Case`, `Parallel Branch`, `Loop Construct`.
+
+- **Purpose**: Control the _execution flow_ and branching within workflows.
+- **Characteristics**: Determine which path(s) execution should follow based on defined conditions. Implement branching, merging, and looping constructs. Purely _deterministic_.
+- **Examples**: `Conditional (If/Else)`, `Switch/Case`, `Parallel Branch`, `Loop Construct`.
+
 ```mermaid
 graph TD
     A[Connector: Get Leads from Google Sheet] --> B(Logic: Loop Through Each Lead);

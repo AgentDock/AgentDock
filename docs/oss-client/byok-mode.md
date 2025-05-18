@@ -20,6 +20,7 @@ BYOK mode is implemented across several key components in the AgentDock architec
 ### Client-Side Components
 
 1. **Environment Override Provider** (`src/components/env-override-provider.tsx`):
+
    - Handles the URL parameter `byokMode=true|false`
    - Stores the setting in localStorage for persistence
    - Ensures the setting is available to all components
@@ -32,6 +33,7 @@ BYOK mode is implemented across several key components in the AgentDock architec
 ### Server-Side Components
 
 1. **API Route Handler** (`src/app/api/chat/[agentId]/route.ts`):
+
    - Reads the `x-byok-mode` header from requests
    - Implements the API key resolution logic with BYOK mode awareness
    - Provides detailed error messages when API keys are missing in BYOK mode
@@ -54,26 +56,26 @@ When a request is made to the API, the following resolution logic is applied:
 async function resolveApiKey(request, provider, isByokOnly) {
   // Try request headers
   let apiKey = request.headers.get('x-api-key');
-  
+
   // Try global settings
   if (!apiKey) {
-    const globalSettings = await storage.get("global_settings");
+    const globalSettings = await storage.get('global_settings');
     apiKey = globalSettings?.apiKeys?.[provider];
   }
-  
+
   // If BYOK mode is enabled and no key, throw error
   if (isByokOnly && !apiKey) {
     throw new APIError(
       'API key is required. In "Bring Your Own Keys Mode", you must provide your own API key in settings.',
-      ErrorCode.LLM_API_KEY
+      ErrorCode.LLM_API_KEY,
     );
   }
-  
+
   // If BYOK mode is disabled, try environment variables
   if (!apiKey && !isByokOnly) {
     apiKey = process.env[`${provider.toUpperCase()}_API_KEY`];
   }
-  
+
   return apiKey;
 }
 ```
@@ -101,11 +103,13 @@ The Open Source Client requires you to provide your own API keys for all service
 ### AgentDock Pro Benefits
 
 - **Cost-Effective API Access**:
+
   - Get LLM and API services at lower prices than going directly to providers
   - Save 80-90% compared to setting up individual accounts with each provider
   - Utilize bulk purchasing power for better rates across all services
 
 - **Simplified Cost Management**:
+
   - Single billing relationship instead of managing multiple provider accounts
   - Predictable pricing with unified credit system
   - No minimum spend requirements that many premium services impose
@@ -137,4 +141,4 @@ When troubleshooting BYOK mode issues:
 1. Check localStorage for the `byokOnly` key
 2. Verify request headers include `x-byok-mode`
 3. Check console logs in development mode for detailed information about API key resolution
-4. Use Network tab in browser dev tools to inspect API responses for error messages 
+4. Use Network tab in browser dev tools to inspect API responses for error messages

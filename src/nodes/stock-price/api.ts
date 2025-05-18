@@ -58,8 +58,8 @@ function isErrorResponse(data: any): data is AlphaVantageErrorResponse {
   return (
     data &&
     (typeof data.Note === 'string' ||
-     typeof data.Information === 'string' ||
-     typeof data.Error === 'string')
+      typeof data.Information === 'string' ||
+      typeof data.Error === 'string')
   );
 }
 
@@ -82,25 +82,25 @@ function sanitizeErrorMessage(message: string): string {
 export async function fetchStockPrice(symbol: string, apiKey?: string): Promise<StockData> {
   // Format the symbol
   const formattedSymbol = formatStockSymbol(symbol);
-  
+
   // Use provided API key or fall back to environment variable
   const key = apiKey || process.env.ALPHAVANTAGE_API_KEY || 'demo';
-  
+
   // Build API URL
   const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${encodeURIComponent(formattedSymbol)}&apikey=${key}`;
-  
+
   try {
     // Fetch data from API
     const response = await fetch(url);
-    
+
     // Check if response is OK
     if (!response.ok) {
       throw new Error(`AlphaVantage API error: ${response.status} ${response.statusText}`);
     }
-    
+
     // Parse response as JSON
     const data = await response.json();
-    
+
     // Check for API error responses
     if (isErrorResponse(data)) {
       if (data.Note) {
@@ -113,15 +113,15 @@ export async function fetchStockPrice(symbol: string, apiKey?: string): Promise<
         throw new Error(`API error: ${sanitizeErrorMessage(data.Error)}`);
       }
     }
-    
+
     // Check if data contains Global Quote
     if (!data['Global Quote'] || Object.keys(data['Global Quote']).length === 0) {
       throw new Error(`No data found for symbol: ${formattedSymbol}`);
     }
-    
+
     // Extract quote data
     const quote = data['Global Quote'];
-    
+
     // Process and return stock data
     return {
       symbol: quote['01. symbol'],
@@ -164,22 +164,22 @@ export function isMarketOpen(latestTradingDay: string): boolean {
 export async function searchSymbols(keywords: string, apiKey?: string) {
   // Use provided API key or fall back to environment variable
   const key = apiKey || process.env.ALPHAVANTAGE_API_KEY || 'demo';
-  
+
   // Build API URL
   const url = `https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${encodeURIComponent(keywords)}&apikey=${key}`;
-  
+
   try {
     // Fetch data from API
     const response = await fetch(url);
-    
+
     // Check if response is OK
     if (!response.ok) {
       throw new Error(`AlphaVantage API error: ${response.status} ${response.statusText}`);
     }
-    
+
     // Parse response as JSON
     const data = await response.json();
-    
+
     // Check for API error responses
     if (isErrorResponse(data)) {
       if (data.Note) {
@@ -192,12 +192,12 @@ export async function searchSymbols(keywords: string, apiKey?: string) {
         throw new Error(`API error: ${sanitizeErrorMessage(data.Error)}`);
       }
     }
-    
+
     // Check if data contains bestMatches
     if (!data.bestMatches || !Array.isArray(data.bestMatches)) {
       return [];
     }
-    
+
     // Return the matches
     return data.bestMatches;
   } catch (error) {
@@ -207,4 +207,4 @@ export async function searchSymbols(keywords: string, apiKey?: string) {
     }
     throw new Error('Failed to search symbols: Unknown error');
   }
-} 
+}

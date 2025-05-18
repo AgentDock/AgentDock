@@ -22,7 +22,7 @@ const {
   onFinish: async (message) => {
     // Save completed message to storage
     localStorage.setItem(`chat-${agentId}`, JSON.stringify(messages));
-    
+
     // Update tracking reference
     prevMessageLengthRef.current = messages.length;
   },
@@ -33,7 +33,7 @@ const {
 React.useEffect(() => {
   // Skip if no agent or no messages
   if (!agentId || messages.length === 0) return;
-  
+
   // Only save if message length changed and not currently streaming
   if (messages.length !== prevMessageLengthRef.current && !isLoading) {
     localStorage.setItem(`chat-${agentId}`, JSON.stringify(messages));
@@ -43,6 +43,7 @@ React.useEffect(() => {
 ```
 
 ### Advantages
+
 - Simple implementation with direct control
 - Works without server infrastructure
 - Provides offline support
@@ -50,6 +51,7 @@ React.useEffect(() => {
 - Easy to debug with browser devtools
 
 ### Limitations
+
 - Limited to browser localStorage (size limits, browser-specific)
 - No cross-device synchronization
 - Limited to client-side storage
@@ -61,15 +63,17 @@ Future versions of AgentDock may implement server-side persistence for more robu
 ## Best Practices for Current Implementation
 
 1. **Strategic Save Points**
+
    - Save after message completion (onFinish)
    - Save before navigation/tab close
    - Avoid saving during streaming
 
 2. **Proper Error Handling**
+
    - Handle storage quota exceeded errors
    - Provide fallbacks when localStorage is not available
    - Consider clearing old messages when approaching quota limits
 
 3. **Disconnection Handling**
    - Implement basic reconnection logic
-   - Consider local backup strategies 
+   - Consider local backup strategies

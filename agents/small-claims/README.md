@@ -62,4 +62,4 @@ sequenceDiagram
 - Properly prepare and file documentation
 - Present case effectively at hearing
 - Understand judgment collection options
-- Avoid common procedural mistakes 
+- Avoid common procedural mistakes

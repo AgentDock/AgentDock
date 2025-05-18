@@ -35,58 +35,59 @@ For details about the open source client implementation built with Next.js, see 
 
 ## AgentDock Core
 
--   **Language:** TypeScript
-    -   Provides strong typing, compile-time checks, and improved maintainability for the core library.
--   **Runtime:** Node.js (LTS versions recommended)
-    -   The primary execution environment for the core logic when run server-side.
--   **LLM Interaction:** Vercel AI SDK (`ai` package)
-    -   Provides a unified, stream-first interface to interact with various LLM providers (OpenAI, Anthropic, Google Gemini, Groq, etc.).
-    -   Handles the complexities of different provider APIs for text generation, streaming, and function/tool calling.
--   **Storage (Defaults & Included):**
-    -   In-Memory: Default key-value store for sessions/orchestration if no external provider is configured.
-    -   Redis (`@upstash/redis`): Included provider for persistent key-value storage, often used with Docker for development.
-    -   Vercel KV (`@vercel/kv`): Included provider for Vercel's key-value store.
--   **Schema Validation (for Tools):** Zod
-    -   Used within tool definitions to define and validate input parameters expected from the LLM, ensuring type safety and providing clear error messages.
--   **Logging:** Custom logger utilities (`agentdock-core/src/logging`)
-    -   Provides structured logging capabilities within the core library.
--   **Package Manager:** pnpm
-    -   Used for managing dependencies and ensuring efficient installation. AgentDock Core will be released as a separate NPM package when it's ready for release.
+- **Language:** TypeScript
+  - Provides strong typing, compile-time checks, and improved maintainability for the core library.
+- **Runtime:** Node.js (LTS versions recommended)
+  - The primary execution environment for the core logic when run server-side.
+- **LLM Interaction:** Vercel AI SDK (`ai` package)
+  - Provides a unified, stream-first interface to interact with various LLM providers (OpenAI, Anthropic, Google Gemini, Groq, etc.).
+  - Handles the complexities of different provider APIs for text generation, streaming, and function/tool calling.
+- **Storage (Defaults & Included):**
+  - In-Memory: Default key-value store for sessions/orchestration if no external provider is configured.
+  - Redis (`@upstash/redis`): Included provider for persistent key-value storage, often used with Docker for development.
+  - Vercel KV (`@vercel/kv`): Included provider for Vercel's key-value store.
+- **Schema Validation (for Tools):** Zod
+  - Used within tool definitions to define and validate input parameters expected from the LLM, ensuring type safety and providing clear error messages.
+- **Logging:** Custom logger utilities (`agentdock-core/src/logging`)
+  - Provides structured logging capabilities within the core library.
+- **Package Manager:** pnpm
+  - Used for managing dependencies and ensuring efficient installation. AgentDock Core will be released as a separate NPM package when it's ready for release.
 
 ## Open Source Client (Reference Implementation)
 
 This web application demonstrates how to use AgentDock Core.
 
--   **Framework:** Next.js (App Router)
-    -   Provides the foundation for the web application, including routing, server components, client components, and API routes.
--   **UI Components:** Shadcn/ui & Radix UI
-    -   Used for building the user interface components (buttons, inputs, layout, etc.). Built on top of Tailwind CSS.
--   **Styling:** Tailwind CSS
-    -   A utility-first CSS framework for styling the application.
--   **State Management (UI):** Primarily React state/context, potentially Zustand for more complex global state if needed.
--   **Client-Side Storage:** `localStorage` (potentially secured via `SecureStorage` from Core for sensitive items like API keys).
+- **Framework:** Next.js (App Router)
+  - Provides the foundation for the web application, including routing, server components, client components, and API routes.
+- **UI Components:** Shadcn/ui & Radix UI
+  - Used for building the user interface components (buttons, inputs, layout, etc.). Built on top of Tailwind CSS.
+- **Styling:** Tailwind CSS
+  - A utility-first CSS framework for styling the application.
+- **State Management (UI):** Primarily React state/context, potentially Zustand for more complex global state if needed.
+- **Client-Side Storage:** `localStorage` (potentially secured via `SecureStorage` from Core for sensitive items like API keys).
 
 ## Development & Build Tools
 
--   **Package Management:** pnpm
-    -   Manages dependencies with efficient node_modules structure and consistent installs.
--   **Task Running/Scripting:** pnpm scripts (defined in `package.json`)
-    -   Used for build, test, dev, linting, and other development tasks.
--   **Testing:** Vitest
-    -   Used for running unit and integration tests.
--   **Linting/Formatting:** ESLint & Prettier
-    -   Ensures code quality and consistent formatting.
+- **Package Management:** pnpm
+  - Manages dependencies with efficient node_modules structure and consistent installs.
+- **Task Running/Scripting:** pnpm scripts (defined in `package.json`)
+  - Used for build, test, dev, linting, and other development tasks.
+- **Testing:** Vitest
+  - Used for running unit and integration tests.
+- **Linting/Formatting:** ESLint & Prettier
+  - Ensures code quality and consistent formatting.
 
 ## Optional Backend Services (for Development)
 
--   **Redis:** (As mentioned in Core) Typically run via Docker Compose (`docker-compose.yaml`) for persistent session/orchestration state during development.
--   **Redis Commander:** A simple web UI (included in `docker-compose.yaml`) for inspecting data stored in the development Redis instance.
+- **Redis:** (As mentioned in Core) Typically run via Docker Compose (`docker-compose.yaml`) for persistent session/orchestration state during development.
+- **Redis Commander:** A simple web UI (included in `docker-compose.yaml`) for inspecting data stored in the development Redis instance.
 
 ### Extended Vercel AI SDK Capabilities
 
 AgentDock extends the Vercel AI SDK with enhanced capabilities:
 
 - **AgentDockStreamResult**: Extends the standard `StreamTextResult` with:
+
   - Orchestration state tracking
   - Enhanced error handling
   - Custom response transformations
@@ -97,5 +98,6 @@ AgentDock extends the Vercel AI SDK with enhanced capabilities:
   - Provides this state to orchestration rules
 
 For more details, see:
+
 - [Response Streaming](./response-streaming.md)
-- [LLM Orchestration](../orchestration/llm-orchestration.md) 
+- [LLM Orchestration](../orchestration/llm-orchestration.md)

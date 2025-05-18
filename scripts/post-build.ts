@@ -50,7 +50,7 @@ async function generateRoutesManifest() {
       version: 3,
       pages: {},
       dynamicRoutes: [],
-      staticRoutes: []
+      staticRoutes: [],
     };
 
     // Process app router routes
@@ -61,14 +61,14 @@ async function generateRoutesManifest() {
           page: route,
           regex: `^${route.replace(/\[([^\]]+)\]/g, '([^/]+)')}/?$`,
           routeKeys: {},
-          namedRegex: `^${route.replace(/\[([^\]]+)\]/g, '(?<$1>[^/]+)')}/?$`
+          namedRegex: `^${route.replace(/\[([^\]]+)\]/g, '(?<$1>[^/]+)')}/?$`,
         };
         routesManifest.dynamicRoutes.push(dynamicRoute);
       } else {
         // Static route
         routesManifest.staticRoutes.push({
           page: route,
-          regex: `^${route.replace(/\//g, '\\/')}/?$`
+          regex: `^${route.replace(/\//g, '\\/')}/?$`,
         });
       }
       routesManifest.pages[route] = { page: file, regex: route };
@@ -79,12 +79,12 @@ async function generateRoutesManifest() {
       if (route.includes('[') && route.includes(']')) {
         routesManifest.dynamicRoutes.push({
           page: route,
-          regex: `^${route.replace(/\[([^\]]+)\]/g, '([^/]+)')}/?$`
+          regex: `^${route.replace(/\[([^\]]+)\]/g, '([^/]+)')}/?$`,
         });
       } else {
         routesManifest.staticRoutes.push({
           page: route,
-          regex: `^${route.replace(/\//g, '\\/')}/?$`
+          regex: `^${route.replace(/\//g, '\\/')}/?$`,
         });
       }
       routesManifest.pages[route] = { page: file, regex: route };
@@ -93,25 +93,17 @@ async function generateRoutesManifest() {
     // Write the manifest
     writeFileSync(outputPath, JSON.stringify(routesManifest, null, 2));
 
-    logger.info(
-      LogCategory.CONFIG,
-      'Post-build',
-      'Generated routes-manifest.json successfully',
-      {
-        dynamicRoutes: routesManifest.dynamicRoutes.length,
-        staticRoutes: routesManifest.staticRoutes.length,
-        totalPages: Object.keys(routesManifest.pages).length
-      }
-    );
+    logger.info(LogCategory.CONFIG, 'Post-build', 'Generated routes-manifest.json successfully', {
+      dynamicRoutes: routesManifest.dynamicRoutes.length,
+      staticRoutes: routesManifest.staticRoutes.length,
+      totalPages: Object.keys(routesManifest.pages).length,
+    });
   } catch (error) {
-    logger.error(
-      LogCategory.CONFIG,
-      'Post-build',
-      'Failed to generate routes-manifest.json',
-      { error: error instanceof Error ? error.message : 'Unknown error' }
-    );
+    logger.error(LogCategory.CONFIG, 'Post-build', 'Failed to generate routes-manifest.json', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
     process.exit(1);
   }
 }
 
-generateRoutesManifest(); 
+generateRoutesManifest();

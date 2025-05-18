@@ -20,11 +20,13 @@ export class ModelService {
     try {
       return ModelRegistry.getModelsForProvider(provider);
     } catch (error) {
-      logger.error(LogCategory.LLM, '[ModelService]', `Error getting models for ${provider}:`, { error });
+      logger.error(LogCategory.LLM, '[ModelService]', `Error getting models for ${provider}:`, {
+        error,
+      });
       return [];
     }
   }
-  
+
   /**
    * Register models for a provider
    * This is used by implementations to register models fetched from the API
@@ -33,10 +35,12 @@ export class ModelService {
     try {
       ModelRegistry.registerModels(provider, models);
     } catch (error) {
-      logger.error(LogCategory.LLM, '[ModelService]', `Error registering models for ${provider}:`, { error });
+      logger.error(LogCategory.LLM, '[ModelService]', `Error registering models for ${provider}:`, {
+        error,
+      });
     }
   }
-  
+
   /**
    * Reset models for a provider
    * This clears the models from the registry without fetching new ones
@@ -45,10 +49,12 @@ export class ModelService {
     try {
       ModelRegistry.resetModels(Array.isArray(provider) ? provider : [provider]);
     } catch (error) {
-      logger.error(LogCategory.LLM, '[ModelService]', `Error resetting models for ${provider}:`, { error });
+      logger.error(LogCategory.LLM, '[ModelService]', `Error resetting models for ${provider}:`, {
+        error,
+      });
     }
   }
-  
+
   /**
    * Get a model by ID
    */
@@ -60,7 +66,7 @@ export class ModelService {
       return undefined;
     }
   }
-  
+
   /**
    * Get all registered models
    */
@@ -72,4 +78,4 @@ export class ModelService {
       return [];
     }
   }
-} 
+}

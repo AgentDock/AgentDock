@@ -1,6 +1,6 @@
-import { NextRequest } from "next/server";
-import { logger, LogCategory } from "agentdock-core";
-import { generateImageAction } from "./actions";
+import { NextRequest } from 'next/server';
+import { logger, LogCategory } from 'agentdock-core';
+import { generateImageAction } from './actions';
 
 // Set runtime to Node.js instead of Edge
 export const runtime = 'nodejs';
@@ -16,10 +16,7 @@ export async function POST(req: NextRequest) {
     const { prompt, image: inputImage } = requestData;
 
     if (!prompt) {
-      return Response.json(
-        { error: "Prompt is required" },
-        { status: 400 }
-      );
+      return Response.json({ error: 'Prompt is required' }, { status: 400 });
     }
 
     // Get the origin from the request
@@ -27,41 +24,33 @@ export async function POST(req: NextRequest) {
 
     logger.debug(
       LogCategory.API,
-      "ImageGenerationAPI",
+      'ImageGenerationAPI',
       `Processing API request with prompt: ${prompt.substring(0, 20)}...`,
-      { origin }
+      { origin },
     );
 
     try {
       // Use the Server Action instead of direct API implementation
       // Pass the origin to the action
       const result = await generateImageAction(prompt, inputImage, origin);
-      
+
       // Return the result as JSON
       return Response.json(result);
     } catch (error) {
-      logger.error(
-        LogCategory.API,
-        "ImageGenerationAPI",
-        "Error in generateImageAction",
-        { error }
-      );
+      logger.error(LogCategory.API, 'ImageGenerationAPI', 'Error in generateImageAction', {
+        error,
+      });
       throw error;
     }
   } catch (error) {
-    logger.error(
-      LogCategory.API,
-      "ImageGenerationAPI",
-      "Error generating image",
-      { error }
-    );
-    
+    logger.error(LogCategory.API, 'ImageGenerationAPI', 'Error generating image', { error });
+
     return Response.json(
       {
-        error: "Failed to generate image",
+        error: 'Failed to generate image',
         details: error instanceof Error ? error.message : String(error),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
-} 
+}

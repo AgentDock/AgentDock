@@ -5,8 +5,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 // Export the type so it can be imported
 export interface TokenWarning {
@@ -20,10 +20,10 @@ interface TokenWarningDialogProps {
   tokenWarning: TokenWarning | null;
 }
 
-export function TokenWarningDialog({ 
-  isOpen, 
-  onOpenChange, 
-  tokenWarning 
+export function TokenWarningDialog({
+  isOpen,
+  onOpenChange,
+  tokenWarning,
 }: TokenWarningDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>

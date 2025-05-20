@@ -15,7 +15,7 @@ sequenceDiagram
     Client->>+API: Send Message (with SessionId)
     API->>+Agent: Process Request
     Agent->>+LLM: Generate Response (incl. History, Filtered Tools)
-    
+
     alt Tool Call Needed
         LLM-->>Agent: Request Tool Execution
         Agent->>+Tool: Execute Tool
@@ -37,7 +37,7 @@ sequenceDiagram
 4.  **State Retrieval / Initialization:** Loads or creates orchestration state for the session.
 5.  **Orchestration & Tool Filtering:** Evaluates conditions to determine the `activeStep` and filters available tools.
 6.  **LLM Interaction (`CoreLLM.streamText`):** Prepares the prompt, sets callbacks, and calls the LLM with filtered tools.
-7.  **Response Streaming & Tool Handling:** 
+7.  **Response Streaming & Tool Handling:**
     - LLM streams response (text chunks or tool call requests)
     - Tool calls are executed and results returned to the LLM
     - Text chunks are streamed back to the client
@@ -59,13 +59,13 @@ sequenceDiagram
     participant LLMService as LLMOrchestrationService
     participant CoreLLM
     participant LLM as LLM Provider
-    
+
     Client->>Adapter: Request
     Adapter->>AgentNode: handleMessage()
     AgentNode->>LLMService: streamWithOrchestration()
     LLMService->>CoreLLM: streamText()
     CoreLLM->>LLM: API Call with Streaming
-    
+
     loop For each token/chunk
         LLM-->>CoreLLM: Token/Chunk
         CoreLLM-->>LLMService: Enhanced Stream

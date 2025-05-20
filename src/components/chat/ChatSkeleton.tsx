@@ -1,8 +1,8 @@
-import React from "react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import { RefreshCw } from "lucide-react";
-import { cn } from "@/lib/utils";
+import React from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { RefreshCw } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export interface ChatSkeletonProps {
   agentName?: string;
@@ -23,37 +23,37 @@ export function MermaidSkeleton() {
             <span className="font-mono">mermaid</span>
           </div>
         </div>
-        
+
         {/* Main diagram area with advanced node loading animation */}
         <div className="h-56 w-full bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-md flex items-center justify-center relative overflow-hidden backdrop-blur-sm shadow-sm">
           {/* Graph grid background */}
           <div className="absolute inset-0 bg-[linear-gradient(rgba(156,163,175,0.1)_1px,transparent_1px),linear-gradient(to_right,rgba(156,163,175,0.1)_1px,transparent_1px)] bg-[size:20px_20px]"></div>
-          
+
           {/* First node */}
           <div className="absolute left-1/4 top-1/3 w-24 h-16 rounded-md border-2 border-blue-200 dark:border-blue-800 bg-blue-50/90 dark:bg-blue-950/90 flex items-center justify-center shadow-sm z-10 animate-diagramPulse">
             <div className="h-4 w-14 bg-gradient-to-r from-blue-200 to-blue-300 dark:from-blue-700 dark:to-blue-600 rounded animate-pulse"></div>
           </div>
-          
+
           {/* Connection arrow */}
           <div className="absolute left-[calc(25%+96px)] top-[calc(33%+8px)] w-[60px] h-0.5 bg-gradient-to-r from-slate-400 to-slate-300 dark:from-slate-500 dark:to-slate-600 origin-left animate-arrowPulse"></div>
           <div className="absolute left-[calc(25%+154px)] top-[calc(33%+6px)] w-3 h-3 border-t-2 border-r-2 border-slate-400 dark:border-slate-500 rotate-45 animate-arrowPulse"></div>
-          
+
           {/* Second node */}
           <div className="absolute left-[calc(25%+170px)] top-1/3 w-24 h-16 rounded-md border-2 border-purple-200 dark:border-purple-800 bg-purple-50/90 dark:bg-purple-950/90 flex items-center justify-center shadow-sm opacity-0 animate-diagramFadeIn delay-500 fill-forward">
             <div className="h-4 w-14 bg-gradient-to-r from-purple-200 to-purple-300 dark:from-purple-700 dark:to-purple-600 rounded animate-pulse"></div>
           </div>
-          
+
           {/* Third node appearing with delay */}
           <div className="absolute left-[calc(25%+100px)] top-[calc(33%+80px)] w-24 h-16 rounded-md border-2 border-emerald-200 dark:border-emerald-800 bg-emerald-50/90 dark:bg-emerald-950/90 flex items-center justify-center shadow-sm opacity-0 animate-diagramFadeIn delay-1000 fill-forward">
             <div className="h-4 w-14 bg-gradient-to-r from-emerald-200 to-emerald-300 dark:from-emerald-700 dark:to-emerald-600 rounded animate-pulse"></div>
           </div>
-          
+
           {/* Connection lines to third node */}
           <div className="absolute left-[calc(25%+12px)] top-[calc(33%+16px)] w-[1px] h-[64px] bg-slate-300 dark:bg-slate-600 opacity-0 animate-diagramFadeIn delay-1200 fill-forward"></div>
           <div className="absolute left-[calc(25%+12px)] top-[calc(33%+80px)] w-[88px] h-[1px] bg-slate-300 dark:bg-slate-600 opacity-0 animate-diagramFadeIn delay-1400 fill-forward"></div>
           <div className="absolute left-[calc(25%+182px)] top-[calc(33%+16px)] w-[1px] h-[64px] bg-slate-300 dark:bg-slate-600 opacity-0 animate-diagramFadeIn delay-1200 fill-forward"></div>
           <div className="absolute left-[calc(25%+100px)] top-[calc(33%+80px)] w-[82px] h-[1px] bg-slate-300 dark:bg-slate-600 opacity-0 animate-diagramFadeIn delay-1400 fill-forward"></div>
-          
+
           {/* Advanced progress indicator */}
           <div className="absolute bottom-3 w-11/12 flex items-center px-1">
             <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden w-full relative">
@@ -62,7 +62,7 @@ export function MermaidSkeleton() {
             </div>
           </div>
         </div>
-        
+
         {/* Enhanced loading footer */}
         <div className="mt-3 flex justify-between items-center">
           <div className="flex items-center">
@@ -95,12 +95,7 @@ export function ChatSkeleton({ agentName }: ChatSkeletonProps) {
             ) : (
               <Skeleton className="h-7 w-48" />
             )}
-            <Button
-              variant="ghost"
-              size="icon"
-              disabled
-              className="h-8 w-8 opacity-50"
-            >
+            <Button variant="ghost" size="icon" disabled className="h-8 w-8 opacity-50">
               <RefreshCw className="h-4 w-4" />
             </Button>
           </div>
@@ -115,13 +110,13 @@ export function ChatSkeleton({ agentName }: ChatSkeletonProps) {
             <Skeleton className="h-5 w-24 mb-2" />
             <Skeleton className="h-24 w-full max-w-[75%]" />
           </div>
-          
+
           {/* Second message bubble - appears with delay */}
-          <div className="flex flex-col space-y-2 items-end animate-fadeIn opacity-0 delay-300"> 
+          <div className="flex flex-col space-y-2 items-end animate-fadeIn opacity-0 delay-300">
             <Skeleton className="h-5 w-24 mb-2" />
             <Skeleton className="h-16 w-full max-w-[75%]" />
           </div>
-          
+
           {/* Third message bubble - appears with longer delay */}
           <div className="flex flex-col space-y-2 animate-fadeIn opacity-0 delay-600">
             <Skeleton className="h-5 w-24 mb-2" />
@@ -143,4 +138,4 @@ export function ChatSkeleton({ agentName }: ChatSkeletonProps) {
       </div>
     </div>
   );
-} 
+}

@@ -84,17 +84,17 @@ export async function getBalance(address: string, apiKey?: string): Promise<Bala
     'account',
     'balance',
     { address, tag: 'latest' },
-    apiKey
+    apiKey,
   );
-  
+
   // Convert wei to AVAX (18 decimals)
   const balanceInWei = response.result;
   const balanceInAVAX = parseFloat(balanceInWei) / 1e18;
-  
+
   return {
     address,
     balance: balanceInWei,
-    balanceInAVAX
+    balanceInAVAX,
   };
 }
 
@@ -116,7 +116,7 @@ export async function getTransactions(
   page: number = 1,
   offset: number = 10,
   sort: 'asc' | 'desc' = 'desc',
-  apiKey?: string
+  apiKey?: string,
 ): Promise<TransactionData[]> {
   const response = await makeRequest<SnowtraceResponse<TransactionData[]>>(
     'account',
@@ -127,11 +127,11 @@ export async function getTransactions(
       endblock: endBlock.toString(),
       page: page.toString(),
       offset: offset.toString(),
-      sort
+      sort,
     },
-    apiKey
+    apiKey,
   );
-  
+
   return response.result;
 }
 
@@ -153,7 +153,7 @@ export async function getInternalTransactions(
   page: number = 1,
   offset: number = 10,
   sort: 'asc' | 'desc' = 'desc',
-  apiKey?: string
+  apiKey?: string,
 ): Promise<TransactionData[]> {
   const response = await makeRequest<SnowtraceResponse<TransactionData[]>>(
     'account',
@@ -164,11 +164,11 @@ export async function getInternalTransactions(
       endblock: endBlock.toString(),
       page: page.toString(),
       offset: offset.toString(),
-      sort
+      sort,
     },
-    apiKey
+    apiKey,
   );
-  
+
   return response.result;
 }
 
@@ -192,7 +192,7 @@ export async function getTokenTransfers(
   page: number = 1,
   offset: number = 10,
   sort: 'asc' | 'desc' = 'desc',
-  apiKey?: string
+  apiKey?: string,
 ): Promise<TokenTransferData[]> {
   const params: Record<string, string> = {
     address,
@@ -200,21 +200,21 @@ export async function getTokenTransfers(
     endblock: endBlock.toString(),
     page: page.toString(),
     offset: offset.toString(),
-    sort
+    sort,
   };
-  
+
   // Add contract address if provided
   if (contractAddress) {
     params.contractaddress = contractAddress;
   }
-  
+
   const response = await makeRequest<SnowtraceResponse<TokenTransferData[]>>(
     'account',
     'tokentx',
     params,
-    apiKey
+    apiKey,
   );
-  
+
   return response.result;
 }
 
@@ -238,7 +238,7 @@ export async function getNFTTransfers(
   page: number = 1,
   offset: number = 10,
   sort: 'asc' | 'desc' = 'desc',
-  apiKey?: string
+  apiKey?: string,
 ): Promise<TokenTransferData[]> {
   const params: Record<string, string> = {
     address,
@@ -246,21 +246,21 @@ export async function getNFTTransfers(
     endblock: endBlock.toString(),
     page: page.toString(),
     offset: offset.toString(),
-    sort
+    sort,
   };
-  
+
   // Add contract address if provided
   if (contractAddress) {
     params.contractaddress = contractAddress;
   }
-  
+
   const response = await makeRequest<SnowtraceResponse<TokenTransferData[]>>(
     'account',
     'tokennfttx',
     params,
-    apiKey
+    apiKey,
   );
-  
+
   return response.result;
 }
 
@@ -274,7 +274,7 @@ export async function getNFTTransfers(
 export async function getTokenBalance(
   address: string,
   contractAddress: string,
-  apiKey?: string
+  apiKey?: string,
 ): Promise<string> {
   const response = await makeRequest<BalanceResponse>(
     'account',
@@ -282,10 +282,10 @@ export async function getTokenBalance(
     {
       address,
       contractaddress: contractAddress,
-      tag: 'latest'
+      tag: 'latest',
     },
-    apiKey
+    apiKey,
   );
-  
+
   return response.result;
-} 
+}

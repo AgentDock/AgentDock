@@ -3,11 +3,7 @@
   "agentId": "orchestrated-agent",
   "name": "Orchestrated Agent Example",
   "description": "An example agent that uses orchestration to handle different user needs",
-  "tags": [
-    "technical",
-    "productivity",
-    "examples"
-  ],
+  "tags": ["technical", "productivity", "examples"],
   "personality": [
     "You are a helpful virtual assistant that specializes in various tasks.",
     "You communicate clearly and concisely.",
@@ -87,7 +83,16 @@
       }
     ]
   },
-  "nodes": ["llm.anthropic", "search", "think", "reflect", "brainstorm", "compare", "critique", "debate"],
+  "nodes": [
+    "llm.anthropic",
+    "search",
+    "think",
+    "reflect",
+    "brainstorm",
+    "compare",
+    "critique",
+    "debate"
+  ],
   "nodeConfigurations": {
     "llm.anthropic": {
       "model": "claude-3-7-sonnet-20250219",
@@ -97,9 +102,7 @@
     }
   },
   "chatSettings": {
-    "initialMessages": [
-      "Hi there! I'm your orchestrated assistant. How can I help you today?"
-    ],
+    "initialMessages": ["Hi there! I'm your orchestrated assistant. How can I help you today?"],
     "historyPolicy": "all",
     "chatPrompts": [
       "Research the future of renewable energy",
@@ -118,4 +121,4 @@
       "maxToolOutputTokens": 500
     }
   }
-} 
+}

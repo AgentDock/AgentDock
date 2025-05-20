@@ -3,7 +3,7 @@
  * Provides loading state for documentation pages that matches the actual UI
  */
 
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from '@/components/ui/skeleton';
 
 export function DocsSkeleton() {
   return (
@@ -14,7 +14,7 @@ export function DocsSkeleton() {
           <Skeleton className="h-8 w-3/4 max-w-xl" />
           <Skeleton className="h-5 w-full max-w-2xl" />
         </div>
-        
+
         {/* Content sections */}
         <div className="prose prose-slate dark:prose-invert max-w-none space-y-8">
           {/* Section 1 */}
@@ -24,10 +24,10 @@ export function DocsSkeleton() {
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-3/4" />
           </div>
-          
+
           {/* Code block */}
           <Skeleton className="h-40 w-full" />
-          
+
           {/* Section 2 */}
           <div className="space-y-3">
             <Skeleton className="h-6 w-52" />
@@ -35,7 +35,7 @@ export function DocsSkeleton() {
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-5/6" />
           </div>
-          
+
           {/* List items */}
           <div className="space-y-3 pl-5">
             <div className="flex items-center gap-3">
@@ -51,7 +51,7 @@ export function DocsSkeleton() {
               <Skeleton className="h-4 w-10/12" />
             </div>
           </div>
-          
+
           {/* Section 3 */}
           <div className="space-y-3">
             <Skeleton className="h-6 w-40" />
@@ -59,7 +59,7 @@ export function DocsSkeleton() {
             <Skeleton className="h-4 w-full" />
           </div>
         </div>
-        
+
         {/* Navigation links */}
         <div className="mt-10 pt-6 border-t border-border/40 flex items-center justify-between">
           <Skeleton className="h-10 w-28" />
@@ -68,4 +68,4 @@ export function DocsSkeleton() {
       </div>
     </div>
   );
-} 
+}

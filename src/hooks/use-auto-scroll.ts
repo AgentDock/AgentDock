@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from 'react';
 
 // How many pixels from the bottom of the container to enable auto-scroll
 const ACTIVATION_THRESHOLD = 50;
@@ -7,10 +7,13 @@ const ACTIVATION_THRESHOLD = 50;
  * Disabled auto-scroll hook that does nothing to avoid React maximum update depth errors
  * This is a temporary measure to identify the root cause
  */
-export function useAutoScroll(dependencies: React.DependencyList, options?: { 
-  // If true, will force scroll to bottom (like when sending a new message)
-  forceScroll?: boolean
-}) {
+export function useAutoScroll(
+  dependencies: React.DependencyList,
+  options?: {
+    // If true, will force scroll to bottom (like when sending a new message)
+    forceScroll?: boolean;
+  },
+) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [shouldShowScrollButton, setShouldShowScrollButton] = useState(false);
 
@@ -18,17 +21,17 @@ export function useAutoScroll(dependencies: React.DependencyList, options?: {
     if (containerRef.current) {
       containerRef.current.scrollTo({
         top: containerRef.current.scrollHeight,
-        behavior: 'smooth'
+        behavior: 'smooth',
       });
     }
   };
 
   const handleScroll = () => {
     if (!containerRef.current) return;
-    
+
     const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
     const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
-    
+
     // Only update state if the value would change - prevents render loops
     const shouldShowButton = distanceFromBottom >= ACTIVATION_THRESHOLD;
     if (shouldShowButton !== shouldShowScrollButton) {
@@ -40,7 +43,7 @@ export function useAutoScroll(dependencies: React.DependencyList, options?: {
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
-    
+
     container.addEventListener('scroll', handleScroll);
     return () => {
       container.removeEventListener('scroll', handleScroll);
@@ -52,11 +55,11 @@ export function useAutoScroll(dependencies: React.DependencyList, options?: {
     // Get current values to avoid stale closures
     const container = containerRef.current;
     if (!container) return;
-    
+
     const { scrollTop, scrollHeight, clientHeight } = container;
     const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
     const isNearBottom = distanceFromBottom < ACTIVATION_THRESHOLD;
-    
+
     // Only scroll if:
     // 1. Force scroll is requested (new message sent) OR
     // 2. We were already at the bottom
@@ -74,6 +77,6 @@ export function useAutoScroll(dependencies: React.DependencyList, options?: {
     containerRef,
     scrollToBottom,
     handleScroll,
-    shouldShowScrollButton
+    shouldShowScrollButton,
   };
 }

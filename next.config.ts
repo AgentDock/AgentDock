@@ -1,4 +1,4 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 import path from 'path';
 
 /**
@@ -12,10 +12,10 @@ import path from 'path';
 type CustomNextConfig = NextConfig & {
   experimental?: {
     typedRoutes?: boolean;
-  },
+  };
   outputFileTracingIncludes?: Record<string, string[]>;
   outputFileTracingRoot?: string;
-}
+};
 
 // Create a base config with standard options
 const nextConfig: CustomNextConfig = {
@@ -30,19 +30,19 @@ const nextConfig: CustomNextConfig = {
 
   // Disable image optimization in dev to reduce warnings
   images: {
-    unoptimized: process.env.NODE_ENV === 'development'
+    unoptimized: process.env.NODE_ENV === 'development',
   },
-  
+
   // Experimental features
   experimental: {
     typedRoutes: true,
   },
-  
+
   // File tracing configuration (at root level as required by Next.js)
   outputFileTracingIncludes: {
-    '/app/docs/**/*': ['./docs/**/*']
+    '/app/docs/**/*': ['./docs/**/*'],
   },
-  outputFileTracingRoot: path.join(__dirname)
+  outputFileTracingRoot: path.join(__dirname),
 };
 
 export default nextConfig;

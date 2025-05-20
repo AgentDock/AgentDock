@@ -6,11 +6,11 @@ This section provides an overview of the architecture of AgentDock Core, the fou
 
 AgentDock Core is designed with the following principles:
 
--   **Modularity:** Components like LLM interaction, session management, storage, and orchestration are distinct and replaceable.
--   **Extensibility:** Easy to add new LLM providers, storage backends, tools, or custom agent logic.
--   **Type Safety:** Comprehensive TypeScript types ensure developer confidence and reduce runtime errors.
--   **Provider Agnosticism:** Abstracting away differences between LLM providers and storage systems where possible.
--   **State Management Focus:** Robust mechanisms for managing conversational state across interactions.
+- **Modularity:** Components like LLM interaction, session management, storage, and orchestration are distinct and replaceable.
+- **Extensibility:** Easy to add new LLM providers, storage backends, tools, or custom agent logic.
+- **Type Safety:** Comprehensive TypeScript types ensure developer confidence and reduce runtime errors.
+- **Provider Agnosticism:** Abstracting away differences between LLM providers and storage systems where possible.
+- **State Management Focus:** Robust mechanisms for managing conversational state across interactions.
 
 ## Key Subsystems
 
@@ -63,9 +63,9 @@ See [Request Flow](./core/request-flow.md) for more details.
 
 ## Further Reading
 
--   [Core Architecture Overview](./core/overview.md)
--   [Node System Overview](../nodes/README.md)
--   [Technology Stack](./core/technology-stack.md)
+- [Core Architecture Overview](./core/overview.md)
+- [Node System Overview](../nodes/README.md)
+- [Technology Stack](./core/technology-stack.md)
 
 ## Evaluation Framework
 
@@ -73,10 +73,10 @@ A crucial component of AgentDock is its **Evaluation Framework**, designed to sy
 
 Key aspects include:
 
-*   **Modular Evaluators**: A collection of diverse evaluators (e.g., `RuleBasedEvaluator`, `LLMJudgeEvaluator`, `NLPAccuracyEvaluator`, Lexical Suite, `ToolUsageEvaluator`) allow for targeted assessment of different quality dimensions.
-*   **`EvaluationRunner`**: Orchestrates the execution of evaluation runs based on defined criteria and configurations.
-*   **Configurable Criteria**: Enables developers to define specific `EvaluationCriteria` (name, description, scale, weight) against which agents are assessed.
-*   **Result Aggregation & Storage**: Provides mechanisms for aggregating results (e.g., weighted scoring) and persisting them via `EvaluationStorageProvider` implementations.
-*   **Extensibility**: Designed with interfaces like `Evaluator` and `EvaluationStorageProvider` to allow for easy custom extensions.
+- **Modular Evaluators**: A collection of diverse evaluators (e.g., `RuleBasedEvaluator`, `LLMJudgeEvaluator`, `NLPAccuracyEvaluator`, Lexical Suite, `ToolUsageEvaluator`) allow for targeted assessment of different quality dimensions.
+- **`EvaluationRunner`**: Orchestrates the execution of evaluation runs based on defined criteria and configurations.
+- **Configurable Criteria**: Enables developers to define specific `EvaluationCriteria` (name, description, scale, weight) against which agents are assessed.
+- **Result Aggregation & Storage**: Provides mechanisms for aggregating results (e.g., weighted scoring) and persisting them via `EvaluationStorageProvider` implementations.
+- **Extensibility**: Designed with interfaces like `Evaluator` and `EvaluationStorageProvider` to allow for easy custom extensions.
 
-The Evaluation Framework is integral to maintaining high standards of agent reliability and performance, facilitating data-driven development and iterative improvement. For more details, see the [Evaluation Framework Documentation](../evaluations/README.md). 
+The Evaluation Framework is integral to maintaining high standards of agent reliability and performance, facilitating data-driven development and iterative improvement. For more details, see the [Evaluation Framework Documentation](../evaluations/README.md).

@@ -22,7 +22,7 @@ import { MyComponent } from './components';
 
 // 1. Define parameters schema with zod
 const myToolSchema = z.object({
-  input: z.string().describe('What this input does')
+  input: z.string().describe('What this input does'),
 });
 
 // 2. Create and export your tool
@@ -33,15 +33,15 @@ export const myTool: Tool = {
   async execute({ input }, options) {
     // 3. Get your data
     const data = await fetchData(input);
-    
+
     // 4. Use your component to format output
     return MyComponent(data);
-  }
+  },
 };
 
 // 5. Export for auto-registration
 export const tools = {
-  my_tool: myTool
+  my_tool: myTool,
 };
 ```
 
@@ -55,7 +55,7 @@ Use Zod to define your tool's parameters with clear descriptions:
 // From search/index.ts
 const searchSchema = z.object({
   query: z.string().describe('Search query to look up'),
-  limit: z.number().optional().default(8).describe('Maximum number of results to return')
+  limit: z.number().optional().default(8).describe('Maximum number of results to return'),
 });
 ```
 
@@ -69,7 +69,7 @@ try {
   // Tool logic here...
 } catch (error: unknown) {
   logger.error(LogCategory.NODE, '[Search]', 'Search execution error:', { error });
-  
+
   // Return a formatted error message
   const errorMessage = error instanceof Error ? error.message : String(error);
   return createToolResult('search_error', formatErrorMessage('Error', errorMessage));
@@ -82,15 +82,20 @@ Create components to format your tool's output:
 
 ```typescript
 // components.ts
-import { formatBold, formatHeader, joinSections, createToolResult } from '@/lib/utils/markdown-utils';
+import {
+  formatBold,
+  formatHeader,
+  joinSections,
+  createToolResult,
+} from '@/lib/utils/markdown-utils';
 
 export function MyComponent(props: MyComponentProps) {
   return createToolResult(
     'my_component',
     joinSections(
       formatHeader(`Results for "${props.query}"`),
-      props.results.map(result => `${formatBold(result.title)}`).join('\n\n')
-    )
+      props.results.map((result) => `${formatBold(result.title)}`).join('\n\n'),
+    ),
   );
 }
 ```
@@ -104,7 +109,7 @@ Tools can access the agent's LLM instance through the `options.llmContext` param
 async execute({ query }, options) {
   // Default content (fallback)
   let dynamicContent = "Default content based on the data";
-  
+
   // Use LLM to generate dynamic content if available
   if (options.llmContext?.llm) {
     try {
@@ -119,19 +124,19 @@ async execute({ query }, options) {
           content: `Generate a summary of this data about "${query}": ${JSON.stringify(data)}`
         }
       ];
-      
+
       // Use the agent's LLM instance
-      const result = await options.llmContext.llm.generateText({ 
+      const result = await options.llmContext.llm.generateText({
         messages,
         temperature: 0.3  // Lower temperature for more factual responses
       });
-      
+
       dynamicContent = result.text;
     } catch (error) {
       // Fall back to default content
     }
   }
-  
+
   return MyComponent({ query, dynamicContent });
 }
 ```
@@ -153,14 +158,14 @@ When implementing tools that access external APIs:
 export async function fetchFromExternalAPI(params: APIParams): Promise<APIResponse> {
   // Use environment variables for API keys
   const apiKey = process.env.MY_API_KEY;
-  
+
   // Make API calls server-side only
   const response = await fetch(`https://api.example.com/data?key=${apiKey}&param=${params.value}`);
-  
+
   if (!response.ok) {
     throw new Error(`API error: ${response.status}`);
   }
-  
+
   return await response.json();
 }
 ```
@@ -189,10 +194,10 @@ export const searchTool: Tool = {
     } catch (error) {
       return createToolResult(
         'search_error',
-        formatErrorMessage('Error', `Unable to search for "${query}": ${error.message}`)
+        formatErrorMessage('Error', `Unable to search for "${query}": ${error.message}`),
       );
     }
-  }
+  },
 };
 ```
 
@@ -214,10 +219,10 @@ export const weatherTool: Tool = {
     } catch (error) {
       return createToolResult(
         'weather_error',
-        formatErrorMessage('Error', `Unable to get weather for "${location}": ${error.message}`)
+        formatErrorMessage('Error', `Unable to get weather for "${location}": ${error.message}`),
       );
     }
-  }
+  },
 };
 ```
 
@@ -231,14 +236,15 @@ For example, the `deep_research` tool simulates a multi-step research process:
 // Example of a tool that would benefit from multi-step calls
 export const deepResearchTool: Tool = {
   name: 'deep_research',
-  description: 'Perform in-depth research on a topic with multiple search iterations and summarization',
+  description:
+    'Perform in-depth research on a topic with multiple search iterations and summarization',
   parameters: deepResearchSchema,
   async execute({ query, depth = 1, breadth = 3 }, options) {
     // Step 1: Initial search
     // Step 2: Follow-up searches based on initial results
     // Step 3: Summarize findings
     // ...
-  }
+  },
 };
 ```
 
@@ -286,9 +292,10 @@ export const allTools: ToolRegistry = {
 ## Summary
 
 This architecture ensures:
+
 - Core framework stability
 - Isolated custom tool contributions
 - Simple, consistent tool implementation
 - Component-based UI rendering
 - Automatic registration through the NodeRegistry
-- Secure handling of external API calls 
+- Secure handling of external API calls

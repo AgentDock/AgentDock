@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useCallback, useState, useEffect } from "react";
-import { useDropzone } from "react-dropzone";
-import { Button } from "@/components/ui/button";
-import { Upload as UploadIcon, Image as ImageIcon, X, Sparkles } from "lucide-react";
+import { useCallback, useState, useEffect } from 'react';
+import { useDropzone } from 'react-dropzone';
+import { Button } from '@/components/ui/button';
+import { Upload as UploadIcon, Image as ImageIcon, X, Sparkles } from 'lucide-react';
 
 interface ImageUploadProps {
   onImageSelect: (imageData: string) => void;
@@ -11,13 +11,11 @@ interface ImageUploadProps {
 }
 
 export function formatFileSize(bytes: number): string {
-  if (bytes === 0) return "0 Bytes";
+  if (bytes === 0) return '0 Bytes';
   const k = 1024;
-  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return (
-    Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
-  );
+  return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
 export function ImageUpload({ onImageSelect, currentImage }: ImageUploadProps) {
@@ -42,31 +40,31 @@ export function ImageUpload({ onImageSelect, currentImage }: ImageUploadProps) {
       reader.onload = (event) => {
         if (event.target && event.target.result) {
           const result = event.target.result as string;
-          console.log("Image loaded, length:", result.length);
+          console.log('Image loaded, length:', result.length);
           onImageSelect(result);
         }
       };
       reader.onerror = (error) => {
-        console.error("Error reading file:", error);
+        console.error('Error reading file:', error);
       };
       reader.readAsDataURL(file);
     },
-    [onImageSelect]
+    [onImageSelect],
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      "image/png": [".png"],
-      "image/jpeg": [".jpg", ".jpeg"]
+      'image/png': ['.png'],
+      'image/jpeg': ['.jpg', '.jpeg'],
     },
     maxSize: 10 * 1024 * 1024, // 10MB
-    multiple: false
+    multiple: false,
   });
 
   const handleRemove = () => {
     setSelectedFile(null);
-    onImageSelect("");
+    onImageSelect('');
   };
 
   return (
@@ -79,7 +77,7 @@ export function ImageUpload({ onImageSelect, currentImage }: ImageUploadProps) {
             flex flex-col items-center justify-center gap-4
             bg-gradient-to-br from-primary/5 via-primary/10 to-accent/20
             shadow-inner shadow-primary/10
-            border-2 ${isDragActive ? "border-primary/50 border-dashed" : "border-transparent"} 
+            border-2 ${isDragActive ? 'border-primary/50 border-dashed' : 'border-transparent'} 
             transition-all duration-200 ease-in-out hover:shadow-lg hover:shadow-primary/10
             cursor-pointer relative overflow-hidden
             before:content-[''] before:absolute before:inset-0 before:bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] before:bg-[length:20px_20px] before:opacity-20
@@ -90,9 +88,7 @@ export function ImageUpload({ onImageSelect, currentImage }: ImageUploadProps) {
             <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-primary/20 to-primary/30 flex items-center justify-center mb-4 shadow-lg shadow-primary/5">
               <Sparkles className="w-7 h-7 text-primary" />
             </div>
-            <h3 className="text-lg font-semibold text-primary/90 mb-1">
-              Upload an Image
-            </h3>
+            <h3 className="text-lg font-semibold text-primary/90 mb-1">Upload an Image</h3>
             <p className="text-base font-medium text-foreground mb-1">
               Drop your file here or click to browse
             </p>
@@ -100,9 +96,15 @@ export function ImageUpload({ onImageSelect, currentImage }: ImageUploadProps) {
               Edit existing images or create new ones with text prompts
             </p>
             <div className="mt-4 flex gap-2">
-              <div className="px-3 py-1.5 bg-primary/10 text-primary text-xs font-medium rounded-full">PNG</div>
-              <div className="px-3 py-1.5 bg-primary/10 text-primary text-xs font-medium rounded-full">JPG</div>
-              <div className="px-3 py-1.5 bg-primary/10 text-primary text-xs font-medium rounded-full">Max 10MB</div>
+              <div className="px-3 py-1.5 bg-primary/10 text-primary text-xs font-medium rounded-full">
+                PNG
+              </div>
+              <div className="px-3 py-1.5 bg-primary/10 text-primary text-xs font-medium rounded-full">
+                JPG
+              </div>
+              <div className="px-3 py-1.5 bg-primary/10 text-primary text-xs font-medium rounded-full">
+                Max 10MB
+              </div>
             </div>
           </div>
         </div>
@@ -115,7 +117,7 @@ export function ImageUpload({ onImageSelect, currentImage }: ImageUploadProps) {
               </div>
               <div>
                 <p className="text-sm font-medium truncate">
-                  {selectedFile?.name || "Image Ready for Editing"}
+                  {selectedFile?.name || 'Image Ready for Editing'}
                 </p>
                 {selectedFile && (
                   <p className="text-xs text-muted-foreground">
@@ -145,4 +147,4 @@ export function ImageUpload({ onImageSelect, currentImage }: ImageUploadProps) {
       )}
     </div>
   );
-} 
+}

@@ -15,6 +15,7 @@ This agent serves as a reference implementation showing how to create and config
 ## Nodes
 
 The agent uses the following nodes:
+
 - llm.anthropic: Core language model
 - weather: Weather information lookup
 - stock_price: Stock price queries
@@ -36,8 +37,8 @@ console.log(response);
 ## Notes
 
 This is a reference implementation to demonstrate AgentDock's capabilities. For production use:
+
 1. Configure proper API keys
 2. Adjust model parameters as needed
 3. Customize the personality and prompt template
-4. Set appropriate history retention policy 
- 
+4. Set appropriate history retention policy

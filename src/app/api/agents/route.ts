@@ -9,7 +9,7 @@ import { PersonalitySchema } from 'agentdock-core/types/agent-config';
 const createAgentSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
-  systemPrompt: z.string().optional()
+  systemPrompt: z.string().optional(),
 });
 
 /**
@@ -22,10 +22,10 @@ export async function POST(req: Request) {
   try {
     const storage = SecureStorage.getInstance('agentdock');
     const data = await req.json();
-    
+
     // Validate input data
     const validatedData = createAgentSchema.parse(data);
-    
+
     // Generate new agent with required fields
     const now = Date.now();
     const agent: Agent = {
@@ -33,42 +33,39 @@ export async function POST(req: Request) {
       agentId: uuidv4(),
       name: validatedData.name,
       description: validatedData.description || '',
-      personality: PersonalitySchema.parse("helpful"),
+      personality: PersonalitySchema.parse('helpful'),
       nodes: [],
       nodeConfigurations: {},
       chatSettings: {
         initialMessages: [],
-        historyPolicy: "lastN",
-        historyLength: 10
+        historyPolicy: 'lastN',
+        historyLength: 10,
       },
       instructions: validatedData.systemPrompt || '',
       state: AgentState.CREATED,
       runtimeSettings: {
         temperature: 0.7,
-        maxTokens: 4096
+        maxTokens: 4096,
       },
       metadata: {
         created: now,
-        lastStateChange: now
-      }
+        lastStateChange: now,
+      },
     };
-    
+
     // Get existing agents
-    const agents = (await storage.get('agents') || []) as Agent[];
-    
+    const agents = ((await storage.get('agents')) || []) as Agent[];
+
     // Add new agent
     agents.push(agent);
-    
+
     // Save updated list
     await storage.set('agents', agents);
-    
+
     return NextResponse.json(agent);
   } catch (error) {
     console.error('Failed to create agent:', error);
-    return NextResponse.json(
-      { error: 'Failed to create agent' },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: 'Failed to create agent' }, { status: 400 });
   }
 }
 
@@ -81,12 +78,12 @@ export async function POST(req: Request) {
 export async function GET() {
   try {
     const storage = SecureStorage.getInstance('agentdock');
-    const agents = (await storage.get('agents') || []) as Agent[];
+    const agents = ((await storage.get('agents')) || []) as Agent[];
     return NextResponse.json(agents);
   } catch (error) {
     console.error('Failed to retrieve agents:', error);
-    
+
     // Return an empty array instead of mock data
     return NextResponse.json([]);
   }
-} 
+}

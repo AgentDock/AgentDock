@@ -1,10 +1,15 @@
 import { NLPAccuracyEvaluator, type NLPAccuracyEvaluatorConfig } from '../accuracy';
-import { type EvaluationResult, type EvaluationInput, type EvaluationCriteria, type AgentMessage } from '../../../types';
+import {
+  type EvaluationResult,
+  type EvaluationInput,
+  type EvaluationCriteria,
+  type AgentMessage,
+} from '../../../types';
 import { embed, type EmbeddingModel } from 'ai'; // Ensure EmbeddingModel is imported
 
 // Mock the 'ai' module for the embed function
 jest.mock('ai', () => ({
-  embed: jest.fn() // Only mock what is actually used by the NLPAccuracyEvaluator tests
+  embed: jest.fn(), // Only mock what is actually used by the NLPAccuracyEvaluator tests
 }));
 
 // Re-import after mocking to get the mocked version
@@ -54,25 +59,27 @@ describe('NLPAccuracyEvaluator - Base Functionality', () => {
     const arr = Array(10).fill(0);
     if (text === '') return arr;
     for (let i = 0; i < Math.min(text.length, 10); i++) {
-      arr[i] = (text.charCodeAt(i) / 128) - 0.5; // char code based
+      arr[i] = text.charCodeAt(i) / 128 - 0.5; // char code based
     }
     const magnitude = Math.sqrt(arr.reduce((sum, val) => sum + val * val, 0));
     if (magnitude === 0 && text.length > 0) return arr.map(() => 0.1); // Avoid all-zero for non-empty
     if (magnitude === 0) return arr;
-    return arr.map(x => x / (magnitude || 1)); // Normalize
+    return arr.map((x) => x / (magnitude || 1)); // Normalize
   };
 
   // Helper to create EvaluationInput
   const createTestInput = (
     response: string | AgentMessage,
     groundTruth: string | AgentMessage | undefined,
-    criterionScale: 'binary' | 'numeric' | 'pass/fail' = 'numeric'
+    criterionScale: 'binary' | 'numeric' | 'pass/fail' = 'numeric',
   ): EvaluationInput => {
-    const criteria: EvaluationCriteria[] = [{
-      name: evaluatorConfigForConstructor.criterionName, // Match evaluator's configured name
-      description: 'Test criterion for semantic similarity',
-      scale: criterionScale,
-    }];
+    const criteria: EvaluationCriteria[] = [
+      {
+        name: evaluatorConfigForConstructor.criterionName, // Match evaluator's configured name
+        description: 'Test criterion for semantic similarity',
+        scale: criterionScale,
+      },
+    ];
     return {
       response,
       groundTruth,
@@ -83,28 +90,36 @@ describe('NLPAccuracyEvaluator - Base Functionality', () => {
   it('should correctly calculate score when similarity is above threshold (numeric scale)', async () => {
     const respText = 'This is the response text.';
     const gtText = 'This is the ground truth text that is very similar.'; // Made more similar
-    
+
     const embeddingResp = mockEmbedding(respText);
     // Create a highly similar embedding for ground truth
     const embeddingGtHighlySimilar = [...embeddingResp];
     embeddingGtHighlySimilar[0] += 0.001; // Tiny difference
 
     mockEmbed
-      .mockResolvedValueOnce({ embedding: embeddingResp, usage: { promptTokens: 1, totalTokens: 1 } })
-      .mockResolvedValueOnce({ embedding: embeddingGtHighlySimilar, usage: { promptTokens: 1, totalTokens: 1 } });
+      .mockResolvedValueOnce({
+        embedding: embeddingResp,
+        usage: { promptTokens: 1, totalTokens: 1 },
+      })
+      .mockResolvedValueOnce({
+        embedding: embeddingGtHighlySimilar,
+        usage: { promptTokens: 1, totalTokens: 1 },
+      });
 
     const input = createTestInput(respText, gtText, 'numeric');
     const results = await evaluator.evaluate(input, input.criteria!); // Pass both arguments
-    
+
     expect(results.length).toBe(1);
     const result = results[0];
     const expectedSimilarity = cosineSimilarity(embeddingResp, embeddingGtHighlySimilar);
-    
+
     expect(result.score).toBeCloseTo(expectedSimilarity);
     // For numeric scale, the reasoning should contain the similarity and a note about the threshold if set.
     expect(result.reasoning).toContain(`Cosine similarity: ${expectedSimilarity.toFixed(4)}.`);
     if (evaluatorConfigForConstructor.similarityThreshold) {
-      expect(result.reasoning).toContain(`(Note: similarityThreshold is set but criterion scale is '${input.criteria![0].scale}'`);
+      expect(result.reasoning).toContain(
+        `(Note: similarityThreshold is set but criterion scale is '${input.criteria![0].scale}'`,
+      );
     }
     expect(mockEmbed).toHaveBeenCalledTimes(2);
   });
@@ -112,9 +127,9 @@ describe('NLPAccuracyEvaluator - Base Functionality', () => {
   it('should correctly score (false for binary, raw for numeric) when similarity is below threshold', async () => {
     // Define explicitly orthogonal vectors to guarantee similarity is 0 (or close to 0)
     const embeddingResp = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0]; // Vector A (normalized)
-    const embeddingGt =   [0, 1, 0, 0, 0, 0, 0, 0, 0, 0]; // Vector B (normalized and orthogonal to A)
+    const embeddingGt = [0, 1, 0, 0, 0, 0, 0, 0, 0, 0]; // Vector B (normalized and orthogonal to A)
     const respText = 'Text producing vector A'; // Text value doesn't matter now
-    const gtText = 'Text producing vector B';   // Text value doesn't matter now
+    const gtText = 'Text producing vector B'; // Text value doesn't matter now
 
     const expectedLowSimilarity = cosineSimilarity(embeddingResp, embeddingGt); // Should be 0
     expect(expectedLowSimilarity).toBeLessThan(evaluatorConfigForConstructor.similarityThreshold!); // 0 < 0.8, should pass
@@ -122,30 +137,48 @@ describe('NLPAccuracyEvaluator - Base Functionality', () => {
     // Test with numeric scale
     mockEmbed.mockClear(); // Clear for new set of calls
     mockEmbed
-      .mockResolvedValueOnce({ embedding: embeddingResp, usage: { promptTokens: 1, totalTokens: 1 } })
-      .mockResolvedValueOnce({ embedding: embeddingGt, usage: { promptTokens: 1, totalTokens: 1 } });
-    
+      .mockResolvedValueOnce({
+        embedding: embeddingResp,
+        usage: { promptTokens: 1, totalTokens: 1 },
+      })
+      .mockResolvedValueOnce({
+        embedding: embeddingGt,
+        usage: { promptTokens: 1, totalTokens: 1 },
+      });
+
     const inputNumeric = createTestInput(respText, gtText, 'numeric');
     let results = await evaluator.evaluate(inputNumeric, inputNumeric.criteria!);
     expect(results.length).toBe(1);
     let resultNumeric = results[0];
     expect(resultNumeric.score).toBeCloseTo(expectedLowSimilarity);
-    expect(resultNumeric.reasoning).toContain(`Cosine similarity: ${expectedLowSimilarity.toFixed(4)}.`);
+    expect(resultNumeric.reasoning).toContain(
+      `Cosine similarity: ${expectedLowSimilarity.toFixed(4)}.`,
+    );
 
     // Test with binary scale
     mockEmbed.mockClear();
     mockEmbed
-      .mockResolvedValueOnce({ embedding: embeddingResp, usage: { promptTokens: 1, totalTokens: 1 } })
-      .mockResolvedValueOnce({ embedding: embeddingGt, usage: { promptTokens: 1, totalTokens: 1 } });
+      .mockResolvedValueOnce({
+        embedding: embeddingResp,
+        usage: { promptTokens: 1, totalTokens: 1 },
+      })
+      .mockResolvedValueOnce({
+        embedding: embeddingGt,
+        usage: { promptTokens: 1, totalTokens: 1 },
+      });
 
     const inputBinary = createTestInput(respText, gtText, 'binary');
     results = await evaluator.evaluate(inputBinary, inputBinary.criteria!);
     expect(results.length).toBe(1);
     let resultBinary = results[0];
     expect(resultBinary.score).toBe(false); // similarity < threshold -> false
-    expect(resultBinary.reasoning).toContain(`Cosine similarity: ${expectedLowSimilarity.toFixed(4)}.`);
-    expect(resultBinary.reasoning).toContain(`Threshold: ${evaluatorConfigForConstructor.similarityThreshold}. Outcome: Fail.`);
-    
+    expect(resultBinary.reasoning).toContain(
+      `Cosine similarity: ${expectedLowSimilarity.toFixed(4)}.`,
+    );
+    expect(resultBinary.reasoning).toContain(
+      `Threshold: ${evaluatorConfigForConstructor.similarityThreshold}. Outcome: Fail.`,
+    );
+
     expect(mockEmbed).toHaveBeenCalledTimes(2); // Called twice for the binary part
   });
 
@@ -163,7 +196,7 @@ describe('NLPAccuracyEvaluator - Base Functionality', () => {
     let results = await evaluator.evaluate(inputNumeric, inputNumeric.criteria!);
     expect(results.length).toBe(1);
     // cosineSimilarity of a vector with itself should be 1 (if not zero vector)
-    expect(results[0].score).toBeCloseTo(1); 
+    expect(results[0].score).toBeCloseTo(1);
     expect(results[0].reasoning).toContain('Cosine similarity: 1.0000.');
 
     // Test with binary scale
@@ -171,13 +204,13 @@ describe('NLPAccuracyEvaluator - Base Functionality', () => {
     mockEmbed
       .mockResolvedValueOnce({ embedding, usage: { promptTokens: 1, totalTokens: 1 } })
       .mockResolvedValueOnce({ embedding, usage: { promptTokens: 1, totalTokens: 1 } });
-    
+
     const inputBinary = createTestInput(text, text, 'binary');
     results = await evaluator.evaluate(inputBinary, inputBinary.criteria!);
     expect(results.length).toBe(1);
     expect(results[0].score).toBe(true); // 1.0 >= threshold (0.8) -> true
     expect(results[0].reasoning).toContain('Outcome: Pass.');
-    
+
     expect(mockEmbed).toHaveBeenCalledTimes(2); // Called twice for the binary part
   });
-}); 
+});

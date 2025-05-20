@@ -28,7 +28,7 @@ graph TD
 
     NLPAEval[NLPAccuracyEvaluator] -.-> Score
     Score --> ER[EvaluationResult]
-    
+
     style NLPAEval fill:#ccf,stroke:#333,stroke-width:2px
     style EM fill:#f9f,stroke:#333,stroke-width:2px
     style CS fill:#f0ad4e,stroke:#333,stroke-width:2px
@@ -39,17 +39,17 @@ graph TD
 
 The `NLPAccuracyEvaluator` is ideal for:
 
-*   Evaluating the relevance and accuracy of answers in question-answering systems.
-*   Assessing the quality of summaries against reference summaries.
-*   Measuring how well an agent's response captures the meaning of a target text.
-*   Comparing different phrasings of a concept for semantic equivalence.
+- Evaluating the relevance and accuracy of answers in question-answering systems.
+- Assessing the quality of summaries against reference summaries.
+- Measuring how well an agent's response captures the meaning of a target text.
+- Comparing different phrasings of a concept for semantic equivalence.
 
 ## Configuration
 
 Configuring this evaluator primarily involves specifying how embeddings are generated:
 
-*   The embedding model to use (via `CoreLLM` or a dedicated embedding service configuration).
-*   Potentially, parameters for the embedding generation.
+- The embedding model to use (via `CoreLLM` or a dedicated embedding service configuration).
+- Potentially, parameters for the embedding generation.
 
 ```typescript
 // Example configuration
@@ -77,10 +77,10 @@ Configuring this evaluator primarily involves specifying how embeddings are gene
 
 The `NLPAccuracyEvaluator` produces an `EvaluationResult`:
 
-*   **`criterionName`**: Typically a name like "SemanticSimilarity" or "NLPAccuracy".
-*   **`score`**: A numeric value (usually between 0 and 1, or -1 and 1 for cosine similarity) representing the semantic similarity. Higher is generally better.
-*   **`reasoning`**: May include details like the actual cosine similarity score if the scaled score is different, or notes about the embedding process.
-*   **`evaluatorType`**: `'NLPAccuracy'`.
-*   **`error`**: Populated if there were issues generating embeddings or calculating similarity.
+- **`criterionName`**: Typically a name like "SemanticSimilarity" or "NLPAccuracy".
+- **`score`**: A numeric value (usually between 0 and 1, or -1 and 1 for cosine similarity) representing the semantic similarity. Higher is generally better.
+- **`reasoning`**: May include details like the actual cosine similarity score if the scaled score is different, or notes about the embedding process.
+- **`evaluatorType`**: `'NLPAccuracy'`.
+- **`error`**: Populated if there were issues generating embeddings or calculating similarity.
 
-This evaluator helps quantify how well an agent understands and reproduces meaning, a key aspect of advanced agent performance. 
+This evaluator helps quantify how well an agent understands and reproduces meaning, a key aspect of advanced agent performance.

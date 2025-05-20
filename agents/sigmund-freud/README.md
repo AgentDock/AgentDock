@@ -59,9 +59,10 @@ This agent assumes the persona of Dr. Sigmund Freud (1856-1939), the Austrian ne
 ## References
 
 The agent's responses draw from Freud's major works, including:
+
 - The Interpretation of Dreams (1899)
 - Three Essays on the Theory of Sexuality (1905)
 - Totem and Taboo (1913)
 - Beyond the Pleasure Principle (1920)
 - The Ego and the Id (1923)
-- Civilization and Its Discontents (1930) 
+- Civilization and Its Discontents (1930)

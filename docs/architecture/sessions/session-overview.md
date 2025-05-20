@@ -69,6 +69,7 @@ Session state is only created for components that need it, reducing memory usage
 ### LLM Integration
 
 Sessions provide context for LLM interactions, including:
+
 - Conversation history
 - System prompts
 - Tool usage patterns
@@ -76,6 +77,7 @@ Sessions provide context for LLM interactions, including:
 ### Tool System Integration
 
 Tools access session state to:
+
 - Maintain tool-specific context
 - Track previous tool invocations
 - Share data between invocations
@@ -83,6 +85,7 @@ Tools access session state to:
 ### Orchestration Integration
 
 The orchestration system relies on sessions to:
+
 - Track active steps
 - Manage tool availability
 - Store transition conditions
@@ -90,4 +93,4 @@ The orchestration system relies on sessions to:
 
 ## Conclusion
 
-The session management system forms a critical foundation for AgentDock's stateful agent capabilities. By providing consistent, isolated, and efficient state management, it enables complex conversational interactions while maintaining performance and reliability. 
+The session management system forms a critical foundation for AgentDock's stateful agent capabilities. By providing consistent, isolated, and efficient state management, it enables complex conversational interactions while maintaining performance and reliability.

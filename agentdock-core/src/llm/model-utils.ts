@@ -29,8 +29,8 @@ export function createAnthropicModel(config: LLMConfig): LanguageModel {
     throw createError('llm', 'Invalid Anthropic API key format', ErrorCode.LLM_API_KEY);
   }
 
-  return createAnthropic({ 
-    apiKey: config.apiKey
+  return createAnthropic({
+    apiKey: config.apiKey,
     // Note: Temperature is passed at the request level, not at model creation
   })(config.model);
 }
@@ -44,9 +44,9 @@ export function createOpenAIModel(config: LLMConfig): LanguageModel {
     throw createError('llm', 'API key is required', ErrorCode.LLM_API_KEY);
   }
 
-  return createOpenAI({ 
+  return createOpenAI({
     apiKey: config.apiKey,
-    compatibility: 'strict'
+    compatibility: 'strict',
     // Note: Temperature is passed at the request level, not at model creation
   })(config.model);
 }
@@ -61,15 +61,15 @@ export function createGeminiModel(config: LLMConfig): LanguageModel {
   }
 
   const geminiConfig = config as GeminiConfig;
-  
+
   // Create the Gemini provider
   const provider = createGoogleGenerativeAI({
-    apiKey: config.apiKey
+    apiKey: config.apiKey,
   });
-  
+
   // Create model options
   const modelOptions: any = {};
-  
+
   // Add search grounding if enabled
   // Note: Search grounding and tool calling are mutually exclusive
   // If useSearchGrounding is explicitly set to false, don't enable it
@@ -78,7 +78,7 @@ export function createGeminiModel(config: LLMConfig): LanguageModel {
       LogCategory.LLM,
       'createGeminiModel',
       'Enabling search grounding for Gemini model',
-      { model: config.model, useSearchGrounding: geminiConfig.useSearchGrounding }
+      { model: config.model, useSearchGrounding: geminiConfig.useSearchGrounding },
     );
     modelOptions.useSearchGrounding = true;
   } else {
@@ -86,20 +86,24 @@ export function createGeminiModel(config: LLMConfig): LanguageModel {
       LogCategory.LLM,
       'createGeminiModel',
       `Search grounding explicitly set to: ${geminiConfig.useSearchGrounding} for Gemini model`,
-      { model: config.model, useSearchGrounding: geminiConfig.useSearchGrounding ?? 'Not Set (defaulting to SDK behavior)' }
+      {
+        model: config.model,
+        useSearchGrounding:
+          geminiConfig.useSearchGrounding ?? 'Not Set (defaulting to SDK behavior)',
+      },
     );
   }
-  
+
   // Add safety settings if provided
   if (geminiConfig.safetySettings) {
     modelOptions.safetySettings = geminiConfig.safetySettings;
   }
-  
+
   // Add dynamic retrieval config if provided
   if (geminiConfig.dynamicRetrievalConfig) {
     modelOptions.dynamicRetrievalConfig = geminiConfig.dynamicRetrievalConfig;
   }
-  
+
   // Create and return the model with options
   return provider(config.model, modelOptions);
 }
@@ -116,39 +120,41 @@ export function createDeepSeekModel(config: LLMConfig): LanguageModel {
   }
 
   const deepseekConfig = config as DeepSeekConfig;
-  
+
   try {
     // Create the DeepSeek provider using OpenAI's client with DeepSeek's baseURL
     const provider = createOpenAI({
       apiKey: config.apiKey,
       baseURL: 'https://api.deepseek.com/v1',
-      compatibility: 'strict'
+      compatibility: 'strict',
     });
-    
+
     // Create model options
     const modelOptions: any = {};
-    
+
     // Add safety settings if provided
     if (deepseekConfig.safetySettings) {
       logger.debug(
         LogCategory.LLM,
         'createDeepSeekModel',
         'Adding safety settings for DeepSeek model',
-        { model: config.model }
+        { model: config.model },
       );
       modelOptions.safetySettings = deepseekConfig.safetySettings;
     }
-    
+
     // Create and return the model with options
     return provider(config.model, modelOptions);
   } catch (error) {
-    logger.error(
-      LogCategory.LLM,
-      'createDeepSeekModel',
-      'Error creating DeepSeek model',
-      { error: (error as Error).message, model: config.model }
+    logger.error(LogCategory.LLM, 'createDeepSeekModel', 'Error creating DeepSeek model', {
+      error: (error as Error).message,
+      model: config.model,
+    });
+    throw createError(
+      'llm',
+      `Error creating DeepSeek model: ${(error as Error).message}`,
+      ErrorCode.LLM_EXECUTION,
     );
-    throw createError('llm', `Error creating DeepSeek model: ${(error as Error).message}`, ErrorCode.LLM_EXECUTION);
   }
 }
 
@@ -162,36 +168,38 @@ export function createGroqModel(config: LLMConfig): LanguageModel {
   }
 
   const groqConfig = config as GroqConfig;
-  
+
   try {
     // Create the Groq provider
     const provider = createGroq({
-      apiKey: config.apiKey
+      apiKey: config.apiKey,
     });
-    
+
     // Create model options
     const modelOptions: any = {};
-    
+
     // Add reasoning extraction if enabled
     if (groqConfig.extractReasoning) {
       logger.debug(
         LogCategory.LLM,
         'createGroqModel',
         'Enabling reasoning extraction for Groq model',
-        { model: config.model }
+        { model: config.model },
       );
       modelOptions.extractReasoning = true;
     }
-    
+
     // Create and return the model with options
     return provider(config.model, modelOptions);
   } catch (error) {
-    logger.error(
-      LogCategory.LLM,
-      'createGroqModel',
-      'Error creating Groq model',
-      { error: (error as Error).message, model: config.model }
+    logger.error(LogCategory.LLM, 'createGroqModel', 'Error creating Groq model', {
+      error: (error as Error).message,
+      model: config.model,
+    });
+    throw createError(
+      'llm',
+      `Error creating Groq model: ${(error as Error).message}`,
+      ErrorCode.LLM_EXECUTION,
     );
-    throw createError('llm', `Error creating Groq model: ${(error as Error).message}`, ErrorCode.LLM_EXECUTION);
   }
-} 
+}

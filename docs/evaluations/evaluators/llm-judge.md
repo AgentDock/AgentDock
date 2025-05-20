@@ -17,7 +17,7 @@ graph TD
     LLMEval[LLMJudgeEvaluator] --> LLM["Language Model (LLM)"]
     EI_Response --> LLMEval
     EI_Criteria --> LLMEval
-    
+
     LLM -- "Assesses based on Criteria" --> LLMEval
     LLMEval --> ER[EvaluationResult]
 
@@ -30,19 +30,19 @@ graph TD
 
 The `LLMJudgeEvaluator` is particularly well-suited for:
 
-*   Assessing the overall quality of free-form text responses.
-*   Evaluating adherence to complex or nuanced instructions.
-*   Checking for specific stylistic elements (e.g., tone, formality).
-*   Identifying potential safety issues or harmful content that might be missed by simpler checks.
-*   Comparing agent responses against a gold standard or ground truth in a semantic way.
+- Assessing the overall quality of free-form text responses.
+- Evaluating adherence to complex or nuanced instructions.
+- Checking for specific stylistic elements (e.g., tone, formality).
+- Identifying potential safety issues or harmful content that might be missed by simpler checks.
+- Comparing agent responses against a gold standard or ground truth in a semantic way.
 
 ## Configuration
 
 Details on how to configure the `LLMJudgeEvaluator` will go here. This typically involves specifying:
 
-*   The LLM to use (e.g., model name, provider).
-*   The system prompt or template to guide the LLM's judgment.
-*   How criteria are presented to the LLM.
+- The LLM to use (e.g., model name, provider).
+- The system prompt or template to guide the LLM's judgment.
+- How criteria are presented to the LLM.
 
 ```typescript
 // Example configuration structure (to be detailed)
@@ -58,10 +58,10 @@ Details on how to configure the `LLMJudgeEvaluator` will go here. This typically
 
 The `LLMJudgeEvaluator` produces an `EvaluationResult` for each criterion it assesses.
 
-*   **`criterionName`**: The name of the criterion being evaluated.
-*   **`score`**: The score assigned by the LLM, often on a predefined scale (e.g., numeric, Likert).
-*   **`reasoning`**: The justification provided by the LLM for its score. This is often the most valuable part of the output.
-*   **`evaluatorType`**: `'LLMJudge'`.
-*   **`error`**: Populated if there was an issue with the LLM call or processing its response.
+- **`criterionName`**: The name of the criterion being evaluated.
+- **`score`**: The score assigned by the LLM, often on a predefined scale (e.g., numeric, Likert).
+- **`reasoning`**: The justification provided by the LLM for its score. This is often the most valuable part of the output.
+- **`evaluatorType`**: `'LLMJudge'`.
+- **`error`**: Populated if there was an issue with the LLM call or processing its response.
 
-This evaluator allows for a much richer and more human-like assessment of agent performance, complementing more deterministic methods. 
+This evaluator allows for a much richer and more human-like assessment of agent performance, complementing more deterministic methods.

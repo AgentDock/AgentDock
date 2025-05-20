@@ -49,4 +49,4 @@ To use this agent effectively, you need to set up a Snowtrace API key:
 
 - The agent primarily provides data for the Avalanche C-Chain
 - Free API keys have rate limits (25 requests per day)
-- Some contract interactions may require additional context to interpret correctly 
+- Some contract interactions may require additional context to interpret correctly

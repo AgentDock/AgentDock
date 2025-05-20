@@ -30,4 +30,4 @@ This agent utilizes Google Gemini models with built-in search grounding capabili
 
 ## How It Works
 
-The agent uses the `llm.gemini` node configured with `useSearchGrounding: true`. When processing a user prompt, the Gemini model automatically performs searches via the Google Search API, incorporates the findings into its response generation process, and potentially includes citations. 
+The agent uses the `llm.gemini` node configured with `useSearchGrounding: true`. When processing a user prompt, the Gemini model automatically performs searches via the Google Search API, incorporates the findings into its response generation process, and potentially includes citations.

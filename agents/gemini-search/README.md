@@ -30,4 +30,4 @@ This agent utilizes Google Gemini models combined with an explicit web search to
 
 ## How It Works
 
-The agent uses the `llm.gemini` node to understand the user's request. If the request requires web information, the LLM calls the `search` tool node. The `search` node executes the query, returns the results, and the LLM then processes these results to formulate a final answer for the user. 
+The agent uses the `llm.gemini` node to understand the user's request. If the request requires web information, the LLM calls the `search` tool node. The `search` node executes the query, returns the results, and the LLM then processes these results to formulate a final answer for the user.

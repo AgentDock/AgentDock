@@ -28,7 +28,7 @@ Example usage in an agent:
 ```typescript
 const results = await agent.executeTool('search', {
   query: 'AgentDock framework',
-  limit: 3
+  limit: 3,
 });
 ```
 
@@ -66,12 +66,15 @@ Example response:
 ## Search Results for "AgentDock framework"
 
 ### Featured Snippet: What is AgentDock?
+
 AgentDock is a framework for building and deploying AI agents with custom tools and capabilities.
 
 ### 1. [AgentDock: Build AI Agents with Ease](https://agentdock.ai)
+
 AgentDock is a framework for building and deploying AI agents with custom tools and capabilities.
 
 ### 2. [Getting Started with AgentDock](https://docs.agentdock.ai/getting-started)
+
 Learn how to create your first AI agent with AgentDock. This guide covers installation, configuration, and deployment.
 ```
 
@@ -89,4 +92,4 @@ Each error includes helpful information about how to resolve the issue.
 ## Dependencies
 
 - `agentdock-core`: For logging and error handling
-- `zod`: For parameter validation 
+- `zod`: For parameter validation

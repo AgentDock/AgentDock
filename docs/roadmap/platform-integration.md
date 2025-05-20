@@ -32,7 +32,7 @@ graph LR
     B --> D[WhatsAppNode]
     B --> E[SlackNode]
     B --> F[DiscordNode]
-    
+
     style B fill:#0066cc,color:#ffffff,stroke:#0033cc
     style C fill:#e6f2ff,stroke:#99ccff
 ```
@@ -46,7 +46,7 @@ graph LR
     B --> D[Express Adapter]
     B --> E[Hono Adapter]
     B --> F[Custom Adapter]
-    
+
     style A fill:#0066cc,color:#ffffff,stroke:#0033cc
     style B fill:#e6f2ff,stroke:#99ccff
 ```
@@ -65,7 +65,7 @@ graph TD
     H --> I[Response Transformer]
     I --> J[Platform API]
     J --> K[User Interface]
-    
+
     style E fill:#0066cc,color:#ffffff,stroke:#0033cc
     style G fill:#0066cc,color:#ffffff,stroke:#0033cc
 ```
@@ -79,13 +79,13 @@ The platform integration system will be implemented with the following component
 abstract class PlatformNode extends BaseNode {
   // Transform platform message to agent message
   abstract transformMessageToAgent(message: unknown): Promise<Message>;
-  
+
   // Transform agent response to platform message
   abstract transformResponseToPlatform(response: Message): Promise<unknown>;
-  
+
   // Send message to platform
   abstract sendMessageToPlatform(message: unknown): Promise<void>;
-  
+
   // Handle webhook payload
   async handleWebhookPayload(payload: unknown): Promise<void>;
 }
@@ -117,7 +117,7 @@ import { createTelegramNode } from '@/lib/platforms/telegram-factory';
 
 // Create a Telegram node with an existing agent
 const telegramNode = createTelegramNode('telegram-1', agentNode, {
-  token: process.env.TELEGRAM_BOT_TOKEN!
+  token: process.env.TELEGRAM_BOT_TOKEN!,
 });
 
 // Set up the webhook
@@ -146,7 +146,7 @@ async handleMessage(chatId: number, message: string): Promise<void> {
       { role: 'user', content: message }
     ]
   });
-  
+
   // Send single complete response back to user
   await this.sendMessageToPlatform({
     chat_id: chatId,
@@ -190,15 +190,15 @@ The platform integration feature delivers several important benefits:
 
 ## Timeline
 
-| Phase | Status | Description |
-|-------|--------|-------------|
-| Design & Architecture | Complete | Core architecture design |
-| Platform Node Abstract Class | Planned | Base class implementation |
-| HTTP Adapter Interface | Planned | Framework adapter design |
-| Telegram Reference | Planned | First complete implementation |
-| WhatsApp Integration | Planned | Business API integration |
-| Slack Integration | Planned | Slack Bot implementation |
-| Additional Platforms | Future | Discord, Teams, etc. |
+| Phase                        | Status   | Description                   |
+| ---------------------------- | -------- | ----------------------------- |
+| Design & Architecture        | Complete | Core architecture design      |
+| Platform Node Abstract Class | Planned  | Base class implementation     |
+| HTTP Adapter Interface       | Planned  | Framework adapter design      |
+| Telegram Reference           | Planned  | First complete implementation |
+| WhatsApp Integration         | Planned  | Business API integration      |
+| Slack Integration            | Planned  | Slack Bot implementation      |
+| Additional Platforms         | Future   | Discord, Teams, etc.          |
 
 ## Connection to Other Roadmap Items
 
@@ -224,10 +224,10 @@ export async function POST(request: NextRequest, { params }) {
   const adapter = createHttpAdapter('nextjs');
   const nodeId = params.nodeId;
   const telegramNode = NodeRegistry.getNode(nodeId);
-  
+
   const update = await adapter.parseWebhookRequest(request);
   telegramNode.handleWebhookPayload(update);
-  
+
   return adapter.createSuccessResponse();
 }
-``` 
+```

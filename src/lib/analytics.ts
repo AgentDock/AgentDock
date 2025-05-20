@@ -35,20 +35,13 @@ function getPostHogInstance(): PostHog | null {
       flushInterval: 30000,
     });
 
-    logger.info(
-      LogCategory.SYSTEM, 
-      'Analytics', 
-      'PostHog analytics initialized on server'
-    );
+    logger.info(LogCategory.SYSTEM, 'Analytics', 'PostHog analytics initialized on server');
 
     return posthogInstance;
   } catch (error) {
-    logger.error(
-      LogCategory.SYSTEM,
-      'Analytics',
-      'Failed to initialize PostHog analytics',
-      { error: error instanceof Error ? error.message : String(error) }
-    );
+    logger.error(LogCategory.SYSTEM, 'Analytics', 'Failed to initialize PostHog analytics', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return null;
   }
 }
@@ -66,7 +59,7 @@ type UserProperties = Record<string, any>;
 export function captureEvent(
   eventName: string,
   properties: EventProperties = {},
-  distinctId: string = 'anonymous'
+  distinctId: string = 'anonymous',
 ): void {
   // Run in a non-blocking way
   Promise.resolve().then(() => {
@@ -78,7 +71,7 @@ export function captureEvent(
       const propsWithTimestamp = {
         ...properties,
         timestamp: properties.timestamp || new Date().toISOString(),
-        environment: process.env.NODE_ENV || 'development'
+        environment: process.env.NODE_ENV || 'development',
       };
 
       client.capture({
@@ -88,15 +81,10 @@ export function captureEvent(
       });
     } catch (error) {
       // Just log and continue - never block or throw
-      logger.warn(
-        LogCategory.SYSTEM,
-        'Analytics',
-        'Failed to capture event',
-        {
-          event: eventName,
-          error: error instanceof Error ? error.message : String(error),
-        }
-      );
+      logger.warn(LogCategory.SYSTEM, 'Analytics', 'Failed to capture event', {
+        event: eventName,
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   });
 }
@@ -106,10 +94,7 @@ export function captureEvent(
  * @param distinctId User ID
  * @param properties User properties
  */
-export function identifyUser(
-  distinctId: string,
-  properties: UserProperties = {}
-): void {
+export function identifyUser(distinctId: string, properties: UserProperties = {}): void {
   // Run in a non-blocking way
   Promise.resolve().then(() => {
     try {
@@ -122,15 +107,10 @@ export function identifyUser(
       });
     } catch (error) {
       // Just log and continue - never block or throw
-      logger.warn(
-        LogCategory.SYSTEM,
-        'Analytics',
-        'Failed to identify user',
-        {
-          userId: distinctId,
-          error: error instanceof Error ? error.message : String(error),
-        }
-      );
+      logger.warn(LogCategory.SYSTEM, 'Analytics', 'Failed to identify user', {
+        userId: distinctId,
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   });
 }
@@ -148,28 +128,23 @@ export async function flushAnalytics(): Promise<void> {
         return;
       }
 
-      client.flush()
+      client
+        .flush()
         .then(() => {
           logger.debug(LogCategory.SYSTEM, 'Analytics', 'Flushed analytics events');
           resolve();
         })
         .catch((error) => {
-          logger.warn(
-            LogCategory.SYSTEM,
-            'Analytics',
-            'Failed to flush analytics events',
-            { error: error instanceof Error ? error.message : String(error) }
-          );
+          logger.warn(LogCategory.SYSTEM, 'Analytics', 'Failed to flush analytics events', {
+            error: error instanceof Error ? error.message : String(error),
+          });
           resolve(); // Still resolve even on error
         });
     } catch (error) {
-      logger.warn(
-        LogCategory.SYSTEM,
-        'Analytics',
-        'Error in flush analytics',
-        { error: error instanceof Error ? error.message : String(error) }
-      );
+      logger.warn(LogCategory.SYSTEM, 'Analytics', 'Error in flush analytics', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       resolve(); // Always resolve
     }
   });
-} 
+}

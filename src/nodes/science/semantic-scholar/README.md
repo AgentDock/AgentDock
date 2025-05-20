@@ -16,17 +16,21 @@ Search for scientific papers on Semantic Scholar.
 
 ```typescript
 // Example usage
-const result = await tools.semantic_scholar_search.execute({
-  query: "machine learning",
-  maxResults: 10,
-  year: 2023,
-  openAccess: true,
-  venue: "NeurIPS",
-  fieldsOfStudy: "Computer Science"
-}, options);
+const result = await tools.semantic_scholar_search.execute(
+  {
+    query: 'machine learning',
+    maxResults: 10,
+    year: 2023,
+    openAccess: true,
+    venue: 'NeurIPS',
+    fieldsOfStudy: 'Computer Science',
+  },
+  options,
+);
 ```
 
 **Parameters:**
+
 - `query` (string): The search term or phrase to look for
 - `maxResults` (optional number): Maximum results to return (default: 10, max: 50)
 - `year` (optional number): Filter by publication year
@@ -40,14 +44,18 @@ Retrieve detailed information about a specific paper from Semantic Scholar.
 
 ```typescript
 // Example usage
-const result = await tools.semantic_scholar_paper.execute({
-  paperId: "10.18653/v1/N18-3011", // DOI
-  includeCitations: true,
-  includeReferences: false
-}, options);
+const result = await tools.semantic_scholar_paper.execute(
+  {
+    paperId: '10.18653/v1/N18-3011', // DOI
+    includeCitations: true,
+    includeReferences: false,
+  },
+  options,
+);
 ```
 
 **Parameters:**
+
 - `paperId` (string): The Semantic Scholar Paper ID, DOI, or arXiv ID
 - `includeCitations` (optional boolean): Include top citations
 - `includeReferences` (optional boolean): Include references
@@ -58,14 +66,18 @@ Retrieve information about a researcher from Semantic Scholar.
 
 ```typescript
 // Example usage
-const result = await tools.semantic_scholar_author.execute({
-  authorId: "3324024", // Semantic Scholar Author ID
-  includePapers: true,
-  paperLimit: 15
-}, options);
+const result = await tools.semantic_scholar_author.execute(
+  {
+    authorId: '3324024', // Semantic Scholar Author ID
+    includePapers: true,
+    paperLimit: 15,
+  },
+  options,
+);
 ```
 
 **Parameters:**
+
 - `authorId` (string): The Semantic Scholar Author ID or ORCID
 - `includePapers` (optional boolean): Include the author's papers
 - `paperLimit` (optional number): Maximum number of papers to return (default: 10, max: 100)
@@ -135,4 +147,4 @@ interface SemanticScholarAuthor {
 - The API may return different information depending on whether you have an API key
 - External IDs like DOI and arXiv ID can be used to lookup papers
 - Semantic Scholar provides a TL;DR feature for some papers, which summarizes the abstract
-- Links to open access PDFs are provided when available 
+- Links to open access PDFs are provided when available

@@ -27,17 +27,17 @@ The Advanced Memory Systems will include:
 ```mermaid
 graph TD
     A[Agent] --> B[Memory Manager]
-    
+
     B --> C[Short-term Memory]
     B --> D[Long-term Memory]
-    
+
     C --> E[Message History]
     C --> F[Current Context]
-    
+
     D --> G[Episodic Memory]
     D --> H[Semantic Memory]
     D --> I[Procedural Memory]
-    
+
     style B fill:#0066cc,color:#ffffff,stroke:#0033cc
     style C fill:#e6f2ff,stroke:#99ccff
     style D fill:#e6f2ff,stroke:#99ccff
@@ -48,20 +48,20 @@ graph TD
 ```mermaid
 graph TD
     A[Memory Manager] --> B[Memory Retrieval]
-    
+
     B --> C[Recency-based]
     B --> D[Importance-based]
     B --> E[Relevance-based]
     B --> F[Associative]
-    
+
     E --> G[Vector Storage]
     A --> H[Storage Layer]
-    
+
     style A fill:#0066cc,color:#ffffff,stroke:#0033cc
     style B fill:#0066cc,color:#ffffff,stroke:#0033cc
     style G fill:#e6f2ff,stroke:#99ccff
     style H fill:#e6f2ff,stroke:#99ccff
-    
+
     subgraph "External Dependencies"
         G
         H
@@ -77,16 +77,16 @@ The memory system is built on these key components:
 interface MemoryManager {
   // Add a new memory item
   add(item: MemoryItem): Promise<string>;
-  
+
   // Retrieve memories based on query
   retrieve(query: MemoryQuery): Promise<MemoryItem[]>;
-  
+
   // Update existing memory
   update(id: string, updates: Partial<MemoryItem>): Promise<void>;
-  
+
   // Forget/delete a memory
   forget(id: string): Promise<void>;
-  
+
   // Get importance rating for a memory
   getImportance(item: MemoryItem): number;
 }
@@ -109,7 +109,7 @@ enum MemoryType {
   CONVERSATION = 'conversation',
   PROCEDURE = 'procedure',
   ENTITY = 'entity',
-  RELATIONSHIP = 'relationship'
+  RELATIONSHIP = 'relationship',
 }
 ```
 
@@ -182,16 +182,16 @@ After the initial implementation, we plan to develop:
 
 ## Timeline
 
-| Phase | Status | Description |
-|-------|--------|-------------|
-| Research & Design | Complete | Memory architecture and interface design |
-| Basic Message History | Complete | Simple conversation history tracking |
-| Memory Manager Interface | Complete | Core memory management interface |
-| Short-term Memory | Complete | Implementation of immediate context handling |
-| Storage Integration | In Progress | Integration with Storage Abstraction Layer |
-| Vector-based Retrieval | In Progress | Semantic search capabilities |
-| Memory Management API | Planned | Public API for memory operations |
-| Advanced Features | Planned | Summarization, consolidation, and forgetting |
+| Phase                    | Status      | Description                                  |
+| ------------------------ | ----------- | -------------------------------------------- |
+| Research & Design        | Complete    | Memory architecture and interface design     |
+| Basic Message History    | Complete    | Simple conversation history tracking         |
+| Memory Manager Interface | Complete    | Core memory management interface             |
+| Short-term Memory        | Complete    | Implementation of immediate context handling |
+| Storage Integration      | In Progress | Integration with Storage Abstraction Layer   |
+| Vector-based Retrieval   | In Progress | Semantic search capabilities                 |
+| Memory Management API    | Planned     | Public API for memory operations             |
+| Advanced Features        | Planned     | Summarization, consolidation, and forgetting |
 
 ## Connection to Other Roadmap Items
 
@@ -210,4 +210,4 @@ Comprehensive documentation will be provided on:
 - Implementing custom memory providers
 - Tuning memory retrieval parameters
 - Best practices for effective memory usage
-- Performance and scaling considerations 
+- Performance and scaling considerations

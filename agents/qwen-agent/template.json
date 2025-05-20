@@ -13,10 +13,7 @@
     "When appropriate, you use the search tool to find the most current information on topics.",
     "You provide well-structured responses with relevant examples and citations when appropriate."
   ],
-  "nodes": [
-    "llm.groq",
-    "search"
-  ],
+  "nodes": ["llm.groq", "search"],
   "nodeConfigurations": {
     "llm.groq": {
       "model": "qwen-2.5-32b",
@@ -43,4 +40,4 @@
   "options": {
     "maxSteps": 5
   }
-} 
+}

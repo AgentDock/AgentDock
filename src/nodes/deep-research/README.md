@@ -41,11 +41,14 @@ The tool uses LLM for enhancing the research report:
 ## Example Usage
 
 ```typescript
-const result = await deepResearchTool.execute({
-  query: "Latest advancements in quantum computing",
-  depth: 2,
-  breadth: 5
-}, options);
+const result = await deepResearchTool.execute(
+  {
+    query: 'Latest advancements in quantum computing',
+    depth: 2,
+    breadth: 5,
+  },
+  options,
+);
 ```
 
 ## Report Structure
@@ -103,4 +106,4 @@ The tool is designed to work well with agents that want to perform research:
 3. The agent can analyze the findings and decide on follow-up queries
 4. The agent can make additional tool calls with refined queries
 
-This approach allows for iterative, agent-driven research rather than trying to handle all recursion internally. 
+This approach allows for iterative, agent-driven research rather than trying to handle all recursion internally.

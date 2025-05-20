@@ -36,10 +36,13 @@ Search the web for information on any topic.
 #### Example
 
 ```typescript
-const result = await firecrawlSearchTool.execute({
-  query: "climate change solutions",
-  limit: 3
-}, { toolCallId: "some-id" });
+const result = await firecrawlSearchTool.execute(
+  {
+    query: 'climate change solutions',
+    limit: 3,
+  },
+  { toolCallId: 'some-id' },
+);
 ```
 
 #### Response Format
@@ -73,10 +76,13 @@ Scrape a webpage and extract its content.
 #### Example
 
 ```typescript
-const result = await firecrawlScrapeTool.execute({
-  url: "https://example.com",
-  formats: ["markdown", "html"]
-}, { toolCallId: "some-id" });
+const result = await firecrawlScrapeTool.execute(
+  {
+    url: 'https://example.com',
+    formats: ['markdown', 'html'],
+  },
+  { toolCallId: 'some-id' },
+);
 ```
 
 #### Response Format
@@ -113,11 +119,14 @@ Crawl a website and extract content from multiple pages.
 #### Example
 
 ```typescript
-const result = await firecrawlCrawlTool.execute({
-  url: "https://example.com",
-  limit: 5,
-  maxDepth: 1
-}, { toolCallId: "some-id" });
+const result = await firecrawlCrawlTool.execute(
+  {
+    url: 'https://example.com',
+    limit: 5,
+    maxDepth: 1,
+  },
+  { toolCallId: 'some-id' },
+);
 ```
 
 #### Response Format
@@ -155,9 +164,12 @@ Check the status of a crawl job.
 #### Example
 
 ```typescript
-const result = await firecrawlCrawlStatusTool.execute({
-  crawlId: "abc-123-xyz"
-}, { toolCallId: "some-id" });
+const result = await firecrawlCrawlStatusTool.execute(
+  {
+    crawlId: 'abc-123-xyz',
+  },
+  { toolCallId: 'some-id' },
+);
 ```
 
 #### Response Format
@@ -196,10 +208,13 @@ Map a website and get a list of all URLs.
 #### Example
 
 ```typescript
-const result = await firecrawlMapTool.execute({
-  url: "https://example.com",
-  maxDepth: 1
-}, { toolCallId: "some-id" });
+const result = await firecrawlMapTool.execute(
+  {
+    url: 'https://example.com',
+    maxDepth: 1,
+  },
+  { toolCallId: 'some-id' },
+);
 ```
 
 #### Response Format
@@ -214,7 +229,7 @@ Found **10** URLs on this website.
 1. [https://example.com](https://example.com)
 2. [https://example.com/about](https://example.com/about)
 3. [https://example.com/contact](https://example.com/contact)
-...
+   ...
 ```
 
 ### 6. Firecrawl Extract
@@ -233,10 +248,13 @@ Extract structured data from a webpage.
 #### Example
 
 ```typescript
-const result = await firecrawlExtractTool.execute({
-  url: "https://example.com",
-  prompt: "Extract the company name, founding year, and main products"
-}, { toolCallId: "some-id" });
+const result = await firecrawlExtractTool.execute(
+  {
+    url: 'https://example.com',
+    prompt: 'Extract the company name, founding year, and main products',
+  },
+  { toolCallId: 'some-id' },
+);
 ```
 
 #### Response Format
@@ -274,4 +292,4 @@ The tools are implemented using three main files:
 - `components.ts` - UI components for rendering results
 - `utils.ts` - Utility functions for making API calls to Firecrawl
 
-The tools follow the Vercel AI SDK patterns and integrate with the AgentDock tool registry. 
+The tools follow the Vercel AI SDK patterns and integrate with the AgentDock tool registry.

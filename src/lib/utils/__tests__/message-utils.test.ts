@@ -1,14 +1,14 @@
-import { 
+import {
   Message,
   isUserMessage,
   isAssistantMessage,
   isToolMessage,
   ToolResultContent,
   MessageRole,
-  createMessage,      // Use core createMessage
-  createToolMessage,  // Use core createToolMessage
-  fromAIMessage,      // Use core fromAIMessage
-  toAIMessage         // Use core toAIMessage
+  createMessage, // Use core createMessage
+  createToolMessage, // Use core createToolMessage
+  fromAIMessage, // Use core fromAIMessage
+  toAIMessage, // Use core toAIMessage
 } from 'agentdock-core';
 import { Message as VercelAIMessage } from 'ai'; // Vercel AI SDK message type
 
@@ -21,7 +21,6 @@ const fromAIMessages = (messages: VercelAIMessage[]): Message[] => {
 };
 
 describe('Core Message Utils Compatibility Tests', () => {
-
   describe('createMessage', () => {
     it('should create a user message', () => {
       const result = createMessage({ role: 'user', content: 'Hello' });
@@ -43,13 +42,13 @@ describe('Core Message Utils Compatibility Tests', () => {
       const toolResult: ToolResultContent = {
         type: 'tool_result',
         toolCallId: 'test-id-123',
-        result: { value: 'Success' }
+        result: { value: 'Success' },
       };
       const toolResultArray = [toolResult];
       const result = createToolMessage({
         content: JSON.stringify(toolResultArray), // Pass stringified JSON
         toolCallId: 'test-id-123',
-        toolName: 'test-tool'
+        toolName: 'test-tool',
       });
 
       expect(result.role).toBe('data');
@@ -65,10 +64,10 @@ describe('Core Message Utils Compatibility Tests', () => {
     it('should convert core user message to AI SDK message and back', () => {
       const coreMsg: Message = createMessage({ role: 'user', content: 'Test Input' });
       const aiMsg = toAIMessage(coreMsg);
-      
+
       expect(aiMsg.role).toBe('user');
       expect(aiMsg.content).toBe('Test Input');
-      
+
       const convertedBack = fromAIMessage(aiMsg);
       expect(convertedBack.role).toBe('user');
       expect(convertedBack.content).toBe('Test Input');
@@ -87,9 +86,17 @@ describe('Core Message Utils Compatibility Tests', () => {
     });
 
     it('should convert core tool message (data role) to AI SDK message and back', () => {
-      const toolResult: ToolResultContent = { type: 'tool_result', toolCallId: 't1', result: 'res' };
+      const toolResult: ToolResultContent = {
+        type: 'tool_result',
+        toolCallId: 't1',
+        result: 'res',
+      };
       const toolResultArray = [toolResult];
-      const coreMsg: Message = createToolMessage({ content: JSON.stringify(toolResultArray), toolCallId: 't1', toolName: 't' }); // Pass stringified JSON
+      const coreMsg: Message = createToolMessage({
+        content: JSON.stringify(toolResultArray),
+        toolCallId: 't1',
+        toolName: 't',
+      }); // Pass stringified JSON
       const aiMsg = toAIMessage(coreMsg);
 
       expect(aiMsg.role).toBe('data');
@@ -102,33 +109,39 @@ describe('Core Message Utils Compatibility Tests', () => {
   });
 
   describe('Bulk Conversions (Example Wrappers)', () => {
-      it('should convert array of core messages to Vercel AI messages', () => {
-        const toolResultArray: ToolResultContent[] = [{ type: 'tool_result', toolCallId: 't1', result: 'res' }];
-        const input: Message[] = [
-          createMessage({ role: 'user', content: 'Hello' }),
-          createMessage({ role: 'assistant', content: 'Hi there' }),
-          createToolMessage({ content: JSON.stringify(toolResultArray), toolCallId: 't1', toolName: 't' }) // Pass stringified JSON
-        ];
-  
-        const result = toAIMessages(input);
-        expect(result).toHaveLength(3);
-        expect(result[0].role).toBe('user');
-        expect(result[1].role).toBe('assistant');
-        expect(result[2].role).toBe('data'); // Tool message becomes 'data'
-        // Check if content of the tool message is stringified JSON
-        expect(result[2].content).toEqual(JSON.stringify(toolResultArray));
-      });
-  
-      it('should convert array of Vercel AI messages to core messages', () => {
-        const input: VercelAIMessage[] = [
-          { id: '1', role: 'user', content: 'Hello', createdAt: new Date() },
-          { id: '2', role: 'assistant', content: 'Hi there', createdAt: new Date() }
-        ];
-  
-        const result = fromAIMessages(input);
-        expect(result).toHaveLength(2);
-        expect(result[0].role).toBe('user');
-        expect(result[1].role).toBe('assistant');
-      });
+    it('should convert array of core messages to Vercel AI messages', () => {
+      const toolResultArray: ToolResultContent[] = [
+        { type: 'tool_result', toolCallId: 't1', result: 'res' },
+      ];
+      const input: Message[] = [
+        createMessage({ role: 'user', content: 'Hello' }),
+        createMessage({ role: 'assistant', content: 'Hi there' }),
+        createToolMessage({
+          content: JSON.stringify(toolResultArray),
+          toolCallId: 't1',
+          toolName: 't',
+        }), // Pass stringified JSON
+      ];
+
+      const result = toAIMessages(input);
+      expect(result).toHaveLength(3);
+      expect(result[0].role).toBe('user');
+      expect(result[1].role).toBe('assistant');
+      expect(result[2].role).toBe('data'); // Tool message becomes 'data'
+      // Check if content of the tool message is stringified JSON
+      expect(result[2].content).toEqual(JSON.stringify(toolResultArray));
     });
-}); 
+
+    it('should convert array of Vercel AI messages to core messages', () => {
+      const input: VercelAIMessage[] = [
+        { id: '1', role: 'user', content: 'Hello', createdAt: new Date() },
+        { id: '2', role: 'assistant', content: 'Hi there', createdAt: new Date() },
+      ];
+
+      const result = fromAIMessages(input);
+      expect(result).toHaveLength(2);
+      expect(result[0].role).toBe('user');
+      expect(result[1].role).toBe('assistant');
+    });
+  });
+});

@@ -10,11 +10,11 @@
 /**
  * Basic type definitions used throughout the framework
  */
-export * from './types/agent-config';  // Agent configuration
-export * from './types/messages';      // Message types
+export * from './types/agent-config'; // Agent configuration
+export * from './types/messages'; // Message types
 export * from './types/node-category';
 export * from './types/orchestration'; // Orchestration system
-export * from './types/session';       // Session management
+export * from './types/session'; // Session management
 export type {
   ToolState,
   BaseToolInvocation,
@@ -22,7 +22,7 @@ export type {
   ToolResult,
   JSONSchema,
   Tool,
-  ToolRegistrationOptions
+  ToolRegistrationOptions,
 } from './types/tools';
 
 //=============================================================================
@@ -105,11 +105,11 @@ export * from './session';
  * Orchestration system
  * For controlling agent behavior in a step-based workflow
  */
-import { 
+import {
   OrchestrationManager,
   createOrchestrationManager,
   OrchestrationStateManager,
-  StepSequencer
+  StepSequencer,
 } from './orchestration/index';
 
 // Export all orchestration components explicitly
@@ -117,9 +117,8 @@ export {
   // From orchestration/index.ts
   OrchestrationManager,
   createOrchestrationManager,
-  
   OrchestrationStateManager,
-  StepSequencer
+  StepSequencer,
 };
 
 // Re-export the orchestration types
@@ -143,20 +142,17 @@ export { GoogleGenerativeAI };
  * Message utility functions
  * For converting, processing, and managing messages
  */
-export { 
+export {
   convertCoreToLLMMessage,
   convertCoreToLLMMessages,
-  applyHistoryPolicy
+  applyHistoryPolicy,
 } from './utils/message-utils';
 
 /**
  * Prompt utility functions
  * For generating system prompts from agent configs
  */
-export {
-  createSystemPrompt,
-  addOrchestrationToPrompt
-} from './utils/prompt-utils';
+export { createSystemPrompt, addOrchestrationToPrompt } from './utils/prompt-utils';
 
 //=============================================================================
 // Client components (Re-exported from AI SDK)
@@ -166,29 +162,15 @@ export {
  * Re-export client-side components and AI SDK types for React applications
  * These are used in both client and server components
  */
-import type {
-  UseChatOptions,
-  UseChatHelpers,
-  CreateMessage
-} from 'ai/react';
+import type { UseChatOptions, UseChatHelpers, CreateMessage } from 'ai/react';
 
 // Re-export AI SDK base types
-export type { 
-  UseChatOptions,
-  UseChatHelpers,
-  CreateMessage
-};
+export type { UseChatOptions, UseChatHelpers, CreateMessage };
 
 // Also re-export from ai core for server components
-import type {
-  LanguageModel,
-  CoreMessage
-} from 'ai';
+import type { LanguageModel, CoreMessage } from 'ai';
 
-export type {
-  LanguageModel,
-  CoreMessage
-};
+export type { LanguageModel, CoreMessage };
 
 //=============================================================================
 // Evaluation System

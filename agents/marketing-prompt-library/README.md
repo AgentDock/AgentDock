@@ -9,7 +9,7 @@ The agent takes a marketing discipline as input and acts as an expert prompt eng
 1.  **Title:** Clearly identifying the target discipline.
 2.  **Summary:** A concise overview of elite thinking and result drivers for the discipline.
 3.  **Winning Mental Models:** Key strategies and operating principles with descriptions, lessons, and sources.
-4.  **Prompt Library:** 10 actionable, operator-grade prompts tailored to the discipline, explaining *why* they fit cutting-edge practices and *how* a marketer would use them. The agent is instructed to ensure prompts use appropriate line breaks for readability.
+4.  **Prompt Library:** 10 actionable, operator-grade prompts tailored to the discipline, explaining _why_ they fit cutting-edge practices and _how_ a marketer would use them. The agent is instructed to ensure prompts use appropriate line breaks for readability.
 
 ## How to Use
 
@@ -34,10 +34,10 @@ This agent implements the framework described in this LinkedIn post by Kieran Fl
 
 ## Configuration (`template.json`)
 
-*   **Model:** `gemini-2.5-pro-exp-03-25`
-    *   *(Note: The original author suggested GPT-4o ["o3"], but this open-source implementation uses the latest available Gemini Pro model to leverage its built-in search grounding capabilities.)*
-*   **Nodes:** `llm.gemini`
-*   **Key Settings:**
-    *   Uses Gemini's built-in Search Grounding (`useSearchGrounding: true`) for up-to-date information.
-    *   Uses standard safety settings.
-    *   History policy: 'all'. 
+- **Model:** `gemini-2.5-pro-exp-03-25`
+  - _(Note: The original author suggested GPT-4o ["o3"], but this open-source implementation uses the latest available Gemini Pro model to leverage its built-in search grounding capabilities.)_
+- **Nodes:** `llm.gemini`
+- **Key Settings:**
+  - Uses Gemini's built-in Search Grounding (`useSearchGrounding: true`) for up-to-date information.
+  - Uses standard safety settings.
+  - History policy: 'all'.

@@ -1,12 +1,12 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
-import { LLMConfig, LLMProvider, ProviderRegistry } from 'agentdock-core'
-import { ModelRegistry } from './models/registry'
-import { ModelService } from './services/model-service'
-import type { AgentTemplate } from './store/types'
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+import { LLMConfig, LLMProvider, ProviderRegistry } from 'agentdock-core';
+import { ModelRegistry } from './models/registry';
+import { ModelService } from './services/model-service';
+import type { AgentTemplate } from './store/types';
 
 // Re-export AgentTemplate type
-export type { AgentTemplate }
+export type { AgentTemplate };
 
 /**
  * Combines class names with Tailwind CSS optimizations.
@@ -15,7 +15,7 @@ export type { AgentTemplate }
  * @returns Merged and optimized class string
  */
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
 /**
@@ -27,26 +27,26 @@ export function getLLMInfo(config: Record<string, any>) {
   // Find the provider using the core registry
   const provider = ProviderRegistry.getProviderFromNodes(config.nodes || []);
   const nodeType = ProviderRegistry.getNodeTypeFromProvider(provider);
-  
+
   // Get provider metadata
   const providerMetadata = ProviderRegistry.getProvider(provider);
   if (!providerMetadata) {
     throw new Error(`Provider not found: ${provider}`);
   }
-  
+
   const llmConfig = config.nodeConfigurations?.[nodeType];
   const modelId = llmConfig?.model || providerMetadata.defaultModel;
-  
+
   // Get model metadata from application registry
   const modelMetadata = ModelRegistry.getModel(modelId);
-  
+
   return {
     config: llmConfig,
     provider,
-    displayName: modelMetadata 
-      ? `${providerMetadata.displayName} - ${modelMetadata.displayName}` 
+    displayName: modelMetadata
+      ? `${providerMetadata.displayName} - ${modelMetadata.displayName}`
       : `${providerMetadata.displayName} - ${modelId}`,
-    validateApiKey: (key: string) => ProviderRegistry.validateApiKey(provider, key)
+    validateApiKey: (key: string) => ProviderRegistry.validateApiKey(provider, key),
   };
 }
 

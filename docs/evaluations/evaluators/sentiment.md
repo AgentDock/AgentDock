@@ -26,17 +26,17 @@ graph TD
 
 The `SentimentEvaluator` is helpful for:
 
-*   Monitoring the overall tone of agent responses (e.g., ensuring helpfulness, avoiding aggression).
-*   Flagging customer interactions that may require human review due to strong negative sentiment.
-*   Analyzing user feedback for emotional content.
-*   Ensuring marketing copy or agent personas align with desired sentiment profiles.
+- Monitoring the overall tone of agent responses (e.g., ensuring helpfulness, avoiding aggression).
+- Flagging customer interactions that may require human review due to strong negative sentiment.
+- Analyzing user feedback for emotional content.
+- Ensuring marketing copy or agent personas align with desired sentiment profiles.
 
 ## Configuration
 
 Configuration might involve:
 
-*   `sourceField`: Specifies which field from `EvaluationInput` to analyze (defaults to 'response').
-*   Potentially, selecting a specific sentiment analysis model or library if multiple are supported, or passing parameters to the underlying library.
+- `sourceField`: Specifies which field from `EvaluationInput` to analyze (defaults to 'response').
+- Potentially, selecting a specific sentiment analysis model or library if multiple are supported, or passing parameters to the underlying library.
 
 ```typescript
 // Example configuration structure (to be detailed)
@@ -51,10 +51,10 @@ Configuration might involve:
 
 The `SentimentEvaluator` produces an `EvaluationResult`:
 
-*   **`criterionName`**: Reflects the sentiment check (e.g., "ResponseSentiment").
-*   **`score`**: Can be a categorical label (e.g., "positive", "negative", "neutral") or a numeric score (e.g., a value from -1 to 1).
-*   **`reasoning`**: Might include the raw numeric score if the main score is categorical, or a list of words that most influenced the sentiment.
-*   **`evaluatorType`**: `'Sentiment'`.
-*   **`error`**: For issues accessing the text or problems with the sentiment analysis engine.
+- **`criterionName`**: Reflects the sentiment check (e.g., "ResponseSentiment").
+- **`score`**: Can be a categorical label (e.g., "positive", "negative", "neutral") or a numeric score (e.g., a value from -1 to 1).
+- **`reasoning`**: Might include the raw numeric score if the main score is categorical, or a list of words that most influenced the sentiment.
+- **`evaluatorType`**: `'Sentiment'`.
+- **`error`**: For issues accessing the text or problems with the sentiment analysis engine.
 
-This evaluator provides a quick way to gauge the emotional tone of text, an important factor in human-agent interaction. 
+This evaluator provides a quick way to gauge the emotional tone of text, an important factor in human-agent interaction.

@@ -29,7 +29,7 @@ The Storage Abstraction Layer aims to provide:
 graph TD
     A[Application] --> B(Storage Factory)
     B --> C{Provider Interface}
-    
+
     C --> D[Memory Provider]
     C -- Optional --> E[File Provider]
     C --> F[Redis Provider]
@@ -55,7 +55,7 @@ graph TD
 
     KV --> KVSess[(Sessions)]
     KV --> KVConf[(Configuration)]
-    
+
     VEC -- Planned --> VECEmb[(Embeddings / Knowledge)]
     REL -- Planned --> RELStruct[(Structured Records)]
 
@@ -82,7 +82,7 @@ The following components related primarily to Key-Value storage are available:
 - **Memory KV Provider**: In-memory KV store.
 - **Redis KV Provider**: Redis/Upstash KV store.
 - **Vercel KV Provider**: Vercel KV store.
-- **Secure Storage**: Client-side encrypted storage using Web Crypto API. See `agentdock-core/src/storage/secure-storage.ts`. 
+- **Secure Storage**: Client-side encrypted storage using Web Crypto API. See `agentdock-core/src/storage/secure-storage.ts`.
   - See [Open Source Client Implementation Notes](../oss-client/nextjs-implementation.md#client-side-storage--api-keys-byok) for security considerations regarding its use for API keys.
 - **Storage Factory**: Handles instantiation of configured KV providers.
 - **Namespace & TTL Support**: For KV stores.
@@ -125,18 +125,18 @@ We plan to add support for:
 
 ## Timeline
 
-| Phase                     | Status      | Description                                      |
-| :------------------------ | :---------- | :----------------------------------------------- |
-| KV Provider Interface     | Complete    | Base interface for Key-Value operations defined  |
-| Memory KV Provider        | Complete    | In-memory KV implementation                      |
-| Redis KV Provider         | Complete    | Distributed KV storage with Redis/Upstash        |
-| Vercel KV Provider        | Complete    | Native Vercel KV integration                     |
-| Secure Storage            | Complete    | Client-side secure storage implementation        |
-| Vector Provider Interface | Planned     | Interface definition for Vector operations       |
-| Initial Vector Providers  | Planned     | Memory, pgvector integrations                    |
-| Relational Providers      | Planned     | SQLite, PostgreSQL integrations                  |
-| Production Testing        | In Progress | Performance testing and optimization (KV focus)  |
-| Additional Providers      | Planned     | MongoDB, S3, other Vector DBs                    |
+| Phase                     | Status      | Description                                     |
+| :------------------------ | :---------- | :---------------------------------------------- |
+| KV Provider Interface     | Complete    | Base interface for Key-Value operations defined |
+| Memory KV Provider        | Complete    | In-memory KV implementation                     |
+| Redis KV Provider         | Complete    | Distributed KV storage with Redis/Upstash       |
+| Vercel KV Provider        | Complete    | Native Vercel KV integration                    |
+| Secure Storage            | Complete    | Client-side secure storage implementation       |
+| Vector Provider Interface | Planned     | Interface definition for Vector operations      |
+| Initial Vector Providers  | Planned     | Memory, pgvector integrations                   |
+| Relational Providers      | Planned     | SQLite, PostgreSQL integrations                 |
+| Production Testing        | In Progress | Performance testing and optimization (KV focus) |
+| Additional Providers      | Planned     | MongoDB, S3, other Vector DBs                   |
 
 ## Connection to Other Roadmap Items
 
@@ -154,4 +154,4 @@ Once completed, we will provide comprehensive documentation on:
 - How to configure and use the storage system
 - How to implement custom storage providers
 - Best practices for different deployment scenarios
-- Performance considerations and optimization 
+- Performance considerations and optimization

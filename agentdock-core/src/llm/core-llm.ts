@@ -3,12 +3,12 @@
  * This is a unified implementation that replaces provider-specific classes.
  */
 
-import { 
-  CoreMessage, 
-  LanguageModel, 
-  generateText, 
-  generateObject, 
-  streamText, 
+import {
+  CoreMessage,
+  LanguageModel,
+  generateText,
+  generateObject,
+  streamText,
   streamObject,
   GenerateTextResult,
   GenerateObjectResult,
@@ -18,7 +18,7 @@ import {
   StepResult,
   StreamTextOnStepFinishCallback,
   FinishReason,
-  ToolSet
+  ToolSet,
 } from 'ai';
 import { z, ZodType, ZodTypeDef } from 'zod';
 import { logger, LogCategory } from '../logging';
@@ -46,7 +46,8 @@ type StreamTextOnFinishResult = {
  * AgentDock's extended version of Vercel AI SDK's StreamTextResult.
  * Adds orchestration state tracking and error handling capabilities.
  */
-export interface AgentDockStreamResult<T extends ToolSet = ToolSet, R = unknown> extends VercelStreamTextResult<T, R> {
+export interface AgentDockStreamResult<T extends ToolSet = ToolSet, R = unknown>
+  extends VercelStreamTextResult<T, R> {
   /** Orchestration state data added by AgentNode */
   _orchestrationState?: {
     recentlyUsedTools?: string[];
@@ -57,20 +58,23 @@ export interface AgentDockStreamResult<T extends ToolSet = ToolSet, R = unknown>
     };
     [key: string]: unknown;
   } | null;
-  
+
   /** Flag indicating if there was an error during streaming */
   _hasStreamingError?: boolean;
-  
+
   /** Error message if streaming failed */
   _streamingErrorMessage?: string;
 }
 
 // Backward compatibility alias - export both types
-export type StreamTextResult<T extends ToolSet = ToolSet, R = unknown> = AgentDockStreamResult<T, R>;
+export type StreamTextResult<T extends ToolSet = ToolSet, R = unknown> = AgentDockStreamResult<
+  T,
+  R
+>;
 
 /**
  * Core LLM implementation that works with any model from the Vercel AI SDK.
- * 
+ *
  * This class provides a unified interface for text generation, streaming, and object generation.
  * It also includes a mechanism for reporting token usage back to the caller via a request-scoped callback.
  * Callers like AgentNode should use `setCurrentUsageCallback` before invoking methods like `streamText`
@@ -80,21 +84,16 @@ export class CoreLLM {
   private model: LanguageModel;
   private config: LLMConfig;
   private lastTokenUsage: TokenUsage | null = null;
-  
+
   constructor({ model, config }: { model: LanguageModel; config: LLMConfig }) {
     this.model = model;
     this.config = config;
-    
-    logger.debug(
-      LogCategory.LLM,
-      'CoreLLM',
-      'Created LLM instance',
-      {
-        provider: this.getProvider(),
-        modelId: this.getModelId(),
-        apiKeyPrefix: maskSensitiveData(config.apiKey, 5)
-      }
-    );
+
+    logger.debug(LogCategory.LLM, 'CoreLLM', 'Created LLM instance', {
+      provider: this.getProvider(),
+      modelId: this.getModelId(),
+      apiKeyPrefix: maskSensitiveData(config.apiKey, 5),
+    });
   }
 
   // Core methods that work across all providers
@@ -142,68 +141,55 @@ export class CoreLLM {
         maxRetries: options.maxRetries,
         stopSequences: options.stopSequences,
         messageCount: options.messages.length,
-        hasTools: !!options.tools && Object.keys(options.tools).length > 0
+        hasTools: !!options.tools && Object.keys(options.tools).length > 0,
       };
-      
-      logger.debug(
-        LogCategory.LLM,
-        'CoreLLM',
-        'Generating text with parameters',
-        llmParams
-      );
-      
+
+      logger.debug(LogCategory.LLM, 'CoreLLM', 'Generating text with parameters', llmParams);
+
       // Generate text using the model
       const result = await generateText({
         model: this.model,
-        ...options
+        ...options,
       });
-      
+
       // Log that the call was successfully made with these parameters
-      logger.debug(
-        LogCategory.LLM,
-        'CoreLLM',
-        'Successfully generated text with parameters',
-        {
-          ...llmParams,
-          totalTokens: result.usage?.totalTokens,
-          promptTokens: result.usage?.promptTokens,
-          completionTokens: result.usage?.completionTokens
-        }
-      );
-      
+      logger.debug(LogCategory.LLM, 'CoreLLM', 'Successfully generated text with parameters', {
+        ...llmParams,
+        totalTokens: result.usage?.totalTokens,
+        promptTokens: result.usage?.promptTokens,
+        completionTokens: result.usage?.completionTokens,
+      });
+
       // Track token usage
       if (result.usage) {
         this.lastTokenUsage = {
           promptTokens: result.usage.promptTokens,
           completionTokens: result.usage.completionTokens,
           totalTokens: result.usage.totalTokens,
-          provider: this.getProvider()
+          provider: this.getProvider(),
         };
-        
-        console.log(`[Token Usage] ${this.getProvider()} - ${this.getModelId()}: Prompt: ${result.usage.promptTokens}, Completion: ${result.usage.completionTokens}, Total: ${result.usage.totalTokens}`);
+
+        console.log(
+          `[Token Usage] ${this.getProvider()} - ${this.getModelId()}: Prompt: ${result.usage.promptTokens}, Completion: ${result.usage.completionTokens}, Total: ${result.usage.totalTokens}`,
+        );
       }
-      
+
       // Call onFinish callback if provided
       if (options.onFinish) {
         options.onFinish(result.text);
       }
-      
+
       return result;
     } catch (error) {
-      logger.error(
-        LogCategory.LLM,
-        'CoreLLM',
-        'Error generating text',
-        {
-          provider: this.getProvider(),
-          modelId: this.getModelId(),
-          error: error instanceof Error ? error.message : String(error)
-        }
-      );
+      logger.error(LogCategory.LLM, 'CoreLLM', 'Error generating text', {
+        provider: this.getProvider(),
+        modelId: this.getModelId(),
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw createError(
         'llm',
         `Error generating text with ${this.getProvider()}/${this.getModelId()}: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        ErrorCode.LLM_EXECUTION
+        ErrorCode.LLM_EXECUTION,
       );
     }
   }
@@ -242,16 +228,11 @@ export class CoreLLM {
         hasTools: !!options.tools && Object.keys(options.tools).length > 0,
         enableToolCallStreaming: true,
         forceFinalResponse: !!options.experimental_forceComplete,
-        maxSteps: options.maxSteps
+        maxSteps: options.maxSteps,
       };
-      
-      logger.debug(
-        LogCategory.LLM,
-        'CoreLLM',
-        'Streaming text with parameters',
-        llmParams
-      );
-      
+
+      logger.debug(LogCategory.LLM, 'CoreLLM', 'Streaming text with parameters', llmParams);
+
       // Wrap onFinish to track token usage AND use internal callback
       const wrappedOnFinish = (completion: any) => {
         let usage: TokenUsage | null = null;
@@ -259,18 +240,26 @@ export class CoreLLM {
         if (completion?.usage) {
           usage = {
             promptTokens: completion.usage.prompt_tokens || completion.usage.promptTokens,
-            completionTokens: completion.usage.completion_tokens || completion.usage.completionTokens,
+            completionTokens:
+              completion.usage.completion_tokens || completion.usage.completionTokens,
             totalTokens: completion.usage.total_tokens || completion.usage.totalTokens,
-            provider: this.getProvider()
+            provider: this.getProvider(),
           };
           this.lastTokenUsage = usage;
-          console.log(`[Token Usage] ${this.getProvider()} - ${this.getModelId()}: Prompt: ${usage.promptTokens}, Completion: ${usage.completionTokens}, Total: ${usage.totalTokens}`);
+          console.log(
+            `[Token Usage] ${this.getProvider()} - ${this.getModelId()}: Prompt: ${usage.promptTokens}, Completion: ${usage.completionTokens}, Total: ${usage.totalTokens}`,
+          );
         } else {
-            logger.warn(LogCategory.LLM, 'CoreLLM', '[streamText] wrappedOnFinish called without usage data in completion object', {
-                completionKeys: completion ? Object.keys(completion) : 'completion is null/undefined'
-            });
+          logger.warn(
+            LogCategory.LLM,
+            'CoreLLM',
+            '[streamText] wrappedOnFinish called without usage data in completion object',
+            {
+              completionKeys: completion ? Object.keys(completion) : 'completion is null/undefined',
+            },
+          );
         }
-        
+
         // Call original onFinish if provided, PASSING THE FULL COMPLETION OBJECT
         if (options.onFinish) {
           // Pass the entire completion object, not just text
@@ -286,56 +275,54 @@ export class CoreLLM {
           // onUsageAvailableType: typeof options.onUsageAvailable
         });
       };
-      
+
       // Wrap onStepFinish to standardize tool call format across providers
       const wrappedStepFinish = options.onStepFinish
         ? (stepData: any) => {
             // Standardize tool call format
-            if (stepData.toolCalls && Array.isArray(stepData.toolCalls) && stepData.toolCalls.length > 0) {
+            if (
+              stepData.toolCalls &&
+              Array.isArray(stepData.toolCalls) &&
+              stepData.toolCalls.length > 0
+            ) {
               // Track tool calls for easier extraction
               const toolNames: string[] = [];
-              
+
               // Log raw tool calls for debugging
-              logger.debug(
-                LogCategory.LLM,
-                'CoreLLM',
-                'Raw tool calls received',
-                { 
-                  provider: this.getProvider(),
-                  toolCallCount: stepData.toolCalls.length,
-                  firstToolCall: JSON.stringify(stepData.toolCalls[0])
-                }
-              );
-              
+              logger.debug(LogCategory.LLM, 'CoreLLM', 'Raw tool calls received', {
+                provider: this.getProvider(),
+                toolCallCount: stepData.toolCalls.length,
+                firstToolCall: JSON.stringify(stepData.toolCalls[0]),
+              });
+
               // Process each tool call to ensure standard format
               for (const toolCall of stepData.toolCalls) {
                 if (toolCall && typeof toolCall === 'object') {
                   let toolName: string | undefined;
-                  
+
                   // Simple extraction of tool name - no numeric conversion
                   if ('toolName' in toolCall && typeof toolCall.toolName === 'string') {
                     toolName = toolCall.toolName;
-                  }
-                  else if ('name' in toolCall && typeof toolCall.name === 'string') {
+                  } else if ('name' in toolCall && typeof toolCall.name === 'string') {
                     toolName = toolCall.name;
                   }
                   // Handle OpenAI format
                   else if (
-                    toolCall.function && 
-                    typeof toolCall.function === 'object' && 
-                    'name' in toolCall.function && 
+                    toolCall.function &&
+                    typeof toolCall.function === 'object' &&
+                    'name' in toolCall.function &&
                     typeof toolCall.function.name === 'string'
                   ) {
                     toolName = toolCall.function.name;
                   }
-                  
+
                   // If we found a tool name, standardize and track it
                   if (toolName) {
                     // Add standardized name property to the tool call
                     (toolCall as any).name = toolName;
                     // Also add toolName property for consistency with AI SDK
                     (toolCall as any).toolName = toolName;
-                    
+
                     // Add to tracking array if not already present
                     if (!toolNames.includes(toolName)) {
                       toolNames.push(toolName);
@@ -346,38 +333,33 @@ export class CoreLLM {
                       LogCategory.LLM,
                       'CoreLLM',
                       'Could not identify tool name from tool call',
-                      { toolCall: JSON.stringify(toolCall) }
+                      { toolCall: JSON.stringify(toolCall) },
                     );
                   }
                 }
               }
-              
+
               // Add consolidated toolNames array for easier access
               (stepData as any).toolNames = toolNames;
-              
+
               // Log standardized tool calls
               if (toolNames.length > 0) {
-                logger.debug(
-                  LogCategory.LLM,
-                  'CoreLLM',
-                  'Standardized tool calls',
-                  { 
-                    toolCount: toolNames.length,
-                    toolNames: toolNames.join(', '),
-                    provider: this.getProvider(),
-                    model: this.getModelId()
-                  }
-                );
+                logger.debug(LogCategory.LLM, 'CoreLLM', 'Standardized tool calls', {
+                  toolCount: toolNames.length,
+                  toolNames: toolNames.join(', '),
+                  provider: this.getProvider(),
+                  model: this.getModelId(),
+                });
               }
             }
-            
+
             // Call the original callback with the standardized data
             if (options.onStepFinish) {
               options.onStepFinish(stepData);
             }
           }
         : undefined;
-      
+
       // Stream text using the model with tool call streaming enabled
       const streamResult = streamText({
         model: this.model,
@@ -385,22 +367,25 @@ export class CoreLLM {
         onFinish: wrappedOnFinish,
         onStepFinish: wrappedStepFinish,
         toolCallStreaming: true,
-        experimental_transform: smoothStream({ chunking: 'word' })
+        experimental_transform: smoothStream({ chunking: 'word' }),
       });
-      
+
       // Create our enhanced result with error handling capabilities
       const enhancedResult: StreamTextResult<any, any> = {
         ...streamResult,
         _orchestrationState: null,
         _hasStreamingError: false,
         _streamingErrorMessage: '',
-        
+
         // Override toDataStreamResponse to include error information
         toDataStreamResponse(options: { getErrorMessage?: (error: unknown) => string } = {}) {
           // If we detected a streaming error, inject it directly
           if (enhancedResult._hasStreamingError) {
-            console.log('CoreLLM: Streaming error detected, passing to response', enhancedResult._streamingErrorMessage);
-            
+            console.log(
+              'CoreLLM: Streaming error detected, passing to response',
+              enhancedResult._streamingErrorMessage,
+            );
+
             const error = new Error(enhancedResult._streamingErrorMessage);
             // Explicitly pass the error to the stream
             return streamResult.toDataStreamResponse({
@@ -412,19 +397,19 @@ export class CoreLLM {
                 }
                 // Otherwise, use our error message
                 return enhancedResult._streamingErrorMessage || String(err);
-              }
+              },
             });
           }
-          
+
           // No error, just pass through
           return streamResult.toDataStreamResponse(options);
         },
-        
+
         text: streamResult.text,
         textStream: streamResult.textStream,
         fullStream: streamResult.fullStream,
       };
-      
+
       // Set up error monitoring for the full stream
       (async () => {
         try {
@@ -432,55 +417,41 @@ export class CoreLLM {
           for await (const part of streamResult.fullStream) {
             if (part.type === 'error') {
               enhancedResult._hasStreamingError = true;
-              
+
               // Use the existing error handling system instead of duplicating
               const parsedError = parseProviderError(part.error, this.getProvider() as any);
               enhancedResult._streamingErrorMessage = parsedError.message;
-              
-              logger.error(
-                LogCategory.LLM,
-                'CoreLLM',
-                'Error part detected in stream',
-                {
-                  provider: this.getProvider(),
-                  modelId: this.getModelId(),
-                  error: parsedError.message,
-                  code: parsedError.code
-                }
-              );
+
+              logger.error(LogCategory.LLM, 'CoreLLM', 'Error part detected in stream', {
+                provider: this.getProvider(),
+                modelId: this.getModelId(),
+                error: parsedError.message,
+                code: parsedError.code,
+              });
             }
           }
         } catch (fullStreamError) {
           // If we can't process the full stream, log the error but don't break the main stream
-          logger.error(
-            LogCategory.LLM,
-            'CoreLLM',
-            'Error processing full stream',
-            {
-              provider: this.getProvider(),
-              modelId: this.getModelId(),
-              error: fullStreamError instanceof Error ? fullStreamError.message : String(fullStreamError)
-            }
-          );
+          logger.error(LogCategory.LLM, 'CoreLLM', 'Error processing full stream', {
+            provider: this.getProvider(),
+            modelId: this.getModelId(),
+            error:
+              fullStreamError instanceof Error ? fullStreamError.message : String(fullStreamError),
+          });
         }
       })();
-      
+
       return enhancedResult;
     } catch (error) {
-      logger.error(
-        LogCategory.LLM,
-        'CoreLLM',
-        'Error streaming text',
-        {
-          provider: this.getProvider(),
-          modelId: this.getModelId(),
-          error: error instanceof Error ? error.message : String(error)
-        }
-      );
+      logger.error(LogCategory.LLM, 'CoreLLM', 'Error streaming text', {
+        provider: this.getProvider(),
+        modelId: this.getModelId(),
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw createError(
         'llm',
         `Error streaming text with ${this.getProvider()}/${this.getModelId()}: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        ErrorCode.LLM_EXECUTION
+        ErrorCode.LLM_EXECUTION,
       );
     }
   }
@@ -492,58 +463,50 @@ export class CoreLLM {
     temperature?: number;
   }): Promise<GenerateObjectResult<any>> {
     try {
-      logger.debug(
-        LogCategory.LLM,
-        'CoreLLM',
-        'Generating object',
-        {
-          provider: this.getProvider(),
-          modelId: this.getModelId(),
-          messageCount: options.messages.length,
-          schema: options.schema.description
-        }
-      );
-      
+      logger.debug(LogCategory.LLM, 'CoreLLM', 'Generating object', {
+        provider: this.getProvider(),
+        modelId: this.getModelId(),
+        messageCount: options.messages.length,
+        schema: options.schema.description,
+      });
+
       // Generate object using the model
       const result = await generateObject({
         model: this.model,
-        ...options
+        ...options,
       });
-      
+
       // Track token usage
       if (result.usage) {
         this.lastTokenUsage = {
           promptTokens: result.usage.promptTokens,
           completionTokens: result.usage.completionTokens,
           totalTokens: result.usage.totalTokens,
-          provider: this.getProvider()
+          provider: this.getProvider(),
         };
-        
+
         // Add console.log for token usage
-        console.log(`[Token Usage] ${this.getProvider()} - ${this.getModelId()}: Prompt: ${result.usage.promptTokens}, Completion: ${result.usage.completionTokens}, Total: ${result.usage.totalTokens}`);
+        console.log(
+          `[Token Usage] ${this.getProvider()} - ${this.getModelId()}: Prompt: ${result.usage.promptTokens}, Completion: ${result.usage.completionTokens}, Total: ${result.usage.totalTokens}`,
+        );
       }
-      
+
       // Call onFinish callback if provided
       if (options.onFinish) {
         options.onFinish(result.object);
       }
-      
+
       return result;
     } catch (error) {
-      logger.error(
-        LogCategory.LLM,
-        'CoreLLM',
-        'Error generating object',
-        {
-          provider: this.getProvider(),
-          modelId: this.getModelId(),
-          error: error instanceof Error ? error.message : String(error)
-        }
-      );
+      logger.error(LogCategory.LLM, 'CoreLLM', 'Error generating object', {
+        provider: this.getProvider(),
+        modelId: this.getModelId(),
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw createError(
         'llm',
         `Error generating object with ${this.getProvider()}/${this.getModelId()}: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        ErrorCode.LLM_EXECUTION
+        ErrorCode.LLM_EXECUTION,
       );
     }
   }
@@ -555,31 +518,29 @@ export class CoreLLM {
     temperature?: number;
   }): Promise<StreamObjectResult<any, any, any>> {
     try {
-      logger.debug(
-        LogCategory.LLM,
-        'CoreLLM',
-        'Streaming object',
-        {
-          provider: this.getProvider(),
-          modelId: this.getModelId(),
-          messageCount: options.messages.length,
-          schema: options.schema.description
-        }
-      );
-      
+      logger.debug(LogCategory.LLM, 'CoreLLM', 'Streaming object', {
+        provider: this.getProvider(),
+        modelId: this.getModelId(),
+        messageCount: options.messages.length,
+        schema: options.schema.description,
+      });
+
       // Wrap onFinish to track token usage
-      const wrappedOnFinish = options.onFinish 
+      const wrappedOnFinish = options.onFinish
         ? (completion: any) => {
             let usage: TokenUsage | null = null;
             if (completion.usage) {
               usage = {
                 promptTokens: completion.usage.prompt_tokens || completion.usage.promptTokens,
-                completionTokens: completion.usage.completion_tokens || completion.usage.completionTokens,
+                completionTokens:
+                  completion.usage.completion_tokens || completion.usage.completionTokens,
                 totalTokens: completion.usage.total_tokens || completion.usage.totalTokens,
-                provider: this.getProvider()
+                provider: this.getProvider(),
               };
               this.lastTokenUsage = usage;
-              console.log(`[Token Usage] ${this.getProvider()} - ${this.getModelId()}: Prompt: ${usage.promptTokens}, Completion: ${usage.completionTokens}, Total: ${usage.totalTokens}`);
+              console.log(
+                `[Token Usage] ${this.getProvider()} - ${this.getModelId()}: Prompt: ${usage.promptTokens}, Completion: ${usage.completionTokens}, Total: ${usage.totalTokens}`,
+              );
             }
             options.onFinish!(completion.object || completion);
           }
@@ -589,37 +550,35 @@ export class CoreLLM {
             if (completion.usage) {
               usage = {
                 promptTokens: completion.usage.prompt_tokens || completion.usage.promptTokens,
-                completionTokens: completion.usage.completion_tokens || completion.usage.completionTokens,
+                completionTokens:
+                  completion.usage.completion_tokens || completion.usage.completionTokens,
                 totalTokens: completion.usage.total_tokens || completion.usage.totalTokens,
-                provider: this.getProvider()
+                provider: this.getProvider(),
               };
               this.lastTokenUsage = usage;
-              console.log(`[Token Usage] ${this.getProvider()} - ${this.getModelId()}: Prompt: ${usage.promptTokens}, Completion: ${usage.completionTokens}, Total: ${usage.totalTokens}`);
+              console.log(
+                `[Token Usage] ${this.getProvider()} - ${this.getModelId()}: Prompt: ${usage.promptTokens}, Completion: ${usage.completionTokens}, Total: ${usage.totalTokens}`,
+              );
             }
           };
-      
+
       // Stream object using the model
       return streamObject({
         model: this.model,
         ...options,
-        onFinish: wrappedOnFinish
+        onFinish: wrappedOnFinish,
       });
     } catch (error) {
-      logger.error(
-        LogCategory.LLM,
-        'CoreLLM',
-        'Error streaming object',
-        {
-          provider: this.getProvider(),
-          modelId: this.getModelId(),
-          error: error instanceof Error ? error.message : String(error)
-        }
-      );
+      logger.error(LogCategory.LLM, 'CoreLLM', 'Error streaming object', {
+        provider: this.getProvider(),
+        modelId: this.getModelId(),
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw createError(
         'llm',
         `Error streaming object with ${this.getProvider()}/${this.getModelId()}: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        ErrorCode.LLM_EXECUTION
+        ErrorCode.LLM_EXECUTION,
       );
     }
   }
-} 
+}

@@ -32,7 +32,7 @@ graph TD
     User -->|Rates & Reviews| Marketplace
     Marketplace -->|Suggests| NLBuilder[Natural Language Builder]
     NLBuilder -->|Creates From| Marketplace
-    
+
     style Marketplace fill:#0066cc,color:#ffffff,stroke:#0033cc
     style NLBuilder fill:#e6f2ff,stroke:#99ccff
 ```
@@ -45,7 +45,7 @@ sequenceDiagram
     participant Marketplace
     participant Verification
     participant Store
-    
+
     Creator->>Marketplace: Submit Template
     Marketplace->>Verification: Quality Check
     Verification->>Marketplace: Approval
@@ -97,7 +97,7 @@ graph LR
     B --> C[Build Reputation]
     C --> D[Improve Templates]
     D --> B
-    
+
     style A fill:#e6f2ff,stroke:#99ccff
     style B fill:#0066cc,color:#ffffff,stroke:#0033cc
 ```
@@ -115,7 +115,7 @@ graph LR
     A[Discover Solutions] --> B[Immediate Value]
     B --> C[Customization]
     C --> D[Business Results]
-    
+
     style B fill:#e6f2ff,stroke:#99ccff
     style D fill:#0066cc,color:#ffffff,stroke:#0033cc
 ```
@@ -149,7 +149,7 @@ graph TD
     E --> G
     F --> G
     G --> H[Value Creation]
-    
+
     style C fill:#0066cc,color:#ffffff,stroke:#0033cc
 ```
 
@@ -164,6 +164,7 @@ The Agent Marketplace addresses this challenge by:
 ## Example User Journey
 
 ### Template Creator
+
 An HR specialist creates an "Employee Onboarding Assistant" template that handles document collection, policy explanations, and IT setup requests. After publishing to the marketplace:
 
 1. The template is discovered by HR departments across multiple organizations
@@ -173,6 +174,7 @@ An HR specialist creates an "Employee Onboarding Assistant" template that handle
 5. The creator develops additional HR templates based on market demand
 
 ### Template User
+
 A small business owner needs to automate customer support:
 
 1. Searches the marketplace for "customer support automation"
@@ -196,7 +198,7 @@ graph TD
     F --> G[Customization]
     E --> G
     G --> H[Final Agent]
-    
+
     style B fill:#e6f2ff,stroke:#99ccff
     style D fill:#0066cc,color:#ffffff,stroke:#0033cc
 ```
@@ -211,17 +213,17 @@ When a user describes an agent they want to create:
 
 ## Timeline
 
-| Phase | Description |
-|-------|-------------|
-| Design | Create marketplace architecture and economic model |
-| Alpha | Limited template publishing with manual curation |
-| Beta | Public template submissions with automated quality checks |
-| Launch | Full monetization and integration with Natural Language Builder |
-| Expansion | Advanced analytics and promotional tools for creators |
+| Phase     | Description                                                     |
+| --------- | --------------------------------------------------------------- |
+| Design    | Create marketplace architecture and economic model              |
+| Alpha     | Limited template publishing with manual curation                |
+| Beta      | Public template submissions with automated quality checks       |
+| Launch    | Full monetization and integration with Natural Language Builder |
+| Expansion | Advanced analytics and promotional tools for creators           |
 
 ## Connection to Other Roadmap Items
 
 - **Natural Language AI Agent Builder**: Direct integration for template suggestions
 - **AgentDock Pro**: Enterprise marketplace features and private template repositories
 - **Multi-Agent Collaboration**: Templates for agent networks and team compositions
-- **Evaluation Framework**: Quality metrics for marketplace templates 
+- **Evaluation Framework**: Quality metrics for marketplace templates

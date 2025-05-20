@@ -33,31 +33,24 @@ function getLLMProvider(template: any) {
 /**
  * Load and validate an agent configuration
  */
-export async function loadAgentConfig(
-  template: any,
-  apiKey?: string
-): Promise<AgentConfig> {
+export async function loadAgentConfig(template: any, apiKey?: string): Promise<AgentConfig> {
   try {
     if (!apiKey) {
       throw createError(
         'config',
         'API key not found. Please add your API key in settings.',
-        ErrorCode.CONFIG_NOT_FOUND
+        ErrorCode.CONFIG_NOT_FOUND,
       );
     }
 
     if (!template) {
-      throw createError(
-        'config',
-        'Template not found',
-        ErrorCode.CONFIG_NOT_FOUND
-      );
+      throw createError('config', 'Template not found', ErrorCode.CONFIG_NOT_FOUND);
     }
 
     logger.debug(
       LogCategory.CONFIG,
       'Loading agent configuration',
-      JSON.stringify({ name: template.name })
+      JSON.stringify({ name: template.name }),
     );
 
     // Create config with API key, converting readonly arrays to mutable
@@ -67,17 +60,19 @@ export async function loadAgentConfig(
       nodes: [...template.nodes],
       chatSettings: {
         ...template.chatSettings,
-        initialMessages: template.chatSettings?.initialMessages ? [...template.chatSettings.initialMessages] : []
+        initialMessages: template.chatSettings?.initialMessages
+          ? [...template.chatSettings.initialMessages]
+          : [],
       },
       nodeConfigurations: {
         ...template.nodeConfigurations,
         [getLLMProvider(template)]: {
           ...template.nodeConfigurations?.[getLLMProvider(template)],
-          apiKey
-        }
+          apiKey,
+        },
       },
       // Ensure personality is validated through the schema
-      personality: PersonalitySchema.parse(template.personality)
+      personality: PersonalitySchema.parse(template.personality),
     };
 
     // Validate the entire config against schema
@@ -86,11 +81,11 @@ export async function loadAgentConfig(
     if (error && typeof error === 'object' && 'code' in error) {
       throw error;
     }
-    
+
     throw createError(
       'config',
       `Failed to load agent configuration: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      ErrorCode.CONFIG_NOT_FOUND
+      ErrorCode.CONFIG_NOT_FOUND,
     );
   }
-} 
+}

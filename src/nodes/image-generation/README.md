@@ -22,7 +22,7 @@ This tool provides image generation and editing capabilities using Google's Gemi
 
 ```typescript
 const result = await tools.generate_image.execute({
-  prompt: "A futuristic cityscape with flying cars and holographic billboards"
+  prompt: 'A futuristic cityscape with flying cars and holographic billboards',
 });
 ```
 
@@ -30,8 +30,8 @@ const result = await tools.generate_image.execute({
 
 ```typescript
 const result = await tools.generate_image.execute({
-  prompt: "Make the sky blue and add birds flying in the background",
-  image: "data:image/jpeg;base64,/9j/4AAQSkZJRg..." // base64 image data
+  prompt: 'Make the sky blue and add birds flying in the background',
+  image: 'data:image/jpeg;base64,/9j/4AAQSkZJRg...', // base64 image data
 });
 ```
 
@@ -51,6 +51,7 @@ The tool uses the GEMINI_API_KEY environment variable for authentication. For se
 2. Unlike other LLM providers, the image generation tool always uses the environment variable, not agent-specific settings
 
 Example in .env file:
+
 ```
 GEMINI_API_KEY=your_api_key_here
 ```
@@ -61,8 +62,8 @@ The tool returns a structured result with:
 
 ```typescript
 {
-  url: string;         // URL to access the generated image
-  prompt: string;      // The original prompt used for generation
+  url: string; // URL to access the generated image
+  prompt: string; // The original prompt used for generation
   description: string | null; // Any descriptive text provided by the model
 }
 ```
@@ -91,4 +92,4 @@ Generated images are stored using the AgentDock image store system:
 - Persistent storage for generated images
 - Support for additional image generation parameters (size, style, etc.)
 - Integration with other image generation models
-- Image optimization and caching 
+- Image optimization and caching

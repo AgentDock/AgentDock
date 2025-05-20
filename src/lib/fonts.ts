@@ -3,7 +3,7 @@ import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 
 // Load Inter font
-export const inter = Inter({ 
+export const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-inter',
@@ -25,14 +25,14 @@ export const fontOptions: Record<FontFamily, FontConfig> = {
     name: 'Inter',
     className: inter.className,
     fontFamily: inter.style.fontFamily,
-    variable: '--font-inter'
+    variable: '--font-inter',
   },
   geist: {
     name: 'Geist',
     className: GeistSans.className,
     fontFamily: GeistSans.style.fontFamily,
-    variable: GeistSans.variable
-  }
+    variable: GeistSans.variable,
+  },
 };
 
 // Monospace font options
@@ -41,6 +41,6 @@ export const monoFonts = {
     name: 'Geist Mono',
     className: GeistMono.className,
     fontFamily: GeistMono.style.fontFamily,
-    variable: GeistMono.variable
-  }
-}; 
+    variable: GeistMono.variable,
+  },
+};

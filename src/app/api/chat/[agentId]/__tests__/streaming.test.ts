@@ -16,11 +16,11 @@ jest.mock('@/generated/templates', () => ({
         'llm.anthropic': {
           model: 'claude-3-opus-20240229',
           temperature: 0.7,
-          maxTokens: 4096
-        }
-      }
-    }
-  }
+          maxTokens: 4096,
+        },
+      },
+    },
+  },
 }));
 
 jest.mock('@/lib/services/config-cache');
@@ -28,16 +28,14 @@ jest.mock('@/lib/services/config-cache');
 describe('Chat API Streaming', () => {
   const mockApiKey = 'test-api-key';
   const mockAgentId = 'test-agent';
-  const mockMessages: Message[] = [
-    { id: '1', role: 'user', content: 'Hello' }
-  ];
+  const mockMessages: Message[] = [{ id: '1', role: 'user', content: 'Hello' }];
 
   beforeEach(() => {
     jest.clearAllMocks();
     // Mock ConfigCache
     (ConfigCache.getInstance as jest.Mock).mockReturnValue({
       get: jest.fn().mockResolvedValue(null),
-      set: jest.fn().mockResolvedValue(undefined)
+      set: jest.fn().mockResolvedValue(undefined),
     });
   });
 
@@ -49,7 +47,7 @@ describe('Chat API Streaming', () => {
     it('should require API key', async () => {
       const request = new NextRequest('http://localhost:3000/api/chat/test-agent', {
         method: 'POST',
-        body: JSON.stringify({ messages: mockMessages })
+        body: JSON.stringify({ messages: mockMessages }),
       });
 
       const response = await POST(request, { params: Promise.resolve({ agentId: mockAgentId }) });
@@ -65,9 +63,9 @@ describe('Chat API Streaming', () => {
       const request = new NextRequest('http://localhost:3000/api/chat/test-agent', {
         method: 'POST',
         headers: {
-          'x-api-key': mockApiKey
+          'x-api-key': mockApiKey,
         },
-        body: JSON.stringify({ messages: mockMessages })
+        body: JSON.stringify({ messages: mockMessages }),
       });
 
       const response = await POST(request, { params: Promise.resolve({ agentId: mockAgentId }) });
@@ -78,18 +76,20 @@ describe('Chat API Streaming', () => {
     });
 
     it('should handle large messages', async () => {
-      const largeMessages = Array(10).fill(null).map((_, i) => ({
-        id: String(i),
-        role: 'user' as const,
-        content: 'A'.repeat(1000)
-      }));
+      const largeMessages = Array(10)
+        .fill(null)
+        .map((_, i) => ({
+          id: String(i),
+          role: 'user' as const,
+          content: 'A'.repeat(1000),
+        }));
 
       const request = new NextRequest('http://localhost:3000/api/chat/test-agent', {
         method: 'POST',
         headers: {
-          'x-api-key': mockApiKey
+          'x-api-key': mockApiKey,
         },
-        body: JSON.stringify({ messages: largeMessages })
+        body: JSON.stringify({ messages: largeMessages }),
       });
 
       const response = await POST(request, { params: Promise.resolve({ agentId: mockAgentId }) });
@@ -102,12 +102,12 @@ describe('Chat API Streaming', () => {
       const request = new NextRequest('http://localhost:3000/api/chat/test-agent', {
         method: 'POST',
         headers: {
-          'x-api-key': mockApiKey
+          'x-api-key': mockApiKey,
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           messages: mockMessages,
-          experimental_forceError: 'ECONNRESET'  // Test flag
-        })
+          experimental_forceError: 'ECONNRESET', // Test flag
+        }),
       });
 
       const response = await POST(request, { params: Promise.resolve({ agentId: mockAgentId }) });
@@ -122,12 +122,14 @@ describe('Chat API Streaming', () => {
       const request = new NextRequest('http://localhost:3000/api/chat/invalid-agent', {
         method: 'POST',
         headers: {
-          'x-api-key': mockApiKey
+          'x-api-key': mockApiKey,
         },
-        body: JSON.stringify({ messages: mockMessages })
+        body: JSON.stringify({ messages: mockMessages }),
       });
 
-      const response = await POST(request, { params: Promise.resolve({ agentId: 'invalid-agent' }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ agentId: 'invalid-agent' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -141,20 +143,20 @@ describe('Chat API Streaming', () => {
         name: 'Test Agent',
         model: 'claude-3-opus-20240229',
         temperature: 0.7,
-        maxTokens: 4096
+        maxTokens: 4096,
       };
 
       (ConfigCache.getInstance as jest.Mock).mockReturnValue({
         get: jest.fn().mockResolvedValue(mockConfig),
-        set: jest.fn()
+        set: jest.fn(),
       });
 
       const request = new NextRequest('http://localhost:3000/api/chat/test-agent', {
         method: 'POST',
         headers: {
-          'x-api-key': mockApiKey
+          'x-api-key': mockApiKey,
         },
-        body: JSON.stringify({ messages: mockMessages })
+        body: JSON.stringify({ messages: mockMessages }),
       });
 
       await POST(request, { params: Promise.resolve({ agentId: mockAgentId }) });
@@ -164,4 +166,4 @@ describe('Chat API Streaming', () => {
       expect(cache.set).not.toHaveBeenCalled();
     });
   });
-}); 
+});

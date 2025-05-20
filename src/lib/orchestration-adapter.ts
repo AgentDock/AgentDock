@@ -1,6 +1,6 @@
 /**
  * Adapter for the agentdock-core orchestration system to work in NextJS
- * 
+ *
  * This adapter provides an efficient way to use the orchestration system
  * in NextJS API routes, avoiding global state and performance problems.
  */
@@ -9,18 +9,18 @@ import type { Message } from 'agentdock-core';
 import type { AIOrchestrationState } from 'agentdock-core/types/orchestration';
 import type { SessionId } from 'agentdock-core/types/session';
 import { NextRequest, NextResponse } from 'next/server';
-import { 
-    logger, 
-    LogCategory, 
-    createOrchestrationManager,
-    OrchestrationManager,
-    OrchestrationConfig,
-    getStorageFactory,
-    StorageProvider,
-    convertCoreToLLMMessages,
-    LLMMessage,
-    RedisStorageProvider,
-    MemoryStorageProvider
+import {
+  logger,
+  LogCategory,
+  createOrchestrationManager,
+  OrchestrationManager,
+  OrchestrationConfig,
+  getStorageFactory,
+  StorageProvider,
+  convertCoreToLLMMessages,
+  LLMMessage,
+  RedisStorageProvider,
+  MemoryStorageProvider,
 } from 'agentdock-core';
 
 // Local type for template orchestration config, which may have readonly properties
@@ -50,7 +50,11 @@ export interface OrchestrationAdapter {
   trackToolUsage: (sessionId: SessionId, toolName: string, config: any) => Promise<any>;
   getState: (sessionId: SessionId, config?: any) => Promise<AIOrchestrationState | null>;
   filterTools: (sessionId: SessionId, config: any, availableTools: string[]) => Promise<string[]>;
-  createHeaders: (req: NextRequest, sessionId: string, state: any) => Promise<Record<string, string>>;
+  createHeaders: (
+    req: NextRequest,
+    sessionId: string,
+    state: any,
+  ) => Promise<Record<string, string>>;
 }
 
 /**
@@ -61,7 +65,7 @@ const getConfiguredStorageProvider = () => {
     STORAGE_TYPE: process.env.STORAGE_TYPE,
     REDIS_URL: process.env.REDIS_URL,
     SRH_TOKEN: process.env.SRH_TOKEN,
-    KV_STORE_PROVIDER: process.env.KV_STORE_PROVIDER
+    KV_STORE_PROVIDER: process.env.KV_STORE_PROVIDER,
   };
   logger.debug(LogCategory.API, 'OrchestrationAdapter', 'Storage configuration', debug);
 
@@ -72,45 +76,62 @@ const getConfiguredStorageProvider = () => {
   if (storageType === 'redis' && redisUrl) {
     // Token is required by @upstash/redis, use placeholder if missing locally
     const tokenToUse = redisToken || 'local_placeholder_token';
-    logger.info(LogCategory.API, 'OrchestrationAdapter', `Using Redis Storage Provider: ${redisUrl}`);
+    logger.info(
+      LogCategory.API,
+      'OrchestrationAdapter',
+      `Using Redis Storage Provider: ${redisUrl}`,
+    );
 
     try {
       return new RedisStorageProvider({
         url: redisUrl,
-        token: tokenToUse // Pass token (now read from SRH_TOKEN)
+        token: tokenToUse, // Pass token (now read from SRH_TOKEN)
         // @upstash/redis handles TLS based on URL
       });
     } catch (error) {
-        logger.error(LogCategory.API, 'OrchestrationAdapter', 'Failed to initialize RedisStorageProvider, falling back to Memory', {
-            error: error instanceof Error ? error.message : String(error)
-        });
+      logger.error(
+        LogCategory.API,
+        'OrchestrationAdapter',
+        'Failed to initialize RedisStorageProvider, falling back to Memory',
+        {
+          error: error instanceof Error ? error.message : String(error),
+        },
+      );
     }
-  } 
-  else if (storageType === 'vercel-kv') { 
-      // Check if necessary env vars are present (optional, @vercel/kv might handle errors)
-      // const kvUrl = process.env.KV_URL;
-      // const kvToken = process.env.KV_REST_API_TOKEN;
-      // if (!kvUrl || !kvToken) {
-      //    logger.error(LogCategory.API, 'OrchestrationAdapter', 'Vercel KV environment variables (KV_URL, KV_REST_API_TOKEN) are missing, falling back to Memory');
-      // }
-      // else {
-          logger.info(LogCategory.API, 'OrchestrationAdapter', 'Using Vercel KV Storage Provider');
-          try {
-              // Use the factory to get the Vercel KV provider instance
-              return getStorageFactory().getProvider({ type: 'vercel-kv', namespace: 'sessions' });
-          } catch (error) {
-              logger.error(LogCategory.API, 'OrchestrationAdapter', 'Failed to initialize VercelKVProvider, falling back to Memory', {
-                  error: error instanceof Error ? error.message : String(error)
-              });
-          }
-      // }
+  } else if (storageType === 'vercel-kv') {
+    // Check if necessary env vars are present (optional, @vercel/kv might handle errors)
+    // const kvUrl = process.env.KV_URL;
+    // const kvToken = process.env.KV_REST_API_TOKEN;
+    // if (!kvUrl || !kvToken) {
+    //    logger.error(LogCategory.API, 'OrchestrationAdapter', 'Vercel KV environment variables (KV_URL, KV_REST_API_TOKEN) are missing, falling back to Memory');
+    // }
+    // else {
+    logger.info(LogCategory.API, 'OrchestrationAdapter', 'Using Vercel KV Storage Provider');
+    try {
+      // Use the factory to get the Vercel KV provider instance
+      return getStorageFactory().getProvider({ type: 'vercel-kv', namespace: 'sessions' });
+    } catch (error) {
+      logger.error(
+        LogCategory.API,
+        'OrchestrationAdapter',
+        'Failed to initialize VercelKVProvider, falling back to Memory',
+        {
+          error: error instanceof Error ? error.message : String(error),
+        },
+      );
+    }
+    // }
   }
-  
+
   // Default / Fallback
-  logger.warn(LogCategory.API, 'OrchestrationAdapter', 'Using Memory Storage Provider (State will NOT persist across requests)');
+  logger.warn(
+    LogCategory.API,
+    'OrchestrationAdapter',
+    'Using Memory Storage Provider (State will NOT persist across requests)',
+  );
   // Use factory for memory provider, ensuring a consistent namespace
   return getStorageFactory().getProvider({ type: 'memory', namespace: 'sessions' });
-}
+};
 
 /**
  * PUBLICLY EXPORTED function to get the correctly configured storage provider.
@@ -126,10 +147,10 @@ declare global {
 
 /**
  * Gets or creates the orchestration manager instance.
- * 
+ *
  * Ensures a single instance is used across the server process and configured correctly
  * with the storage provider determined by the environment.
- * 
+ *
  * @returns The orchestration manager instance
  */
 export function getOrchestrationManagerInstance(): OrchestrationManager {
@@ -139,12 +160,16 @@ export function getOrchestrationManagerInstance(): OrchestrationManager {
   }
 
   // Create a new instance and store it globally.
-  logger.info(LogCategory.API, 'OrchestrationAdapter', 'Creating SINGLETON OrchestrationManager instance');
-  
+  logger.info(
+    LogCategory.API,
+    'OrchestrationAdapter',
+    'Creating SINGLETON OrchestrationManager instance',
+  );
+
   // Get the storage provider based on environment config
   const storageProvider = getConfiguredStorageProvider();
 
-  // --- Configure TTL --- 
+  // --- Configure TTL ---
   // agentdock-core OrchestrationStateManager has a default TTL (e.g., 30 mins).
   // We allow overriding this via the SESSION_TTL_SECONDS environment variable.
   let sessionTtlMs: number | undefined = undefined;
@@ -153,23 +178,29 @@ export function getOrchestrationManagerInstance(): OrchestrationManager {
     const parsedTtl = parseInt(ttlSecondsEnv, 10);
     if (!isNaN(parsedTtl) && parsedTtl > 0) {
       sessionTtlMs = parsedTtl * 1000;
-      logger.info(LogCategory.API, 'OrchestrationAdapter', 
-        `Using custom session TTL from env: ${parsedTtl} seconds`);
+      logger.info(
+        LogCategory.API,
+        'OrchestrationAdapter',
+        `Using custom session TTL from env: ${parsedTtl} seconds`,
+      );
     } else {
-      logger.warn(LogCategory.API, 'OrchestrationAdapter', 
-        `Invalid SESSION_TTL_SECONDS value: ${ttlSecondsEnv}. Using core default TTL.`);
+      logger.warn(
+        LogCategory.API,
+        'OrchestrationAdapter',
+        `Invalid SESSION_TTL_SECONDS value: ${ttlSecondsEnv}. Using core default TTL.`,
+      );
     }
   }
   // --- End Configure TTL ---
 
   const newInstance = createOrchestrationManager({
-      storageProvider: storageProvider, 
-      // Pass the configured TTL (or undefined to let core use its default)
-      cleanup: { 
-        // Keep cleanup disabled by default in adapter, core handles TTL via SessionManager
-        enabled: false, 
-        ttlMs: sessionTtlMs 
-      }
+    storageProvider: storageProvider,
+    // Pass the configured TTL (or undefined to let core use its default)
+    cleanup: {
+      // Keep cleanup disabled by default in adapter, core handles TTL via SessionManager
+      enabled: false,
+      ttlMs: sessionTtlMs,
+    },
   });
 
   globalThis.__orchestrationManagerInstance = newInstance;
@@ -178,38 +209,35 @@ export function getOrchestrationManagerInstance(): OrchestrationManager {
 
 /**
  * Gets orchestration state for a session
- * 
+ *
  * @param sessionId - The session ID to get state for
  * @param config - Optional orchestration config (currently unused by core getState)
  * @returns The orchestration state or null
  */
 export async function getOrchestrationState(
   sessionId: SessionId,
-  config?: OrchestrationConfig
+  config?: OrchestrationConfig,
 ): Promise<AIOrchestrationState | null> {
   if (!sessionId) {
     return null;
   }
-  
+
   try {
     const manager = getOrchestrationManagerInstance();
-    
+
     const state = await manager.getState(sessionId);
-    
+
     if (process.env.NODE_ENV === 'development') {
-      logger.debug(
-          LogCategory.API,
-          'OrchestrationAdapter', 
-          'Retrieved state via core manager', 
-          { state: state ? JSON.stringify(state) : 'null' }
-      );
+      logger.debug(LogCategory.API, 'OrchestrationAdapter', 'Retrieved state via core manager', {
+        state: state ? JSON.stringify(state) : 'null',
+      });
     }
-    
+
     return state;
   } catch (error) {
-    logger.error(LogCategory.API, 'OrchestrationAdapter', 'Error getting orchestration state', { 
-        error: error instanceof Error ? error.message : String(error),
-        sessionId
+    logger.error(LogCategory.API, 'OrchestrationAdapter', 'Error getting orchestration state', {
+      error: error instanceof Error ? error.message : String(error),
+      sessionId,
     });
     return { sessionId, recentlyUsedTools: [] };
   }
@@ -217,7 +245,7 @@ export async function getOrchestrationState(
 
 /**
  * Tracks tool usage for orchestration
- * 
+ *
  * @param sessionId - The session ID
  * @param toolName - The tool that was used
  * @param config - Orchestration config (passed to processToolUsage)
@@ -227,41 +255,43 @@ export async function trackToolUsage(
   sessionId: SessionId,
   toolName: string,
   config: OrchestrationConfig,
-  messages: Message[] = []
+  messages: Message[] = [],
 ): Promise<AIOrchestrationState | null> {
   if (!sessionId || !toolName) {
     return null;
   }
-  
+
   try {
     const manager = getOrchestrationManagerInstance();
-    
+
     const llmMessages: LLMMessage[] = convertCoreToLLMMessages(messages);
 
     await manager.processToolUsage(config, llmMessages, sessionId, toolName);
 
     const updatedState = await manager.getState(sessionId);
-    logger.debug(LogCategory.API, 'OrchestrationAdapter', 'Tracked tool usage via core manager', { toolName, updatedState });
+    logger.debug(LogCategory.API, 'OrchestrationAdapter', 'Tracked tool usage via core manager', {
+      toolName,
+      updatedState,
+    });
     return updatedState;
-
   } catch (error) {
-    logger.error(LogCategory.API, 'OrchestrationAdapter', 'Error tracking tool usage', { 
-        error: error instanceof Error ? error.message : String(error),
-        sessionId,
-        toolName 
+    logger.error(LogCategory.API, 'OrchestrationAdapter', 'Error tracking tool usage', {
+      error: error instanceof Error ? error.message : String(error),
+      sessionId,
+      toolName,
     });
     try {
-        const state = await getOrchestrationManagerInstance().getState(sessionId);
-        return state ?? { sessionId, recentlyUsedTools: [toolName] };
+      const state = await getOrchestrationManagerInstance().getState(sessionId);
+      return state ?? { sessionId, recentlyUsedTools: [toolName] };
     } catch (innerError) {
-        return { sessionId, recentlyUsedTools: [toolName] };
+      return { sessionId, recentlyUsedTools: [toolName] };
     }
   }
 }
 
 /**
  * Gets active step for a session
- * 
+ *
  * @param config - The orchestration config
  * @param messages - Current conversation messages
  * @param sessionId - The session ID
@@ -270,30 +300,30 @@ export async function trackToolUsage(
 export async function getActiveStep(
   config: OrchestrationConfig,
   messages: Message[],
-  sessionId: SessionId
+  sessionId: SessionId,
 ): Promise<{ name: string; index: number } | null> {
   if (!sessionId || !config?.steps?.length) {
     return null;
   }
-  
+
   try {
     const manager = getOrchestrationManagerInstance();
-    
+
     const llmMessages: LLMMessage[] = convertCoreToLLMMessages(messages);
 
     const step = await manager.getActiveStep(config, llmMessages, sessionId);
     if (!step) {
       return null;
     }
-    
+
     return {
       name: step.name,
-      index: config.steps?.findIndex(s => s.name === step.name) ?? -1 
+      index: config.steps?.findIndex((s) => s.name === step.name) ?? -1,
     };
   } catch (error) {
-    logger.error(LogCategory.API, 'OrchestrationAdapter', 'Error getting active step', { 
-        error: error instanceof Error ? error.message : String(error),
-        sessionId 
+    logger.error(LogCategory.API, 'OrchestrationAdapter', 'Error getting active step', {
+      error: error instanceof Error ? error.message : String(error),
+      sessionId,
     });
     return null;
   }
@@ -301,7 +331,7 @@ export async function getActiveStep(
 
 /**
  * Gets allowed tools for a session
- * 
+ *
  * @param sessionId - The session ID
  * @param config - The orchestration config
  * @param allTools - All available tools
@@ -312,22 +342,22 @@ export async function getAllowedTools(
   sessionId: SessionId,
   config: OrchestrationConfig,
   allTools: string[],
-  messages: Message[] = []
+  messages: Message[] = [],
 ): Promise<string[]> {
   if (!sessionId || !config?.steps?.length) {
     return allTools;
   }
-  
+
   try {
     const manager = getOrchestrationManagerInstance();
-    
+
     const llmMessages: LLMMessage[] = convertCoreToLLMMessages(messages);
-    
+
     return await manager.getAllowedTools(config, llmMessages, sessionId, allTools);
   } catch (error) {
-    logger.error(LogCategory.API, 'OrchestrationAdapter', 'Error getting allowed tools', { 
-        error: error instanceof Error ? error.message : String(error),
-        sessionId 
+    logger.error(LogCategory.API, 'OrchestrationAdapter', 'Error getting allowed tools', {
+      error: error instanceof Error ? error.message : String(error),
+      sessionId,
     });
     return allTools;
   }
@@ -335,54 +365,61 @@ export async function getAllowedTools(
 
 /**
  * Adds orchestration headers to a response
- * 
+ *
  * @param response - The Next.js response
  * @param sessionId - The session ID
  * @returns The response with added headers
  */
 export async function addOrchestrationHeaders(
   response: NextResponse,
-  sessionId: SessionId
+  sessionId: SessionId,
 ): Promise<NextResponse> {
   if (!sessionId) {
     return response;
   }
-  
+
   response.headers.set('x-session-id', sessionId);
-  
+
   try {
     const manager = getOrchestrationManagerInstance();
     const state = await manager.getState(sessionId);
-    
+
     if (state) {
       const headerState: AIOrchestrationState = {
-          sessionId: state.sessionId,
-          recentlyUsedTools: state.recentlyUsedTools,
-          activeStep: state.activeStep,
-          sequenceIndex: state.sequenceIndex
+        sessionId: state.sessionId,
+        recentlyUsedTools: state.recentlyUsedTools,
+        activeStep: state.activeStep,
+        sequenceIndex: state.sequenceIndex,
       };
       response.headers.set('x-orchestration-state', JSON.stringify(headerState));
       if (process.env.NODE_ENV === 'development') {
-          logger.debug(LogCategory.API, 'OrchestrationAdapter', 'Setting header state', { headerState });
+        logger.debug(LogCategory.API, 'OrchestrationAdapter', 'Setting header state', {
+          headerState,
+        });
       }
     } else {
       response.headers.set(
-        'x-orchestration-state', 
-        JSON.stringify({ sessionId, recentlyUsedTools: [] })
+        'x-orchestration-state',
+        JSON.stringify({ sessionId, recentlyUsedTools: [] }),
       );
-       logger.debug(LogCategory.API, 'OrchestrationAdapter', 'Setting minimal fallback header state', { sessionId });
+      logger.debug(
+        LogCategory.API,
+        'OrchestrationAdapter',
+        'Setting minimal fallback header state',
+        { sessionId },
+      );
     }
   } catch (error) {
-    logger.error(LogCategory.API, 'OrchestrationAdapter', 'Error adding orchestration headers', { 
-        error: error instanceof Error ? error.message : String(error),
-        sessionId 
+    logger.error(LogCategory.API, 'OrchestrationAdapter', 'Error adding orchestration headers', {
+      error: error instanceof Error ? error.message : String(error),
+      sessionId,
     });
     response.headers.set(
-      'x-orchestration-state', 
-      JSON.stringify({ sessionId, recentlyUsedTools: [] })
+      'x-orchestration-state',
+      JSON.stringify({ sessionId, recentlyUsedTools: [] }),
     );
   }
-  
+
   return response;
 }
 
@@ -391,15 +428,20 @@ export async function addOrchestrationHeaders(
  */
 export async function resetOrchestrationState(sessionId: SessionId): Promise<void> {
   if (!sessionId) return;
-  
+
   try {
     const manager = getOrchestrationManagerInstance();
     await manager.resetState(sessionId);
-    logger.debug(LogCategory.API, 'OrchestrationAdapter', 'Reset orchestration state requested via adapter', { sessionId });
+    logger.debug(
+      LogCategory.API,
+      'OrchestrationAdapter',
+      'Reset orchestration state requested via adapter',
+      { sessionId },
+    );
   } catch (error) {
-    logger.error(LogCategory.API, 'OrchestrationAdapter', 'Error resetting orchestration state', { 
-        error: error instanceof Error ? error.message : String(error),
-        sessionId 
+    logger.error(LogCategory.API, 'OrchestrationAdapter', 'Error resetting orchestration state', {
+      error: error instanceof Error ? error.message : String(error),
+      sessionId,
     });
   }
 }
@@ -410,25 +452,26 @@ export async function resetOrchestrationState(sessionId: SessionId): Promise<voi
  */
 export function toMutableConfig(config: TemplateOrchestrationConfig): any {
   if (!config || !config.steps) return { steps: [] };
-  
+
   return {
     description: config.description,
-    steps: config.steps.map(step => ({
+    steps: config.steps.map((step) => ({
       name: step.name,
       description: step.description,
       isDefault: step.isDefault,
-      conditions: step.conditions ? 
-        step.conditions.map(condition => ({ 
-          type: condition.type, 
-          ...(condition.value !== undefined && { value: condition.value })
-        })) : [],
+      conditions: step.conditions
+        ? step.conditions.map((condition) => ({
+            type: condition.type,
+            ...(condition.value !== undefined && { value: condition.value }),
+          }))
+        : [],
       sequence: step.sequence ? [...step.sequence] : [],
-      availableTools: step.availableTools ? {
-        allowed: step.availableTools.allowed ? 
-          [...step.availableTools.allowed] : undefined,
-        denied: step.availableTools.denied ? 
-          [...step.availableTools.denied] : undefined
-      } : undefined
-    }))
+      availableTools: step.availableTools
+        ? {
+            allowed: step.availableTools.allowed ? [...step.availableTools.allowed] : undefined,
+            denied: step.availableTools.denied ? [...step.availableTools.denied] : undefined,
+          }
+        : undefined,
+    })),
   };
-} 
+}

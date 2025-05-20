@@ -13,11 +13,7 @@
     "When faced with complex questions, you break them down into manageable components.",
     "You're capable of handling technical discussions while remaining accessible to non-experts."
   ],
-  "nodes": [
-    "llm.groq",
-    "search",
-    "think"
-  ],
+  "nodes": ["llm.groq", "search", "think"],
   "nodeConfigurations": {
     "llm.groq": {
       "model": "deepseek-r1-distill-llama-70b",
@@ -44,4 +40,4 @@
   "options": {
     "maxSteps": 5
   }
-} 
+}

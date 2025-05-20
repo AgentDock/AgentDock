@@ -15,4 +15,4 @@ export const SEARCH_ENDPOINT = '/search';
 
 // Default parameters
 export const DEFAULT_SEARCH_RESULTS = 10;
-export const MAX_SEARCH_RESULTS = 50; 
+export const MAX_SEARCH_RESULTS = 50;

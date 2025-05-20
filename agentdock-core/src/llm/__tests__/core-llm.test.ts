@@ -172,4 +172,4 @@ describe('CoreLLM', () => {
       expect(llm.getLastTokenUsage()).toBeNull();
     });
   });
-}); 
+});

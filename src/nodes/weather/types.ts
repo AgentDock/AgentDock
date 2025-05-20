@@ -7,7 +7,7 @@ export interface GeocodingResult {
     latitude: number;
     longitude: number;
     country: string;
-    admin1?: string;  // State/Province
+    admin1?: string; // State/Province
   }>;
 }
 
@@ -60,4 +60,4 @@ export interface WeatherForecast {
     windDirection: number;
     precipitationProbability: number;
   }>;
-} 
+}

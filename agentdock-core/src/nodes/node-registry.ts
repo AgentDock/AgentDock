@@ -60,7 +60,7 @@ export interface NodeRegistryMetadata {
 export class NodeRegistry {
   /** Map of registered core nodes */
   private static nodes: Map<string, NodeRegistration> = new Map();
-  
+
   /** Map of registered custom nodes */
   private static customNodes: Map<string, NodeRegistration> = new Map();
 
@@ -71,16 +71,16 @@ export class NodeRegistry {
     nodeType: string,
     nodeClass: ConcreteNodeConstructor,
     expectedCategory: 'core' | 'custom',
-    options: ToolRegistrationOptions = {}
+    options: ToolRegistrationOptions = {},
   ): void {
     const metadata = nodeClass.getNodeMetadata();
-    
+
     // Validate node category
     if (metadata.category !== expectedCategory) {
       throw createError(
-        'node', 
+        'node',
         `Only ${expectedCategory} nodes can be registered with ${expectedCategory === 'core' ? 'register' : 'registerCustomNode'}()`,
-        ErrorCode.NODE_VALIDATION
+        ErrorCode.NODE_VALIDATION,
       );
     }
 
@@ -88,9 +88,9 @@ export class NodeRegistry {
     if (options.isTool) {
       if (!options.parameters) {
         throw createError(
-          'node', 
+          'node',
           'Tool nodes must provide parameters schema',
-          ErrorCode.NODE_VALIDATION
+          ErrorCode.NODE_VALIDATION,
         );
       }
 
@@ -98,9 +98,9 @@ export class NodeRegistry {
       const prototype = nodeClass.prototype;
       if (typeof prototype.execute !== 'function') {
         throw createError(
-          'node', 
+          'node',
           'Tool nodes must implement execute method',
-          ErrorCode.NODE_VALIDATION
+          ErrorCode.NODE_VALIDATION,
         );
       }
     }
@@ -114,7 +114,7 @@ export class NodeRegistry {
     nodeClass: ConcreteNodeConstructor,
     version: string,
     expectedCategory: 'core' | 'custom',
-    options: ToolRegistrationOptions = {}
+    options: ToolRegistrationOptions = {},
   ): void {
     this.validateRegistration(nodeType, nodeClass, expectedCategory, options);
     const targetMap = expectedCategory === 'core' ? this.nodes : this.customNodes;
@@ -123,7 +123,7 @@ export class NodeRegistry {
       version,
       isTool: options.isTool,
       parameters: options.parameters,
-      description: options.description || nodeClass.getNodeMetadata().description
+      description: options.description || nodeClass.getNodeMetadata().description,
     });
   }
 
@@ -134,7 +134,7 @@ export class NodeRegistry {
     nodeType: string,
     nodeClass: ConcreteNodeConstructor,
     version: string,
-    options: ToolRegistrationOptions = {}
+    options: ToolRegistrationOptions = {},
   ): void {
     this.registerNode(nodeType, nodeClass, version, 'core', options);
   }
@@ -146,7 +146,7 @@ export class NodeRegistry {
     nodeType: string,
     nodeClass: ConcreteNodeConstructor,
     version: string,
-    options: ToolRegistrationOptions = {}
+    options: ToolRegistrationOptions = {},
   ): void {
     this.registerNode(nodeType, nodeClass, version, 'custom', options);
   }
@@ -168,7 +168,7 @@ export class NodeRegistry {
               // Create a fresh instance for each execution
               const nodeInstance = new registration.nodeClass(
                 `${type}-${Date.now()}`, // Unique ID for this execution
-                {} // Empty config - tools should be self-contained
+                {}, // Empty config - tools should be self-contained
               );
 
               try {
@@ -178,7 +178,7 @@ export class NodeRegistry {
                 // Ensure cleanup is called
                 await nodeInstance.cleanup();
               }
-            }
+            },
           };
         }
       }
@@ -197,16 +197,16 @@ export class NodeRegistry {
   static create(nodeType: string, id: string, config: any): BaseNode {
     const nodeInfo = this.nodes.get(nodeType) || this.customNodes.get(nodeType);
     if (!nodeInfo) {
-      throw createError('node', `Unknown node type: ${nodeType}`,
-        ErrorCode.NODE_NOT_FOUND);
+      throw createError('node', `Unknown node type: ${nodeType}`, ErrorCode.NODE_NOT_FOUND);
     }
 
     // Version compatibility check
     const metadata = nodeInfo.nodeClass.getNodeMetadata();
     if (!this.isVersionCompatible(nodeInfo.version, metadata.version)) {
-      throw createError('node', 
+      throw createError(
+        'node',
         `Version mismatch: Node requires ${nodeInfo.version}, but ${metadata.version} was provided`,
-        ErrorCode.NODE_VALIDATION
+        ErrorCode.NODE_VALIDATION,
       );
     }
 
@@ -222,14 +222,14 @@ export class NodeRegistry {
         type,
         metadata: info.nodeClass.getNodeMetadata(),
         version: info.version,
-        isTool: info.isTool
+        isTool: info.isTool,
       })),
       customNodes: Array.from(this.customNodes.entries()).map(([type, info]) => ({
         type,
         metadata: info.nodeClass.getNodeMetadata(),
         version: info.version,
-        isTool: info.isTool
-      }))
+        isTool: info.isTool,
+      })),
     };
   }
 
@@ -267,8 +267,10 @@ export class NodeRegistry {
     }
 
     // If minor versions match, patch must be greater or equal
-    if (parseInt(providedParts[1]) === parseInt(requiredParts[1]) &&
-        parseInt(providedParts[2]) < parseInt(requiredParts[2])) {
+    if (
+      parseInt(providedParts[1]) === parseInt(requiredParts[1]) &&
+      parseInt(providedParts[2]) < parseInt(requiredParts[2])
+    ) {
       return false;
     }
 
@@ -282,4 +284,4 @@ export class NodeRegistry {
     this.nodes.clear();
     this.customNodes.clear();
   }
-} 
+}

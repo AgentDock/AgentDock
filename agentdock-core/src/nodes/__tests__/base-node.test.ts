@@ -29,12 +29,12 @@ class TestNode extends BaseNode<{ configParam: string }> {
   protected getInputs(): readonly NodePort[] {
     return [
       { id: 'input1', type: 'string', label: 'Input 1', required: true }, // Removed description
-      { id: 'input2', type: 'number', label: 'Input 2', required: false }
+      { id: 'input2', type: 'number', label: 'Input 2', required: false },
     ];
   }
   protected getOutputs(): readonly NodePort[] {
     return [
-      { id: 'output1', type: 'boolean', label: 'Output 1' } // Removed description
+      { id: 'output1', type: 'boolean', label: 'Output 1' }, // Removed description
     ];
   }
 
@@ -88,15 +88,13 @@ describe('BaseNode Contract Validation (via TestNode)', () => {
     const inputs = (testNode as any).getInputs();
     expect(inputs).toEqual([
       { id: 'input1', type: 'string', label: 'Input 1', required: true },
-      { id: 'input2', type: 'number', label: 'Input 2', required: false }
+      { id: 'input2', type: 'number', label: 'Input 2', required: false },
     ]);
   });
 
   it('should return correct outputs from getOutputs()', () => {
     const outputs = (testNode as any).getOutputs();
-    expect(outputs).toEqual([
-      { id: 'output1', type: 'boolean', label: 'Output 1' }
-    ]);
+    expect(outputs).toEqual([{ id: 'output1', type: 'boolean', label: 'Output 1' }]);
   });
 
   it('should execute correctly', async () => {
@@ -104,8 +102,8 @@ describe('BaseNode Contract Validation (via TestNode)', () => {
     const result = await testNode.execute(inputData);
     expect(result).toEqual({ received: inputData });
   });
-  
+
   it('should call cleanup without error', async () => {
-      await expect(testNode.cleanup()).resolves.toBeUndefined();
+    await expect(testNode.cleanup()).resolves.toBeUndefined();
   });
-}); 
+});

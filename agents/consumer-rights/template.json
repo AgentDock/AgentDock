@@ -14,9 +14,7 @@
     "When appropriate, I guide you on escalation paths - from customer service to management, then to regulatory agencies or small claims court when necessary.",
     "I always clarify that while I provide general information on consumer rights, I cannot replace proper legal advice for complex situations."
   ],
-  "nodes": [
-    "llm.gemini"
-  ],
+  "nodes": ["llm.gemini"],
   "nodeConfigurations": {
     "llm.gemini": {
       "model": "gemini-2.5-flash-preview-04-17",

@@ -48,7 +48,7 @@ graph TD
     C --> D[Visual Editor]
     D --> E[User Refinement]
     E --> F[Agent Execution]
-    
+
     style B fill:#0066cc,color:#ffffff,stroke:#0033cc
     style C fill:#e6f2ff,stroke:#99ccff
 ```
@@ -67,7 +67,7 @@ graph TD
     B --> I[Memory System]
     D --> B
     E --> B
-    
+
     style B fill:#0066cc,color:#ffffff,stroke:#0033cc
     style F fill:#e6f2ff,stroke:#99ccff
     style I fill:#e6f2ff,stroke:#99ccff
@@ -85,30 +85,30 @@ A carefully crafted system prompt provides instructions and context to the LLM:
 const systemPrompt = {
   instruction: `You are an expert agent builder for AgentDock Pro.
   Analyze the user's natural language description and create the optimal agent configuration.`,
-  
+
   availableTools: {
-    "webSearch": {
-      description: "Searches the web for information",
-      inputs: { "query": "string" },
-      outputs: { "results": "array" }
+    webSearch: {
+      description: 'Searches the web for information',
+      inputs: { query: 'string' },
+      outputs: { results: 'array' },
     },
-    "databaseQuery": {
-      description: "Queries databases",
-      inputs: { "sql": "string" },
-      outputs: { "results": "array" }
+    databaseQuery: {
+      description: 'Queries databases',
+      inputs: { sql: 'string' },
+      outputs: { results: 'array' },
     },
     // More tools...
   },
-  
+
   outputFormat: {
-    type: "AgentConfiguration",
+    type: 'AgentConfiguration',
     example: {
-      name: "Research Assistant",
-      description: "Helps with research tasks",
-      systemPrompt: "You are a research assistant...",
-      tools: ["webSearch", "fileSummarizer"]
-    }
-  }
+      name: 'Research Assistant',
+      description: 'Helps with research tasks',
+      systemPrompt: 'You are a research assistant...',
+      tools: ['webSearch', 'fileSummarizer'],
+    },
+  },
 };
 ```
 
@@ -148,7 +148,7 @@ graph TD
     D --> B
     E --> B
     B --> G[Memory System]
-    
+
     style B fill:#0066cc,color:#ffffff,stroke:#0033cc
 ```
 
@@ -164,7 +164,7 @@ graph LR
     C --> B
     B --> D[Summarization]
     D --> E[Email Sender]
-    
+
     style B fill:#0066cc,color:#ffffff,stroke:#0033cc
 ```
 
@@ -180,7 +180,7 @@ graph TD
     C -->|Alert| D[Telegram Node]
     C -->|Record| E[Database]
     C -->|Normal| F[No Action]
-    
+
     style B fill:#0066cc,color:#ffffff,stroke:#0033cc
     style D fill:#e6f2ff,stroke:#99ccff
 ```
@@ -228,13 +228,13 @@ graph LR
     subgraph "AgentDock Pro"
         A[Natural Language Creation] --> B[Agent Configuration]
     end
-    
+
     subgraph "AgentDock Core"
         C[API Integration] --> D[Agent Usage]
     end
-    
+
     B --> C
-    
+
     style A fill:#0066cc,color:#ffffff,stroke:#0033cc
     style B fill:#e6f2ff,stroke:#99ccff
 ```
@@ -249,18 +249,18 @@ graph LR
 
 ## Timeline
 
-| Phase | Status | Description |
-|-------|--------|-------------|
-| Design | In Progress | System architecture and prompt design |
-| Simple Agent Creation | Planned | Basic agent creation from descriptions |
-| Tool Integration | Planned | Smart tool selection and configuration |
-| Visual Builder Integration | Planned | Combined natural language and visual editing |
-| Advanced Workflow Generation | Future | Complex multi-step workflow creation |
-| Pattern Learning | Future | Improving generation through successful patterns |
+| Phase                        | Status      | Description                                      |
+| ---------------------------- | ----------- | ------------------------------------------------ |
+| Design                       | In Progress | System architecture and prompt design            |
+| Simple Agent Creation        | Planned     | Basic agent creation from descriptions           |
+| Tool Integration             | Planned     | Smart tool selection and configuration           |
+| Visual Builder Integration   | Planned     | Combined natural language and visual editing     |
+| Advanced Workflow Generation | Future      | Complex multi-step workflow creation             |
+| Pattern Learning             | Future      | Improving generation through successful patterns |
 
 ## Connection to Other Roadmap Items
 
 - **Platform Integration**: Easily configure agent connections to platforms
 - **Advanced Memory Systems**: Natural language setup of memory requirements
 - **Multi-Agent Collaboration**: Describe complex agent interactions
-- **Tool Integration**: Automatic tool selection and configuration 
+- **Tool Integration**: Automatic tool selection and configuration

@@ -20,7 +20,7 @@ The agent uses the following configuration:
 - **Model**: gemini-2.0-flash-exp
 - **Search Grounding**: Disabled (relies on built-in knowledge)
 - **Temperature**: 0.7 (balanced creativity and coherence)
-- **Nodes**: 
+- **Nodes**:
   - `llm.gemini`: Core language model capabilities
   - `generate_image`: Image creation and editing tool
 
@@ -63,9 +63,9 @@ Agent: "I'd be happy to edit this image to make the sky more dramatic. To get th
 ```
 
 > **IMPORTANT**: To edit an image, you must first generate an image in chat, then click the **Edit** button (pencil icon) that appears when hovering over the image. This will take you to the dedicated image generation page with your image preloaded.
-> 
+>
 > **Do not** attempt to edit images by uploading attachments directly in the chat - this will not work correctly due to limitations with the AI SDK streaming. Always use the Edit button to navigate to the dedicated page for proper image editing.
-> 
+>
 > The dedicated image generation page provides the optimal environment for editing images with complete functionality.
 
 ## Best Practices
@@ -80,4 +80,4 @@ Agent: "I'd be happy to edit this image to make the sky more dramatic. To get th
 - The agent does not use web search - it relies on built-in knowledge
 - Image generation is powered by Google's Gemini model
 - The agent will generate an image from your first prompt and then help refine it
-- While the agent can read text content, its primary focus is visual creation 
+- While the agent can read text content, its primary focus is visual creation

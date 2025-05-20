@@ -22,4 +22,4 @@ export const ARXIV_CATEGORIES = {
 };
 
 // Rate limits (arXiv requests max 1 request per 3 seconds)
-export const RATE_LIMIT_MS = 3100; // Add a little buffer (3.1 seconds) 
+export const RATE_LIMIT_MS = 3100; // Add a little buffer (3.1 seconds)

@@ -3,16 +3,14 @@ import { POST } from '@/app/api/chat/[agentId]/route';
 import { Message } from 'agentdock-core';
 
 describe.skip('Chat Route E2E', () => {
-  const mockMessages: Message[] = [
-    { id: '1', role: 'user', content: 'Hello' }
-  ];
+  const mockMessages: Message[] = [{ id: '1', role: 'user', content: 'Hello' }];
 
   const mockAgentId = 'test-agent';
 
   it('should handle missing API key', async () => {
     const request = new NextRequest('http://localhost:3000/api/chat/test-agent', {
       method: 'POST',
-      body: JSON.stringify({ messages: mockMessages })
+      body: JSON.stringify({ messages: mockMessages }),
     });
 
     const response = await POST(request, { params: Promise.resolve({ agentId: mockAgentId }) });
@@ -26,9 +24,9 @@ describe.skip('Chat Route E2E', () => {
     const request = new NextRequest('http://localhost:3000/api/chat/invalid-agent', {
       method: 'POST',
       headers: {
-        'x-api-key': 'test-key'
+        'x-api-key': 'test-key',
       },
-      body: JSON.stringify({ messages: mockMessages })
+      body: JSON.stringify({ messages: mockMessages }),
     });
 
     const response = await POST(request, { params: Promise.resolve({ agentId: 'invalid-agent' }) });
@@ -39,4 +37,4 @@ describe.skip('Chat Route E2E', () => {
   });
 
   // Add more test cases as needed
-}); 
+});

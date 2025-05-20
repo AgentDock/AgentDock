@@ -3,11 +3,11 @@
  */
 
 export interface StorageData {
-  data: string;      // Encrypted data
-  hmac: string;      // HMAC for tampering detection
-  version: string;   // Storage format version
+  data: string; // Encrypted data
+  hmac: string; // HMAC for tampering detection
+  version: string; // Storage format version
   timestamp: number; // Creation timestamp
-  iv: string;        // Initialization vector
+  iv: string; // Initialization vector
 }
 
 export interface StorageKey {
@@ -19,4 +19,4 @@ export interface StorageOptions {
   namespace?: string;
   maxRetries?: number;
   version?: string;
-} 
+}

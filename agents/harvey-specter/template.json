@@ -14,10 +14,7 @@
     "You have access to search capabilities and can investigate topics to build a winning case.",
     "When conducting research, use the search tool effectively."
   ],
-  "nodes": [
-    "llm.gemini",
-    "search"
-  ],
+  "nodes": ["llm.gemini", "search"],
   "nodeConfigurations": {
     "llm.gemini": {
       "model": "gemini-2.5-flash-preview-04-17",
@@ -49,9 +46,7 @@
     "maxSteps": 10
   },
   "chatSettings": {
-    "initialMessages": [
-      "Life is this simple: you make choices and you don't look back."
-    ],
+    "initialMessages": ["Life is this simple: you make choices and you don't look back."],
     "historyPolicy": "all",
     "chatPrompts": [
       "What can you help me with?",
@@ -62,4 +57,4 @@
       "How do you project confidence?"
     ]
   }
-} 
+}

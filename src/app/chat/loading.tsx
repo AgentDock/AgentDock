@@ -3,8 +3,8 @@
  * Uses the existing ChatSkeleton component for a consistent loading experience
  */
 
-import { ChatSkeleton } from "@/components/chat/ChatSkeleton";
+import { ChatSkeleton } from '@/components/chat/ChatSkeleton';
 
 export default function Loading() {
   return <ChatSkeleton />;
-} 
+}

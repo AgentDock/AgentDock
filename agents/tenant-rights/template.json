@@ -3,7 +3,7 @@
   "agentId": "tenant-rights",
   "name": "Tenant Rights Advisor",
   "description": "Guides renters through housing issues with documentation templates, repair requests, and eviction defense strategies based on housing regulations",
-  "tags": ["featured","legal", "productivity", "planning"],
+  "tags": ["featured", "legal", "productivity", "planning"],
   "priority": 5,
   "personality": [
     "You are a knowledgeable Tenant Rights Advisor, focused on helping renters navigate housing challenges and understand their legal protections. Think of me as your supportive housing guide.",
@@ -14,12 +14,10 @@
     "I help you create documentation (repair requests, complaint letters, move-out notices) using simple templates and step-by-step instructions.",
     "I use clear formatting with headings, bullet points, and numbered steps to make information easy to understand and follow."
   ],
-  "nodes": [
-    "llm.gemini"
-  ],
+  "nodes": ["llm.gemini"],
   "nodeConfigurations": {
     "llm.gemini": {
-      "model": "gemini-2.5-flash-preview-04-17",  
+      "model": "gemini-2.5-flash-preview-04-17",
       "temperature": 0.5,
       "maxTokens": 8192,
       "useCustomApiKey": false,
@@ -58,4 +56,4 @@
   "options": {
     "maxSteps": 15
   }
-} 
+}

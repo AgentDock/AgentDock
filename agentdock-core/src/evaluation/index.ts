@@ -25,9 +25,9 @@ export * from './evaluators';
 
 // Example lines that were previously here for direct exports:
 // export { RuleBasedEvaluator } from './evaluators/rule-based/evaluator';
-// export { LLMJudgeEvaluator } from './evaluators/llm/judge'; 
+// export { LLMJudgeEvaluator } from './evaluators/llm/judge';
 
 // TODO: Export concrete evaluator implementations from ./evaluators/* when they exist (This is now covered by `export * from './evaluators';`)
 // Example:
 // export { RuleBasedEvaluator } from './evaluators/rule-based/evaluator';
-// export { LLMJudgeEvaluator } from './evaluators/llm/judge'; 
+// export { LLMJudgeEvaluator } from './evaluators/llm/judge';

@@ -7,6 +7,7 @@ AgentDock is built around a powerful **node-based architecture** using `BaseNode
 The underlying structure, with defined `input`/`output` ports and `MessageBus` integration, provides the core capabilities necessary to build complex workflow engines and chained execution patterns directly using the open-source library. While the reference client currently focuses on `AgentNode` orchestrating individual tool executions, the architecture is designed for much more.
 
 We are actively developing a richer set of node types to unlock true workflow automation, including:
+
 - **Event Nodes**: To trigger workflows from external sources or schedules.
 - **Transform & AI Inference Nodes**: For powerful data manipulation and specialized AI tasks.
 - **Connector & Action Nodes**: To seamlessly integrate with external services and databases.
@@ -25,19 +26,19 @@ While developers can create many types of custom nodes, AgentDock Core provides 
 The `BaseNode` is the foundation of AgentDock's architecture, provided by **AgentDock Core**. It creates a consistent interface and core functionality for all node types:
 
 - **Metadata Management**: Each node provides detailed, immutable `NodeMetadata` including:
-    - `category`: 'core' or 'custom'
-    - `label`: Display name
-    - `description`: Functionality overview
-    - `inputs`/`outputs`: Defined ports (see below)
-    - `version`: Semantic version string
-    - `compatibility`: Flags indicating core/pro/custom environment support
+  - `category`: 'core' or 'custom'
+  - `label`: Display name
+  - `description`: Functionality overview
+  - `inputs`/`outputs`: Defined ports (see below)
+  - `version`: Semantic version string
+  - `compatibility`: Flags indicating core/pro/custom environment support
 - **Port System**: Type-safe `inputs` and `outputs` defined using the `NodePort` interface:
-    - `id`: Unique port identifier
-    - `type`: Data type string
-    - `label`: Display name
-    - `schema`: Optional Zod schema for validation
-    - `required`: Boolean flag
-    - `defaultValue`: Optional default value
+  - `id`: Unique port identifier
+  - `type`: Data type string
+  - `label`: Display name
+  - `schema`: Optional Zod schema for validation
+  - `required`: Boolean flag
+  - `defaultValue`: Optional default value
 - **Validation Hooks**: Provides methods like `validateInput`, `validateOutput`, and `validateConnection` for ensuring data integrity and connection validity (subclasses can override).
 - **Message Passing**: Integrates with a `MessageBus` (set via `setMessageBus`). Nodes can send messages (`sendMessage`) and register handlers (`addMessageHandler`, `removeMessageHandler`), enabling potential asynchronous coordination between nodes.
 - **Lifecycle Management**: `initialize()` for setup, `execute()` for core logic, and `cleanup()` for resource disposal.
@@ -82,7 +83,7 @@ The `AgentNode` (`type: 'core.agent'`) is a specialized node in **AgentDock Core
 - **LLM Integration**: Manages `CoreLLM` instances (primary and optional fallback), handling provider/model derivation logic via `createLLMInstance` if not explicitly configured.
 - **Dynamic Tool Selection**: Determines available tools for each turn via `getAvailableTools`, consulting the `ToolRegistry` and the agent's `orchestration` rules via an injected `OrchestrationManager`.
 - **Runtime Execution (`handleMessage`)**: Requires `AgentNodeHandleMessageOptions` including conversation `messages`, the `OrchestrationManager`, `sessionId`, and optional overrides for system prompts or LLM configuration.
-- **Stream Delegation**: Sets up the LLM call (using `streamText` from the LLM service) and returns the `AgentDockStreamResult` (containing the stream and promises) immediately. *It delegates the consumption of the stream and handling of tool calls/results to the calling adapter/API route.*
+- **Stream Delegation**: Sets up the LLM call (using `streamText` from the LLM service) and returns the `AgentDockStreamResult` (containing the stream and promises) immediately. _It delegates the consumption of the stream and handling of tool calls/results to the calling adapter/API route._
 - **Error Handling**: Implements fallback mechanisms for LLM provider issues.
 
 ```typescript
@@ -126,9 +127,9 @@ The `NodeRegistry` from **AgentDock Core** provides a central system for discove
 
 ### Tool Registry
 
-The `ToolRegistry` from **AgentDock Core** manages the *runtime availability* of tools for specific agent interactions:
+The `ToolRegistry` from **AgentDock Core** manages the _runtime availability_ of tools for specific agent interactions:
 
-- **Purpose**: Primarily used by `AgentNode` to determine which tools (identified by their node type strings) are available *for a given agent configuration* during a specific turn.
+- **Purpose**: Primarily used by `AgentNode` to determine which tools (identified by their node type strings) are available _for a given agent configuration_ during a specific turn.
 - **Filtering (`getToolsForAgent`)**: Takes a list of node names (from agent config) and returns the corresponding tool objects registered globally.
 - **Global Instance**: Typically accessed via a singleton pattern (`getToolRegistry()`).
 
@@ -146,13 +147,17 @@ import { z } from 'zod';
 import { Tool } from 'ai'; // Vercel AI SDK Tool type
 // ... potentially import React components ...
 
-const myToolSchema = z.object({ /* ... */ });
+const myToolSchema = z.object({
+  /* ... */
+});
 
 export const myTool: Tool = {
   name: 'my_tool_id', // Matches the key in the tools object
   description: 'What this tool does',
   parameters: myToolSchema,
-  execute: async (args) => { /* ... server-side logic ... */ },
+  execute: async (args) => {
+    /* ... server-side logic ... */
+  },
   // Optional: render function for UI display in NextJS client
   // render: (props) => <MyComponent {...props} />
 };
@@ -162,7 +167,8 @@ export const tools = {
   my_tool_id: myTool,
 };
 ```
-*(Note: This reference implementation pattern bypasses direct registration with `agentdock-core`'s `NodeRegistry` for simpler tool definition, relying on its own loading mechanism.)*
+
+_(Note: This reference implementation pattern bypasses direct registration with `agentdock-core`'s `NodeRegistry` for simpler tool definition, relying on its own loading mechanism.)_
 
 ### Security Best Practices
 
@@ -186,8 +192,8 @@ The node system implements several key design patterns:
 
 Nodes go through a defined lifecycle managed by the system interacting with them (e.g., an agent runner or workflow engine):
 
-1.  **Registration**: Node *type* is registered with `NodeRegistry`.
-2.  **Instantiation**: Node *instance* is created via `NodeRegistry.create`.
+1.  **Registration**: Node _type_ is registered with `NodeRegistry`.
+2.  **Instantiation**: Node _instance_ is created via `NodeRegistry.create`.
 3.  **Initialization**: Node's `initialize()` method is called (e.g., before first use).
 4.  **Execution**: Node's `execute()` (or `handleMessage` for `AgentNode`) is called potentially multiple times.
 5.  **Cleanup**: Node's `cleanup()` method is called when the instance is no longer needed.
@@ -216,4 +222,4 @@ For detailed guidance:
 
 - Review `agentdock-core` source code in `src/nodes/`.
 - See `src/nodes/custom-tool-contributions.md` in the reference implementation for client-specific tool patterns.
-- Examine existing tools in the reference implementation's `src/nodes/tools/` directory. 
+- Examine existing tools in the reference implementation's `src/nodes/tools/` directory.

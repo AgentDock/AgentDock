@@ -4,7 +4,6 @@
 
 <h1 align="left">Build Anything with AI Agents</h1>
 
-
 [![GitHub stars](https://img.shields.io/github/stars/agentdock/agentdock)](https://github.com/agentdock/agentdock/stargazers)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/AgentDock/AgentDock/blob/main/LICENSE)
 [![Status: Beta](https://img.shields.io/badge/Status-Beta-blue)](https://github.com/AgentDock/AgentDock/releases)
@@ -13,15 +12,13 @@
 [![Cloud](https://img.shields.io/badge/Cloud-☁️-blue)](https://agentdock.ai)
 [![Twitter Follow](https://img.shields.io/twitter/follow/AgentDock?style=social)](https://x.com/agentdock)
 
-
-
 AgentDock is a framework for building sophisticated AI agents that deliver complex tasks with **configurable determinism**. It consists of two main components:
 
-1. **AgentDock Core**: An open-source, backend-first framework for building and deploying AI agents. It's designed to be *framework-agnostic* and *provider-independent*, giving you complete control over your agent's implementation.
+1. **AgentDock Core**: An open-source, backend-first framework for building and deploying AI agents. It's designed to be _framework-agnostic_ and _provider-independent_, giving you complete control over your agent's implementation.
 
 2. **Open Source Client**: A complete Next.js application that serves as a reference implementation and consumer of the AgentDock Core framework. You can see it in action at [https://hub.agentdock.ai](https://hub.agentdock.ai)
 
-Built with TypeScript, AgentDock emphasizes *simplicity*, *extensibility*, and ***configurable determinism*** - making it ideal for building reliable and predictable AI systems that can operate with minimal supervision.
+Built with TypeScript, AgentDock emphasizes _simplicity_, _extensibility_, and **_configurable determinism_** - making it ideal for building reliable and predictable AI systems that can operate with minimal supervision.
 
 ## Demos
 
@@ -47,10 +44,6 @@ https://github.com/user-attachments/assets/56e80a15-eac3-452b-aa8b-efe7b7f3360c
 
 https://github.com/user-attachments/assets/6b4e71cf-accc-4c18-bb42-7bc5ad2f37e4
 
-
-
-
-
 ## 🌐 README Translations
 
 [Français](./docs/i18n/french/README.md) • [日本語](./docs/i18n/japanese/README.md) • [한국어](./docs/i18n/korean/README.md) • [中文](./docs/i18n/chinese/README.md) • [Español](./docs/i18n/spanish/README.md) • [Deutsch](./docs/i18n/deutsch/README.md) • [Italiano](./docs/i18n/italian/README.md) • [Nederlands](./docs/i18n/dutch/README.md) • [Polski](./docs/i18n/polish/README.md) • [Türkçe](./docs/i18n/turkish/README.md) • [Українська](./docs/i18n/ukrainian/README.md) • [Ελληνικά](./docs/i18n/greek/README.md) • [Русский](./docs/i18n/russian/README.md) • [العربية](./docs/i18n/arabic/README.md)
@@ -67,13 +60,13 @@ AgentDock is built on these core principles:
 
 ### Configurable Determinism
 
-***Configurable determinism*** is a cornerstone of AgentDock's design philosophy, enabling you to balance creative AI capabilities with predictable system behavior:
+**_Configurable determinism_** is a cornerstone of AgentDock's design philosophy, enabling you to balance creative AI capabilities with predictable system behavior:
 
 - AgentNodes are inherently non-deterministic as LLMs may generate different responses each time
-- Workflows can be made more deterministic through *defined tool execution paths*
+- Workflows can be made more deterministic through _defined tool execution paths_
 - Developers can **control the level of determinism** by configuring which parts of the system use LLM inference
 - Even with LLM components, the overall system behavior remains **predictable** through structured tool interactions
-- This balanced approach enables both *creativity* and **reliability** in your AI applications
+- This balanced approach enables both _creativity_ and **reliability** in your AI applications
 
 #### Deterministic Workflows
 
@@ -84,7 +77,7 @@ flowchart LR
   Input[Input] --> Process[Process]
   Process --> Database[(Database)]
   Process --> Output[Output]
-  
+
   style Input fill:#f9f9f9,stroke:#333,stroke-width:1px
   style Output fill:#f9f9f9,stroke:#333,stroke-width:1px
   style Process fill:#d4f1f9,stroke:#333,stroke-width:1px
@@ -105,7 +98,7 @@ flowchart TD
   ToolA --> Response[Final Response]
   ToolB --> Response
   ToolC --> Response
-  
+
   style Input fill:#f9f9f9,stroke:#333,stroke-width:1px
   style Agent fill:#ffdfba,stroke:#333,stroke-width:1px
   style ToolChoice fill:#ffdfba,stroke:#333,stroke-width:1px
@@ -117,7 +110,7 @@ flowchart TD
 
 #### Non-Deterministic Agents with Deterministic Sub-Workflows
 
-AgentDock gives you the ***best of both worlds*** by combining non-deterministic agent intelligence with deterministic workflow execution:
+AgentDock gives you the **_best of both worlds_** by combining non-deterministic agent intelligence with deterministic workflow execution:
 
 ```mermaid
 flowchart TD
@@ -126,14 +119,14 @@ flowchart TD
   FlowChoice -->|"Decision A"| Flow1[Deterministic Workflow 1]
   FlowChoice -->|"Decision B"| Flow2[Deterministic Workflow 2]
   FlowChoice -->|"Decision C"| DirectResponse[Generate Response]
-  
+
   Flow1 --> |"Step 1 → 2 → 3 → ... → 200"| Flow1Result[Workflow 1 Result]
   Flow2 --> |"Step 1 → 2 → 3 → ... → 100"| Flow2Result[Workflow 2 Result]
-  
+
   Flow1Result --> Response[Final Response]
   Flow2Result --> Response
   DirectResponse --> Response
-  
+
   style Input fill:#f9f9f9,stroke:#333,stroke-width:1px
   style Agent fill:#ffdfba,stroke:#333,stroke-width:1px
   style FlowChoice fill:#ffdfba,stroke:#333,stroke-width:1px
@@ -149,18 +142,17 @@ This approach enables complex multi-step workflows (potentially involving hundre
 
 For more advanced AI agent workflows and multi-stage processing pipelines, we're building [AgentDock Pro](docs/agentdock-pro.md) - a powerful platform for creating, visualizing, and running complex agent systems.
 
-#### TL;DR on Configurable Determinism 
+#### TL;DR on Configurable Determinism
 
-Think of it like driving. Sometimes you need the AI's creativity (like navigating city streets - non-deterministic), and sometimes you need reliable, step-by-step processes (like following highway signs - deterministic). AgentDock lets you build systems that use *both*, choosing the right approach for each part of a task. You get the AI's smarts *and* predictable results where needed.
-
+Think of it like driving. Sometimes you need the AI's creativity (like navigating city streets - non-deterministic), and sometimes you need reliable, step-by-step processes (like following highway signs - deterministic). AgentDock lets you build systems that use _both_, choosing the right approach for each part of a task. You get the AI's smarts _and_ predictable results where needed.
 
 ## 🏗️ Core Architecture
 
 The framework is built around a powerful, modular node-based system, serving as the foundation for all agent functionality. This architecture uses distinct node types as building blocks:
 
--   **`BaseNode`**: The fundamental class establishing the core interface and capabilities for all nodes.
--   **`AgentNode`**: A specialized core node orchestrating LLM interactions, tool usage, and agent logic.
--   **Tools & Custom Nodes**: Developers implement agent capabilities and custom logic as nodes extending `BaseNode`.
+- **`BaseNode`**: The fundamental class establishing the core interface and capabilities for all nodes.
+- **`AgentNode`**: A specialized core node orchestrating LLM interactions, tool usage, and agent logic.
+- **Tools & Custom Nodes**: Developers implement agent capabilities and custom logic as nodes extending `BaseNode`.
 
 These nodes interact through managed registries and can be connected (leveraging the core architecture's ports and potential message bus) to enable complex, configurable, and potentially deterministic agent behaviors and workflows.
 
@@ -172,9 +164,9 @@ For a comprehensive guide, see the [Getting Started Guide](docs/getting-started.
 
 ### Requirements
 
-* Node.js ≥ 20.11.0 (LTS)
-* pnpm ≥ 9.15.0 (Required)
-* API keys for LLM providers (Anthropic, OpenAI, etc.)
+- Node.js ≥ 20.11.0 (LTS)
+- pnpm ≥ 9.15.0 (Required)
+- API keys for LLM providers (Anthropic, OpenAI, etc.)
 
 ### Installation
 
@@ -197,25 +189,27 @@ For a comprehensive guide, see the [Getting Started Guide](docs/getting-started.
    ```bash
    pnpm install
    ```
-   
+
    For a clean reinstallation (when you need to rebuild from scratch):
+
    ```bash
    pnpm run clean-install
    ```
+
    This script removes all node_modules, lock files, and reinstalls dependencies correctly.
 
 4. **Configure Environment**:
-   
+
    Create an environment file (`.env` or `.env.local`) based on `.env.example`:
-   
+
    ```bash
    # Option 1: Create .env.local
    cp .env.example .env.local
-   
+
    # Option 2: Create .env
    cp .env.example .env
    ```
-   
+
    Then add your API keys to the environment file.
 
 5. **Start Development Server**:
@@ -223,20 +217,21 @@ For a comprehensive guide, see the [Getting Started Guide](docs/getting-started.
    ```bash
    pnpm dev
    ```
+
 ## Deploy the Open Source Client
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FAgentDock%2FAgentDock)
 
-Click the button above to deploy the AgentDock Open Source Client directly to your Vercel account. 
+Click the button above to deploy the AgentDock Open Source Client directly to your Vercel account.
 
 ### Advanced Capabilities
 
-| Capability             | Description                                                                    | Documentation                                                        |
-|------------------------|--------------------------------------------------------------------------------|----------------------------------------------------------------------|
-| **Session Management** | Isolated, performant state management for conversations                        | [Session Documentation](./docs/architecture/sessions/README.md)      |
-| **Orchestration Framework** | Control agent behavior and tool availability based on context                  | [Orchestration Documentation](./docs/architecture/orchestration/README.md) |
-| **Storage Abstraction**  | Flexible storage system with pluggable providers for KV, Vector, and Secure storage | [Storage Documentation](./docs/storage/README.md)                    |
-| **Evaluation Framework** | Systematically measure and improve agent quality with diverse evaluators       | [Evaluation Documentation](./docs/evaluations/README.md)             |
+| Capability                  | Description                                                                         | Documentation                                                              |
+| --------------------------- | ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| **Session Management**      | Isolated, performant state management for conversations                             | [Session Documentation](./docs/architecture/sessions/README.md)            |
+| **Orchestration Framework** | Control agent behavior and tool availability based on context                       | [Orchestration Documentation](./docs/architecture/orchestration/README.md) |
+| **Storage Abstraction**     | Flexible storage system with pluggable providers for KV, Vector, and Secure storage | [Storage Documentation](./docs/storage/README.md)                          |
+| **Evaluation Framework**    | Systematically measure and improve agent quality with diverse evaluators            | [Evaluation Documentation](./docs/evaluations/README.md)                   |
 
 The storage system is currently evolving with key-value storage (Memory, Redis, Vercel KV providers) and secure client-side storage, while vector storage and additional backends are in development.
 
@@ -267,15 +262,13 @@ AgentDock includes several pre-configured agent templates. Explore them in the `
 
 Example implementations showcase specialized use cases and advanced functionality:
 
-| Implementation | Description | Status |
-|----------------|-------------|--------|
-| **Orchestrated Agent** | Example agent using orchestration to adapt behavior based on context | Available |
-| **Cognitive Reasoner** | Tackles complex problems using structured reasoning & cognitive tools | Available |
-| **Agent Planner** | Specialized agent for designing and implementing other AI agents | Available |
-| [**Code Playground**](docs/roadmap/code-playground.md) | Sandboxed code generation and execution with rich visualization capabilities | Planned |
-| [**Generalist AI Agent**](docs/roadmap/generalist-agent.md) | Manus-like agent that can use browser and execute complex tasks | Planned |
-
-
+| Implementation                                              | Description                                                                  | Status    |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------- | --------- |
+| **Orchestrated Agent**                                      | Example agent using orchestration to adapt behavior based on context         | Available |
+| **Cognitive Reasoner**                                      | Tackles complex problems using structured reasoning & cognitive tools        | Available |
+| **Agent Planner**                                           | Specialized agent for designing and implementing other AI agents             | Available |
+| [**Code Playground**](docs/roadmap/code-playground.md)      | Sandboxed code generation and execution with rich visualization capabilities | Planned   |
+| [**Generalist AI Agent**](docs/roadmap/generalist-agent.md) | Manus-like agent that can use browser and execute complex tasks              | Planned   |
 
 ## 🔐 Environment Configuration Details
 
@@ -325,17 +318,19 @@ AgentDock follows a BYOK (Bring Your Own Key) model:
 
 ## 📦 Package Manager
 
-This project *requires* the use of `pnpm` for consistent dependency management. `npm` and `yarn` are not supported.
+This project _requires_ the use of `pnpm` for consistent dependency management. `npm` and `yarn` are not supported.
 
 ## 💡 What You Can Build
 
 1. **AI-Powered Applications**
+
    - Custom chatbots with any frontend
    - Command-line AI assistants
    - Automated data processing pipelines
    - Backend service integrations
 
 2. **Integration Capabilities**
+
    - Any AI provider (OpenAI, Anthropic, etc.)
    - Any frontend framework
    - Any backend service
@@ -349,64 +344,62 @@ This project *requires* the use of `pnpm` for consistent dependency management. 
 
 ## Key Features
 
-| Feature                 | Description                                                               |
-|-------------------------|---------------------------------------------------------------------------|
-| 🔌 **Framework Agnostic (Node.js Backend)** | Core library integrates with Node.js backend stacks.                      |
-| 🧩 **Modular Design**     | Build complex systems from simple nodes                                   |
-| 🛠️ **Extensible**         | Create custom nodes for any functionality                                 |
-| 🔒 **Secure**             | Built-in security features for API keys and data                          |
-| 🔑 **BYOK**               | Use your *own API keys* for LLM providers                                 |
-| 📦 **Self-Contained**     | Core framework has minimal dependencies                                   |
-| ⚙️ **Multi-Step Tool Calls** | Support for *complex reasoning chains*                                    |
-| 📊 **Structured Logging** | Detailed insights into agent execution                                    |
-| 🛡️ **Robust Error Handling**| Predictable behavior and simplified debugging                            |
-| 📝 **TypeScript First**   | Type safety and enhanced developer experience                             |
-| 🌐 **Open Source Client** | Complete Next.js reference implementation included                       |
-| 🔄 **Orchestration**      | *Dynamic control* of agent behavior based on context                      |
-| 💾 **Session Management** | Isolated state for concurrent conversations                               |
-| 🎮 **Configurable Determinism** | Balance AI creativity & predictability via node logic/workflows        |
-| 📊 **Evaluation Framework** | Robust tools to define, run, and analyze agent performance evaluations   |
+| Feature                                     | Description                                                            |
+| ------------------------------------------- | ---------------------------------------------------------------------- |
+| 🔌 **Framework Agnostic (Node.js Backend)** | Core library integrates with Node.js backend stacks.                   |
+| 🧩 **Modular Design**                       | Build complex systems from simple nodes                                |
+| 🛠️ **Extensible**                           | Create custom nodes for any functionality                              |
+| 🔒 **Secure**                               | Built-in security features for API keys and data                       |
+| 🔑 **BYOK**                                 | Use your _own API keys_ for LLM providers                              |
+| 📦 **Self-Contained**                       | Core framework has minimal dependencies                                |
+| ⚙️ **Multi-Step Tool Calls**                | Support for _complex reasoning chains_                                 |
+| 📊 **Structured Logging**                   | Detailed insights into agent execution                                 |
+| 🛡️ **Robust Error Handling**                | Predictable behavior and simplified debugging                          |
+| 📝 **TypeScript First**                     | Type safety and enhanced developer experience                          |
+| 🌐 **Open Source Client**                   | Complete Next.js reference implementation included                     |
+| 🔄 **Orchestration**                        | _Dynamic control_ of agent behavior based on context                   |
+| 💾 **Session Management**                   | Isolated state for concurrent conversations                            |
+| 🎮 **Configurable Determinism**             | Balance AI creativity & predictability via node logic/workflows        |
+| 📊 **Evaluation Framework**                 | Robust tools to define, run, and analyze agent performance evaluations |
 
 ## 🧰 Components
 
 AgentDock's modular architecture is built upon these key components:
 
-*   **BaseNode**: The foundation for all nodes in the system
-*   **AgentNode**: The primary abstraction for agent functionality
-*   **Tools & Custom Nodes**: Callable capabilities and custom logic implemented as nodes.
-*   **Node Registry**: Manages the registration and retrieval of all node types
-*   **Tool Registry**: Manages tool availability for agents
-*   **CoreLLM**: Unified interface for interacting with LLM providers
-*   **Provider Registry**: Manages LLM provider configurations
-*   **Evaluation Framework**: Core components for agent assessment
-*   **Error Handling**: System for handling errors and ensuring predictable behavior
-*   **Logging**: Structured logging system for monitoring and debugging
-*   **Orchestration**: Controls tool availability and behavior based on conversation context
-*   **Sessions**: Manages state isolation between concurrent conversations
+- **BaseNode**: The foundation for all nodes in the system
+- **AgentNode**: The primary abstraction for agent functionality
+- **Tools & Custom Nodes**: Callable capabilities and custom logic implemented as nodes.
+- **Node Registry**: Manages the registration and retrieval of all node types
+- **Tool Registry**: Manages tool availability for agents
+- **CoreLLM**: Unified interface for interacting with LLM providers
+- **Provider Registry**: Manages LLM provider configurations
+- **Evaluation Framework**: Core components for agent assessment
+- **Error Handling**: System for handling errors and ensuring predictable behavior
+- **Logging**: Structured logging system for monitoring and debugging
+- **Orchestration**: Controls tool availability and behavior based on conversation context
+- **Sessions**: Manages state isolation between concurrent conversations
 
 For detailed technical documentation on these components, see the [Architecture Overview](docs/architecture/README.md).
-
-
 
 ## 🗺️ Roadmap
 
 Below is our development roadmap for AgentDock. Most improvements listed here relate to the core AgentDock framework (`agentdock-core`), which is currently developed locally and will be published as a versioned NPM package upon reaching a stable release. Some roadmap items may also involve enhancements to the open-source client implementation.
 
-| Feature | Description | Category |
-|---------|-------------|--------|
-| [**Storage Abstraction Layer**](docs/roadmap/storage-abstraction.md) | Flexible storage system with pluggable providers | **In Progress** |
-| [**Advanced Memory Systems**](docs/roadmap/advanced-memory.md) | Long-term context management | **In Progress** |
-| [**Vector Storage Integration**](docs/roadmap/vector-storage.md) | Embedding-based retrieval for documents and memory | **In Progress** |
-| [**Evaluation for AI Agents**](docs/roadmap/evaluation-framework.md) | Comprehensive testing and evaluation framework | **In Progress** |
-| [**Platform Integration**](docs/roadmap/platform-integration.md) | Support for Telegram, WhatsApp, and other messaging platforms | **Planned** |
-| [**Multi-Agent Collaboration**](docs/roadmap/multi-agent-collaboration.md) | Enable agents to work together | **Planned** |
-| [**Model Context Protocol (MCP) Integration**](docs/roadmap/mcp-integration.md) | Support for discovering and using external tools via MCP | **Planned** |
-| [**Voice AI Agents**](docs/roadmap/voice-agents.md) | AI agents using voice interfaces and phone numbers via AgentNode | **Planned** |
-| [**Telemetry and Traceability**](docs/roadmap/telemetry.md) | Advanced logging and performance tracking | **Planned** |
-| [**Workflow Runtime & Nodes**](docs/roadmap/workflow-nodes.md) | Core runtime, node types, and orchestration logic for complex automations | **Planned** |
-| [**AgentDock Pro**](docs/agentdock-pro.md) | Comprehensive enterprise cloud platform for scaling AI agents & workflows | **Cloud** |
-| [**Natural Language AI Agent Builder**](docs/roadmap/nl-agent-builder.md) | Visual builder + natural language agent and workflow construction | **Cloud** |
-| [**Agent Marketplace**](docs/roadmap/agent-marketplace.md) | Monetizable agent templates | **Cloud** |
+| Feature                                                                         | Description                                                               | Category        |
+| ------------------------------------------------------------------------------- | ------------------------------------------------------------------------- | --------------- |
+| [**Storage Abstraction Layer**](docs/roadmap/storage-abstraction.md)            | Flexible storage system with pluggable providers                          | **In Progress** |
+| [**Advanced Memory Systems**](docs/roadmap/advanced-memory.md)                  | Long-term context management                                              | **In Progress** |
+| [**Vector Storage Integration**](docs/roadmap/vector-storage.md)                | Embedding-based retrieval for documents and memory                        | **In Progress** |
+| [**Evaluation for AI Agents**](docs/roadmap/evaluation-framework.md)            | Comprehensive testing and evaluation framework                            | **In Progress** |
+| [**Platform Integration**](docs/roadmap/platform-integration.md)                | Support for Telegram, WhatsApp, and other messaging platforms             | **Planned**     |
+| [**Multi-Agent Collaboration**](docs/roadmap/multi-agent-collaboration.md)      | Enable agents to work together                                            | **Planned**     |
+| [**Model Context Protocol (MCP) Integration**](docs/roadmap/mcp-integration.md) | Support for discovering and using external tools via MCP                  | **Planned**     |
+| [**Voice AI Agents**](docs/roadmap/voice-agents.md)                             | AI agents using voice interfaces and phone numbers via AgentNode          | **Planned**     |
+| [**Telemetry and Traceability**](docs/roadmap/telemetry.md)                     | Advanced logging and performance tracking                                 | **Planned**     |
+| [**Workflow Runtime & Nodes**](docs/roadmap/workflow-nodes.md)                  | Core runtime, node types, and orchestration logic for complex automations | **Planned**     |
+| [**AgentDock Pro**](docs/agentdock-pro.md)                                      | Comprehensive enterprise cloud platform for scaling AI agents & workflows | **Cloud**       |
+| [**Natural Language AI Agent Builder**](docs/roadmap/nl-agent-builder.md)       | Visual builder + natural language agent and workflow construction         | **Cloud**       |
+| [**Agent Marketplace**](docs/roadmap/agent-marketplace.md)                      | Monetizable agent templates                                               | **Cloud**       |
 
 ## 👥 Contributing
 

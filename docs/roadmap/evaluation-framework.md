@@ -40,7 +40,7 @@ graph TD
     E -- produces --> RES[Result]
     ER -- aggregates --> AGG[Aggregated Results]
     RES --> AGG
-    
+
     subgraph Evaluators
      RB[RuleBased] -. implements .-> E
      LLM[LLMJudge] -. implements .-> E
@@ -65,26 +65,26 @@ Third-party integrations were deferred to allow for a bespoke foundation matchin
 
 ## Key Components (Phase 1)
 
-*   **`EvaluationInput`**: Data packet including response, prompt, history, ground truth, context, criteria.
-*   **`EvaluationCriteria`**: Defines metrics with name, description, scale, and optional weight.
-*   **`Evaluator` Interface**: Core extensibility point (`type`, `evaluate` method).
-*   **`EvaluationResult`**: Output per criterion (score, reasoning, type).
-*   **`EvaluationRunConfig`**: Specifies evaluators, their configs, optional storage provider, metadata.
-*   **`EvaluationRunner`**: Orchestrates the run via `runEvaluation` function.
-*   **`AggregatedEvaluationResult`**: Final combined output with overall score (if applicable), individual results, snapshots.
-*   **`JsonFileStorageProvider`**: Basic implementation for server-side result logging.
+- **`EvaluationInput`**: Data packet including response, prompt, history, ground truth, context, criteria.
+- **`EvaluationCriteria`**: Defines metrics with name, description, scale, and optional weight.
+- **`Evaluator` Interface**: Core extensibility point (`type`, `evaluate` method).
+- **`EvaluationResult`**: Output per criterion (score, reasoning, type).
+- **`EvaluationRunConfig`**: Specifies evaluators, their configs, optional storage provider, metadata.
+- **`EvaluationRunner`**: Orchestrates the run via `runEvaluation` function.
+- **`AggregatedEvaluationResult`**: Final combined output with overall score (if applicable), individual results, snapshots.
+- **`JsonFileStorageProvider`**: Basic implementation for server-side result logging.
 
 ## Key Features (Phase 1)
 
-*   **Rule-Based Checks**: Length, includes, regex, JSON validity.
-*   **LLM-as-Judge**: Qualitative assessment via LLM call with templating.
-*   **Semantic Similarity**: Cosine similarity using pluggable embedding models (default provided).
-*   **Tool Usage Validation**: Checks tool calls, arguments against expectations.
-*   **Lexical Analysis**: Similarity (Levenshtein, Dice, etc.), keyword coverage, sentiment (VADER), toxicity (blocklist).
-*   **Flexible Input Sourcing**: Evaluators can pull text from `response`, `prompt`, `groundTruth`, or nested `context` fields.
-*   **Score Normalization & Aggregation**: Runner attempts to normalize scores to 0-1 and calculate weighted average.
-*   **Basic Persistence**: Optional JSONL file logging.
-*   **Comprehensive Unit Tests**: Added for core components and evaluators.
+- **Rule-Based Checks**: Length, includes, regex, JSON validity.
+- **LLM-as-Judge**: Qualitative assessment via LLM call with templating.
+- **Semantic Similarity**: Cosine similarity using pluggable embedding models (default provided).
+- **Tool Usage Validation**: Checks tool calls, arguments against expectations.
+- **Lexical Analysis**: Similarity (Levenshtein, Dice, etc.), keyword coverage, sentiment (VADER), toxicity (blocklist).
+- **Flexible Input Sourcing**: Evaluators can pull text from `response`, `prompt`, `groundTruth`, or nested `context` fields.
+- **Score Normalization & Aggregation**: Runner attempts to normalize scores to 0-1 and calculate weighted average.
+- **Basic Persistence**: Optional JSONL file logging.
+- **Comprehensive Unit Tests**: Added for core components and evaluators.
 
 ## Benefits (Achieved in Phase 1)
 
@@ -95,12 +95,12 @@ Third-party integrations were deferred to allow for a bespoke foundation matchin
 
 ## Timeline
 
-| Phase | Status | Description |
-|-------|--------|-------------|
-| ~~Approach Evaluation~~ | ~~In Progress~~ Completed | ~~Comparing third-party vs. custom solutions~~ Custom solution chosen. |
-| ~~Architecture Design~~ | ~~Planned~~ Completed | Phase 1 architecture designed and implemented. |
-| Core Implementation | **Completed (Phase 1)** | Basic framework, runner, interface, initial evaluators, storage provider implemented. |
-| **Phase 2 / Advanced Features** | **Planned** | See PRD for details (e.g., Advanced evaluator configs, UI integration, enhanced storage, etc.). |
+| Phase                           | Status                    | Description                                                                                     |
+| ------------------------------- | ------------------------- | ----------------------------------------------------------------------------------------------- |
+| ~~Approach Evaluation~~         | ~~In Progress~~ Completed | ~~Comparing third-party vs. custom solutions~~ Custom solution chosen.                          |
+| ~~Architecture Design~~         | ~~Planned~~ Completed     | Phase 1 architecture designed and implemented.                                                  |
+| Core Implementation             | **Completed (Phase 1)**   | Basic framework, runner, interface, initial evaluators, storage provider implemented.           |
+| **Phase 2 / Advanced Features** | **Planned**               | See PRD for details (e.g., Advanced evaluator configs, UI integration, enhanced storage, etc.). |
 
 ## Use Cases
 
@@ -116,9 +116,9 @@ flowchart LR
     D --> E[Analyze Results]
     E --> F[Agent Refinement]
     F --> A
-    
+
     style C fill:#0066cc,color:#ffffff,stroke:#0033cc
     style D fill:#e6f2ff,stroke:#99ccff
 ```
 
-The implemented Phase 1 framework provides the core capabilities for this loop. Refer to the [Evaluation Framework PRD](../prd/evaluation-framework.md) for detailed usage and Phase 2 plans. 
+The implemented Phase 1 framework provides the core capabilities for this loop. Refer to the [Evaluation Framework PRD](../prd/evaluation-framework.md) for detailed usage and Phase 2 plans.

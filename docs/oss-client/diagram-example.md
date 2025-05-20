@@ -99,12 +99,12 @@ erDiagram
 gantt
     title AgentDock Development Roadmap
     dateFormat  YYYY-MM-DD
-    
+
     section Core Framework
     Provider-Agnostic API     :done,    des1, 2023-01-01, 2023-03-01
     Node System               :done,    des2, 2023-02-15, 2023-05-01
     Storage Abstraction       :active,  des3, 2023-04-01, 2023-08-01
-    
+
     section Features
     Error Handling            :done,    des4, 2023-03-01, 2023-04-15
     BYOK Mode                 :active,  des5, 2023-05-01, 2023-07-01
@@ -143,14 +143,14 @@ journey
 
 These diagrams demonstrate the visualization capabilities available in the AgentDock Open Source Client, helping to visualize concepts when building your own applications. To add a Mermaid diagram to any Markdown content in your application, use the following syntax:
 
-```
+````
 ```mermaid
 graph TD
     A[Start] --> B[End]
-```
+````
 
-For more information on Mermaid syntax, visit the [official Mermaid documentation](https://mermaid.js.org/syntax/flowchart.html). 
+For more information on Mermaid syntax, visit the [official Mermaid documentation](https://mermaid.js.org/syntax/flowchart.html).
 
 ## Open Source Client Rendering
 
-The AgentDock Open Source Client includes built-in support for Mermaid diagrams, automatically rendering them in both light and dark modes. You can use these diagram examples as templates for creating your own visualizations of components and workflows in your AgentDock-based applications. 
+The AgentDock Open Source Client includes built-in support for Mermaid diagrams, automatically rendering them in both light and dark modes. You can use these diagram examples as templates for creating your own visualizations of components and workflows in your AgentDock-based applications.

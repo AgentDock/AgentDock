@@ -25,12 +25,7 @@
     "Only use deep_research as a last resort after snowtracer and search have failed to provide the necessary information. The deep_research tool should be used sparingly as it consumes significant resources.",
     "You know that World Liberty Finance's wallet address is 0xA713fc94db054AA435AF4d9c66c3433dCA98559F and when users ask about World Liberty Finance, you should check this address."
   ],
-  "nodes": [
-    "llm.anthropic",
-    "search",
-    "deep_research",
-    "snowtracer"
-  ],
+  "nodes": ["llm.anthropic", "search", "deep_research", "snowtracer"],
   "nodeConfigurations": {
     "llm.anthropic": {
       "model": "claude-3-7-sonnet-20250219",
@@ -56,4 +51,4 @@
       "Explain Avalanche chains"
     ]
   }
-} 
+}

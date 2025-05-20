@@ -2,7 +2,12 @@
  * @fileoverview Tests for agent configuration schema and validation
  */
 
-import { AgentConfigSchema, PersonalitySchema, createAgentConfig, ValidatedPersonality } from '../agent-config';
+import {
+  AgentConfigSchema,
+  PersonalitySchema,
+  createAgentConfig,
+  ValidatedPersonality,
+} from '../agent-config';
 import { z } from 'zod';
 
 describe('PersonalitySchema', () => {
@@ -16,10 +21,12 @@ describe('PersonalitySchema', () => {
     const result = PersonalitySchema.parse([
       'Hello, I am an AI assistant',
       'I can help you with various tasks',
-      'Just ask me anything'
+      'Just ask me anything',
     ]);
     expect(typeof result).toBe('string');
-    expect(result).toBe('Hello, I am an AI assistant\nI can help you with various tasks\nJust ask me anything');
+    expect(result).toBe(
+      'Hello, I am an AI assistant\nI can help you with various tasks\nJust ask me anything',
+    );
   });
 
   it('should reject invalid inputs', () => {
@@ -42,13 +49,13 @@ describe('AgentConfigSchema', () => {
       nodeConfigurations: {
         'llm.anthropic': {
           model: 'claude-3-7-sonnet-20250219',
-          temperature: 0.7
-        }
+          temperature: 0.7,
+        },
       },
       chatSettings: {
         historyPolicy: 'lastN' as const,
-        historyLength: 10
-      }
+        historyLength: 10,
+      },
     };
 
     const result = AgentConfigSchema.parse(config);
@@ -68,19 +75,21 @@ describe('AgentConfigSchema', () => {
       nodeConfigurations: {
         'llm.anthropic': {
           model: 'claude-3-7-sonnet-20250219',
-          temperature: 0.7
-        }
+          temperature: 0.7,
+        },
       },
       chatSettings: {
         historyPolicy: 'lastN' as const,
-        historyLength: 10
-      }
+        historyLength: 10,
+      },
     };
 
     const result = AgentConfigSchema.parse(config);
     expect(result).toBeDefined();
     expect(typeof result.personality).toBe('string');
-    expect(result.personality as unknown as string).toBe('I am a test agent\nI can help with testing');
+    expect(result.personality as unknown as string).toBe(
+      'I am a test agent\nI can help with testing',
+    );
   });
 });
 
@@ -88,7 +97,7 @@ describe('createAgentConfig', () => {
   it('should create a valid config with defaults', () => {
     const result = createAgentConfig({
       agentId: 'test-agent',
-      name: 'Test Agent'
+      name: 'Test Agent',
     });
 
     expect(result).toBeDefined();
@@ -101,7 +110,7 @@ describe('createAgentConfig', () => {
     const result = createAgentConfig({
       agentId: 'test-agent',
       name: 'Test Agent',
-      personality: PersonalitySchema.parse('I am a test agent')
+      personality: PersonalitySchema.parse('I am a test agent'),
     });
 
     expect(result).toBeDefined();
@@ -113,12 +122,14 @@ describe('createAgentConfig', () => {
     const result = createAgentConfig({
       agentId: 'test-agent',
       name: 'Test Agent',
-      personality: PersonalitySchema.parse(['I am a test agent', 'I can help with testing'])
+      personality: PersonalitySchema.parse(['I am a test agent', 'I can help with testing']),
     });
 
     expect(result).toBeDefined();
     expect(typeof result.personality).toBe('string');
-    expect(result.personality as unknown as string).toBe('I am a test agent\nI can help with testing');
+    expect(result.personality as unknown as string).toBe(
+      'I am a test agent\nI can help with testing',
+    );
   });
 });
 
@@ -134,18 +145,18 @@ describe('AgentConfig', () => {
       nodeConfigurations: {
         'llm.anthropic': {
           model: 'claude-3-sonnet',
-          temperature: 0.7
-        }
+          temperature: 0.7,
+        },
       },
       chatSettings: {
         initialMessages: ['Hello!'],
         historyPolicy: 'lastN',
-        historyLength: 10
-      }
+        historyLength: 10,
+      },
     };
 
     expect(AgentConfigSchema.safeParse(config).success).toBe(true);
   });
 
   // Add more test cases as needed
-}); 
+});

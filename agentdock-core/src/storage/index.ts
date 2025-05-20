@@ -1,6 +1,6 @@
 /**
  * @fileoverview Storage abstraction layer exports.
- * 
+ *
  * This file exports all public APIs for the storage abstraction layer.
  */
 
@@ -12,8 +12,8 @@ export {
   StorageFactory,
   getStorageFactory,
   createStorageProvider,
-  getDefaultStorageProvider
+  getDefaultStorageProvider,
 } from './factory';
 
 // Export providers
-export { MemoryStorageProvider } from './providers/memory-provider'; 
+export { MemoryStorageProvider } from './providers/memory-provider';

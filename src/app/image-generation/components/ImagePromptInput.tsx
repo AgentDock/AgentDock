@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Wand2, Sparkles } from "lucide-react";
-import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Wand2, Sparkles } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
 
 interface ImagePromptInputProps {
   onSubmit: (prompt: string) => void;
@@ -12,12 +12,8 @@ interface ImagePromptInputProps {
   isLoading: boolean;
 }
 
-export function ImagePromptInput({
-  onSubmit,
-  isEditing,
-  isLoading,
-}: ImagePromptInputProps) {
-  const [prompt, setPrompt] = useState("");
+export function ImagePromptInput({ onSubmit, isEditing, isLoading }: ImagePromptInputProps) {
+  const [prompt, setPrompt] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,7 +21,7 @@ export function ImagePromptInput({
       onSubmit(prompt.trim());
       // Don't clear prompt for editing workflows
       if (!isEditing) {
-        setPrompt("");
+        setPrompt('');
       }
     }
   };
@@ -33,9 +29,9 @@ export function ImagePromptInput({
   // Example prompts for simpler concepts that work better
   const getPlaceholder = () => {
     if (isEditing) {
-      return "Example: Change the background to a beach scene and add a sunset...";
+      return 'Example: Change the background to a beach scene and add a sunset...';
     } else {
-      return "Example: A cartoon tiger wearing sunglasses on a tropical beach...";
+      return 'Example: A cartoon tiger wearing sunglasses on a tropical beach...';
     }
   };
 
@@ -51,9 +47,7 @@ export function ImagePromptInput({
             )}
           </div>
           <label htmlFor="prompt" className="block text-base font-medium">
-            {isEditing
-              ? "Edit your image"
-              : "Describe what you want to generate"}
+            {isEditing ? 'Edit your image' : 'Describe what you want to generate'}
           </label>
         </div>
 
@@ -61,10 +55,10 @@ export function ImagePromptInput({
           <Textarea
             id="prompt"
             className={cn(
-              "min-h-[120px] resize-none transition-all p-4 pr-8",
-              "focus-visible:ring-primary/70 focus-visible:ring-offset-0",
-              "border-primary/20 bg-gradient-to-b from-card/80 to-card",
-              "placeholder:text-muted-foreground/80 rounded-xl shadow-sm"
+              'min-h-[120px] resize-none transition-all p-4 pr-8',
+              'focus-visible:ring-primary/70 focus-visible:ring-offset-0',
+              'border-primary/20 bg-gradient-to-b from-card/80 to-card',
+              'placeholder:text-muted-foreground/80 rounded-xl shadow-sm',
             )}
             placeholder={getPlaceholder()}
             value={prompt}
@@ -81,10 +75,10 @@ export function ImagePromptInput({
           type="submit"
           disabled={!prompt.trim() || isLoading}
           className={cn(
-            "w-full gap-2 transition-all h-12 rounded-xl",
-            "bg-gradient-to-r from-primary to-primary/90 hover:opacity-90",
-            "font-medium text-white shadow-md",
-            isLoading && "animate-pulse"
+            'w-full gap-2 transition-all h-12 rounded-xl',
+            'bg-gradient-to-r from-primary to-primary/90 hover:opacity-90',
+            'font-medium text-white shadow-md',
+            isLoading && 'animate-pulse',
           )}
         >
           {isLoading ? (
@@ -95,11 +89,11 @@ export function ImagePromptInput({
           ) : (
             <>
               {isEditing ? <Wand2 className="h-5 w-5" /> : <Sparkles className="h-5 w-5" />}
-              <span>{isEditing ? "Edit Image" : "Generate Image"}</span>
+              <span>{isEditing ? 'Edit Image' : 'Generate Image'}</span>
             </>
           )}
         </Button>
       </div>
     </form>
   );
-} 
+}

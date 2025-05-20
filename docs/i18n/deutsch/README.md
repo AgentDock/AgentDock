@@ -10,31 +10,31 @@
 
 AgentDock ist ein Framework zur Erstellung hochentwickelter KI-Agenten, die komplexe Aufgaben mit **konfigurierbarer Determiniertheit** erledigen. Es besteht aus zwei Hauptkomponenten:
 
-1.  **AgentDock Core**: Ein Open-Source, Backend-fokussiertes Framework zum Erstellen und Bereitstellen von KI-Agenten. Es ist *Framework-agnostisch* und *Anbieter-unabhängig* konzipiert, was Ihnen vollständige Kontrolle über die Implementierung Ihres Agenten gibt.
+1.  **AgentDock Core**: Ein Open-Source, Backend-fokussiertes Framework zum Erstellen und Bereitstellen von KI-Agenten. Es ist _Framework-agnostisch_ und _Anbieter-unabhängig_ konzipiert, was Ihnen vollständige Kontrolle über die Implementierung Ihres Agenten gibt.
 
 2.  **Open Source Client**: Eine vollständige Next.js-Anwendung, die als Referenzimplementierung und Nutzer des AgentDock Core Frameworks dient. Sie können sie unter [https://hub.agentdock.ai](https://hub.agentdock.ai) in Aktion sehen.
 
-AgentDock wurde mit TypeScript entwickelt und legt Wert auf *Einfachheit*, *Erweiterbarkeit* und ***konfigurierbare Determiniertheit*** - ideal für die Erstellung zuverlässiger und vorhersagbarer KI-Systeme, die mit minimaler Aufsicht arbeiten können.
+AgentDock wurde mit TypeScript entwickelt und legt Wert auf _Einfachheit_, _Erweiterbarkeit_ und **_konfigurierbare Determiniertheit_** - ideal für die Erstellung zuverlässiger und vorhersagbarer KI-Systeme, die mit minimaler Aufsicht arbeiten können.
 
 ## 🧠 Design-Prinzipien
 
 AgentDock basiert auf diesen Kernprinzipien:
 
--   **Einfachheit zuerst**: Minimaler Codeaufwand zur Erstellung funktionaler Agenten
--   **Knotenbasierte Architektur (Nodes)**: Alle Fähigkeiten werden als Knoten implementiert
--   **Werkzeuge als spezialisierte Knoten**: Werkzeuge erweitern das Knotensystem für Agentenfähigkeiten
--   **Konfigurierbare Determiniertheit**: Steuern Sie die Vorhersagbarkeit des Agentenverhaltens
--   **Typsicherheit (Type Safety)**: Umfassende TypeScript-Typisierung durchgehend
+- **Einfachheit zuerst**: Minimaler Codeaufwand zur Erstellung funktionaler Agenten
+- **Knotenbasierte Architektur (Nodes)**: Alle Fähigkeiten werden als Knoten implementiert
+- **Werkzeuge als spezialisierte Knoten**: Werkzeuge erweitern das Knotensystem für Agentenfähigkeiten
+- **Konfigurierbare Determiniertheit**: Steuern Sie die Vorhersagbarkeit des Agentenverhaltens
+- **Typsicherheit (Type Safety)**: Umfassende TypeScript-Typisierung durchgehend
 
 ### Konfigurierbare Determiniertheit
 
-***Konfigurierbare Determiniertheit*** ist ein Eckpfeiler der Design-Philosophie von AgentDock. Sie ermöglicht es, kreative KI-Fähigkeiten mit vorhersagbarem Systemverhalten in Einklang zu bringen:
+**_Konfigurierbare Determiniertheit_** ist ein Eckpfeiler der Design-Philosophie von AgentDock. Sie ermöglicht es, kreative KI-Fähigkeiten mit vorhersagbarem Systemverhalten in Einklang zu bringen:
 
--   `AgentNode`s sind inhärent nicht-deterministisch, da LLMs jedes Mal unterschiedliche Antworten generieren können
--   Workflows können durch *definierte Ausführungspfade für Werkzeuge* deterministischer gestaltet werden
--   Entwickler können den **Grad der Determiniertheit steuern**, indem sie konfigurieren, welche Teile des Systems LLM-Inferenz nutzen
--   Selbst mit LLM-Komponenten bleibt das allgemeine Systemverhalten durch strukturierte Werkzeuginteraktionen **vorhersagbar**
--   Dieser ausgewogene Ansatz ermöglicht sowohl *Kreativität* als auch **Zuverlässigkeit** in Ihren KI-Anwendungen
+- `AgentNode`s sind inhärent nicht-deterministisch, da LLMs jedes Mal unterschiedliche Antworten generieren können
+- Workflows können durch _definierte Ausführungspfade für Werkzeuge_ deterministischer gestaltet werden
+- Entwickler können den **Grad der Determiniertheit steuern**, indem sie konfigurieren, welche Teile des Systems LLM-Inferenz nutzen
+- Selbst mit LLM-Komponenten bleibt das allgemeine Systemverhalten durch strukturierte Werkzeuginteraktionen **vorhersagbar**
+- Dieser ausgewogene Ansatz ermöglicht sowohl _Kreativität_ als auch **Zuverlässigkeit** in Ihren KI-Anwendungen
 
 #### Deterministische Workflows
 
@@ -78,7 +78,7 @@ flowchart TD
 
 #### Nicht-deterministische Agenten mit deterministischen Sub-Workflows
 
-AgentDock bietet Ihnen das ***Beste aus beiden Welten***, indem es nicht-deterministische Agentenintelligenz mit deterministischer Workflow-Ausführung kombiniert:
+AgentDock bietet Ihnen das **_Beste aus beiden Welten_**, indem es nicht-deterministische Agentenintelligenz mit deterministischer Workflow-Ausführung kombiniert:
 
 ```mermaid
 flowchart TD
@@ -112,15 +112,15 @@ Für fortgeschrittenere KI-Agenten-Workflows und mehrstufige Verarbeitungspipeli
 
 #### Kurz gesagt: Konfigurierbare Determiniertheit
 
-Stellen Sie es sich wie Autofahren vor. Manchmal benötigen Sie die Kreativität der KI (z. B. Navigation in der Stadt - nicht-deterministisch), und manchmal benötigen Sie zuverlässige, schrittweise Prozesse (z. B. das Befolgen von Autobahnschildern - deterministisch). AgentDock ermöglicht es Ihnen, Systeme zu bauen, die *beides* nutzen, indem Sie den richtigen Ansatz für jeden Teil einer Aufgabe wählen. Sie erhalten sowohl die Intelligenz der KI *als auch* vorhersagbare Ergebnisse, wo immer dies erforderlich ist.
+Stellen Sie es sich wie Autofahren vor. Manchmal benötigen Sie die Kreativität der KI (z. B. Navigation in der Stadt - nicht-deterministisch), und manchmal benötigen Sie zuverlässige, schrittweise Prozesse (z. B. das Befolgen von Autobahnschildern - deterministisch). AgentDock ermöglicht es Ihnen, Systeme zu bauen, die _beides_ nutzen, indem Sie den richtigen Ansatz für jeden Teil einer Aufgabe wählen. Sie erhalten sowohl die Intelligenz der KI _als auch_ vorhersagbare Ergebnisse, wo immer dies erforderlich ist.
 
 ## 🏗️ Kernarchitektur
 
 Das Framework basiert auf einem leistungsstarken, modularen knotenbasierten System, das als Grundlage für die gesamte Agentenfunktionalität dient. Diese Architektur verwendet verschiedene Knotentypen als Bausteine:
 
--   **`BaseNode`**: Die grundlegende Klasse, die die Kernschnittstelle und Fähigkeiten für alle Knoten festlegt.
--   **`AgentNode`**: Ein spezialisierter Kernknoten, der LLM-Interaktionen, Werkzeugnutzung und Agentenlogik orchestriert.
--   **Werkzeuge & Benutzerdefinierte Knoten**: Entwickler implementieren Agentenfähigkeiten und benutzerdefinierte Logik als Knoten, die `BaseNode` erweitern.
+- **`BaseNode`**: Die grundlegende Klasse, die die Kernschnittstelle und Fähigkeiten für alle Knoten festlegt.
+- **`AgentNode`**: Ein spezialisierter Kernknoten, der LLM-Interaktionen, Werkzeugnutzung und Agentenlogik orchestriert.
+- **Werkzeuge & Benutzerdefinierte Knoten**: Entwickler implementieren Agentenfähigkeiten und benutzerdefinierte Logik als Knoten, die `BaseNode` erweitern.
 
 Diese Knoten interagieren über verwaltete Registries und können verbunden werden (unter Nutzung der Ports der Kernarchitektur und einer potenziellen Nachrichtenbus), um komplexe, konfigurierbare und potenziell deterministische Agentenverhalten und Workflows zu ermöglichen.
 
@@ -132,9 +132,9 @@ Eine umfassende Anleitung finden Sie im [Leitfaden für die ersten Schritte](../
 
 ### Anforderungen
 
-*   Node.js ≥ 20.11.0 (LTS)
-*   pnpm ≥ 9.15.0 (Erforderlich)
-*   API-Schlüssel für LLM-Anbieter (Anthropic, OpenAI, etc.)
+- Node.js ≥ 20.11.0 (LTS)
+- pnpm ≥ 9.15.0 (Erforderlich)
+- API-Schlüssel für LLM-Anbieter (Anthropic, OpenAI, etc.)
 
 ### Installation
 
@@ -188,11 +188,11 @@ Eine umfassende Anleitung finden Sie im [Leitfaden für die ersten Schritte](../
 
 ### Erweiterte Funktionen
 
-| Funktion                  | Beschreibung                                                                                   | Dokumentation                                                                    |
-| :------------------------ | :--------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------- |
-| **Sitzungsverwaltung**    | Isoliertes, performantes Zustandsmanagement für Konversationen                                 | [Sitzungsdokumentation](../../docs/architecture/sessions/README.md)              |
-| **Orchestrierungsframework**| Steuerung des Agentenverhaltens und der Werkzeugverfügbarkeit basierend auf dem Kontext          | [Orchestrierungsdokumentation](../../docs/architecture/orchestration/README.md)  |
-| **Speicherabstraktion**   | Flexibles Speichersystem mit austauschbaren Anbietern für KV-, Vektor- und sichere Speicherung | [Speicherdokumentation](../../docs/storage/README.md)                          |
+| Funktion                     | Beschreibung                                                                                   | Dokumentation                                                                   |
+| :--------------------------- | :--------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| **Sitzungsverwaltung**       | Isoliertes, performantes Zustandsmanagement für Konversationen                                 | [Sitzungsdokumentation](../../docs/architecture/sessions/README.md)             |
+| **Orchestrierungsframework** | Steuerung des Agentenverhaltens und der Werkzeugverfügbarkeit basierend auf dem Kontext        | [Orchestrierungsdokumentation](../../docs/architecture/orchestration/README.md) |
+| **Speicherabstraktion**      | Flexibles Speichersystem mit austauschbaren Anbietern für KV-, Vektor- und sichere Speicherung | [Speicherdokumentation](../../docs/storage/README.md)                           |
 
 Das Speichersystem wird derzeit weiterentwickelt mit Schlüssel-Wert-Speicher (Anbieter Memory, Redis, Vercel KV) und sicherem clientseitigem Speicher, während Vektorspeicher und zusätzliche Backends in Entwicklung sind.
 
@@ -200,10 +200,10 @@ Das Speichersystem wird derzeit weiterentwickelt mit Schlüssel-Wert-Speicher (A
 
 Die Dokumentation für das AgentDock Framework ist verfügbar unter [hub.agentdock.ai/docs](https://hub.agentdock.ai/docs) und im Ordner `/docs/` dieses Repositories. Die Dokumentation umfasst:
 
--   Anleitungen für die ersten Schritte
--   API-Referenzen
--   Tutorials zur Knotenerstellung
--   Integrationsbeispiele
+- Anleitungen für die ersten Schritte
+- API-Referenzen
+- Tutorials zur Knotenerstellung
+- Integrationsbeispiele
 
 ## 📂 Repository-Struktur
 
@@ -223,13 +223,13 @@ AgentDock enthält mehrere vorkonfigurierte Agenten-Vorlagen. Erkunden Sie sie i
 
 Beispielimplementierungen zeigen spezialisierte Anwendungsfälle und erweiterte Funktionalität:
 
-| Implementierung               | Beschreibung                                                                                 | Status       |
-| :-------------------------- | :------------------------------------------------------------------------------------------- | :----------- |
-| **Orchestrierter Agent**    | Beispielagent, der Orchestrierung zur Anpassung des Verhaltens basierend auf Kontext nutzt | Verfügbar    |
-| **Kognitiver Reasoner**   | Bewältigt komplexe Probleme mithilfe strukturierter Logik & kognitiver Werkzeuge          | Verfügbar    |
-| **Agenten-Planer**        | Spezialisierter Agent zum Entwerfen und Implementieren anderer KI-Agenten                  | Verfügbar    |
-| [**Code Playground (Code-Spielwiese)**](../../docs/roadmap/code-playground.md) | Sandboxed Code-Generierung und -Ausführung mit reichhaltigen Visualisierungsfunktionen   | Geplant      |
-| [**Generalistischer KI-Agent**](../../docs/roadmap/generalist-agent.md)| Manus-ähnlicher Agent, der Browser verwenden und komplexe Aufgaben ausführen kann         | Geplant      |
+| Implementierung                                                                | Beschreibung                                                                               | Status    |
+| :----------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------- | :-------- |
+| **Orchestrierter Agent**                                                       | Beispielagent, der Orchestrierung zur Anpassung des Verhaltens basierend auf Kontext nutzt | Verfügbar |
+| **Kognitiver Reasoner**                                                        | Bewältigt komplexe Probleme mithilfe strukturierter Logik & kognitiver Werkzeuge           | Verfügbar |
+| **Agenten-Planer**                                                             | Spezialisierter Agent zum Entwerfen und Implementieren anderer KI-Agenten                  | Verfügbar |
+| [**Code Playground (Code-Spielwiese)**](../../docs/roadmap/code-playground.md) | Sandboxed Code-Generierung und -Ausführung mit reichhaltigen Visualisierungsfunktionen     | Geplant   |
+| [**Generalistischer KI-Agent**](../../docs/roadmap/generalist-agent.md)        | Manus-ähnlicher Agent, der Browser verwenden und komplexe Aufgaben ausführen kann          | Geplant   |
 
 ## 🔐 Details zur Umgebungskonfiguration
 
@@ -279,62 +279,64 @@ AgentDock folgt einem BYOK (Bring Your Own Key - Verwenden Sie Ihren eigenen Sch
 
 ## 📦 Paketmanager
 
-Dieses Projekt *erfordert* die Verwendung von `pnpm` für eine konsistente Abhängigkeitsverwaltung. `npm` und `yarn` werden nicht unterstützt.
+Dieses Projekt _erfordert_ die Verwendung von `pnpm` für eine konsistente Abhängigkeitsverwaltung. `npm` und `yarn` werden nicht unterstützt.
 
 ## 💡 Was Sie bauen können
 
 1.  **KI-gestützte Anwendungen**
-    -   Benutzerdefinierte Chatbots mit beliebigem Frontend
-    -   Kommandozeilen-KI-Assistenten
-    -   Automatisierte Datenverarbeitungspipelines
-    -   Integrationen von Backend-Diensten
+
+    - Benutzerdefinierte Chatbots mit beliebigem Frontend
+    - Kommandozeilen-KI-Assistenten
+    - Automatisierte Datenverarbeitungspipelines
+    - Integrationen von Backend-Diensten
 
 2.  **Integrationsfähigkeiten**
-    -   Beliebiger KI-Anbieter (OpenAI, Anthropic, etc.)
-    -   Beliebiges Frontend-Framework
-    -   Beliebiger Backend-Dienst
-    -   Benutzerdefinierte Datenquellen und APIs
+
+    - Beliebiger KI-Anbieter (OpenAI, Anthropic, etc.)
+    - Beliebiges Frontend-Framework
+    - Beliebiger Backend-Dienst
+    - Benutzerdefinierte Datenquellen und APIs
 
 3.  **Automatisierungssysteme**
-    -   Datenverarbeitungs-Workflows
-    -   Dokumentenanalyse-Pipelines
-    -   Automatisierte Berichtssysteme
-    -   Agenten zur Aufgabenautomatisierung
+    - Datenverarbeitungs-Workflows
+    - Dokumentenanalyse-Pipelines
+    - Automatisierte Berichtssysteme
+    - Agenten zur Aufgabenautomatisierung
 
 ## Hauptmerkmale
 
-| Merkmal                              | Beschreibung                                                                                 |
-| :----------------------------------- | :------------------------------------------------------------------------------------------- |
-| 🔌 **Framework-unabhängig (Node.js Backend)** | Kernbibliothek integriert sich in Node.js-Backend-Stacks.                                    |
-| 🧩 **Modulares Design**              | Erstellen Sie komplexe Systeme aus einfachen Knoten                                          |
-| 🛠️ **Erweiterbar**                   | Erstellen Sie benutzerdefinierte Knoten für jede Funktionalität                            |
-| 🔒 **Sicher**                        | Integrierte Sicherheitsfunktionen für API-Schlüssel und Daten                              |
-| 🔑 **BYOK**                          | Verwenden Sie Ihre *eigenen API-Schlüssel* für LLM-Anbieter                               |
-| 📦 **Eigenständig (Self-contained)** | Kernframework hat minimale Abhängigkeiten                                                    |
-| ⚙️ **Mehrstufige Werkzeugaufrufe (Multi-Step Tool Calls)**| Unterstützung für *komplexe Logikketten*                                                |
-| 📊 **Strukturierte Protokollierung** | Detaillierte Einblicke in die Agentenausführung                                             |
-| 🛡️ **Robuste Fehlerbehandlung**      | Vorhersagbares Verhalten und vereinfachtes Debugging                                         |
-| 📝 **TypeScript First**              | Typsicherheit und verbesserte Entwicklererfahrung                                            |
-| 🌐 **Open Source Client**            | Vollständige Next.js-Referenzimplementierung enthalten                                    |
-| 🔄 **Orchestrierung**                | *Dynamische Steuerung* des Agentenverhaltens basierend auf dem Kontext                      |
-| 💾 **Sitzungsverwaltung**            | Isolierter Zustand für gleichzeitige Konversationen                                          |
-| 🎮 **Konfigurierbare Determiniertheit**| Balancieren Sie KI-Kreativität & Vorhersagbarkeit durch Knotenlogik/Workflows.               |
+| Merkmal                                                    | Beschreibung                                                                   |
+| :--------------------------------------------------------- | :----------------------------------------------------------------------------- |
+| 🔌 **Framework-unabhängig (Node.js Backend)**              | Kernbibliothek integriert sich in Node.js-Backend-Stacks.                      |
+| 🧩 **Modulares Design**                                    | Erstellen Sie komplexe Systeme aus einfachen Knoten                            |
+| 🛠️ **Erweiterbar**                                         | Erstellen Sie benutzerdefinierte Knoten für jede Funktionalität                |
+| 🔒 **Sicher**                                              | Integrierte Sicherheitsfunktionen für API-Schlüssel und Daten                  |
+| 🔑 **BYOK**                                                | Verwenden Sie Ihre _eigenen API-Schlüssel_ für LLM-Anbieter                    |
+| 📦 **Eigenständig (Self-contained)**                       | Kernframework hat minimale Abhängigkeiten                                      |
+| ⚙️ **Mehrstufige Werkzeugaufrufe (Multi-Step Tool Calls)** | Unterstützung für _komplexe Logikketten_                                       |
+| 📊 **Strukturierte Protokollierung**                       | Detaillierte Einblicke in die Agentenausführung                                |
+| 🛡️ **Robuste Fehlerbehandlung**                            | Vorhersagbares Verhalten und vereinfachtes Debugging                           |
+| 📝 **TypeScript First**                                    | Typsicherheit und verbesserte Entwicklererfahrung                              |
+| 🌐 **Open Source Client**                                  | Vollständige Next.js-Referenzimplementierung enthalten                         |
+| 🔄 **Orchestrierung**                                      | _Dynamische Steuerung_ des Agentenverhaltens basierend auf dem Kontext         |
+| 💾 **Sitzungsverwaltung**                                  | Isolierter Zustand für gleichzeitige Konversationen                            |
+| 🎮 **Konfigurierbare Determiniertheit**                    | Balancieren Sie KI-Kreativität & Vorhersagbarkeit durch Knotenlogik/Workflows. |
 
 ## 🧰 Komponenten
 
 Die modulare Architektur von AgentDock basiert auf diesen Schlüsselkomponenten:
 
-*   **BaseNode**: Die Grundlage für alle Knoten im System
-*   **AgentNode**: Die primäre Abstraktion für Agentenfunktionalität
-*   **Werkzeuge & Benutzerdefinierte Knoten**: Aufrufbare Fähigkeiten und benutzerdefinierte Logik, implementiert als Knoten.
-*   **Knoten-Registry**: Verwaltet die Registrierung und den Abruf aller Knotentypen
-*   **Werkzeug-Registry**: Verwaltet die Verfügbarkeit von Werkzeugen für Agenten
-*   **CoreLLM**: Einheitliche Schnittstelle zur Interaktion mit LLM-Anbietern
-*   **Anbieter-Registry**: Verwaltet Konfigurationen von LLM-Anbietern
-*   **Fehlerbehandlung**: System zur Behandlung von Fehlern und Sicherstellung vorhersagbaren Verhaltens
-*   **Protokollierung (Logging)**: Strukturiertes Protokollierungssystem für Überwachung und Debugging
-*   **Orchestrierung**: Steuert Werkzeugverfügbarkeit und Verhalten basierend auf dem Konversationskontext
-*   **Sitzungen**: Verwaltet die Zustandsisolierung zwischen gleichzeitigen Konversationen
+- **BaseNode**: Die Grundlage für alle Knoten im System
+- **AgentNode**: Die primäre Abstraktion für Agentenfunktionalität
+- **Werkzeuge & Benutzerdefinierte Knoten**: Aufrufbare Fähigkeiten und benutzerdefinierte Logik, implementiert als Knoten.
+- **Knoten-Registry**: Verwaltet die Registrierung und den Abruf aller Knotentypen
+- **Werkzeug-Registry**: Verwaltet die Verfügbarkeit von Werkzeugen für Agenten
+- **CoreLLM**: Einheitliche Schnittstelle zur Interaktion mit LLM-Anbietern
+- **Anbieter-Registry**: Verwaltet Konfigurationen von LLM-Anbietern
+- **Fehlerbehandlung**: System zur Behandlung von Fehlern und Sicherstellung vorhersagbaren Verhaltens
+- **Protokollierung (Logging)**: Strukturiertes Protokollierungssystem für Überwachung und Debugging
+- **Orchestrierung**: Steuert Werkzeugverfügbarkeit und Verhalten basierend auf dem Konversationskontext
+- **Sitzungen**: Verwaltet die Zustandsisolierung zwischen gleichzeitigen Konversationen
 
 Eine detaillierte technische Dokumentation zu diesen Komponenten finden Sie im [Architekturüberblick](../../docs/architecture/README.md).
 
@@ -342,21 +344,21 @@ Eine detaillierte technische Dokumentation zu diesen Komponenten finden Sie im [
 
 Unten finden Sie unsere Entwicklungs-Roadmap für AgentDock. Die meisten hier aufgeführten Verbesserungen beziehen sich auf das Kernframework von AgentDock (`agentdock-core`), das derzeit lokal entwickelt wird und als versioniertes NPM-Paket veröffentlicht wird, sobald eine stabile Version erreicht ist. Einige Roadmap-Punkte können auch Verbesserungen an der Open-Source-Client-Implementierung beinhalten.
 
-| Merkmal                                                                      | Beschreibung                                                                                            | Kategorie       |
-| :--------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ | :-------------- |
-| [**Speicherabstraktionsschicht**](../../docs/roadmap/storage-abstraction.md)   | Flexibles Speichersystem mit austauschbaren Anbietern                                                   | **In Arbeit**   |
-| [**Erweiterte Speichersysteme**](../../docs/roadmap/advanced-memory.md)        | Langzeit-Kontextmanagement                                                                            | **In Arbeit**   |
-| [**Integration von Vektorspeichern**](../../docs/roadmap/vector-storage.md)   | Embedding-basierter Abruf für Dokumente und Speicher                                                    | **In Arbeit**   |
-| [**Evaluierung für KI-Agenten**](../../docs/roadmap/evaluation-framework.md)   | Umfassendes Test- und Evaluierungsframework                                                             | **In Arbeit**   |
-| [**Plattformintegration**](../../docs/roadmap/platform-integration.md)       | Unterstützung für Telegram, WhatsApp und andere Messaging-Plattformen                                   | **Geplant**     |
-| [**Multi-Agenten-Kollaboration**](../../docs/roadmap/multi-agent-collaboration.md)| Ermöglichen, dass Agenten zusammenarbeiten                                                              | **Geplant**     |
-| [**Integration des Model Context Protocol (MCP)**](../../docs/roadmap/mcp-integration.md)| Unterstützung für die Erkennung und Nutzung externer Werkzeuge über MCP                               | **Geplant**     |
-| [**Sprach-KI-Agenten**](../../docs/roadmap/voice-agents.md)                  | KI-Agenten, die Sprachschnittstellen und Telefonnummern über AgentNode verwenden                      | **Geplant**     |
-| [**Telemetrie und Rückverfolgbarkeit**](../../docs/roadmap/telemetry.md)       | Erweitertes Logging und Leistungsüberwachung                                                     | **Geplant**     |
-| [**Workflow Runtime & Node Typen**](../../docs/roadmap/workflow-nodes.md)        | Kern-Runtime, Knotentypen und Orchestrierungslogik für komplexe Automatisierungen                     | **Geplant**     |
-| [**AgentDock Pro**](../../docs/agentdock-pro.md)                            | Umfassende Enterprise-Cloud-Plattform zur Skalierung von KI-Agenten & Workflows                       | **Cloud**       |
-| [**KI-Agenten-Builder in natürlicher Sprache**](../../docs/roadmap/nl-agent-builder.md)| Visueller Builder + Erstellung von Agenten und Workflows in natürlicher Sprache                     | **Cloud**       |
-| [**Agenten-Marktplatz**](../../docs/roadmap/agent-marketplace.md)              | Monetarisierbare Agentenvorlagen                                                                        | **Cloud**       |
+| Merkmal                                                                                   | Beschreibung                                                                      | Kategorie     |
+| :---------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------- | :------------ |
+| [**Speicherabstraktionsschicht**](../../docs/roadmap/storage-abstraction.md)              | Flexibles Speichersystem mit austauschbaren Anbietern                             | **In Arbeit** |
+| [**Erweiterte Speichersysteme**](../../docs/roadmap/advanced-memory.md)                   | Langzeit-Kontextmanagement                                                        | **In Arbeit** |
+| [**Integration von Vektorspeichern**](../../docs/roadmap/vector-storage.md)               | Embedding-basierter Abruf für Dokumente und Speicher                              | **In Arbeit** |
+| [**Evaluierung für KI-Agenten**](../../docs/roadmap/evaluation-framework.md)              | Umfassendes Test- und Evaluierungsframework                                       | **In Arbeit** |
+| [**Plattformintegration**](../../docs/roadmap/platform-integration.md)                    | Unterstützung für Telegram, WhatsApp und andere Messaging-Plattformen             | **Geplant**   |
+| [**Multi-Agenten-Kollaboration**](../../docs/roadmap/multi-agent-collaboration.md)        | Ermöglichen, dass Agenten zusammenarbeiten                                        | **Geplant**   |
+| [**Integration des Model Context Protocol (MCP)**](../../docs/roadmap/mcp-integration.md) | Unterstützung für die Erkennung und Nutzung externer Werkzeuge über MCP           | **Geplant**   |
+| [**Sprach-KI-Agenten**](../../docs/roadmap/voice-agents.md)                               | KI-Agenten, die Sprachschnittstellen und Telefonnummern über AgentNode verwenden  | **Geplant**   |
+| [**Telemetrie und Rückverfolgbarkeit**](../../docs/roadmap/telemetry.md)                  | Erweitertes Logging und Leistungsüberwachung                                      | **Geplant**   |
+| [**Workflow Runtime & Node Typen**](../../docs/roadmap/workflow-nodes.md)                 | Kern-Runtime, Knotentypen und Orchestrierungslogik für komplexe Automatisierungen | **Geplant**   |
+| [**AgentDock Pro**](../../docs/agentdock-pro.md)                                          | Umfassende Enterprise-Cloud-Plattform zur Skalierung von KI-Agenten & Workflows   | **Cloud**     |
+| [**KI-Agenten-Builder in natürlicher Sprache**](../../docs/roadmap/nl-agent-builder.md)   | Visueller Builder + Erstellung von Agenten und Workflows in natürlicher Sprache   | **Cloud**     |
+| [**Agenten-Marktplatz**](../../docs/roadmap/agent-marketplace.md)                         | Monetarisierbare Agentenvorlagen                                                  | **Cloud**     |
 
 ## 👥 Mitwirken
 
@@ -371,4 +373,5 @@ AgentDock wird unter der [MIT-Lizenz](../../LICENSE) veröffentlicht.
 AgentDock bietet die Grundlage, um nahezu jede KI-gestützte Anwendung oder Automatisierung zu erstellen, die Sie sich vorstellen können. Wir ermutigen Sie, das Framework zu erkunden, innovative Agenten zu bauen und zur Community beizutragen. Lassen Sie uns gemeinsam die Zukunft der KI-Interaktion gestalten!
 
 ---
+
 [Zurück zum Übersetzungsindex](/docs/i18n/README.md)

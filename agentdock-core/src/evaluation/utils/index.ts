@@ -1,1 +1,1 @@
-export { getInputText } from "./input-text-extractor"; 
+export { getInputText } from './input-text-extractor';

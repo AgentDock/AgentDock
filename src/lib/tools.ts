@@ -26,28 +26,25 @@ export function ensureToolsInitialized(): void {
   try {
     // Initialize tools
     initToolRegistry();
-    
+
     // Mark as initialized
     toolsInitialized = true;
-    
+
     // Log performance in development
     if (process.env.NODE_ENV === 'development') {
       const duration = Math.round(performance.now() - startTime);
       logger.info(
-        LogCategory.NODE, 
-        'ToolInitializer', 
-        `Tools initialized successfully in ${duration}ms`
+        LogCategory.NODE,
+        'ToolInitializer',
+        `Tools initialized successfully in ${duration}ms`,
       );
     } else {
       logger.info(LogCategory.NODE, 'ToolInitializer', 'Tools initialized successfully');
     }
   } catch (error) {
-    logger.error(
-      LogCategory.NODE, 
-      'ToolInitializer', 
-      'Failed to initialize tools', 
-      { error: error instanceof Error ? error.message : 'Unknown error' }
-    );
+    logger.error(LogCategory.NODE, 'ToolInitializer', 'Failed to initialize tools', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
     throw error;
   }
-} 
+}

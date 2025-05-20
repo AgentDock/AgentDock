@@ -28,15 +28,15 @@ describe('getInputText', () => {
     expect(getInputText(baseInput)).toBe('This is the agent response.');
   });
 
-  it('should return response text when sourceField is \'response\'', () => {
+  it("should return response text when sourceField is 'response'", () => {
     expect(getInputText(baseInput, 'response')).toBe('This is the agent response.');
   });
 
-  it('should return prompt text when sourceField is \'prompt\'', () => {
+  it("should return prompt text when sourceField is 'prompt'", () => {
     expect(getInputText(baseInput, 'prompt')).toBe('This is the prompt.');
   });
 
-  it('should return groundTruth text when sourceField is \'groundTruth\'', () => {
+  it("should return groundTruth text when sourceField is 'groundTruth'", () => {
     expect(getInputText(baseInput, 'groundTruth')).toBe('This is the ground truth.');
   });
 
@@ -102,14 +102,14 @@ describe('getInputText', () => {
 
   it('should handle AgentMessage where contentParts is undefined', () => {
     const inputWithUndefinedPartsMessage: EvaluationInput = {
-        ...baseInput,
-        response: {
-            id: 'msg-undefined-parts',
-            role: 'assistant',
-            content: 'This is some content string for response', // Vercel AI SDK might put string here
-            // contentParts is deliberately undefined
-            createdAt: new Date(),
-        },
+      ...baseInput,
+      response: {
+        id: 'msg-undefined-parts',
+        role: 'assistant',
+        content: 'This is some content string for response', // Vercel AI SDK might put string here
+        // contentParts is deliberately undefined
+        createdAt: new Date(),
+      },
     };
     // According to current getInputText logic, if contentParts is undefined, it won't find text there.
     // And if input.response itself is not a string, it won't get 'This is some content string for response'
@@ -121,29 +121,28 @@ describe('getInputText', () => {
 
   it('should return undefined if groundTruth is an object and sourceField is groundTruth', () => {
     const inputWithObjectGt: EvaluationInput = {
-        ...baseInput,
-        groundTruth: { complex: 'object' }
+      ...baseInput,
+      groundTruth: { complex: 'object' },
     };
     expect(getInputText(inputWithObjectGt, 'groundTruth')).toBeUndefined();
   });
 
   it('should return string if groundTruth is a string and sourceField is groundTruth', () => {
     const inputWithStringGt: EvaluationInput = {
-        ...baseInput,
-        groundTruth: "stringy gt"
+      ...baseInput,
+      groundTruth: 'stringy gt',
     };
-    expect(getInputText(inputWithStringGt, 'groundTruth')).toBe("stringy gt");
+    expect(getInputText(inputWithStringGt, 'groundTruth')).toBe('stringy gt');
   });
 
-   it('should return undefined for context field that is not a string', () => {
+  it('should return undefined for context field that is not a string', () => {
     const inputWithNumericContext: EvaluationInput = {
-        ...baseInput,
-        context: {
-            ...baseInput.context,
-            numericField: 12345
-        }
+      ...baseInput,
+      context: {
+        ...baseInput.context,
+        numericField: 12345,
+      },
     };
     expect(getInputText(inputWithNumericContext, 'context.numericField')).toBeUndefined();
   });
-
-}); 
+});

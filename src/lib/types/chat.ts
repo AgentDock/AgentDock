@@ -88,4 +88,4 @@ export interface ChatRuntimeConfig {
     /** Chat prompt suggestions */
     chatPrompts?: string[];
   };
-} 
+}

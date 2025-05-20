@@ -28,7 +28,7 @@ graph LR
     B --> C[VoiceNode]
     C --> D[WebRTCVoiceNode]
     C --> E[TwilioVoiceNode]
-    
+
     style B fill:#0066cc,color:#ffffff,stroke:#0033cc
     style C fill:#e6f2ff,stroke:#99ccff
 ```
@@ -43,7 +43,7 @@ graph TD
     D --> E[AgentNode]
     E --> F[Voice AI Provider]
     F --> G[Audio Output]
-    
+
     style C fill:#0066cc,color:#ffffff,stroke:#0033cc
     style E fill:#0066cc,color:#ffffff,stroke:#0033cc
 ```
@@ -55,15 +55,15 @@ graph TD
     A[User Voice] --> B[Audio Stream]
     B --> C[VoiceNode]
     C --> D[Voice AI Provider]
-    
+
     subgraph "AI Processing"
         D --> E[Agent Processing]
         E --> F[Voice Response]
     end
-    
+
     F --> G[Audio Stream]
     G --> H[User Interface]
-    
+
     style C fill:#0066cc,color:#ffffff,stroke:#0033cc
     style E fill:#e6f2ff,stroke:#99ccff
 ```
@@ -77,13 +77,13 @@ The Voice AI Agents system will be implemented with the following components:
 abstract class VoiceNode extends PlatformNode {
   // Process incoming audio stream
   abstract processAudioStream(audioStream: ReadableStream): Promise<void>;
-  
+
   // Generate speech from agent response
   abstract generateSpeech(response: Message): Promise<ReadableStream>;
-  
+
   // Handle real-time audio session
   abstract handleAudioSession(sessionId: string): Promise<void>;
-  
+
   // Initialize voice provider
   abstract initializeVoiceProvider(config: VoiceProviderConfig): Promise<void>;
 }
@@ -117,7 +117,7 @@ import { createWebRTCVoiceNode } from '@/lib/voice/webrtc-factory';
 const voiceNode = createWebRTCVoiceNode('voice-1', agentNode, {
   provider: 'openai',
   apiKey: process.env.OPENAI_API_KEY!,
-  modelId: 'gpt-4o-realtime'
+  modelId: 'gpt-4o-realtime',
 });
 
 // Set up audio stream
@@ -138,8 +138,8 @@ const twilioNode = createTwilioVoiceNode('phone-1', agentNode, {
   voiceProvider: {
     provider: 'elevenlabs',
     apiKey: process.env.ELEVENLABS_API_KEY!,
-    voice: 'Josh'
-  }
+    voice: 'Josh',
+  },
 });
 
 // Set up webhook for incoming calls
@@ -185,15 +185,15 @@ The Voice AI Agents feature delivers several important benefits:
 
 ## Timeline
 
-| Phase | Status | Description |
-|-------|--------|-------------|
-| Design & Architecture | Planned | Core architecture design |
-| Voice Node Abstract Class | Planned | Base class implementation |
-| WebRTC Integration | Planned | Browser-based voice support |
-| OpenAI Realtime Integration | Planned | Initial voice provider |
-| ElevenLabs Integration | Planned | Additional voice provider |
-| Twilio Phone Integration | Planned | Phone number access |
-| Advanced Voice Features | Future | Voice customization options |
+| Phase                       | Status  | Description                 |
+| --------------------------- | ------- | --------------------------- |
+| Design & Architecture       | Planned | Core architecture design    |
+| Voice Node Abstract Class   | Planned | Base class implementation   |
+| WebRTC Integration          | Planned | Browser-based voice support |
+| OpenAI Realtime Integration | Planned | Initial voice provider      |
+| ElevenLabs Integration      | Planned | Additional voice provider   |
+| Twilio Phone Integration    | Planned | Phone number access         |
+| Advanced Voice Features     | Future  | Voice customization options |
 
 ## Connection to Other Roadmap Items
 
@@ -218,7 +218,7 @@ graph TD
     D --> E[Knowledge Base]
     D --> F[CRM Integration]
     D --> G[Order System]
-    
+
     style C fill:#e6f2ff,stroke:#99ccff
     style D fill:#0066cc,color:#ffffff,stroke:#0033cc
 ```
@@ -234,7 +234,7 @@ graph LR
     C --> D[VoiceNode]
     D --> E[AgentNode]
     E --> F[Tools & APIs]
-    
+
     style D fill:#e6f2ff,stroke:#99ccff
     style E fill:#0066cc,color:#ffffff,stroke:#0033cc
-``` 
+```

@@ -17,6 +17,7 @@ A finance-focused agent designed to provide up-to-date information about stocks 
 ## Nodes
 
 The agent uses the following nodes:
+
 - llm.anthropic: Advanced language model for financial analysis and communication
 - stock_price: Real-time stock market data from AlphaVantage
 - crypto_price: Current cryptocurrency prices from CoinGecko
@@ -29,12 +30,14 @@ See `template.json` for the full configuration.
 ## Conversation Capabilities
 
 1. Stock Market Information
+
    - Current stock prices
    - Price changes and percentages
    - Trading volume and market data
    - Historical comparisons
 
 2. Cryptocurrency Data
+
    - Real-time crypto prices
    - Market capitalization
    - 24-hour trading ranges
@@ -59,12 +62,14 @@ console.log(response);
 ## Best Practices
 
 1. Financial Queries
+
    - Use specific stock symbols or cryptocurrency names
    - Ask for current prices or trends
    - Request comparisons between assets
    - Inquire about market context
 
 2. Data Interpretation
+
    - Ask for explanations of market movements
    - Request historical context when relevant
    - Seek clarification on financial terminology
@@ -80,4 +85,4 @@ console.log(response);
 - Financial data is provided for informational purposes only
 - Not intended as investment advice
 - Data accuracy depends on third-party API providers
-- Free tier API limitations may apply 
+- Free tier API limitations may apply

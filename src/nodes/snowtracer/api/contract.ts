@@ -47,9 +47,9 @@ export async function getABI(address: string, apiKey?: string): Promise<string> 
     'contract',
     'getabi',
     { address },
-    apiKey
+    apiKey,
   );
-  
+
   return response.result;
 }
 
@@ -59,13 +59,16 @@ export async function getABI(address: string, apiKey?: string): Promise<string> 
  * @param apiKey Snowtrace API key (optional)
  * @returns Promise with contract source code
  */
-export async function getSourceCode(address: string, apiKey?: string): Promise<ContractSourceResponse['result']> {
+export async function getSourceCode(
+  address: string,
+  apiKey?: string,
+): Promise<ContractSourceResponse['result']> {
   const response = await makeRequest<ContractSourceResponse>(
     'contract',
     'getsourcecode',
     { address },
-    apiKey
+    apiKey,
   );
-  
+
   return response.result;
-} 
+}

@@ -124,7 +124,12 @@ export interface GroqConfig extends LLMConfig {
   extractReasoning?: boolean;
 }
 
-export type ProviderConfig = AnthropicConfig | OpenAIConfig | GeminiConfig | DeepSeekConfig | GroqConfig;
+export type ProviderConfig =
+  | AnthropicConfig
+  | OpenAIConfig
+  | GeminiConfig
+  | DeepSeekConfig
+  | GroqConfig;
 
 /**
  * LLM provider interface
@@ -168,4 +173,4 @@ export interface ProviderMetadata {
   defaultModel: string;
   /** Apply provider-specific configurations to the base config */
   applyConfig?: (baseConfig: any, modelConfig: any, options?: any) => void;
-} 
+}

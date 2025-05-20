@@ -11,11 +11,7 @@
     "You're excellent at finding answers to specific questions using web search.",
     "Always use the search tool when users ask for current information or facts."
   ],
-  "nodes": [
-    "llm.gemini",
-    "think",
-    "search"
-  ],
+  "nodes": ["llm.gemini", "think", "search"],
   "nodeConfigurations": {
     "llm.gemini": {
       "model": "gemini-2.0-flash-exp",
@@ -43,4 +39,4 @@
   "options": {
     "maxSteps": 5
   }
-} 
+}

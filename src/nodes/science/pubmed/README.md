@@ -9,17 +9,19 @@ These tools provide access to the PubMed database through the NCBI E-utilities A
 Search for biomedical literature in PubMed.
 
 **Parameters:**
+
 - `query` (required): The search term or phrase (e.g., "cancer treatment")
 - `maxResults` (optional): Maximum number of results to return (default: 10, max: 100)
 - `sort` (optional): Sort order - either "relevance" (default) or "date" (newest first)
 - `filter` (optional): Additional PubMed filters in standard PubMed syntax
 
 **Example:**
+
 ```javascript
 const result = await pubmed_search({
-  query: "diabetes treatment metformin",
+  query: 'diabetes treatment metformin',
   maxResults: 5,
-  sort: "date"
+  sort: 'date',
 });
 ```
 
@@ -28,20 +30,23 @@ const result = await pubmed_search({
 Retrieve detailed information about a specific article from PubMed.
 
 **Parameters:**
+
 - `pmid` (required): The PubMed ID (PMID) of the article to retrieve
 - `format` (optional): The level of detail - "summary" (default), "abstract", or "full"
 
 **Example:**
+
 ```javascript
 const result = await pubmed_fetch({
-  pmid: "33782455",
-  format: "abstract"
+  pmid: '33782455',
+  format: 'abstract',
 });
 ```
 
 ## Implementation Details
 
 The PubMed tools use the following E-utilities endpoints:
+
 - ESearch: For searching the database and retrieving article IDs
 - ESummary: For retrieving summary information for articles
 - EFetch: For retrieving detailed article information
@@ -51,6 +56,7 @@ All API calls are made to NCBI's public E-utilities API without requiring an API
 ## Rate Limits
 
 Without an API key, the NCBI E-utilities API is limited to:
+
 - 3 requests per second
 - A maximum of 100 results per request
 
@@ -58,4 +64,4 @@ Without an API key, the NCBI E-utilities API is limited to:
 
 - [NCBI E-utilities Documentation](https://www.ncbi.nlm.nih.gov/books/NBK25501/)
 - [PubMed Database](https://pubmed.ncbi.nlm.nih.gov/)
-- [NCBI Developer Resources](https://www.ncbi.nlm.nih.gov/home/develop/) 
+- [NCBI Developer Resources](https://www.ncbi.nlm.nih.gov/home/develop/)

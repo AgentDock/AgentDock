@@ -4,4 +4,4 @@
 
 export * from './search';
 export * from './work';
-export * from './constants'; 
+export * from './constants';

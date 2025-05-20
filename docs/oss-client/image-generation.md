@@ -18,19 +18,22 @@ The image generation page provides a full-featured interface for creating and ed
 
 The image generation functionality is implemented as a standalone page in the Open Source Client, showcasing:
 
-1. **Client-Server Architecture**: 
+1. **Client-Server Architecture**:
+
    - Client-side UI components for image upload, prompt input, and result display
    - Server-side actions for image generation using Gemini
 
 2. **Stateful UI**:
+
    - Local state management for image data and generation process
    - Progress indicators and error handling
 
 3. **API Integration**:
+
    - Direct integration with Gemini's multimodal capabilities
    - Image persistence API leveraging:
-       - **Vercel Blob:** For storing image URLs when deployed to Vercel.
-       - **Browser `localStorage`:** For storing image data (e.g., base64 or URLs) when running locally, providing temporary persistence during development.
+     - **Vercel Blob:** For storing image URLs when deployed to Vercel.
+     - **Browser `localStorage`:** For storing image data (e.g., base64 or URLs) when running locally, providing temporary persistence during development.
 
 4. **UI Components**:
    - `ImageUpload`: Handles image file selection and preview
@@ -69,6 +72,7 @@ graph LR
 ```
 
 **Key Flow:**
+
 1. UI components trigger server actions for generation.
 2. Server actions call the Gemini API.
 3. Server actions use a persistence API route (`/api/images/store/add`) to save the resulting image URL (from Vercel Blob if deployed) or potentially pass data back to the client.
@@ -100,4 +104,4 @@ Potential future enhancements for the image generation feature include:
 - Enhanced image editing capabilities
 - Integration with other parts of the application
 - Advanced prompt techniques like negative prompting
-- Collections and organization for generated images 
+- Collections and organization for generated images

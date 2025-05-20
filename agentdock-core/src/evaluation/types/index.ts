@@ -3,7 +3,14 @@
  */
 
 // Import Message type from the correct location and alias it as AgentMessage for this module and export
-import type { Message, MessageContent, TextContent, ImageContent, ToolCallContent, ToolResultContent } from '../../types/messages';
+import type {
+  Message,
+  MessageContent,
+  TextContent,
+  ImageContent,
+  ToolCallContent,
+  ToolResultContent,
+} from '../../types/messages';
 export type AgentMessage = Message;
 // Export MessageContent and its constituent types as they are used by ToolUsageEvaluator
 export type { MessageContent, TextContent, ImageContent, ToolCallContent, ToolResultContent };
@@ -24,8 +31,8 @@ export interface EvaluationCriteria {
   description: string;
   /** The scale used for scoring this criterion. */
   scale: EvaluationScale;
-  /** 
-   * Optional weight for this criterion when calculating an aggregated score. 
+  /**
+   * Optional weight for this criterion when calculating an aggregated score.
    * Must be a finite, positive number. Defaults to 1.
    */
   weight?: number;
@@ -116,4 +123,4 @@ export interface Evaluator {
    * @returns A promise resolving to an array of EvaluationResult objects for the criteria this evaluator assessed.
    */
   evaluate(input: EvaluationInput, criteria: EvaluationCriteria[]): Promise<EvaluationResult[]>;
-} 
+}

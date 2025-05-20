@@ -28,14 +28,14 @@ graph TD
     A[Agent Interaction] --> B[Telemetry Layer]
     B --> C[Data Collection]
     C --> D[Export Mechanism]
-    
+
     D -->|OpenTelemetry| E[Observability Platform]
     D -->|Custom Export| F[Custom Solution]
-    
+
     B --> G[Performance Metrics]
     B --> H[Token Usage]
     B --> I[Tool Execution]
-    
+
     style B fill:#0066cc,color:#ffffff,stroke:#0033cc
     style E fill:#e6f2ff,stroke:#99ccff
 ```
@@ -46,19 +46,19 @@ graph TD
 graph TD
     A[User Input] --> B[AgentNode]
     B --> C[Telemetry Middleware]
-    
+
     subgraph "Tracing Components"
     C --> D[LLM Calls]
     C --> E[Tool Execution]
     C --> F[Message Processing]
     end
-    
+
     D --> G[Trace Export]
     E --> G
     F --> G
-    
+
     G --> H[Observability Platform]
-    
+
     style B fill:#0066cc,color:#ffffff,stroke:#0033cc
     style C fill:#e6f2ff,stroke:#99ccff
 ```
@@ -111,13 +111,13 @@ Monitor and optimize agent performance:
 
 ## Timeline
 
-| Phase | Status | Description |
-|-------|--------|-------------|
-| Approach Evaluation | In Progress | Comparing third-party vs. custom solutions |
-| Architecture Design | Planned | Core design based on selected approach |
-| Basic Implementation | Planned | Initial tracing capabilities |
-| Evaluation Framework | Planned | Tools for assessing agent output quality |
-| Advanced Features | Future | Enhanced analytics and visualization |
+| Phase                | Status      | Description                                |
+| -------------------- | ----------- | ------------------------------------------ |
+| Approach Evaluation  | In Progress | Comparing third-party vs. custom solutions |
+| Architecture Design  | Planned     | Core design based on selected approach     |
+| Basic Implementation | Planned     | Initial tracing capabilities               |
+| Evaluation Framework | Planned     | Tools for assessing agent output quality   |
+| Advanced Features    | Future      | Enhanced analytics and visualization       |
 
 ## Connection to Other Roadmap Items
 
@@ -143,7 +143,7 @@ graph TD
     D --> E[Root Cause Analysis]
     E --> F[Code Improvement]
     F --> B
-    
+
     style C fill:#0066cc,color:#ffffff,stroke:#0033cc
     style E fill:#e6f2ff,stroke:#99ccff
 ```
@@ -160,7 +160,7 @@ graph LR
     D --> E[Incident Response]
     B --> F[Performance Dashboard]
     F --> G[Optimization Opportunities]
-    
+
     style B fill:#0066cc,color:#ffffff,stroke:#0033cc
     style F fill:#e6f2ff,stroke:#99ccff
 ```
@@ -189,4 +189,4 @@ The telemetry system is designed to have minimal overhead:
 - Batched exports to minimize API calls
 - Memory-efficient trace storage
 
-The final architecture will be determined based on further evaluation of existing open source solutions like Laminar, weighing their capabilities against the specific needs of AgentDock agents. Whether we build our own solution or leverage third-party tools, the telemetry system will provide the comprehensive observability needed to optimize agent performance and reliability. 
+The final architecture will be determined based on further evaluation of existing open source solutions like Laminar, weighing their capabilities against the specific needs of AgentDock agents. Whether we build our own solution or leverage third-party tools, the telemetry system will provide the comprehensive observability needed to optimize agent performance and reliability.

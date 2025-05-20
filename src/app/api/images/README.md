@@ -28,6 +28,7 @@ The `/api/images` directory contains endpoints for image generation and storage 
 ### Image Storage
 
 - **GET /api/images/store/[id]**
+
   - Retrieves an image by its ID
   - Response: Image binary data with appropriate Content-Type header
 
@@ -37,4 +38,4 @@ The `/api/images` directory contains endpoints for image generation and storage 
 
 ## Implementation Details
 
-Images are stored in-memory using a global variable that persists for the lifetime of the server. This approach works well for development but would need to be replaced with a more durable storage solution (like a database or cloud storage) for production use. 
+Images are stored in-memory using a global variable that persists for the lifetime of the server. This approach works well for development but would need to be replaced with a more durable storage solution (like a database or cloud storage) for production use.

@@ -1,11 +1,11 @@
 /**
  * Generate Search Index for Documentation
- * 
+ *
  * This script:
  * 1. Scans all markdown files in the docs directory
  * 2. Extracts titles and content snippets
  * 3. Creates a search index as a JSON file in the public directory
- * 
+ *
  * The index is used by the client-side search functionality in the docs.
  */
 
@@ -27,16 +27,18 @@ interface SearchResult {
 function getContentSnippet(content: string, maxLength: number = 150): string {
   // Remove code blocks to avoid them in snippets
   const contentWithoutCode = content.replace(/```[\s\S]*?```/g, '');
-  
+
   // Get first few paragraphs
-  const paragraphs = contentWithoutCode.split('\n\n').filter(p => p.trim() && !p.trim().startsWith('#'));
+  const paragraphs = contentWithoutCode
+    .split('\n\n')
+    .filter((p) => p.trim() && !p.trim().startsWith('#'));
   let snippet = paragraphs.slice(0, 2).join(' ').replace(/\n/g, ' ');
-  
+
   // Truncate if needed
   if (snippet.length > maxLength) {
     snippet = snippet.substring(0, maxLength) + '...';
   }
-  
+
   return snippet;
 }
 
@@ -55,11 +57,11 @@ function formatTitle(title: string): string {
 async function scanDirectory(dirPath: string, basePath: string = ''): Promise<string[]> {
   const entries = await fs.readdir(dirPath, { withFileTypes: true });
   const files: string[] = [];
-  
+
   for (const entry of entries) {
     const fullPath = path.join(dirPath, entry.name);
     const relativePath = path.join(basePath, entry.name);
-    
+
     if (entry.isDirectory()) {
       const subFiles = await scanDirectory(fullPath, relativePath);
       files.push(...subFiles);
@@ -67,7 +69,7 @@ async function scanDirectory(dirPath: string, basePath: string = ''): Promise<st
       files.push(relativePath);
     }
   }
-  
+
   return files;
 }
 
@@ -75,30 +77,30 @@ async function scanDirectory(dirPath: string, basePath: string = ''): Promise<st
 async function generateSearchIndex() {
   const docsDir = path.join(process.cwd(), 'docs');
   const outputPath = path.join(process.cwd(), 'public/search-index.json');
-  
+
   try {
     // Scan all markdown files in docs directory
     const allFiles = await scanDirectory(docsDir);
-    
+
     logger.info(
       LogCategory.CONFIG,
       'Generating search index',
-      `Found ${allFiles.length} markdown files`
+      `Found ${allFiles.length} markdown files`,
     );
-    
+
     // Process each file to extract relevant information
     const searchResults: SearchResult[] = [];
-    
+
     for (const file of allFiles) {
       try {
         const filePath = path.join(docsDir, file);
         const content = await fs.readFile(filePath, 'utf8');
-        
+
         // Extract data from the content
         const title = formatTitle(extractTitle(content) || 'Untitled Document');
         const snippet = getContentSnippet(content);
         const url = pathToUrl(file);
-        
+
         // Create search result entry
         searchResults.push({
           id: uuidv4(),
@@ -110,31 +112,31 @@ async function generateSearchIndex() {
         logger.warn(
           LogCategory.CONFIG,
           'Error processing file for search index',
-          `File: ${file}, Error: ${error instanceof Error ? error.message : 'Unknown error'}`
+          `File: ${file}, Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
         );
       }
     }
-    
+
     // Ensure directory exists
     await fs.mkdir(path.dirname(outputPath), { recursive: true });
-    
+
     // Write the search index to a JSON file
     await fs.writeFile(outputPath, JSON.stringify(searchResults, null, 2));
-    
+
     logger.info(
       LogCategory.CONFIG,
       'Search index generated successfully',
-      `Created index with ${searchResults.length} entries at ${path.relative(process.cwd(), outputPath)}`
+      `Created index with ${searchResults.length} entries at ${path.relative(process.cwd(), outputPath)}`,
     );
   } catch (error) {
     logger.error(
       LogCategory.CONFIG,
       'Failed to generate search index',
-      `Error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
     );
     process.exit(1);
   }
 }
 
 // Run the script
-generateSearchIndex(); 
+generateSearchIndex();

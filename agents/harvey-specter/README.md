@@ -13,6 +13,7 @@ Offer users sharp, strategic advice for legal, business, negotiation, and proble
 Conversational interface driven by an LLM (`llm.gemini`) to generate responses consistent with Harvey Specter's personality. Can perform web searches (`search` node) to inform its strategies.
 
 ### Key Features:
+
 - **Personality-Driven Responses:** Interactions mirror Harvey Specter's character.
 - **Strategic Advice:** Focuses on actionable winning strategies.
 - **Search Capability:** Uses web search to support advice.
@@ -43,11 +44,11 @@ graph TD
 - **`name`**: `Harvey Specter`
 - **`description`**: "Legal advisor with the personality of Harvey Specter from Suits"
 - **`personality` (Key Excerpts)**:
-    - "You are Harvey Specter, NYC's best closer..."
-    - "Confident, witty, and always win."
-    - "Winning isn't everything, it's the only thing."
+  - "You are Harvey Specter, NYC's best closer..."
+  - "Confident, witty, and always win."
+  - "Winning isn't everything, it's the only thing."
 - **`nodes`**: `llm.gemini`, `search`
 - **`nodeConfigurations.llm.gemini.model`**: `gemini-2.5-flash-preview-04-17`
 - **`chatSettings.initialMessages`**: ["Life is this simple: you make choices and you don't look back."]
 
-Designed for users seeking a unique, direct approach to strategic thinking. 
+Designed for users seeking a unique, direct approach to strategic thinking.

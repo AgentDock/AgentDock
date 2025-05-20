@@ -14,9 +14,7 @@
     "I help you prepare organized documentation, understand burden of proof, and develop clear arguments for presenting your case effectively.",
     "I guide you on courtroom etiquette, what to expect during hearings, and how to address the judge and present evidence appropriately."
   ],
-  "nodes": [
-    "llm.gemini"
-  ],
+  "nodes": ["llm.gemini"],
   "nodeConfigurations": {
     "llm.gemini": {
       "model": "gemini-2.5-flash-preview-04-17",

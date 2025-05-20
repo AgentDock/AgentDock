@@ -24,26 +24,21 @@ export async function getLogs(
   topic1?: string,
   topic2?: string,
   topic3?: string,
-  apiKey?: string
+  apiKey?: string,
 ): Promise<any[]> {
   const params: Record<string, string> = {
     address,
     fromBlock: fromBlock.toString(),
     toBlock: toBlock.toString(),
-    topic0
+    topic0,
   };
-  
+
   // Add optional topics if provided
   if (topic1) params.topic1 = topic1;
   if (topic2) params.topic2 = topic2;
   if (topic3) params.topic3 = topic3;
-  
-  const response = await makeRequest<SnowtraceResponse<any[]>>(
-    'logs',
-    'getLogs',
-    params,
-    apiKey
-  );
-  
+
+  const response = await makeRequest<SnowtraceResponse<any[]>>('logs', 'getLogs', params, apiKey);
+
   return response.result;
-} 
+}

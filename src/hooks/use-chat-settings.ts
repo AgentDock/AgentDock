@@ -24,7 +24,7 @@ export function useChatSettings(agentId: string | null) {
   useEffect(() => {
     const loadSettings = async () => {
       if (!agentId) return;
-      
+
       try {
         setIsLoading(true);
         setError(null);
@@ -45,7 +45,7 @@ export function useChatSettings(agentId: string | null) {
         // Load global settings for API key
         const globalSettings = await storage.get<GlobalSettings>('global_settings');
         const apiKeys = globalSettings?.apiKeys || {};
-        
+
         // Skip API key validation - server will handle env vars if needed
         // if (!apiKeys[provider as keyof typeof apiKeys]) {
         //   throw new Error(`Please add your ${providerMetadata.displayName} API key in settings to use the chat`);
@@ -56,10 +56,10 @@ export function useChatSettings(agentId: string | null) {
         const nodeConfigs = template.nodeConfigurations as Record<string, any>;
         const modelConfig = nodeConfigs[nodeType] ?? {};
         const modelId = modelConfig.model || providerMetadata.defaultModel;
-        
+
         // Get model metadata from application registry
         const modelMetadata = ModelRegistry.getModel(modelId);
-        
+
         // Use model metadata for defaults if available
         const defaultTemperature = modelMetadata?.defaultTemperature || 0.7;
         const defaultMaxTokens = modelMetadata?.defaultMaxTokens || 2048;
@@ -74,11 +74,10 @@ export function useChatSettings(agentId: string | null) {
           personality: PersonalitySchema.parse(template.personality),
           apiKey: apiKeys[provider as keyof typeof apiKeys] || '',
           initialMessages: template.chatSettings?.initialMessages,
-          chatPrompts: template.chatSettings?.chatPrompts
+          chatPrompts: template.chatSettings?.chatPrompts,
         });
 
         setDebugMode(globalSettings?.core?.debugMode || false);
-
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Failed to load settings';
         setError(message);
@@ -95,6 +94,6 @@ export function useChatSettings(agentId: string | null) {
     chatSettings: settings,
     isLoading,
     error,
-    debugMode
+    debugMode,
   };
 }

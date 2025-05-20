@@ -29,7 +29,13 @@ export interface YourProviderConfig extends LLMConfig {
 }
 
 // Update the ProviderConfig type
-export type ProviderConfig = AnthropicConfig | OpenAIConfig | GeminiConfig | DeepSeekConfig | GroqConfig | YourProviderConfig;
+export type ProviderConfig =
+  | AnthropicConfig
+  | OpenAIConfig
+  | GeminiConfig
+  | DeepSeekConfig
+  | GroqConfig
+  | YourProviderConfig;
 ```
 
 ## Step 2: Add Provider SDK Dependency
@@ -44,7 +50,7 @@ Add the provider's SDK to the project's dependencies in `package.json`. If the p
     "@ai-sdk/google": "^1.1.26",
     "@ai-sdk/openai": "^1.0.14",
     "@ai-sdk/groq": "^1.0.0",
-    
+
     // Add your provider's SDK
     "@ai-sdk/your-provider": "^1.0.0",
     // Or the native SDK if no AI SDK integration exists
@@ -77,26 +83,26 @@ export function createYourProviderModel(config: LLMConfig): LanguageModel {
   if (!config.apiKey.startsWith('your-prefix-')) {
     throw createError('llm', 'Invalid API key format for Your Provider', ErrorCode.LLM_API_KEY);
   }
-  
+
   // Create the provider using the AI SDK integration
   const provider = YourProvider({
     apiKey: config.apiKey,
     // Any other provider-specific initialization options
   });
-  
+
   // Create model options
   const modelOptions: any = {};
-  
+
   // Add provider-specific options if needed
   const yourProviderConfig = config as YourProviderConfig;
   if (yourProviderConfig.someProviderSpecificOption !== undefined) {
     modelOptions.someOption = yourProviderConfig.someProviderSpecificOption;
   }
-  
+
   // Create and return the model with options
   return provider.LanguageModel({
     model: config.model,
-    ...modelOptions
+    ...modelOptions,
   });
 }
 ```
@@ -115,12 +121,12 @@ export function createYourProviderModel(config: LLMConfig): LanguageModel {
     apiKey: config.apiKey,
     // Other initialization options
   });
-  
+
   // Create a custom adapter that implements the LanguageModel interface
   return {
     generate: async (options) => {
       // Convert messages from CoreMessage format to provider format
-      const providerMessages = options.messages.map(message => {
+      const providerMessages = options.messages.map((message) => {
         // Implement conversion logic here
         return {
           role: message.role === 'data' ? 'tool' : message.role,
@@ -128,7 +134,7 @@ export function createYourProviderModel(config: LLMConfig): LanguageModel {
           // Other provider-specific fields
         };
       });
-      
+
       // Call the provider's API
       const response = await client.createCompletion({
         model: config.model,
@@ -136,23 +142,25 @@ export function createYourProviderModel(config: LLMConfig): LanguageModel {
         temperature: options.temperature,
         // Map other options
       });
-      
+
       // Return formatted response
       return {
-        choices: [{
-          message: {
-            role: 'assistant',
-            content: response.text
-          }
-        }]
+        choices: [
+          {
+            message: {
+              role: 'assistant',
+              content: response.text,
+            },
+          },
+        ],
       };
     },
-    
+
     // Implement streaming support if the provider supports it
     generateStream: async (options) => {
       // Similar to generate, but return a ReadableStream
       // See the AI SDK documentation for details
-    }
+    },
   };
 }
 ```
@@ -171,33 +179,37 @@ const DEFAULT_PROVIDERS: Record<LLMProvider, ProviderMetadata> = {
     description: 'Description of your provider',
     defaultModel: 'default-model-id',
     validateApiKey: (key: string) => key.startsWith('your-prefix-'), // Add proper validation logic
-    
+
     // Add function to fetch models if supported
     fetchModels: async (apiKey: string) => {
       try {
         // Initialize client with API key
         const client = new YourProviderClient({ apiKey });
-        
+
         // Fetch models from the provider
         const models = await client.listModels();
-        
+
         // Convert to standardized format
-        return models.map(model => ({
+        return models.map((model) => ({
           id: model.id,
           name: model.name,
           contextLength: model.contextLength || 4096,
           pricingInfo: {
             inputPrice: model.inputPrice || 0,
             outputPrice: model.outputPrice || 0,
-            unit: model.pricingUnit || '1M tokens'
-          }
+            unit: model.pricingUnit || '1M tokens',
+          },
         }));
       } catch (error) {
-        logger.error(LogCategory.LLM, 'fetchModels', `Error fetching models for your-provider: ${error.message}`);
+        logger.error(
+          LogCategory.LLM,
+          'fetchModels',
+          `Error fetching models for your-provider: ${error.message}`,
+        );
         return [];
       }
-    }
-  }
+    },
+  },
 };
 ```
 
@@ -207,25 +219,20 @@ Next, update the `createLLM` function in `src/llm/create-llm.ts`:
 
 ```typescript
 // Import your model creation function
-import { 
-  createAnthropicModel, 
-  createOpenAIModel, 
-  createGeminiModel, 
+import {
+  createAnthropicModel,
+  createOpenAIModel,
+  createGeminiModel,
   createDeepSeekModel,
   createGroqModel,
-  createYourProviderModel 
+  createYourProviderModel,
 } from './model-utils';
 
 export function createLLM(config: LLMConfig): CoreLLM {
-  logger.debug(
-    LogCategory.LLM,
-    'createLLM',
-    'Creating LLM instance',
-    {
-      provider: config.provider,
-      model: config.model
-    }
-  );
+  logger.debug(LogCategory.LLM, 'createLLM', 'Creating LLM instance', {
+    provider: config.provider,
+    model: config.model,
+  });
 
   // Create the appropriate model based on the provider
   let model;
@@ -263,13 +270,13 @@ Update the exports in `src/llm/index.ts` to include your new provider:
 
 ```typescript
 // Export your model creation function
-export { 
-  createAnthropicModel, 
-  createOpenAIModel, 
+export {
+  createAnthropicModel,
+  createOpenAIModel,
   createGeminiModel,
   createDeepSeekModel,
   createGroqModel,
-  createYourProviderModel 
+  createYourProviderModel,
 } from './model-utils';
 ```
 
@@ -313,21 +320,21 @@ export interface YourProviderConfig extends LLMConfig {
 // In model-utils.ts
 export function createYourProviderModel(config: LLMConfig): LanguageModel {
   const yourProviderConfig = config as YourProviderConfig;
-  
+
   // Create model options
   const modelOptions: any = {};
-  
+
   // Add provider-specific options
   if (yourProviderConfig.creativity !== undefined) {
     modelOptions.creativity = yourProviderConfig.creativity;
   }
-  
+
   // Create and return the model with options
   return YourProvider({
-    apiKey: config.apiKey
+    apiKey: config.apiKey,
   }).LanguageModel({
     model: config.model,
-    ...modelOptions
+    ...modelOptions,
   });
 }
 ```
@@ -346,11 +353,11 @@ jest.mock('your-provider-sdk', () => {
     YourProviderClient: jest.fn().mockImplementation(() => {
       return {
         createCompletion: jest.fn().mockResolvedValue({
-          text: 'Mock response'
+          text: 'Mock response',
         }),
         // Mock other methods
       };
-    })
+    }),
   };
 });
 
@@ -359,27 +366,27 @@ describe('YourProvider integration', () => {
     const llm = createLLM({
       provider: 'your-provider',
       apiKey: 'your-test-api-key',
-      model: 'your-test-model'
+      model: 'your-test-model',
     });
-    
+
     expect(llm).toBeInstanceOf(CoreLLM);
     expect(llm.config.provider).toBe('your-provider');
   });
-  
+
   it('generates text correctly', async () => {
     const llm = createLLM({
       provider: 'your-provider',
       apiKey: 'your-test-api-key',
-      model: 'your-test-model'
+      model: 'your-test-model',
     });
-    
+
     const result = await llm.generateText({
-      messages: [{ role: 'user', content: 'Hello' }]
+      messages: [{ role: 'user', content: 'Hello' }],
     });
-    
+
     expect(result.text).toBeDefined();
   });
-  
+
   // Test streaming and other features
 });
 ```
@@ -392,12 +399,12 @@ const llm = createLLM({
   apiKey: process.env.YOUR_PROVIDER_API_KEY,
   model: 'your-provider-model',
   // Provider-specific options
-  someProviderSpecificOption: true
+  someProviderSpecificOption: true,
 });
 
 // Test text generation
 const result = await llm.generateText({
-  messages: [{ role: 'user', content: 'Hello' }]
+  messages: [{ role: 'user', content: 'Hello' }],
 });
 
 console.log(result.text);
@@ -405,7 +412,7 @@ console.log(result.text);
 // Test streaming
 const stream = await llm.streamText({
   messages: [{ role: 'user', content: 'Tell me a story' }],
-  onFinish: (text) => console.log('Finished:', text)
+  onFinish: (text) => console.log('Finished:', text),
 });
 
 for await (const chunk of stream) {
@@ -415,7 +422,7 @@ for await (const chunk of stream) {
 
 ## Conclusion
 
-By following these steps, you can add a new LLM provider to the AgentDock Core framework. The unified implementation makes it easy to add new providers while maintaining a consistent interface for all LLM operations. 
+By following these steps, you can add a new LLM provider to the AgentDock Core framework. The unified implementation makes it easy to add new providers while maintaining a consistent interface for all LLM operations.
 
 The framework's architecture separates the AI SDK integration from client applications, allowing them to use a consistent interface regardless of the underlying provider. This design makes it easy to switch providers or update the AI SDK version without changing client code.
 
@@ -438,4 +445,4 @@ Key best practices for tool integration:
 2. **Implement fallbacks**: Always have a fallback mechanism in case the LLM is not available or encounters an error.
 3. **Use proper error handling**: Wrap LLM calls in try/catch blocks to handle errors gracefully.
 4. **Keep messages focused**: Create clear system and user messages that focus on the specific task.
-5. **Use appropriate temperature**: Set the temperature based on the task requirements (lower for factual tasks, higher for creative tasks). 
+5. **Use appropriate temperature**: Set the temperature based on the task requirements (lower for factual tasks, higher for creative tasks).

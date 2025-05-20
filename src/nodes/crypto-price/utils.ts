@@ -31,11 +31,11 @@ export function isValidIdFormat(id: string): boolean {
 export function formatCurrency(amount: number, currency: string = 'usd'): string {
   // Get currency symbol
   const currencySymbol = getCurrencySymbol(currency);
-  
+
   // Format with appropriate decimal places
   return `${currencySymbol}${amount.toLocaleString('en-US', {
     minimumFractionDigits: 2,
-    maximumFractionDigits: 6
+    maximumFractionDigits: 6,
   })}`;
 }
 
@@ -57,7 +57,7 @@ export function getCurrencySymbol(currency: string = 'usd'): string {
     btc: '₿',
     eth: 'Ξ',
   };
-  
+
   return symbols[currency.toLowerCase()] || currency.toUpperCase() + ' ';
 }
 
@@ -99,7 +99,7 @@ export function formatTimestamp(timestamp: string): string {
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
   });
 }
 
@@ -125,4 +125,4 @@ export function getPriceChangeSymbol(change: number): string {
   if (change > 0) return '▲';
   if (change < 0) return '▼';
   return '▶';
-} 
+}

@@ -1,22 +1,35 @@
 import { ToxicityEvaluator, type ToxicityEvaluatorConfig } from '../toxicity';
-import type { EvaluationInput, EvaluationCriteria, EvaluationResult, AgentMessage, TextContent, MessageContent } from '../../../types';
+import type {
+  EvaluationInput,
+  EvaluationCriteria,
+  EvaluationResult,
+  AgentMessage,
+  TextContent,
+  MessageContent,
+} from '../../../types';
 
 // Mock helper
-const createMockInput = (response: string | AgentMessage, criteria?: EvaluationCriteria[]): EvaluationInput => {
+const createMockInput = (
+  response: string | AgentMessage,
+  criteria?: EvaluationCriteria[],
+): EvaluationInput => {
   let finalResponse: string | AgentMessage;
-  if (typeof response === 'object' && 'role' in response && response.role === 'assistant') { // It's an AgentMessage
+  if (typeof response === 'object' && 'role' in response && response.role === 'assistant') {
+    // It's an AgentMessage
     const agentMsg = response as AgentMessage;
     let contentString = agentMsg.content; // Assume content is already a string or correctly set
     // Ensure contentParts is an array before trying to find in it
     if (Array.isArray(agentMsg.contentParts) && agentMsg.contentParts.length > 0) {
-      const firstTextPart = agentMsg.contentParts.find((p: MessageContent) => p.type === 'text') as TextContent | undefined;
+      const firstTextPart = agentMsg.contentParts.find((p: MessageContent) => p.type === 'text') as
+        | TextContent
+        | undefined;
       if (firstTextPart && typeof firstTextPart.text === 'string') {
         contentString = firstTextPart.text;
       }
     }
     // If contentString is still not set (e.g. no text parts, or content wasn't a string initially),
     // default to empty string for the content field.
-    finalResponse = { ...agentMsg, content: contentString || '' }; 
+    finalResponse = { ...agentMsg, content: contentString || '' };
   } else {
     finalResponse = response; // It's already a string or not the specific AgentMessage structure we need to adjust
   }
@@ -27,29 +40,40 @@ const createMockInput = (response: string | AgentMessage, criteria?: EvaluationC
 };
 
 describe('ToxicityEvaluator', () => {
-  const mockCriterion: EvaluationCriteria = { name: 'ToxicityCheck', description: 'Test toxicity', scale: 'binary' };
+  const mockCriterion: EvaluationCriteria = {
+    name: 'ToxicityCheck',
+    description: 'Test toxicity',
+    scale: 'binary',
+  };
 
   describe('Constructor Error Handling', () => {
     it('should throw if criterionName is missing', () => {
-      const config: Partial<ToxicityEvaluatorConfig> = { toxicTerms: ['badword'] }; 
-      expect(() => new ToxicityEvaluator(config as ToxicityEvaluatorConfig))
-        .toThrow('[ToxicityEvaluator] criterionName must be provided and non-empty.');
+      const config: Partial<ToxicityEvaluatorConfig> = { toxicTerms: ['badword'] };
+      expect(() => new ToxicityEvaluator(config as ToxicityEvaluatorConfig)).toThrow(
+        '[ToxicityEvaluator] criterionName must be provided and non-empty.',
+      );
     });
 
     it('should throw if criterionName is empty', () => {
-      const config: Partial<ToxicityEvaluatorConfig> = { criterionName: ' ', toxicTerms: ['badword'] };
-      expect(() => new ToxicityEvaluator(config as ToxicityEvaluatorConfig))
-        .toThrow('[ToxicityEvaluator] criterionName must be provided and non-empty.');
+      const config: Partial<ToxicityEvaluatorConfig> = {
+        criterionName: ' ',
+        toxicTerms: ['badword'],
+      };
+      expect(() => new ToxicityEvaluator(config as ToxicityEvaluatorConfig)).toThrow(
+        '[ToxicityEvaluator] criterionName must be provided and non-empty.',
+      );
     });
 
     it('should throw if toxicTerms is missing or empty', () => {
       const config1: Partial<ToxicityEvaluatorConfig> = { criterionName: 'Test' }; // Missing toxicTerms
       const config2: ToxicityEvaluatorConfig = { criterionName: 'Test', toxicTerms: [] }; // Empty toxicTerms
-      
-      expect(() => new ToxicityEvaluator(config1 as ToxicityEvaluatorConfig))
-          .toThrow('[ToxicityEvaluator] toxicTerms array must be provided and non-empty.');
-      expect(() => new ToxicityEvaluator(config2))
-          .toThrow('[ToxicityEvaluator] toxicTerms array must be provided and non-empty.');
+
+      expect(() => new ToxicityEvaluator(config1 as ToxicityEvaluatorConfig)).toThrow(
+        '[ToxicityEvaluator] toxicTerms array must be provided and non-empty.',
+      );
+      expect(() => new ToxicityEvaluator(config2)).toThrow(
+        '[ToxicityEvaluator] toxicTerms array must be provided and non-empty.',
+      );
     });
   });
 
@@ -80,7 +104,9 @@ describe('ToxicityEvaluator', () => {
       expect(results[0].score).toBe(false);
       // Order might vary depending on regex execution, check presence
       expect(results[0].reasoning).toContain('Found toxic terms: [');
-      expect(results[0].metadata?.foundToxicTerms).toEqual(expect.arrayContaining(['darn', 'heck']));
+      expect(results[0].metadata?.foundToxicTerms).toEqual(
+        expect.arrayContaining(['darn', 'heck']),
+      );
       expect(results[0].metadata?.foundToxicTerms).toHaveLength(2);
     });
 
@@ -101,33 +127,33 @@ describe('ToxicityEvaluator', () => {
     });
 
     it('should match whole words by default', async () => {
-        const configWW = { criterionName: 'ToxicityCheck', toxicTerms: ['ass'] };
-        const evaluatorWW = new ToxicityEvaluator(configWW);
-        const input = createMockInput('Assuming this passes assessment.'); // Contains 'ass' as substring
-        const results = await evaluatorWW.evaluate(input, [mockCriterion]);
-        expect(results[0].score).toBe(true); // Should not find toxic term
-        expect(results[0].metadata?.foundToxicTerms).toEqual([]);
+      const configWW = { criterionName: 'ToxicityCheck', toxicTerms: ['ass'] };
+      const evaluatorWW = new ToxicityEvaluator(configWW);
+      const input = createMockInput('Assuming this passes assessment.'); // Contains 'ass' as substring
+      const results = await evaluatorWW.evaluate(input, [mockCriterion]);
+      expect(results[0].score).toBe(true); // Should not find toxic term
+      expect(results[0].metadata?.foundToxicTerms).toEqual([]);
     });
-    
+
     it('should match substrings when matchWholeWord is false', async () => {
-        const configSub = { 
-            criterionName: 'ToxicityCheck', 
-            toxicTerms: ['ass'], 
-            matchWholeWord: false // Explicitly allow substring match
-        };
-        const evaluatorSub = new ToxicityEvaluator(configSub);
-        const input = createMockInput('Assuming this passes assessment.'); // Contains 'ass' as substring
-        const results = await evaluatorSub.evaluate(input, [mockCriterion]);
-        expect(results[0].score).toBe(false); // Should find toxic term
-        expect(results[0].metadata?.foundToxicTerms).toEqual(['ass']);
+      const configSub = {
+        criterionName: 'ToxicityCheck',
+        toxicTerms: ['ass'],
+        matchWholeWord: false, // Explicitly allow substring match
+      };
+      const evaluatorSub = new ToxicityEvaluator(configSub);
+      const input = createMockInput('Assuming this passes assessment.'); // Contains 'ass' as substring
+      const results = await evaluatorSub.evaluate(input, [mockCriterion]);
+      expect(results[0].score).toBe(false); // Should find toxic term
+      expect(results[0].metadata?.foundToxicTerms).toEqual(['ass']);
     });
-    
+
     it('should handle regex special characters in toxic terms correctly', async () => {
       const specialTerms = ['a+b', 'c*d', 'e?f', '(g)'];
-      const configSpecial: ToxicityEvaluatorConfig = { 
-        criterionName: 'ToxicityCheck', 
-        toxicTerms: specialTerms, 
-        matchWholeWord: false 
+      const configSpecial: ToxicityEvaluatorConfig = {
+        criterionName: 'ToxicityCheck',
+        toxicTerms: specialTerms,
+        matchWholeWord: false,
       };
       const evaluatorSpecial = new ToxicityEvaluator(configSpecial);
       const inputText = 'Literal text with a+b and c*d and e?f and (g).';
@@ -158,7 +184,11 @@ describe('ToxicityEvaluator', () => {
 
     it('should return empty result if criterion does not match', async () => {
       const evaluator = new ToxicityEvaluator(config);
-      const otherCriterion: EvaluationCriteria = { name: 'Other', description:'', scale: 'binary' };
+      const otherCriterion: EvaluationCriteria = {
+        name: 'Other',
+        description: '',
+        scale: 'binary',
+      };
       const input = createMockInput('clean response', [otherCriterion]);
       const results = await evaluator.evaluate(input, [otherCriterion]);
       expect(results).toHaveLength(0);
@@ -167,13 +197,17 @@ describe('ToxicityEvaluator', () => {
 
   describe('Advanced Field Sourcing', () => {
     const toxicTerms = ['darn', 'heck'];
-    const mockCriterion: EvaluationCriteria = { name: 'ToxicityCheck', description: 'Test', scale: 'binary' };
+    const mockCriterion: EvaluationCriteria = {
+      name: 'ToxicityCheck',
+      description: 'Test',
+      scale: 'binary',
+    };
 
     it('should source text from groundTruth (string) via sourceTextField', async () => {
-      const config: ToxicityEvaluatorConfig = { 
-        criterionName: 'ToxicityCheck', 
+      const config: ToxicityEvaluatorConfig = {
+        criterionName: 'ToxicityCheck',
         toxicTerms,
-        sourceTextField: 'groundTruth' 
+        sourceTextField: 'groundTruth',
       };
       const evaluator = new ToxicityEvaluator(config);
       const input = createMockInput('Clean response.');
@@ -184,10 +218,10 @@ describe('ToxicityEvaluator', () => {
     });
 
     it('should source text from context (nested path) via sourceTextField', async () => {
-      const config: ToxicityEvaluatorConfig = { 
-        criterionName: 'ToxicityCheck', 
+      const config: ToxicityEvaluatorConfig = {
+        criterionName: 'ToxicityCheck',
         toxicTerms,
-        sourceTextField: 'context.level1.textToAnalyze'
+        sourceTextField: 'context.level1.textToAnalyze',
       };
       const evaluator = new ToxicityEvaluator(config);
       const input = createMockInput('Clean response.');
@@ -197,11 +231,11 @@ describe('ToxicityEvaluator', () => {
       expect(results[0].metadata?.foundToxicTerms).toEqual(['heck']);
     });
 
-    it('should source text from response (AgentMessage) via sourceTextField=\'response\'', async () => {
-      const config: ToxicityEvaluatorConfig = { 
+    it("should source text from response (AgentMessage) via sourceTextField='response'", async () => {
+      const config: ToxicityEvaluatorConfig = {
         criterionName: 'ToxicityCheck',
         toxicTerms,
-        sourceTextField: 'response'
+        sourceTextField: 'response',
       };
       const evaluator = new ToxicityEvaluator(config);
       const textContentForAgentMessage = 'This agent message has a badword... I mean darn.';
@@ -219,10 +253,10 @@ describe('ToxicityEvaluator', () => {
     });
 
     it('should return error if sourceTextField path is invalid (e.g., context path wrong)', async () => {
-      const config: ToxicityEvaluatorConfig = { 
-        criterionName: 'ToxicityCheck', 
+      const config: ToxicityEvaluatorConfig = {
+        criterionName: 'ToxicityCheck',
         toxicTerms,
-        sourceTextField: 'context.non.existent'
+        sourceTextField: 'context.non.existent',
       };
       const evaluator = new ToxicityEvaluator(config);
       const input = createMockInput('Some text', [mockCriterion]);
@@ -231,10 +265,11 @@ describe('ToxicityEvaluator', () => {
       const results = await evaluator.evaluate(input, [mockCriterion]);
       expect(results[0].score).toBe(false); // Default error score is false (toxic)
       expect(results[0].error).toBeDefined();
-      expect(results[0].reasoning).toContain("Source text field 'context.non.existent' did not yield a string");
+      expect(results[0].reasoning).toContain(
+        "Source text field 'context.non.existent' did not yield a string",
+      );
     });
   });
 
   // TODO: More tests for multiple rules, etc. (This refers to RuleBasedEvaluator)
-
-}); 
+});

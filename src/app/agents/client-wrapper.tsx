@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { AgentHeader } from "@/components/agents/AgentHeader";
-import { AgentGrid } from "@/components/agents/AgentGrid";
-import { ApiKeyDialog } from "@/components/api-key-dialog";
-import type { AgentTemplate } from "@/lib/store/types";
-import { useAgentFiltering } from "@/lib/hooks/useAgentFiltering";
+import { useState } from 'react';
+import { AgentHeader } from '@/components/agents/AgentHeader';
+import { AgentGrid } from '@/components/agents/AgentGrid';
+import { ApiKeyDialog } from '@/components/api-key-dialog';
+import type { AgentTemplate } from '@/lib/store/types';
+import { useAgentFiltering } from '@/lib/hooks/useAgentFiltering';
 
 /**
  * Client wrapper that handles interactive elements while data is fetched on the server
@@ -25,7 +25,7 @@ export default function ClientWrapper({
   // Use the hook for filtering and sorting
   const { searchTerm, setSearchTerm, sortedTemplates } = useAgentFiltering({
     allTemplates: templates,
-    category: initialCategory
+    category: initialCategory,
   });
 
   // Handle chat button click - navigate to chat page using the correct URL format
@@ -49,7 +49,7 @@ export default function ClientWrapper({
       <AgentHeader
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
-        isAllAgents={initialCategory === "featured"}
+        isAllAgents={initialCategory === 'featured'}
       />
 
       <AgentGrid
@@ -70,4 +70,4 @@ export default function ClientWrapper({
       )}
     </>
   );
-} 
+}

@@ -9,7 +9,7 @@ The core integration logic connecting the Next.js application to `agentdock-core
 ```typescript
 // Simplified structure from src/lib/orchestration-adapter.ts
 
-import { 
+import {
     createOrchestrationManager,
     OrchestrationManager,
     // ... other agentdock-core imports
@@ -24,16 +24,16 @@ export function getOrchestrationManagerInstance(): OrchestrationManager {
   if (globalThis.__orchestrationManagerInstance) {
     return globalThis.__orchestrationManagerInstance;
   }
-  
+
   // Determine storage provider (using getConfiguredStorageProvider helper)
-  const storageProvider = getConfiguredStorageProvider(); 
+  const storageProvider = getConfiguredStorageProvider();
   // Determine TTL from environment (SESSION_TTL_SECONDS)
   const sessionTtlMs = /* ... logic to parse env var ... */;
 
   // Create and store the single instance
   const newInstance = createOrchestrationManager({
-      storageProvider: storageProvider, 
-      cleanup: { enabled: false, ttlMs: sessionTtlMs } 
+      storageProvider: storageProvider,
+      cleanup: { enabled: false, ttlMs: sessionTtlMs }
   });
   globalThis.__orchestrationManagerInstance = newInstance;
   return newInstance;
@@ -41,6 +41,7 @@ export function getOrchestrationManagerInstance(): OrchestrationManager {
 ```
 
 Key aspects of this adapter:
+
 1.  **Singleton Instance:** Uses `globalThis` to ensure only one `OrchestrationManager` instance is created per server process. This is crucial for serverless/edge environments to reuse the manager instance across invocations where possible.
 2.  **Environment Configuration:** Reads environment variables (`KV_STORE_PROVIDER`, `SESSION_TTL_SECONDS`, etc.) to dynamically configure the storage provider and session TTL when creating the singleton instance.
 3.  **Standard Core Components:** Uses the standard `createOrchestrationManager` function and other components imported directly from `agentdock-core`.
@@ -52,8 +53,8 @@ The `getOrchestrationManagerInstance` function within `src/lib/orchestration-ada
 ```typescript
 // Simplified logic from src/lib/orchestration-adapter.ts
 
-import { 
-  createOrchestrationManager, 
+import {
+  createOrchestrationManager,
   getStorageFactory,
   OrchestrationManager,
   // ... other imports
@@ -73,20 +74,22 @@ export function getOrchestrationManagerInstance() {
   const storageProvider = getConfiguredStorageProvider(); // Internal helper function
 
   // Read and calculate TTL from ENV
-  const sessionTtlSeconds = process.env.SESSION_TTL_SECONDS ? parseInt(process.env.SESSION_TTL_SECONDS, 10) : undefined;
+  const sessionTtlSeconds = process.env.SESSION_TTL_SECONDS
+    ? parseInt(process.env.SESSION_TTL_SECONDS, 10)
+    : undefined;
   let sessionTtlMs: number | undefined = undefined;
   if (sessionTtlSeconds && sessionTtlSeconds > 0) {
-      sessionTtlMs = sessionTtlSeconds * 1000; // Convert to ms
+    sessionTtlMs = sessionTtlSeconds * 1000; // Convert to ms
   }
 
   // Create the manager instance
   const newInstance = createOrchestrationManager({
-      storageProvider: storageProvider, 
-      // Pass configured TTL (undefined lets core use its 24h default)
-      cleanup: { 
-        enabled: false, // Cleanup timer managed within core if needed
-        ttlMs: sessionTtlMs 
-      }
+    storageProvider: storageProvider,
+    // Pass configured TTL (undefined lets core use its 24h default)
+    cleanup: {
+      enabled: false, // Cleanup timer managed within core if needed
+      ttlMs: sessionTtlMs,
+    },
   });
 
   // Store globally and return
@@ -101,7 +104,7 @@ This ensures that the session TTL configured in the environment dictates the act
 
 ### Lazy Initialization
 
-The `OrchestrationManager` instance itself is initialized lazily on the first call to `getOrchestrationManagerInstance()` within a server process. However, the decision to *use* orchestration features (like getting state) typically happens within the API route handler based on the specific agent's configuration:
+The `OrchestrationManager` instance itself is initialized lazily on the first call to `getOrchestrationManagerInstance()` within a server process. However, the decision to _use_ orchestration features (like getting state) typically happens within the API route handler based on the specific agent's configuration:
 
 ```typescript
 // Example check within an API Route Handler (e.g., /api/chat/[agentId]/route.ts)
@@ -109,13 +112,13 @@ if (template && 'orchestration' in template && template.orchestration) {
   logger.debug(
     LogCategory.API,
     'ChatRoute',
-    'Initializing orchestration for agent with orchestration', 
-    { agentId }
+    'Initializing orchestration for agent with orchestration',
+    { agentId },
   );
-  
+
   // Get the manager instance (initializes on first call)
-  const manager = getOrchestrationManagerInstance(); 
-  
+  const manager = getOrchestrationManagerInstance();
+
   // Ensure orchestration state exists
   if (finalSessionId) {
     await getOrchestrationState(finalSessionId, template);
@@ -126,6 +129,7 @@ if (template && 'orchestration' in template && template.orchestration) {
 This ensures that orchestration state operations (`getOrchestrationState`) are only performed for agents configured to use orchestration, even though the manager instance might have already been created by a previous request in the same process.
 
 Benefits:
+
 1. Orchestration logic is only engaged for relevant agents.
 2. No resources are wasted on non-orchestrated agents
 3. Cold starts are faster for simple agents
@@ -140,8 +144,8 @@ const headerSessionId = request.headers.get('x-session-id');
 const requestSessionId = requestJson.sessionId;
 
 // Use existing session ID or create a new one
-const finalSessionId = headerSessionId || requestSessionId || 
-  `session-${agentId}-${Date.now()}-${crypto.randomUUID()}`;
+const finalSessionId =
+  headerSessionId || requestSessionId || `session-${agentId}-${Date.now()}-${crypto.randomUUID()}`;
 ```
 
 The session ID is then passed to the agent adapter:
@@ -156,7 +160,7 @@ const result = await processAgentMessage({
   fallbackApiKey,
   provider: llmInfo.provider,
   system,
-  config
+  config,
 });
 ```
 
@@ -173,21 +177,22 @@ function createAgentResponse(result: any, sessionId: string): Response {
   // Convert the result to a stream
   const stream = streamText(() => result);
   const response = toDataStreamResponse(stream);
-  
+
   // Add orchestration state to response - required for session continuity
   const orchestrationState = result._orchestrationState;
   if (orchestrationState) {
     response.headers.set('x-orchestration-state', JSON.stringify(orchestrationState));
   }
-  
+
   // Always ensure the session ID is present in the response headers
   response.headers.set('x-session-id', sessionId);
-  
+
   return response;
 }
 ```
 
 This approach:
+
 - Ensures clients can maintain session continuity
 - Provides access to orchestration state when needed
 - Follows HTTP standards for custom headers
@@ -205,10 +210,10 @@ const sessionCache = new Map<string, OrchestrationState>();
  */
 export function updateOrchestrationCache(
   sessionId: string,
-  state: OrchestrationState | Partial<OrchestrationState>
+  state: OrchestrationState | Partial<OrchestrationState>,
 ): void {
   if (!sessionId) return;
-  
+
   // Update the cache with the new state
   const existing = sessionCache.get(sessionId);
   if (existing) {
@@ -254,27 +259,19 @@ export async function processAgentMessage(options: {
   // ...
 }) {
   // ...
-  
+
   // Get orchestration state if needed
   if (config.orchestration) {
-    const orchestrationState = await getOrchestrationState(
-      sessionId,
-      config
-    );
-    
+    const orchestrationState = await getOrchestrationState(sessionId, config);
+
     if (orchestrationState) {
-      logger.debug(
-        LogCategory.ADAPTER,
-        'AgentAdapter',
-        'Using orchestration',
-        {
-          sessionId,
-          activeStep: orchestrationState.activeStep
-        }
-      );
+      logger.debug(LogCategory.ADAPTER, 'AgentAdapter', 'Using orchestration', {
+        sessionId,
+        activeStep: orchestrationState.activeStep,
+      });
     }
   }
-  
+
   // ...
 }
 ```
@@ -282,10 +279,12 @@ export async function processAgentMessage(options: {
 ## Edge Runtime Considerations
 
 The suitability and performance in Edge Runtime environments depend on:
+
 - The inherent efficiency of the core `OrchestrationManager` and `SessionManager`.
 - The chosen **Storage Provider**: Using providers compatible with the Edge runtime (like Vercel KV via `@vercel/kv`, or potentially Redis via `@upstash/redis`) is crucial. In-memory storage will not persist between Edge function invocations.
 
 Key optimizations:
+
 - Minimized dependency loading
 - Efficient state structures
 - No cleanup timers in Edge mode
@@ -300,14 +299,16 @@ Different deployment environments have different requirements:
 For Vercel and other serverless/Edge environments:
 
 1. **Configure Appropriate Cleanup Options**
+
    ```typescript
    // Configure manager with cleanup disabled for edge environments
    orchestrationManager = createOrchestrationManager({
-     cleanup: { enabled: false }
+     cleanup: { enabled: false },
    });
    ```
 
 2. **Rely on Client Caching**
+
    ```typescript
    // Client-side: Use cache for state
    if (typeof window !== 'undefined') {
@@ -324,6 +325,7 @@ For Vercel and other serverless/Edge environments:
 For multi-region deployments:
 
 1. **Consider External State Store**
+
    - Redis or similar for shared state
    - Keep state minimal for performance
 
@@ -338,12 +340,15 @@ For multi-region deployments:
 For debugging session and orchestration state:
 
 ```tsx
-function ChatDebug({ sessionId, orchestrationState }: {
+function ChatDebug({
+  sessionId,
+  orchestrationState,
+}: {
   sessionId: string;
   orchestrationState: OrchestrationState | null;
 }) {
   if (!orchestrationState) return null;
-  
+
   return (
     <div className="debug-panel">
       <h3>Session Debug</h3>
@@ -357,6 +362,7 @@ function ChatDebug({ sessionId, orchestrationState }: {
 ```
 
 This helps with:
+
 - Verifying state persistence
 - Checking sequence progression
 - Identifying orchestration issues
@@ -364,18 +370,22 @@ This helps with:
 ## Best Practices
 
 1. **Initialize Only When Needed**
+
    - Check `template.orchestration` before calling orchestration-specific functions like `getOrchestrationState`.
 
 2. **Configure for Environment**
+
    - Set appropriate cleanup options based on your deployment environment
    - Disable cleanup timers in serverless environments
 
 3. **Client-Side Caching**
+
    - Store state in client-side cache
    - Update from response headers
    - Handle expired or invalid state gracefully
 
 4. **Clean Session IDs**
+
    - Use a consistent format with sufficient entropy
    - Never expose sensitive information in session IDs
    - Include timestamps for debugging
@@ -392,8 +402,8 @@ The `src/lib/orchestration-adapter.ts` file handles reading environment variable
 ```typescript
 // Simplified logic from src/lib/orchestration-adapter.ts
 
-import { 
-  createOrchestrationManager, 
+import {
+  createOrchestrationManager,
   getStorageFactory,
   OrchestrationManager,
   // ... other imports
@@ -413,20 +423,22 @@ export function getOrchestrationManagerInstance() {
   const storageProvider = getConfiguredStorageProvider(); // Internal helper function
 
   // Read and calculate TTL from ENV
-  const sessionTtlSeconds = process.env.SESSION_TTL_SECONDS ? parseInt(process.env.SESSION_TTL_SECONDS, 10) : undefined;
+  const sessionTtlSeconds = process.env.SESSION_TTL_SECONDS
+    ? parseInt(process.env.SESSION_TTL_SECONDS, 10)
+    : undefined;
   let sessionTtlMs: number | undefined = undefined;
   if (sessionTtlSeconds && sessionTtlSeconds > 0) {
-      sessionTtlMs = sessionTtlSeconds * 1000; // Convert to ms
+    sessionTtlMs = sessionTtlSeconds * 1000; // Convert to ms
   }
 
   // Create the manager instance
   const newInstance = createOrchestrationManager({
-      storageProvider: storageProvider, 
-      // Pass configured TTL (undefined lets core use its 24h default)
-      cleanup: { 
-        enabled: false, // Cleanup timer managed within core if needed
-        ttlMs: sessionTtlMs 
-      }
+    storageProvider: storageProvider,
+    // Pass configured TTL (undefined lets core use its 24h default)
+    cleanup: {
+      enabled: false, // Cleanup timer managed within core if needed
+      ttlMs: sessionTtlMs,
+    },
   });
 
   // Store globally and return
@@ -435,4 +447,4 @@ export function getOrchestrationManagerInstance() {
 }
 ```
 
-This ensures that the session TTL configured in the environment dictates the actual session lifespan managed by `agentdock-core`. 
+This ensures that the session TTL configured in the environment dictates the actual session lifespan managed by `agentdock-core`.

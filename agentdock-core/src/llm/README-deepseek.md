@@ -15,7 +15,7 @@ DeepSeek's API follows the OpenAI API format, allowing us to use the OpenAI clie
 ```typescript
 const provider = createOpenAI({
   apiKey: config.apiKey,
-  baseURL: 'https://api.deepseek.com/v1'
+  baseURL: 'https://api.deepseek.com/v1',
 });
 ```
 
@@ -47,9 +47,7 @@ To use DeepSeek in your agent, configure it as follows:
 
 ```json
 {
-  "nodes": [
-    "llm.deepseek"
-  ],
+  "nodes": ["llm.deepseek"],
   "nodeConfigurations": {
     "llm.deepseek": {
       "model": "deepseek-chat", // or "deepseek-reasoner"
@@ -77,4 +75,4 @@ Future enhancements could include:
 
 - [DeepSeek API Documentation](https://api-docs.deepseek.com/)
 - [DeepSeek Platform](https://platform.deepseek.com/)
-- [Vercel AI SDK](https://sdk.vercel.ai/docs) 
+- [Vercel AI SDK](https://sdk.vercel.ai/docs)

@@ -68,4 +68,4 @@ export const metadata = {
     apple: '/apple-touch-icon.png',
   },
   manifest: '/site.webmanifest',
-} as const; 
+} as const;

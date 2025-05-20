@@ -65,12 +65,14 @@ export const OpenAlexSearchResultComponent: React.FC<{
               )}
               {work.venue && <p>Published in: {work.venue}</p>}
               {work.year && <p>Year: {work.year}</p>}
-              {work.cited_by_count !== undefined && (
-                <p>Citations: {work.cited_by_count}</p>
-              )}
+              {work.cited_by_count !== undefined && <p>Citations: {work.cited_by_count}</p>}
               {work.is_open_access && (
                 <p>
-                  <a href={work.open_access_url || work.url} target="_blank" rel="noopener noreferrer">
+                  <a
+                    href={work.open_access_url || work.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     Open Access
                   </a>
                 </p>
@@ -102,11 +104,25 @@ export const OpenAlexWorkComponent: React.FC<{
           <strong>Authors:</strong> {work.authors.join(', ')}
         </p>
       )}
-      {work.venue && <p><strong>Published in:</strong> {work.venue}</p>}
-      {work.publication_date && <p><strong>Publication Date:</strong> {work.publication_date}</p>}
-      {work.type && <p><strong>Type:</strong> {work.type}</p>}
+      {work.venue && (
+        <p>
+          <strong>Published in:</strong> {work.venue}
+        </p>
+      )}
+      {work.publication_date && (
+        <p>
+          <strong>Publication Date:</strong> {work.publication_date}
+        </p>
+      )}
+      {work.type && (
+        <p>
+          <strong>Type:</strong> {work.type}
+        </p>
+      )}
       {work.cited_by_count !== undefined && (
-        <p><strong>Citations:</strong> {work.cited_by_count}</p>
+        <p>
+          <strong>Citations:</strong> {work.cited_by_count}
+        </p>
       )}
       {work.abstract && (
         <div>
@@ -119,7 +135,9 @@ export const OpenAlexWorkComponent: React.FC<{
           <h4>Concepts</h4>
           <ul>
             {work.concepts.map((concept, index) => (
-              <li key={concept.id || index}>{concept.display_name} (Score: {concept.score})</li>
+              <li key={concept.id || index}>
+                {concept.display_name} (Score: {concept.score})
+              </li>
             ))}
           </ul>
         </div>
@@ -151,4 +169,4 @@ export const OpenAlexWorkComponent: React.FC<{
       )}
     </div>
   );
-}; 
+};

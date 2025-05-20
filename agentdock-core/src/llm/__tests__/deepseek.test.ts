@@ -1,6 +1,6 @@
 /**
  * @fileoverview Tests for DeepSeek LLM integration.
- * 
+ *
  * Note: DeepSeek's API is compatible with OpenAI's format, so we use the OpenAI client
  * with a custom baseURL to access DeepSeek's API.
  */
@@ -21,10 +21,10 @@ jest.mock('@ai-sdk/openai', () => {
       usage: {
         promptTokens: 10,
         completionTokens: 20,
-        totalTokens: 30
-      }
+        totalTokens: 30,
+      },
     }),
-    doStream: jest.fn()
+    doStream: jest.fn(),
   });
 
   return {
@@ -32,7 +32,7 @@ jest.mock('@ai-sdk/openai', () => {
       return jest.fn().mockImplementation((modelId) => {
         return createMockModel(modelId);
       });
-    })
+    }),
   };
 });
 
@@ -49,7 +49,7 @@ describe('DeepSeek LLM Integration', () => {
     const config: LLMConfig = {
       provider: 'deepseek',
       apiKey: apiKey,
-      model: 'deepseek-chat'
+      model: 'deepseek-chat',
     };
 
     // Create LLM
@@ -65,7 +65,7 @@ describe('DeepSeek LLM Integration', () => {
     const config: LLMConfig = {
       provider: 'deepseek',
       apiKey: apiKey,
-      model: 'deepseek-chat'
+      model: 'deepseek-chat',
     };
 
     // Create LLM
@@ -75,8 +75,8 @@ describe('DeepSeek LLM Integration', () => {
     const result = await llm.generateText({
       messages: [
         { role: 'system', content: 'You are a helpful assistant.' },
-        { role: 'user', content: 'Say hello!' }
-      ]
+        { role: 'user', content: 'Say hello!' },
+      ],
     });
 
     // Verify result
@@ -94,7 +94,7 @@ describe('DeepSeek LLM Integration', () => {
     const config: LLMConfig = {
       provider: 'deepseek',
       apiKey: apiKey,
-      model: 'deepseek-reasoner'
+      model: 'deepseek-reasoner',
     };
 
     // Create LLM
@@ -104,8 +104,8 @@ describe('DeepSeek LLM Integration', () => {
     const result = await llm.generateText({
       messages: [
         { role: 'system', content: 'You are a helpful assistant.' },
-        { role: 'user', content: 'What is 2+2?' }
-      ]
+        { role: 'user', content: 'What is 2+2?' },
+      ],
     });
 
     // Verify result
@@ -116,4 +116,4 @@ describe('DeepSeek LLM Integration', () => {
     expect(result.usage?.completionTokens).toBe(20);
     expect(result.usage?.totalTokens).toBe(30);
   });
-}); 
+});

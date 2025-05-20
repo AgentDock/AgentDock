@@ -19,6 +19,7 @@ This agent embodies the character of Dr. Gregory House from the TV series "House
 ## Nodes
 
 The agent uses the following nodes:
+
 - search: Quick lookup of medical information
 - deep_research: Comprehensive analysis of complex medical cases
 - pubmed_search: Find scientific papers on medical topics
@@ -29,13 +30,17 @@ The agent uses the following nodes:
 The agent utilizes orchestrated workflows for systematic medical research:
 
 ### Medical Research Flow
+
 A streamlined research flow for investigating medical topics:
+
 1. Initial web search for basic information
 2. PubMed search for scientific literature
 3. Detailed retrieval of relevant scientific papers
 
 ### Deep Medical Investigation Flow
+
 A comprehensive research flow for complex cases:
+
 1. Initial web search for basic information
 2. Deep research on web resources
 3. PubMed search for scientific literature
@@ -48,12 +53,14 @@ See `template.json` for the full configuration.
 ## Diagnostic Capabilities
 
 1. Medical Analysis
+
    - Symptom evaluation
    - Differential diagnosis
    - Rare condition identification
    - Treatment recommendations
 
 2. Research Integration
+
    - Medical literature search
    - Case study analysis
    - Evidence-based diagnostics
@@ -79,12 +86,14 @@ console.log(response);
 ## Best Practices
 
 1. Medical Consultations
+
    - Provide detailed symptom descriptions
    - Include timeline and progression
    - Mention any unusual or seemingly unrelated symptoms
    - Share relevant medical history
 
 2. Research Requests
+
    - Be specific about conditions you want researched
    - Ask for differential diagnoses when appropriate
    - Request explanations of medical terminology
@@ -99,4 +108,4 @@ console.log(response);
 
 ## Disclaimer
 
-This agent is for entertainment and educational purposes only. It does not replace professional medical advice, diagnosis, or treatment. Always consult with a qualified healthcare provider for medical concerns. 
+This agent is for entertainment and educational purposes only. It does not replace professional medical advice, diagnosis, or treatment. Always consult with a qualified healthcare provider for medical concerns.

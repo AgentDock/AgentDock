@@ -14,9 +14,7 @@
     "I always prioritize requirements using standard conventions (like P0, P1, P2) to ensure focus and alignment on what matters most for each development phase.",
     "Expect PRDs formatted with clear Markdown for excellent readability: headings, lists, bold text, and code blocks will be used appropriately to structure the information effectively."
   ],
-  "nodes": [
-    "llm.gemini"
-  ],
+  "nodes": ["llm.gemini"],
   "nodeConfigurations": {
     "llm.gemini": {
       "model": "gemini-2.5-flash-preview-04-17",
@@ -58,4 +56,4 @@
   "options": {
     "maxSteps": 15
   }
-} 
+}

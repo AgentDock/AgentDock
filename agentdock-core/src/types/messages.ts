@@ -1,6 +1,6 @@
 /**
  * @fileoverview Core message type definitions for AgentDock
- * 
+ *
  * This module defines a unified message type that extends the Vercel AI SDK
  * message type while adding our rendering properties. This eliminates the need
  * for conversion functions that could cause property loss.
@@ -76,7 +76,7 @@ export interface Message extends Omit<AIMessage, 'role'> {
   isLoading?: boolean;
   isError?: boolean;
   isTyping?: boolean;
-  isPending?: boolean; 
+  isPending?: boolean;
   isComplete?: boolean;
   showToolCall?: boolean;
   contentParts?: MessageContent[];
@@ -87,16 +87,13 @@ export interface Message extends Omit<AIMessage, 'role'> {
 }
 
 // Specific message type guards that check role property
-export const isUserMessage = (message: Message): boolean => 
-  message.role === 'user';
+export const isUserMessage = (message: Message): boolean => message.role === 'user';
 
-export const isAssistantMessage = (message: Message): boolean => 
-  message.role === 'assistant';
+export const isAssistantMessage = (message: Message): boolean => message.role === 'assistant';
 
-export const isSystemMessage = (message: Message): boolean => 
-  message.role === 'system';
+export const isSystemMessage = (message: Message): boolean => message.role === 'system';
 
-export const isToolMessage = (message: Message): boolean => 
+export const isToolMessage = (message: Message): boolean =>
   message.role === 'data' && message.isToolMessage === true;
 
 // Content utility function
@@ -118,44 +115,49 @@ export function formatContentForDisplay(content: MessageContent): string {
 /**
  * Create a standard message
  */
-export function createMessage(params: Partial<Message> & Pick<Message, 'content'> & {
-  role: MessageRole;
-}): Message {
+export function createMessage(
+  params: Partial<Message> &
+    Pick<Message, 'content'> & {
+      role: MessageRole;
+    },
+): Message {
   return {
     id: params.id || crypto.randomUUID(),
     createdAt: params.createdAt || new Date(),
-    ...params
+    ...params,
   };
 }
 
 /**
  * Create a tool message (represented as 'data' role for AI SDK compatibility)
  */
-export function createToolMessage(params: Partial<Message> & Pick<Message, 'content'> & {
-  toolCallId: string;
-  toolName: string;
-}): Message {
+export function createToolMessage(
+  params: Partial<Message> &
+    Pick<Message, 'content'> & {
+      toolCallId: string;
+      toolName: string;
+    },
+): Message {
   return {
     id: params.id || crypto.randomUUID(),
     createdAt: params.createdAt || new Date(),
     role: 'data',
     isToolMessage: true,
-    ...params
+    ...params,
   };
 }
 
 // AI SDK compatibility - define explicit map functions
 export function toAIMessage(message: Message): AIMessage {
   // Convert content to string if needed
-  const content = typeof message.content === 'string' 
-    ? message.content 
-    : JSON.stringify(message.content);
+  const content =
+    typeof message.content === 'string' ? message.content : JSON.stringify(message.content);
 
   return {
     id: message.id,
     createdAt: message.createdAt,
     role: message.role as AIMessage['role'],
-    content
+    content,
   };
 }
 
@@ -164,6 +166,6 @@ export function fromAIMessage(aiMessage: AIMessage): Message {
     id: aiMessage.id,
     createdAt: aiMessage.createdAt,
     role: aiMessage.role as MessageRole,
-    content: aiMessage.content
+    content: aiMessage.content,
   };
-} 
+}

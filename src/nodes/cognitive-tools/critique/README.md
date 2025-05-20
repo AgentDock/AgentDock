@@ -68,12 +68,15 @@ The `critique` tool itself produces a `ToolResult` containing Markdown like this
 This component is a form...
 
 **STRENGTHS:**
+
 1. Good separation...
 
 **ISSUES:**
+
 1. Missing error handling...
 
 **SUGGESTIONS:**
+
 1. Add validation...
 
 **OVERALL ASSESSMENT:**

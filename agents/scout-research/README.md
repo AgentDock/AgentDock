@@ -6,15 +6,15 @@ The Scout Research agent utilizes Meta's Llama 4 Scout 17B model via the Groq AP
 
 ## Key Features
 
-*   **Llama 4 Scout Model:** Employs the `meta-llama/llama-4-scout-17b-16e-instruct` model.
-*   **Groq Inference:** Runs on Groq for fast response times.
-*   **Search Capability:** Equipped with a `search` tool for online information retrieval.
-*   **Research Focus:** Aimed at gathering, summarizing, and answering questions using web search results.
+- **Llama 4 Scout Model:** Employs the `meta-llama/llama-4-scout-17b-16e-instruct` model.
+- **Groq Inference:** Runs on Groq for fast response times.
+- **Search Capability:** Equipped with a `search` tool for online information retrieval.
+- **Research Focus:** Aimed at gathering, summarizing, and answering questions using web search results.
 
 ## Core Components
 
-*   **LLM:** `llm.groq` (Utilizes Llama 4 Scout model via Groq API)
-*   **Tools:** `search` (For accessing web information)
+- **LLM:** `llm.groq` (Utilizes Llama 4 Scout model via Groq API)
+- **Tools:** `search` (For accessing web information)
 
 ## Basic Workflow Diagram
 
@@ -29,4 +29,4 @@ graph TD
 
 ## Usage
 
-Leverage this agent for research tasks where speed and access to current web information via the Llama 4 Scout model are desired. 
+Leverage this agent for research tasks where speed and access to current web information via the Llama 4 Scout model are desired.

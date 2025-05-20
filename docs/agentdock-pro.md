@@ -13,7 +13,7 @@ graph LR
     B --> D[Natural Language Agent Creation]
     B --> E[Workflow Orchestration]
     B --> F[Advanced Scalability]
-    
+
     style B fill:#0066cc,color:#ffffff,stroke:#0033cc
     style A fill:#f9f9f9,stroke:#cccccc
     style C fill:#f5f5f5,stroke:#333333
@@ -25,6 +25,7 @@ graph LR
 ## Key Benefits
 
 ### Natural Language Agent Creation
+
 Build AI agents by describing what you want them to do in plain language, without coding.
 
 - **Describe your agent**: "I need an agent that monitors market data and executes trades"
@@ -34,6 +35,7 @@ Build AI agents by describing what you want them to do in plain language, withou
 [Learn more about Natural Language AI Agent Builder →](/docs/roadmap/nl-agent-builder)
 
 ### Workflow Orchestration
+
 Connect agents and tools into automated workflows for complex tasks.
 
 ```mermaid
@@ -48,7 +50,7 @@ graph LR
     F --> H
     G --> H
     H --> I[Analytics]
-    
+
     style C fill:#0066cc,color:#ffffff,stroke:#0033cc
     style D fill:#0066cc,color:#ffffff,stroke:#0033cc
 ```
@@ -59,6 +61,7 @@ graph LR
 - **Third-party integrations**: Connect to popular services and APIs
 
 ### Persistent Memory & Knowledge
+
 Agents maintain conversation history and knowledge across sessions.
 
 - **Per-user memory**: Each end-user gets their own conversation history
@@ -66,6 +69,7 @@ Agents maintain conversation history and knowledge across sessions.
 - **Contextual awareness**: Agents understand and remember previous interactions
 
 ### Advanced Scalability
+
 Deploy agents to handle large user loads while maintaining performance.
 
 - **Horizontal scaling**: Handle high volume without performance degradation
@@ -74,6 +78,7 @@ Deploy agents to handle large user loads while maintaining performance.
 - **Multi-region support**: Low-latency for global deployments
 
 ### Unified Cost Management
+
 Simplify your AI budget with our credit-based system.
 
 - **Save 80-90%** with our discounted API access compared to direct provider pricing
@@ -86,6 +91,7 @@ Simplify your AI budget with our credit-based system.
 AgentDock Pro can transform virtually any industry where human expertise, routine tasks, or customer interactions are involved. If it can be described in natural language, it can likely be automated or augmented with our AI agents. Here are just some of the ways organizations and professionals are leveraging our platform:
 
 ### Enterprise Workforce Transformation
+
 Replace repetitive jobs with AI agents for customer service, research, and administrative tasks.
 
 **Example**: Automate 80% of your HR support tickets with a specialized agent that handles employee onboarding, benefits questions, and request processing, saving $150,000 annually in operational costs.
@@ -100,12 +106,13 @@ graph LR
     D --> G[HR Dashboard]
     E --> G
     F --> G
-    
+
     style B fill:#f5f5f5,stroke:#333333
     style C fill:#f5f5f5,stroke:#333333
 ```
 
 ### AI Agents for Trading & Automation
+
 Create sophisticated trading and monitoring agents that execute based on real-time conditions.
 
 **Example**: "When S&P 500 opens positively, buy $500 of Bitcoin from my Coinbase account and notify me via Telegram"
@@ -115,11 +122,12 @@ graph LR
     A[Market Data] --> B{Trading Agent}
     B -->|Condition Met| C[Coinbase API]
     B -->|Transaction Complete| D[Telegram Notification]
-    
+
     style B fill:#f5f5f5,stroke:#333333
 ```
 
 ### Education & Tutoring
+
 Develop personalized learning agents that adapt to each student's needs, providing 24/7 education support.
 
 **Example**: Launch a subscription-based math tutoring service where your AI agent provides unlimited practice problems, step-by-step explanations, and personalized learning paths – scaling to thousands of students while maintaining individual progress tracking.
@@ -134,12 +142,13 @@ graph LR
     D --> G[Student Dashboard]
     E --> G
     F --> G
-    
+
     style B fill:#f5f5f5,stroke:#333333
     style C fill:#f5f5f5,stroke:#333333
 ```
 
 ### Healthcare Services
+
 Deploy compliant agents for patient intake, follow-up, and routine care management that integrate with existing systems.
 
 **Example**: Create a HIPAA-compliant pre-appointment screening agent that collects patient information, verifies insurance coverage, and sends required forms – reducing administrative costs by 40% while improving patient satisfaction.
@@ -153,11 +162,12 @@ graph LR
     C --> F[EHR Integration]
     D --> F
     E --> F
-    
+
     style B fill:#f5f5f5,stroke:#333333
 ```
 
 ### Legal & Compliance
+
 Automate document review, client intake, and routine legal processes while maintaining security and confidentiality.
 
 **Example**: Build a GDPR-compliant contract review agent that analyzes agreements in seconds, highlights potential issues, and suggests revisions – turning a time-intensive process into a scalable, high-margin service.
@@ -171,11 +181,12 @@ graph LR
     C --> F[Attorney Dashboard]
     D --> F
     E --> F
-    
+
     style B fill:#f5f5f5,stroke:#333333
 ```
 
 ### Insurance & Financial Services
+
 Streamline claims processing, policy recommendations, and customer service with automated workflows.
 
 **Example**: Deploy an SOC 2 compliant insurance claims agent that processes routine claims 5x faster than human agents, validating documentation, calculating payouts, and updating customer records while maintaining full audit trails.
@@ -189,11 +200,12 @@ graph LR
     C --> F[Audit Trail]
     D --> F
     E --> F
-    
+
     style B fill:#f5f5f5,stroke:#333333
 ```
 
 ### Voice Agent Developers
+
 Create voice assistants and conversational interfaces that handle concurrent conversations.
 
 **Example**: Build a restaurant reservation system that handles 200+ concurrent calls during peak hours, confirming bookings, answering questions, and upselling premium options – all without hiring additional staff.
@@ -205,12 +217,13 @@ graph LR
     C -->|Reservation| D[Booking System]
     C -->|Questions| E[Knowledge Base]
     C -->|Upsell| F[Premium Options]
-    
+
     style B fill:#f5f5f5,stroke:#333333
     style C fill:#f5f5f5,stroke:#333333
 ```
 
 ### AI Agencies & Consultancies
+
 Build custom AI agents for clients with rapid deployment and minimal overhead.
 
 **Example**: Create AI-powered assistants and automation solutions for your clients, generating recurring revenue while leveraging AgentDock Pro's infrastructure instead of building everything from scratch.
@@ -220,14 +233,15 @@ graph LR
     A[Client Needs] --> B[Agency]
     B --> C[Custom Agent Creation]
     C -->|Deploy| D[Client 1]
-    C -->|Deploy| E[Client 2] 
+    C -->|Deploy| E[Client 2]
     C -->|Deploy| F[Client 3]
-    
+
     style B fill:#f5f5f5,stroke:#333333
     style C fill:#f5f5f5,stroke:#333333
 ```
 
 ### Service Professionals
+
 Scale your expertise - whether you're a coach, concierge, or consultant - to serve more clients simultaneously.
 
 **Example**: Create a personal fitness coach agent that provides 24/7 guidance to hundreds of clients at once, delivering personalized workout plans, nutrition advice, and motivation – transforming your limited-scale service into a subscription business.
@@ -242,7 +256,7 @@ graph LR
     D --> G[Many Clients]
     E --> G
     F --> G
-    
+
     style B fill:#f5f5f5,stroke:#333333
     style C fill:#f5f5f5,stroke:#333333
 ```
@@ -257,12 +271,12 @@ graph TB
         A[Start with<br>Open Source] --> B[Build First<br>Agents]
         B --> C[Deploy to<br>AgentDock Pro]
     end
-    
+
     subgraph "Open Source Features"
         direction LR
         OS1[Node-based<br>Architecture] --- OS2[Tool System] --- OS3[Provider<br>Independence] --- OS4[BYOK Support]
     end
-    
+
     subgraph "Pro Features"
         direction TB
         P1[Natural Language<br>Agent Creation]
@@ -270,14 +284,14 @@ graph TB
         P3[Advanced<br>Scalability]
         P4[Enterprise<br>Integrations]
     end
-    
+
     A --- OS1
     B --- OS3
     C --- P1
     C --- P2
     C --- P3
     C --- P4
-    
+
     style C fill:#0066cc,color:#ffffff,stroke:#0033cc
     style P1 fill:#f5f5f5,stroke:#333333
     style P2 fill:#f5f5f5,stroke:#333333
@@ -296,4 +310,4 @@ AgentDock Pro is transforming how businesses build and deploy AI.
 
 **Receive $100 in free credits when you sign up.**
 
-[Sign Up at agentdock.ai →](https://agentdock.ai) 
+[Sign Up at agentdock.ai →](https://agentdock.ai)

@@ -4,14 +4,14 @@ This document details the implementation of orchestration state management withi
 
 ## Core Concepts
 
--   **Session-Scoped State:** All orchestration state (active step, tool sequence progress, recently used tools) is tied to a specific `SessionId` and managed separately for each conversation.
--   **State Interface (`OrchestrationState`):** Defined in `agentdock-core/src/orchestration/state.ts`, this interface extends the base `SessionState` and includes:
-    -   `activeStep?: string`: The name of the currently active orchestration step.
-    -   `recentlyUsedTools: string[]`: A list of tool names used within the session.
-    -   `sequenceIndex?: number`: The current index within a defined tool sequence for the `activeStep`.
-    -   `cumulativeTokenUsage?`: Tracks token counts for the session.
-    -   `lastAccessed: number`: Timestamp for TTL calculation.
-    -   `ttl: number`: Time-to-live for the state.
+- **Session-Scoped State:** All orchestration state (active step, tool sequence progress, recently used tools) is tied to a specific `SessionId` and managed separately for each conversation.
+- **State Interface (`OrchestrationState`):** Defined in `agentdock-core/src/orchestration/state.ts`, this interface extends the base `SessionState` and includes:
+  - `activeStep?: string`: The name of the currently active orchestration step.
+  - `recentlyUsedTools: string[]`: A list of tool names used within the session.
+  - `sequenceIndex?: number`: The current index within a defined tool sequence for the `activeStep`.
+  - `cumulativeTokenUsage?`: Tracks token counts for the session.
+  - `lastAccessed: number`: Timestamp for TTL calculation.
+  - `ttl: number`: Time-to-live for the state.
 
 ## Implementation (`OrchestrationStateManager`)
 
@@ -19,29 +19,30 @@ The `OrchestrationStateManager` class (`agentdock-core/src/orchestration/state.t
 
 ### Key Features:
 
--   **Uses `SessionManager`:** Internally, it leverages the core `SessionManager` specifically configured to handle `OrchestrationState`. It passes a `createDefaultState` function to initialize new orchestration states.
--   **Storage Integration:** Inherits storage capabilities from `SessionManager`, allowing `OrchestrationState` to be persisted using the configured storage provider (Memory, Redis, Vercel KV, etc.) under a specific namespace (default: `orchestration-state`).
--   **Factory Function:** The recommended way to get an instance is via the factory function `createOrchestrationStateManager(options)`, allowing configuration of storage and cleanup.
--   **State Accessors/Mutators:** Provides methods to interact with the state:
-    -   `getState(sessionId)`: Retrieves the full `OrchestrationState`.
-    -   `getOrCreateState(sessionId, config?)`: Retrieves existing state or creates a new default state if needed (and if orchestration is configured).
-    -   `updateState(sessionId, updates)`: Performs a partial, immutable update to the state.
-    -   `setActiveStep(sessionId, stepName)`: Updates the `activeStep` field.
-    -   `addUsedTool(sessionId, toolName)`: Appends a tool name to `recentlyUsedTools`.
-    -   `advanceSequence(sessionId)`: Increments the `sequenceIndex`.
-    -   `resetState(sessionId)`: Resets the state back to its default values.
--   **Conditional Creation:** The `getOrCreateState` method checks if an agent configuration includes orchestration steps before creating state, optimizing for agents without orchestration.
--   **TTL & Cleanup:** The Time-To-Live for orchestration state (and thus the underlying session key in storage) is configurable. 
-       - **Default:** If not explicitly configured, the default TTL is 24 hours of inactivity (defined in `agentdock-core`).
-       - **Configuration:** The TTL can be overridden by setting the `SESSION_TTL_SECONDS` environment variable in the main application (e.g., `agentdock_cursor_starter`). This value (in seconds) is passed down during initialization.
-       - **Mechanism:** The underlying `SessionManager` uses this configured TTL to set the expiration time on the storage key (e.g., via Redis `EXPIRE`). The state is automatically removed from storage after the TTL expires since the last access.
+- **Uses `SessionManager`:** Internally, it leverages the core `SessionManager` specifically configured to handle `OrchestrationState`. It passes a `createDefaultState` function to initialize new orchestration states.
+- **Storage Integration:** Inherits storage capabilities from `SessionManager`, allowing `OrchestrationState` to be persisted using the configured storage provider (Memory, Redis, Vercel KV, etc.) under a specific namespace (default: `orchestration-state`).
+- **Factory Function:** The recommended way to get an instance is via the factory function `createOrchestrationStateManager(options)`, allowing configuration of storage and cleanup.
+- **State Accessors/Mutators:** Provides methods to interact with the state:
+  - `getState(sessionId)`: Retrieves the full `OrchestrationState`.
+  - `getOrCreateState(sessionId, config?)`: Retrieves existing state or creates a new default state if needed (and if orchestration is configured).
+  - `updateState(sessionId, updates)`: Performs a partial, immutable update to the state.
+  - `setActiveStep(sessionId, stepName)`: Updates the `activeStep` field.
+  - `addUsedTool(sessionId, toolName)`: Appends a tool name to `recentlyUsedTools`.
+  - `advanceSequence(sessionId)`: Increments the `sequenceIndex`.
+  - `resetState(sessionId)`: Resets the state back to its default values.
+- **Conditional Creation:** The `getOrCreateState` method checks if an agent configuration includes orchestration steps before creating state, optimizing for agents without orchestration.
+- **TTL & Cleanup:** The Time-To-Live for orchestration state (and thus the underlying session key in storage) is configurable.
+  - **Default:** If not explicitly configured, the default TTL is 24 hours of inactivity (defined in `agentdock-core`).
+  - **Configuration:** The TTL can be overridden by setting the `SESSION_TTL_SECONDS` environment variable in the main application (e.g., `agentdock_cursor_starter`). This value (in seconds) is passed down during initialization.
+  - **Mechanism:** The underlying `SessionManager` uses this configured TTL to set the expiration time on the storage key (e.g., via Redis `EXPIRE`). The state is automatically removed from storage after the TTL expires since the last access.
 
 ### Relationship with `StepSequencer`
 
 The `StepSequencer` relies heavily on the `OrchestrationStateManager` to:
--   Get the current `sequenceIndex` for a session (`getState`).
--   Update the `sequenceIndex` when a sequence step is completed (`advanceSequence`).
--   Track which tools have been used (`addUsedTool`).
+
+- Get the current `sequenceIndex` for a session (`getState`).
+- Update the `sequenceIndex` when a sequence step is completed (`advanceSequence`).
+- Track which tools have been used (`addUsedTool`).
 
 ## State Lifecycle
 
@@ -81,12 +82,12 @@ sequenceDiagram
 
 The `OrchestrationStateManager` can be configured during instantiation using `createOrchestrationStateManager(options)`:
 
--   `storageProvider`: Provide a specific storage instance (e.g., a configured `RedisStorageProvider`).
--   `storageNamespace`: Change the namespace used in the storage backend.
--   `cleanup`: Configure the cleanup *check* interval and enable/disable the automatic cleanup timer. Note: The actual session **TTL** is primarily controlled by `SESSION_TTL_SECONDS` passed during initialization.
+- `storageProvider`: Provide a specific storage instance (e.g., a configured `RedisStorageProvider`).
+- `storageNamespace`: Change the namespace used in the storage backend.
+- `cleanup`: Configure the cleanup _check_ interval and enable/disable the automatic cleanup timer. Note: The actual session **TTL** is primarily controlled by `SESSION_TTL_SECONDS` passed during initialization.
 
 ## Best Practices
 
--   Use the factory `createOrchestrationStateManager(options)` for proper configuration.
--   Leverage conditional state creation logic where applicable.
--   Ensure the underlying storage provider is configured correctly for the deployment environment. 
+- Use the factory `createOrchestrationStateManager(options)` for proper configuration.
+- Leverage conditional state creation logic where applicable.
+- Ensure the underlying storage provider is configured correctly for the deployment environment.

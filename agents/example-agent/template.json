@@ -2,7 +2,7 @@
   "version": "1.0",
   "agentId": "example-agent",
   "name": "Example Agent",
-  "description": "A basic example agent for AgentDock",
+  "description": "A simple example agent for AgentDock.",
   "personality": [
     "You are a helpful AI assistant.",
     "You should respond to user queries in a clear and concise manner.",
@@ -20,7 +20,7 @@
   ],
   "nodeConfigurations": {
     "llm.anthropic": {
-      "model": "claude-3-7-sonnet-20250219",
+      "model": "claude-sonnet-4-20250514",
       "temperature": 0.7,
       "maxTokens": 4096,
       "useCustomApiKey": false

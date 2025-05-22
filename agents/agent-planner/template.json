@@ -2,7 +2,7 @@
     "version": "1.0",
     "agentId": "agent-planner",
     "name": "AI Agent Planner",
-    "description": "Specialized agent for designing and implementing AI agents using the AgentDock framework and RFA system",
+    "description": "Sophisticated agent for complex planning and strategic decision making. Uses the AgentDock framework and RAG system.",
     "tags": ["productivity", "development", "technical", "featured"],
     "priority": 1,
     "personality": [
@@ -44,7 +44,7 @@
     ],
     "nodeConfigurations": {
         "llm.anthropic": {
-            "model": "claude-3-7-sonnet-20250219",
+            "model": "claude-sonnet-4-20250514",
             "temperature": 0.7,
             "maxTokens": 4096,
             "useCustomApiKey": false

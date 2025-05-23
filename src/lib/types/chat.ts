@@ -2,7 +2,7 @@
  * @fileoverview Shared types for chat-related functionality
  */
 
-import type { ValidatedPersonality } from 'agentdock-core/types/agent-config';
+import type { ValidatedPersonality } from "agentdock-core/types/agent-config";
 
 /**
  * Base chat settings interface
@@ -17,7 +17,7 @@ export interface BaseChatSettings {
  */
 export interface TemplateChatSettings extends BaseChatSettings {
   /** Message history retention policy */
-  historyPolicy: 'lastN' | 'all';
+  historyPolicy: "lastN" | "all";
   /** Number of messages to retain if historyPolicy is 'lastN' */
   historyLength?: number;
   /** Chat prompt suggestions to display when chat is empty */
@@ -29,7 +29,7 @@ export interface TemplateChatSettings extends BaseChatSettings {
  */
 export interface ChatSettings extends BaseChatSettings {
   /** Message history retention policy */
-  historyPolicy: 'none' | 'lastN' | 'all';
+  historyPolicy: "none" | "lastN" | "all";
   /** Number of messages to retain if historyPolicy is 'lastN' */
   historyLength: number;
   /** Chat prompt suggestions to display when chat is empty */
@@ -39,7 +39,13 @@ export interface ChatSettings extends BaseChatSettings {
 /**
  * LLM provider type
  */
-export type LLMProvider = 'anthropic' | 'openai' | 'gemini' | 'deepseek' | 'groq';
+export type LLMProvider =
+  | "anthropic"
+  | "openai"
+  | "gemini"
+  | "deepseek"
+  | "groq"
+  | "cerebras";
 
 /**
  * Chat settings for the UI
@@ -88,4 +94,4 @@ export interface ChatRuntimeConfig {
     /** Chat prompt suggestions */
     chatPrompts?: string[];
   };
-} 
+}

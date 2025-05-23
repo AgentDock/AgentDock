@@ -1,12 +1,19 @@
 import { CoreLLM, createLLM } from '..';
-import { LLMConfig } from '../types';
-import { createAnthropicModel, createGeminiModel, createOpenAIModel } from '../model-utils';
+import { LLMConfig, ModelMetadata } from '../types';
+import {
+  createAnthropicModel,
+  createGeminiModel,
+  createOpenAIModel,
+  createCerebrasModel,
+} from '../model-utils';
+import { ProviderRegistry } from '../provider-registry';
 
 // Mock the model creation functions
 jest.mock('../model-utils', () => ({
   createAnthropicModel: jest.fn(),
   createOpenAIModel: jest.fn(),
   createGeminiModel: jest.fn(),
+  createCerebrasModel: jest.fn(),
 }));
 
 // Mock the AI SDK functions
@@ -126,6 +133,33 @@ describe('CoreLLM', () => {
       expect(llm.getModelId()).toBe('gemini-1.5-pro-latest');
     });
 
+    it('should create a Cerebras LLM instance', () => {
+      // Mock implementation
+      const mockModel = {
+        provider: 'cerebras',
+        modelId: 'llama3.1-8b',
+      };
+      (createCerebrasModel as jest.Mock).mockReturnValue(mockModel);
+
+      // Test configuration
+      const config: LLMConfig = {
+        provider: 'cerebras',
+        model: 'llama3.1-8b',
+        apiKey: 'csk-test-api-key',
+        temperature: 0.7,
+        maxTokens: 2048,
+      };
+
+      // Create the LLM
+      const llm = createLLM(config);
+
+      // Verify the result
+      expect(createCerebrasModel).toHaveBeenCalledWith(config);
+      expect(llm).toBeInstanceOf(CoreLLM);
+      expect(llm.getProvider()).toBe('cerebras');
+      expect(llm.getModelId()).toBe('llama3.1-8b');
+    });
+
     it('should throw an error for unsupported providers', () => {
       // Test configuration with an unsupported provider
       const config = {
@@ -172,4 +206,4 @@ describe('CoreLLM', () => {
       expect(llm.getLastTokenUsage()).toBeNull();
     });
   });
-}); 
+});

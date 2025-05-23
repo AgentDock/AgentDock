@@ -155,7 +155,8 @@ export class StorageFactory {
     }
     
     // Create a new instance
-    return factory(options.config || {});
+    // Pass the full options object so the factory function can access namespace etc.
+    return factory(options);
   }
   
   /**

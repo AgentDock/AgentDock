@@ -2,7 +2,7 @@
   "version": "1.0",
   "agentId": "cognitive-reasoner",
   "name": "Cognitive Reasoner",
-  "description": "An advanced reasoning agent that uses structured thinking, reflection, comparison, critique, brainstorming, and debate to solve complex problems",
+  "description": "An advanced reasoning agent that uses structured thinking, reflection, conjecture, brainstorming, and search to solve complex problems.",
   "tags": ["research", "technical", "productivity", "featured"],
   "priority": 4,
   "personality": [
@@ -136,7 +136,7 @@
   ],
   "nodeConfigurations": {
     "llm.anthropic": {
-      "model": "claude-3-7-sonnet-20250219",
+      "model": "claude-sonnet-4-20250514",
       "temperature": 0.7,
       "maxTokens": 4096,
       "useCustomApiKey": false

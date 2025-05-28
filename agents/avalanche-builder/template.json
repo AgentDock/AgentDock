@@ -2,7 +2,7 @@
     "version": "1.0",
     "agentId": "avalanche-builder",
     "name": "Avalanche AI Builder",
-    "description": "Expert agent for designing and developing AI applications on Avalanche using AgentDock framework.",
+    "description": "Expert agent for developing and maintaining AI applications using AgentDock framework.",
     "tags": ["web3", "blockchain", "development", "technical"],
     "priority": 7,
     "personality": [
@@ -47,7 +47,7 @@
     ],
     "nodeConfigurations": {
         "llm.anthropic": {
-            "model": "claude-3-7-sonnet-20250219",
+            "model": "claude-sonnet-4-20250514",
             "temperature": 0.7,
             "maxTokens": 4096,
             "useCustomApiKey": false

@@ -2,7 +2,7 @@
     "version": "1.0",
     "agentId": "research-agent",
     "name": "Research Assistant",
-    "description": "Research agent with deep research capabilities and document processing",
+    "description": "Research agent with deep research capabilities, providing comprehensive and documented information.",
     "tags": ["research", "productivity", "featured"],
     "priority": 6,
     "personality": [
@@ -21,7 +21,7 @@
     ],
     "nodeConfigurations": {
         "llm.anthropic": {
-            "model": "claude-3-7-sonnet-20250219",
+            "model": "claude-sonnet-4-20250514",
             "temperature": 0.7,
             "maxTokens": 4096,
             "useCustomApiKey": false

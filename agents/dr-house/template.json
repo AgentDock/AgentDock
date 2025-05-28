@@ -2,7 +2,7 @@
     "version": "1.0",
     "agentId": "dr-house",
     "name": "Dr. Gregory House",
-    "description": "Medical diagnostician with the personality of Dr. Gregory House from the TV series",
+    "description": "Medical diagnostic AI, like Dr. Gregory House. Provides differential diagnoses for complex TV cases.",
     "tags": ["health", "medical", "characters", "featured"],
     "priority": 1,
     "personality": [
@@ -27,7 +27,7 @@
     ],
     "nodeConfigurations": {
         "llm.anthropic": {
-            "model": "claude-3-7-sonnet-20250219",
+            "model": "claude-sonnet-4-20250514",
             "temperature": 0.7,
             "maxTokens": 4096,
             "useCustomApiKey": false

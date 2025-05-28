@@ -2,7 +2,7 @@
     "version": "1.0",
     "agentId": "finance-assistant",
     "name": "Finance Assistant",
-    "description": "Financial advisory agent for personal finance, investing, and market analysis",
+    "description": "Financial assistant agent for personal finance, investing, and market analysis.",
     "tags": ["business", "finance", "featured"],
     "priority": 40,
     "personality": [
@@ -20,7 +20,7 @@
     ],
     "nodeConfigurations": {
         "llm.anthropic": {
-            "model": "claude-3-7-sonnet-20250219",
+            "model": "claude-sonnet-4-20250514",
             "temperature": 0.7,
             "maxTokens": 4096,
             "useCustomApiKey": false

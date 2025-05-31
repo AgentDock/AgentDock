@@ -13,7 +13,7 @@
     "build": "tsup src/index.ts --format esm,cjs --dts --external ai --external @ai-sdk/* --external @anthropic-ai/* --external @google/* --external openai --external @upstash/* --external @vercel/*",
     "typecheck": "tsc --noEmit"
   },
-  "version": "0.1.0-132-1",
+  "version": "0.1.0-099-1",
   "dependencies": {
     "@ai-sdk/anthropic": "^1.0.7",
     "@ai-sdk/google": "^1.1.26",

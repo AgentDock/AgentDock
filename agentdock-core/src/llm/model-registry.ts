@@ -57,7 +57,7 @@ export class ModelRegistry {
       this.clearModelsForProvider(provider);
 
       // Register new models
-      newModels.forEach((model) => {
+      newModels.forEach(model => {
         this.models.set(model.id, model);
         const providerModels = this.modelsByProvider.get(provider) || [];
         if (!providerModels.includes(model.id)) {
@@ -80,9 +80,9 @@ export class ModelRegistry {
     const sortedModels2 = [...models2].sort((a, b) => a.id.localeCompare(b.id));
 
     return sortedModels1.every((model, index) => 
-        model.id === sortedModels2[index].id &&
-        model.displayName === sortedModels2[index].displayName &&
-        model.contextWindow === sortedModels2[index].contextWindow
+      model.id === sortedModels2[index].id &&
+      model.displayName === sortedModels2[index].displayName &&
+      model.contextWindow === sortedModels2[index].contextWindow
     );
   }
 
@@ -116,11 +116,11 @@ export class ModelRegistry {
    * @param providers Array of providers to reset, or undefined for all providers
    */
   static resetModels(providers?: LLMProvider[]): void {
-      const providersToReset = providers || Array.from(this.modelsByProvider.keys());
+    const providersToReset = providers || Array.from(this.modelsByProvider.keys());
     
-      providersToReset.forEach(provider => {
-        this.clearModelsForProvider(provider);
-        logger.debug(LogCategory.LLM, 'ModelRegistry', `Reset models for provider: ${provider}`); 
+    providersToReset.forEach(provider => {
+      this.clearModelsForProvider(provider);
+      logger.debug(LogCategory.LLM, 'ModelRegistry', `Reset models for provider: ${provider}`);
     });
   }
 

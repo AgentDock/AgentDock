@@ -1,176 +1,190 @@
-# Cerebras Integration for AgentDock
+# Cerebras Provider Integration
 
-This document explains how Cerebras is integrated into AgentDock Core.
-
-## Overview
-
-Cerebras is integrated into AgentDock Core as a dedicated provider with custom model configurations and error handling. Cerebras offers high-performance inference services for language models, similar to other providers like Groq.
-
-## Implementation Details
-
-### Provider Architecture
-
-The Cerebras integration follows the provider adapter pattern used throughout AgentDock:
-
-```typescript
-// Provider registration in provider-registry.ts
-{
-  id: "cerebras",
-  displayName: "Cerebras",
-  description: "Cerebras AI inference service",
-  defaultModel: "cerebras-gpt-13b",
-  validateApiKey: validateCerebrasApiKey,
-  applyConfig: applyCerebrasConfig,
-  fetchModels: fetchCerebrasModels
-}
-```
-
-### Available Models
-
-Cerebras offers several models with varying parameter sizes:
-
-1. **Cerebras GPT-13B** (`cerebras-gpt-13b`): 13B parameter model optimized for general text generation and reasoning
-2. **Cerebras GPT-6.7B** (`cerebras-gpt-6.7b`): 6.7B parameter model with a good balance of performance and speed
-3. **Cerebras GPT-2.7B** (`cerebras-gpt-2.7b`): 2.7B parameter model for faster, more efficient processing
-
-All models support a context window of 2048 tokens and are configured with default temperature of 0.7.
-
-### Configuration Options
-
-The `CerebrasConfig` interface extends the base `LLMConfig` with Cerebras-specific options:
-
-```typescript
-export interface CerebrasConfig extends LLMConfig {
-  provider: "cerebras";
-  model: string;
-  apiKey: string;
-  temperature?: number; // Default: 0.7
-  maxTokens?: number; // Default: 2048
-  topP?: number; // Default: 1
-  frequencyPenalty?: number; // Default: 0
-  presencePenalty?: number; // Default: 0
-}
-```
-
-### API Communication
-
-Cerebras uses a REST API with the following characteristics:
-
-- Base URL: `https://api.cerebras.com/v1`
-- Authentication: Bearer token authentication using the API key
-- Content-Type: application/json
-- Request format: Compatible with OpenAI's API structure
-
-### Error Handling
-
-The Cerebras integration implements custom error handling through the `CerebrasError` class, which captures and categorizes errors:
-
-```typescript
-class CerebrasError extends Error {
-  constructor(
-    message: string,
-    public code: "AUTH_ERROR" | "API_ERROR" | "VALIDATION_ERROR",
-    public originalError?: Error
-  ) {
-    super(message);
-    this.name = "CerebrasError";
-  }
-}
-```
-
-Error types include:
-
-- `AUTH_ERROR`: API key validation or authentication failures
-- `API_ERROR`: Issues with the Cerebras API (rate limits, server errors)
-- `VALIDATION_ERROR`: Invalid parameters or configuration
+## Configuration
 
 ### Environment Variables
+- `CEREBRAS_API_KEY`: Your Cerebras API key (required, format: `csk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`)
+- `CEREBRAS_API_URL`: Custom API endpoint URL (optional, defaults to "https://api.cerebras.ai/v1")
 
-Configuration is managed through environment variables:
-
-```bash
-# Required
-CEREBRAS_API_KEY=your_api_key
-
-# Optional (defaults to https://api.cerebras.com/v1)
-CEREBRAS_API_URL=custom_url
+### Provider Configuration
+```typescript
+{
+  provider: "cerebras",
+  model: "llama-3.3-70b",
+  apiKey: process.env.CEREBRAS_API_KEY,
+  // Optional configuration
+  temperature: 0.7,
+  maxTokens: 2048,
+  apiEndpoint: process.env.CEREBRAS_API_URL
+}
 ```
+
+## API Endpoints
+
+### Base Configuration
+- Base URL: `https://api.cerebras.ai/v1`
+- Models endpoint: `/models`
+- Chat completion endpoint: `/chat/completions`
+
+### Error Codes
+- `INVALID_API_KEY`: Invalid or missing API key
+- `API_ERROR`: Issues with the Cerebras API (rate limits, server errors)
+- `MODEL_ERROR`: Issues with model availability or configuration
+
+## Available Models
+
+The provider supports the following models:
+
+| Model | Context Window | Capabilities |
+|-------|---------------|--------------|
+| `llama3.1-8b` | 8192 | text-generation, chat, completion |
+| `llama-3.3-70b` | 16384 | text-generation, chat, completion |
+| `llama-4-scout-17b-16e-instruct` | 32768 | text-generation, chat, completion, instruction-following |
+
+Each model supports:
+- Text generation
+- Chat completions
+- Context window management
+- Temperature control
+- Token limit configuration
 
 ## Usage Examples
 
-### Basic Integration
-
+### Basic Usage
 ```typescript
-import { createLLM } from "agentdock-core";
+import { createCerebrasModel } from '../model-utils';
 
-// Configure the Cerebras provider
-const config = {
-  provider: "cerebras",
-  model: "cerebras-gpt-13b",
+const model = createCerebrasModel({
+  provider: 'cerebras',
   apiKey: process.env.CEREBRAS_API_KEY,
-  temperature: 0.7,
-  maxTokens: 2048,
-};
-
-// Create an LLM instance
-const llm = createLLM(config);
-
-// Generate text
-const response = await llm.generateText([
-  { role: "system", content: "You are a helpful assistant." },
-  { role: "user", content: "Tell me about Cerebras Systems." },
-]);
-
-console.log(response);
+  model: 'llama3.1-8b'
+});
 ```
 
-### Validating API Keys
-
+### Advanced Configuration
 ```typescript
-import { validateCerebrasApiKey } from "agentdock-core";
-
-const apiKey = process.env.CEREBRAS_API_KEY;
-const isValid = await validateCerebrasApiKey(apiKey);
-
-if (isValid) {
-  console.log("API key is valid");
-} else {
-  console.log("Invalid API key");
-}
-```
-
-### Error Handling
-
-```typescript
-try {
-  const llm = createLLM({
-    provider: "cerebras",
-    model: "cerebras-gpt-13b",
-    apiKey: "invalid-key",
-  });
-
-  await llm.generateText([{ role: "user", content: "Hello" }]);
-} catch (error) {
-  if (error instanceof CerebrasError) {
-    console.error(`Error type: ${error.code}`);
-    console.error(`Message: ${error.message}`);
-  } else {
-    console.error("Unknown error:", error);
-  }
-}
+const model = createCerebrasModel({
+  provider: 'cerebras',
+  apiKey: process.env.CEREBRAS_API_KEY,
+  model: 'llama-3.3-70b',
+  temperature: 0.8,
+  maxTokens: 4096,
+  topP: 0.9,
+  frequencyPenalty: 0.5,
+  presencePenalty: 0.5
+});
 ```
 
 ## Testing
 
-The Cerebras integration includes comprehensive tests covering:
+### Unit Tests
+```typescript
+import { validateCerebrasApiKey, fetchCerebrasModels } from './providers/cerebras-adapter';
 
-1. API key validation
-2. Error handling (rate limits, authentication, server errors)
-3. Model registration and properties
-4. Configuration options
+describe('Cerebras Provider', () => {
+  const apiKey = process.env.CEREBRAS_API_KEY;
 
-Tests can be run with the standard test command:
+  it('should validate API key', async () => {
+    const isValid = await validateCerebrasApiKey(apiKey);
+    expect(isValid).toBe(true);
+  });
 
-```bash
-pnpm test
+  it('should fetch available models', async () => {
+    const models = await fetchCerebrasModels(apiKey);
+    expect(models).toHaveLength(3);
+    expect(models[0].id).toBe('llama3.1-8b');
+    expect(models[0].capabilities).toContain('text-generation');
+  });
+});
 ```
+
+## Error Handling
+
+### Common Errors
+1. Invalid API Key
+```typescript
+try {
+  await model.chat({ messages: [{ role: "user", content: "Hello" }] });
+} catch (error) {
+  if (error.code === 'INVALID_API_KEY') {
+    console.error('Please check your API key configuration');
+  }
+}
+```
+
+2. Rate Limiting
+```typescript
+try {
+  await model.chat({ messages: [{ role: "user", content: "Hello" }] });
+} catch (error) {
+  if (error.code === 'API_ERROR' && error.status === 429) {
+    console.error('Rate limit exceeded. Please try again later.');
+  }
+}
+```
+
+## Best Practices
+
+1. **API Key Management**
+   - Store API keys in environment variables
+   - Rotate keys regularly
+   - Use different keys for development and production
+   - API keys are validated through direct API calls
+   - Keep your API key secure and never commit it to version control
+
+2. **Error Handling**
+   - Implement proper error handling for all API calls
+   - Add retry logic for transient errors
+   - Log errors appropriately
+   - Check for API key validity before making requests
+   - Handle rate limiting appropriately
+
+3. **Model Selection**
+   - Choose models based on your context window needs
+   - Consider token usage and costs
+   - Test models with your specific use case
+   - Monitor token usage
+   - Check network connectivity
+   - Verify request payload size
+
+4. **Security**
+   - Never expose API keys in client-side code
+   - Use HTTPS for all API calls
+   - Implement proper authentication
+
+## Troubleshooting
+
+Common issues and solutions:
+
+1. **API Key Issues**
+   - Verify the API key is valid and active
+   - Check for any rate limiting
+   - Ensure the key has proper permissions
+
+2. **Model Access**
+   - Verify the model is available in your region
+   - Check if the model is currently operational
+   - Ensure your account has access to the model
+
+3. **Performance Issues**
+   - Monitor token usage
+   - Check network connectivity
+   - Verify request payload size
+
+## Support
+
+For issues with the Cerebras provider:
+1. Check the [Cerebras API Documentation](https://docs.cerebras.ai)
+2. Review error logs for specific issues
+3. Contact Cerebras support for API-specific issues
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Add tests for new functionality
+4. Submit a pull request
+
+## License
+
+MIT License

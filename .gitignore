@@ -77,10 +77,6 @@ agentdock-core/dist/
 # Evaluation results
 evaluation_results.log
 
-# Test scripts
-cerebras-test-commands.sh
-cerebras-ui-test.sh
-
 # Temporary files
 *.save
 *.bak

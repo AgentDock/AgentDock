@@ -1,200 +1,123 @@
-// agentdock-core/src/llm/providers/cerebras-adapter.ts
+/**
+ * @fileoverview Cerebras provider adapter
+ * Handles Cerebras-specific validation and model fetching logic
+ */
 
-import { ModelService } from "../model-service";
-import { ModelMetadata } from "../types";
-import { logger, LogCategory } from "../../logging";
-
-const CEREBRAS_API_BASE = process.env.CEREBRAS_API_URL || "https://api.cerebras.ai/v1";
+import { LLMProvider, ModelMetadata } from '../types';
+import { ModelService } from '../model-service';
+import { logger, LogCategory } from '../../logging';
 
 /**
- * Normalize Cerebras API key to ensure it has the correct format
- * @param apiKey The API key to normalize
- * @returns The normalized API key
+ * Validate a Cerebras API key by making a request to the Cerebras API
  */
-function normalizeApiKey(apiKey: string): string {
-  // The Cerebras API accepts both csk- and csk_ formats
-  // But we'll standardize on csk- format
-  const normalized = apiKey.startsWith("csk_") ? apiKey.replace("csk_", "csk-") : apiKey;
-  logger.debug(
-    LogCategory.LLM,
-    "[CerebrasAdapter]",
-    `Normalized API key format: ${normalized.substring(0, 7)}...`
-  );
-  return normalized;
-}
-
-/**
- * Validate a Cerebras API key
- */
-export async function validateCerebrasApiKey(
-  apiKey: string | undefined
-): Promise<boolean> {
+export async function validateCerebrasApiKey(apiKey: string): Promise<boolean> {
   try {
-    if (!apiKey) {
-      logger.warn(
-        LogCategory.LLM,
-        "[CerebrasAdapter]",
-        "API key validation failed: Key is undefined or empty"
-      );
-      return false;
-    }
-
-    if (!apiKey.startsWith("csk-") && !apiKey.startsWith("csk_")) {
-      logger.warn(
-        LogCategory.LLM,
-        "[CerebrasAdapter]",
-        "API key validation failed: Key must start with csk- or csk_"
-      );
-      return false;
-    }
-
-    const normalizedKey = normalizeApiKey(apiKey);
-
-    logger.debug(
-      LogCategory.LLM,
-      "[CerebrasAdapter]",
-      `Validating API key format: ${apiKey.substring(0, 7)}...`
-    );
-
-    const response = await fetch(`${CEREBRAS_API_BASE}/models`, {
-      method: "GET",
+    if (!apiKey) return false;
+    
+    const response = await fetch('https://api.cerebras.ai/v1/models', {
       headers: {
-        Authorization: `Bearer ${normalizedKey}`,
-        "Content-Type": "application/json",
-        "User-Agent": "AgentDock/1.0",
-        Accept: "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      logger.warn(
-        LogCategory.LLM,
-        "[CerebrasAdapter]",
-        `API validation failed with status ${response.status}`
-      );
-      return false;
-    }
-
-    return true;
-  } catch (error) {
-    logger.error(
-      LogCategory.LLM,
-      "[CerebrasAdapter]",
-      "Error validating API key:",
-      {
-        error: error instanceof Error ? error.message : String(error),
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
       }
-    );
+    });
+    
+    return response.ok;
+  } catch (error) {
+    logger.error(LogCategory.LLM, '[CerebrasAdapter]', 'Error validating API key:', { 
+      error: error instanceof Error ? error.message : String(error) 
+    });
     return false;
   }
 }
 
-export async function fetchCerebrasModels(
-  apiKey: string | undefined
-): Promise<ModelMetadata[]> {
+/**
+ * Fetch models from the Cerebras API and register them with the model registry
+ */
+export async function fetchCerebrasModels(apiKey: string): Promise<ModelMetadata[]> {
   try {
     if (!apiKey) {
-      logger.error(
-        LogCategory.LLM,
-        "[CerebrasAdapter]",
-        "Cannot fetch models: API key is undefined or empty"
-      );
-      throw new Error("API key is required");
+      throw new Error('API key is required');
     }
 
-    const normalizedKey = normalizeApiKey(apiKey);
-
-    logger.debug(
-      LogCategory.LLM,
-      "[CerebrasAdapter]",
-      "Fetching models from Cerebras API"
-    );
-
-    const response = await fetch(`${CEREBRAS_API_BASE}/models`, {
-      method: "GET",
+    // Fetch models directly from Cerebras API
+    const response = await fetch('https://api.cerebras.ai/v1/models', {
       headers: {
-        Authorization: `Bearer ${normalizedKey}`,
-        "Content-Type": "application/json",
-        "User-Agent": "AgentDock/1.0",
-        Accept: "application/json",
-      },
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      }
     });
 
     if (!response.ok) {
-      logger.debug(
-        LogCategory.LLM,
-        "[CerebrasAdapter]",
-        `API response: ${response.status} ${response.statusText}`
-      );
       throw new Error(`Failed to fetch models: ${response.statusText}`);
     }
 
     const data = await response.json();
-
-    logger.debug(
-      LogCategory.LLM,
-      "[CerebrasAdapter]",
-      `API response data: ${JSON.stringify(data).substring(0, 100)}...`
-    );
-
-    if (!data || !data.object || data.object !== "list" || !Array.isArray(data.data)) {
-      throw new Error("Invalid model list returned from Cerebras");
+    
+    if (!data.data || !Array.isArray(data.data)) {
+      throw new Error('Invalid response from Cerebras API');
     }
 
-    // Map of model IDs to their known parameters and capabilities
-    const modelMetadataMap: Record<string, Partial<ModelMetadata>> = {
-      "llama3.1-8b": {
-        displayName: "llama3.1-8b",
-        description: "Cerebras model: llama3.1-8b",
-        contextWindow: 8192,
-        capabilities: ["text-generation", "reasoning"],
-      },
-      "llama-3.3-70b": {
-        displayName: "llama-3.3-70b",
-        description: "Cerebras model: llama-3.3-70b",
-        contextWindow: 8192,
-        capabilities: ["text-generation", "reasoning"],
-      },
-      "llama-4-scout-17b-16e-instruct": {
-        displayName: "llama-4-scout-17b-16e-instruct",
-        description: "Cerebras model: llama-4-scout-17b-16e-instruct",
-        contextWindow: 8192,
-        capabilities: ["text-generation", "reasoning"],
-      },
-    };
+    // Map Cerebras API response to our model format
+    const models = data.data.map((model: { id: string; context_window?: number }) => ({
+      id: model.id,
+      displayName: model.id,
+      description: `Context window: ${model.context_window || 'Unknown'}`,
+      contextWindow: model.context_window || 16384,
+      defaultTemperature: 0.7,
+      defaultMaxTokens: 2048,
+      capabilities: ['text']
+    }));
 
-    const models: ModelMetadata[] = data.data.map((model: any) => {
-      const baseMetadata = modelMetadataMap[model.id] || {};
+    // Register models with the registry
+    ModelService.registerModels('cerebras', models);
 
-      return {
-        id: model.id,
-        displayName: baseMetadata.displayName || model.id,
-        description: baseMetadata.description || `Cerebras model: ${model.id}`,
-        contextWindow: baseMetadata.contextWindow || 8192,
-        defaultTemperature: 0.7,
-        defaultMaxTokens: 2048,
-        capabilities: baseMetadata.capabilities || ["text-generation", "reasoning"],
-      };
-    });
+    logger.debug(LogCategory.LLM, '[CerebrasAdapter]', `Processed ${models.length} models`);
 
-    ModelService.registerModels("cerebras", models);
-
-    logger.debug(
-      LogCategory.LLM,
-      "[CerebrasAdapter]",
-      `Fetched ${models.length} models`
-    );
-
-    return ModelService.getModels("cerebras");
+    return ModelService.getModels('cerebras');
   } catch (error) {
-    logger.error(
-      LogCategory.LLM,
-      "[CerebrasAdapter]",
-      "Error fetching models:",
-      {
-        error: error instanceof Error ? error.message : String(error),
-      }
-    );
+    logger.error(LogCategory.LLM, '[CerebrasAdapter]', 'Error fetching models:', { 
+      error: error instanceof Error ? error.message : String(error) 
+    });
     throw error;
   }
+}
+
+/**
+ * Create a streaming response for Cerebras chat completions
+ */
+export async function createCerebrasStream(
+  apiKey: string,
+  model: string,
+  messages: { role: string; content: string }[],
+  options: {
+    temperature?: number;
+    maxTokens?: number;
+    topP?: number;
+    frequencyPenalty?: number;
+    presencePenalty?: number;
+  } = {}
+) {
+  const response = await fetch('https://api.cerebras.ai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model,
+      messages,
+      stream: true,
+      temperature: options.temperature ?? 0.7,
+      max_tokens: options.maxTokens ?? 2048,
+      top_p: options.topP ?? 1,
+      frequency_penalty: options.frequencyPenalty ?? 0,
+      presence_penalty: options.presencePenalty ?? 0,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Cerebras API error: ${response.statusText}`);
+  }
+
+  return response;
 }

@@ -130,31 +130,20 @@ const DEFAULT_PROVIDERS: Record<LLMProvider, ProviderMetadata> = {
     displayName: 'Cerebras',
     description: 'Run Llama models on Cerebras high-performance inference endpoint.',
     defaultModel: 'llama-4-scout-17b-16e-instruct',
-    validateApiKey: (key: string) => key.startsWith('csk_') || key.startsWith('csk-'),
+    validateApiKey: (key: string) => (key.startsWith('csk_') || key.startsWith('csk-')) && key.length >= 36,
     fetchModels: fetchCerebrasModels,
     applyConfig: (baseConfig, modelConfig, options) => {
-      Object.assign(baseConfig, modelConfig);
-      baseConfig.apiEndpoint = baseConfig.apiEndpoint || 'https://api.cerebras.ai/v1';
-      if (baseConfig.apiKey && baseConfig.apiKey.startsWith('csk_')) {
-        baseConfig.apiKey = baseConfig.apiKey.replace('csk_', 'csk-');
-        logger.debug(LogCategory.LLM, '[CerebrasProvider]', 'Normalized API key format from csk_ to csk-');
+      // Apply Cerebras-specific configurations
+      
+      // Add reasoning extraction if enabled
+      if (modelConfig?.extractReasoning !== undefined) {
+        baseConfig.extractReasoning = modelConfig.extractReasoning;
       }
-      baseConfig.headers = {
-        ...baseConfig.headers,
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${baseConfig.apiKey}`,
-      };
-      baseConfig.temperature = baseConfig.temperature ?? 0.7;
-      baseConfig.maxTokens = baseConfig.maxTokens ?? 2048;
-      baseConfig.topP = baseConfig.topP ?? 1;
-      baseConfig.frequencyPenalty = baseConfig.frequencyPenalty ?? 0;
-      baseConfig.presencePenalty = baseConfig.presencePenalty ?? 0;
-      baseConfig.onError = (error: any) => {
-        logger.error(LogCategory.LLM, '[CerebrasProvider]', 'API Error:', {
-          error: error instanceof Error ? error.message : String(error),
-        });
-        throw error;
-      };
+
+      // Add reasoning extraction from options if provided
+      if (options?.extractReasoning !== undefined) {
+        baseConfig.extractReasoning = options.extractReasoning;
+      }
     },
   },
 };

@@ -75,7 +75,5 @@ export class ModelService {
     }
   }
 
-  static clearModels(): void {
-    this.models = {};
-  }
+
 } 

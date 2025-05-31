@@ -92,7 +92,11 @@ function SettingsPage() {
           // If we have API keys, trigger a refresh of the models
           if (
             storedSettings.apiKeys?.anthropic ||
-            storedSettings.apiKeys?.openai
+            storedSettings.apiKeys?.openai ||
+            storedSettings.apiKeys?.cerebras ||
+            storedSettings.apiKeys?.groq ||
+            storedSettings.apiKeys?.gemini ||
+            storedSettings.apiKeys?.deepseek
           ) {
             // Trigger a refresh of the models immediately
             setModelsRefreshTrigger((prev) => prev + 1);

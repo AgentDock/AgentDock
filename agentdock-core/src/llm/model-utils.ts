@@ -7,10 +7,12 @@ import { createAnthropic } from '@ai-sdk/anthropic';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { createGroq } from '@ai-sdk/groq';
-import { LLMConfig, GeminiConfig, DeepSeekConfig, GroqConfig } from './types';
+import { LLMConfig, GeminiConfig, DeepSeekConfig, GroqConfig, CerebrasConfig } from './types';
 import { createError, ErrorCode } from '../errors';
 import { logger, LogCategory } from '../logging';
 import { ProviderRegistry } from './provider-registry';
+import { LLMProvider, LLMMessage, ModelMetadata } from './types';
+import { ModelService } from './model-service';
 
 // Add structuredClone polyfill if it doesn't exist
 if (typeof globalThis.structuredClone === 'undefined') {
@@ -147,32 +149,113 @@ export function createGroqModel(config: LLMConfig): LanguageModel {
 
 /**
  * Create a Cerebras model
+ * Uses OpenAI compatibility mode until Vercel AI SDK adds Cerebras support
  */
 export function createCerebrasModel(config: LLMConfig): LanguageModel {
   if (!config.apiKey) {
     throw createError('llm', 'API key is required', ErrorCode.LLM_API_KEY);
   }
 
+  const cerebrasConfig = config as CerebrasConfig;
+
   try {
-    const apiUrl = process.env.CEREBRAS_API_URL || 'https://api.cerebras.com/v1';
-
-    logger.debug(LogCategory.LLM, 'createCerebrasModel', 'Creating Cerebras model', {
-      model: config.model,
-      apiUrl
-    });
-
     const provider = createOpenAI({
       apiKey: config.apiKey,
-      baseURL: apiUrl,
+      baseURL: 'https://api.cerebras.ai/v1',
       compatibility: 'strict'
     });
 
-    return provider(config.model);
+    const modelOptions: any = {};
+
+    if (cerebrasConfig.extractReasoning) {
+      logger.debug(LogCategory.LLM, 'createCerebrasModel', 'Enabling reasoning extraction for Cerebras model', {
+        model: config.model
+      });
+      modelOptions.extractReasoning = true;
+    }
+
+    return provider(config.model, modelOptions);
   } catch (error) {
     logger.error(LogCategory.LLM, 'createCerebrasModel', 'Error creating Cerebras model', {
       error: (error as Error).message,
       model: config.model
     });
     throw createError('llm', `Error creating Cerebras model: ${(error as Error).message}`, ErrorCode.LLM_EXECUTION);
+  }
+}
+
+/**
+ * Create a streaming response for Cerebras chat completions
+ */
+export async function createCerebrasStream(
+  apiKey: string,
+  model: string,
+  messages: { role: string; content: string }[],
+  options: {
+    temperature?: number;
+    maxTokens?: number;
+    topP?: number;
+    frequencyPenalty?: number;
+    presencePenalty?: number;
+  } = {}
+) {
+  const response = await fetch('https://api.cerebras.ai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model,
+      messages,
+      stream: true,
+      temperature: options.temperature ?? 0.7,
+      max_tokens: options.maxTokens ?? 2048,
+      top_p: options.topP ?? 1,
+      frequency_penalty: options.frequencyPenalty ?? 0,
+      presence_penalty: options.presencePenalty ?? 0,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Cerebras API error: ${response.statusText}`);
+  }
+
+  return response;
+}
+
+/**
+ * Get model metadata for a provider
+ */
+export function getModelMetadata(provider: LLMProvider, modelId: string): ModelMetadata | undefined {
+  try {
+    return ModelService.getModel(modelId);
+  } catch (error) {
+    logger.error(LogCategory.LLM, '[ModelUtils]', `Error getting model metadata for ${provider}/${modelId}:`, { error });
+    return undefined;
+  }
+}
+
+/**
+ * Get all models for a provider
+ */
+export function getModelsForProvider(provider: LLMProvider): ModelMetadata[] {
+  try {
+    return ModelService.getModels(provider);
+  } catch (error) {
+    logger.error(LogCategory.LLM, '[ModelUtils]', `Error getting models for ${provider}:`, { error });
+    return [];
+  }
+}
+
+/**
+ * Get all registered models
+ */
+export function getAllModels(): ModelMetadata[] {
+  try {
+    return ModelService.getAllModels();
+  } catch (error) {
+    logger.error(LogCategory.LLM, '[ModelUtils]', 'Error getting all models:', { error });
+    return [];
   }
 }

@@ -145,6 +145,10 @@ export class StorageFactory {
    * 
    * @param options - Provider options
    * @returns A storage provider instance
+   * 
+   * @breaking-change Since v2.0: Factory functions now receive the entire StorageProviderOptions
+   * object (including 'type' and 'config' properties) instead of just the config object.
+   * Built-in providers ignore extra properties, but third-party providers may need updates.
    */
   public createProvider(options: StorageProviderOptions): StorageProvider {
     const type = options.type || this.defaultType;
@@ -155,7 +159,8 @@ export class StorageFactory {
     }
     
     // Create a new instance
-    return factory(options.config || {});
+    // Pass the full options object so the factory function can access namespace etc.
+    return factory(options);
   }
   
   /**

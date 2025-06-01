@@ -57,7 +57,7 @@ export class VercelKVProvider implements StorageProvider {
           error: error instanceof Error ? error.message : String(error)
         }
       );
-      throw error;
+      return null; // Return null on error
     }
   }
 
@@ -87,7 +87,7 @@ export class VercelKVProvider implements StorageProvider {
           error: error instanceof Error ? error.message : String(error)
         }
       );
-      throw error;
+      return; // Complete without throwing on error
     }
   }
 
@@ -115,7 +115,7 @@ export class VercelKVProvider implements StorageProvider {
           error: error instanceof Error ? error.message : String(error)
         }
       );
-      throw error;
+      return false; // Return false on error
     }
   }
 
@@ -134,11 +134,14 @@ export class VercelKVProvider implements StorageProvider {
           error: error instanceof Error ? error.message : String(error)
         }
       );
-      throw error;
+      return false; // Return false on error
     }
   }
 
   async getMany<T>(keys: string[], options?: StorageOptions): Promise<Record<string, T | null>> {
+    if (keys.length === 0) {
+      return {};
+    }
     const fullKeys = keys.map(key => this.getKey(key, options));
     try {
       const values = await this.client.mget(...fullKeys);
@@ -155,39 +158,65 @@ export class VercelKVProvider implements StorageProvider {
           error: error instanceof Error ? error.message : String(error)
         }
       );
-      throw error;
+      return {}; // Return empty object on error
     }
   }
 
   async setMany<T>(items: Record<string, T>, options?: StorageOptions): Promise<void> {
     const entries = Object.entries(items).map(([key, value]) => [
-      this.getKey(key, options),
+      this.getKey(key, options), // Apply namespace to key
       value
     ]);
 
     try {
       if (options?.ttlSeconds !== undefined && options.ttlSeconds > 0) {
-        const ttlInSeconds: number = options.ttlSeconds;
-        await Promise.all(
-          entries.map(([key, value]) => 
-            this.client.set(key as string, value, { ex: ttlInSeconds })
+        // For TTL with setMany, Vercel KV doesn't support it in mset.
+        // We must use individual set operations. Use parallel execution for better performance.
+        const ttlSeconds = options.ttlSeconds; // Extract to ensure it's defined
+        const results = await Promise.allSettled(
+          entries.map(([key, value]) =>
+            this.client.set(key as string, value, { ex: ttlSeconds })
           )
         );
-      } else {
-        const record: Record<string, unknown> = {};
-        entries.forEach(([key, value]) => {
-          record[key as string] = value;
+        
+        // Log individual errors if any
+        results.forEach((result, index) => {
+          if (result.status === 'rejected') {
+            logger.error(
+              LogCategory.STORAGE,
+              'VercelKVProvider',
+              'Error in setMany individual operation',
+              {
+                key: entries[index][0] as string,
+                error: result.reason instanceof Error ? result.reason.message : String(result.reason)
+              }
+            );
+          }
         });
-        await this.client.mset(record);
+      } else {
+        // No TTL, so we can use mset for efficiency if there are items.
+        const namespacedRecord = Object.fromEntries(entries);
+        if (Object.keys(namespacedRecord).length > 0) {
+          await this.client.mset(namespacedRecord);
+        } else {
+          // Log using the standard format
+          logger.debug(
+            LogCategory.STORAGE,
+            'VercelKVProvider',
+            '[SET_MANY] Skipping mset for empty record',
+            { namespace: this.namespace }
+          );
+        }
       }
       
       logger.debug(
         LogCategory.STORAGE,
         'VercelKVProvider',
         '[SET_MANY]',
-        { 
-          keys: entries.map(([key]) => key),
-          ttl: options?.ttlSeconds 
+        {
+          count: entries.length,
+          keysSample: entries.slice(0, 3).map(([k]) => k),
+          ttlProvided: !!(options?.ttlSeconds && options.ttlSeconds > 0)
         }
       );
     } catch (error) {
@@ -200,27 +229,45 @@ export class VercelKVProvider implements StorageProvider {
           error: error instanceof Error ? error.message : String(error)
         }
       );
-      throw error;
+      return; // Complete without throwing on error
     }
   }
 
   async deleteMany(keys: string[], options?: StorageOptions): Promise<number> {
     const fullKeys = keys.map(key => this.getKey(key, options));
     try {
-      const results = await Promise.all(
+      // Use Promise.allSettled to ensure all operations are attempted
+      const results = await Promise.allSettled(
         fullKeys.map(key => this.client.del(key))
       );
-      const deleted = results.filter((result: number) => result === 1).length;
+      
+      let deletedCount = 0;
+      results.forEach((result, index) => {
+        if (result.status === 'fulfilled' && result.value === 1) {
+          deletedCount++;
+        } else if (result.status === 'rejected') {
+          logger.error(
+            LogCategory.STORAGE,
+            'VercelKVProvider',
+            'Error in deleteMany individual operation',
+            {
+              key: fullKeys[index],
+              error: result.reason instanceof Error ? result.reason.message : String(result.reason)
+            }
+          );
+        }
+      });
       
       logger.debug(
         LogCategory.STORAGE,
         'VercelKVProvider',
         '[DELETE_MANY]',
-        { keys: fullKeys, deleted }
+        { keys: fullKeys, deleted: deletedCount } // Log the actual count of successful deletions
       );
       
-      return deleted;
+      return deletedCount; // Return the count of successfully deleted keys
     } catch (error) {
+      // This outer catch is for unexpected errors with Promise.allSettled itself or setup
       logger.error(
         LogCategory.STORAGE,
         'VercelKVProvider',
@@ -230,54 +277,65 @@ export class VercelKVProvider implements StorageProvider {
           error: error instanceof Error ? error.message : String(error)
         }
       );
-      throw error;
+      return 0; // Return 0 on a general error for the batch operation
     }
   }
 
-  async list(prefix: string, options?: ListOptions): Promise<string[]> {
-    const fullPrefix = this.getKey(prefix, options);
+  async list(prefix = '', options?: ListOptions): Promise<string[]> {
+    const fullPrefixWithoutNamespace = prefix; // prefix is already without namespace here by convention
+    const searchPattern = `${this.getKey(fullPrefixWithoutNamespace, options)}*`; // Apply namespace and add wildcard
+    let cursor: number = 0;
+    const allKeys: string[] = [];
+    const namespacePrefix = `${options?.namespace || this.namespace}:`;
+    
     try {
-      const keys = await this.client.keys(`${fullPrefix}*`);
-      const namespace = options?.namespace || this.namespace;
-      const nsPrefix = `${namespace}:`;
+      do {
+        const [nextCursor, keys] = await this.client.scan(cursor, { match: searchPattern });
+        keys.forEach((key: string) => {
+          // Remove the namespace part for the returned key
+          allKeys.push(key.startsWith(namespacePrefix) ? key.slice(namespacePrefix.length) : key);
+        });
+        cursor = nextCursor;
+      } while (cursor !== 0);
       
-      // Remove namespace prefix from keys
-      return keys
-        .map((key: string) => key.startsWith(nsPrefix) ? key.slice(nsPrefix.length) : key)
-        .slice(options?.offset || 0, options?.limit);
+      // Fix pagination: limit should be count, not end index
+      const start = options?.offset ?? 0;
+      const end = options?.limit !== undefined ? start + options.limit : undefined;
+      return allKeys.slice(start, end);
     } catch (error) {
       logger.error(
         LogCategory.STORAGE,
         'VercelKVProvider',
         'Error listing keys',
         {
-          prefix: fullPrefix,
+          prefix: searchPattern,
           error: error instanceof Error ? error.message : String(error)
         }
       );
-      throw error;
+      return []; // Return empty array on error
     }
   }
 
-  async clear(prefix?: string): Promise<void> {
+  async clear(prefix?: string, options?: StorageOptions): Promise<void> {
     try {
-      const searchPrefix = prefix 
-        ? this.getKey(prefix)
-        : `${this.namespace}:`;
-        
-      const keys = await this.client.keys(`${searchPrefix}*`);
-      
-      if (keys.length > 0) {
-        await Promise.all(keys.map((key: string) => this.client.del(key)));
+      // Use the list method logic (which uses scan) to find keys, then delete
+      const keysToDelete = await this.list(prefix || '', { // Pass options to list for namespace consistency
+        namespace: options?.namespace,
+        // Do not pass limit/offset from clear's options directly to list here,
+        // as clear intends to clear ALL matched by prefix.
+      }); 
+      if (keysToDelete.length > 0) {
+        // Pass original options (which might contain namespace) to deleteMany
+        await this.deleteMany(keysToDelete, options); 
       }
-      
       logger.debug(
         LogCategory.STORAGE,
         'VercelKVProvider',
         '[CLEAR]',
         { 
-          prefix: searchPrefix,
-          keysCleared: keys.length 
+          prefix: prefix || '(all)',
+          namespace: options?.namespace || this.namespace,
+          keysClearedCount: keysToDelete.length
         }
       );
     } catch (error) {
@@ -286,15 +344,14 @@ export class VercelKVProvider implements StorageProvider {
         'VercelKVProvider',
         'Error clearing keys',
         {
-          prefix: prefix ? this.getKey(prefix) : this.namespace,
+          prefix: prefix || '(all)',
           error: error instanceof Error ? error.message : String(error)
         }
       );
-      throw error;
+      return; // Complete without throwing on error
     }
   }
 
-  // --- NEW LIST METHODS ---
   async getList<T>(
     key: string,
     start: number = 0,
@@ -325,14 +382,14 @@ export class VercelKVProvider implements StorageProvider {
           error: error instanceof Error ? error.message : String(error)
         }
       );
-      throw error; // Re-throw to indicate failure
+      return null; // Return null on error
     }
   }
 
   async saveList<T>(key: string, values: T[], options?: StorageOptions): Promise<void> {
     const fullKey = this.getKey(key, options);
     try {
-      const pipeline = this.client.pipeline();
+      const pipeline = this.client.multi();
       pipeline.del(fullKey); // Clear existing list
       if (values.length > 0) {
         pipeline.lpush(fullKey, ...values); // Push new values
@@ -361,7 +418,7 @@ export class VercelKVProvider implements StorageProvider {
           error: error instanceof Error ? error.message : String(error)
         }
       );
-      throw error; // Re-throw to indicate failure
+      return; // Complete without throwing on error
     }
   }
 
@@ -369,7 +426,6 @@ export class VercelKVProvider implements StorageProvider {
     // Use the existing delete method, which works for lists too
     return this.delete(key, options);
   }
-  // --- END NEW LIST METHODS ---
 
   async destroy(): Promise<void> {
     // Vercel KV client doesn't require explicit cleanup

@@ -5,15 +5,19 @@
 import { MemoryStorageProvider } from '../providers/memory-provider';
 import { StorageOptions } from '../types';
 
+// Store original Date.now for restoration
+const originalDateNow = Date.now;
+
 // Mock the global date to control time
 global.Date.now = jest.fn(() => new Date('2023-01-01T00:00:00.000Z').getTime());
 
 // Use fake timers to test TTL
 jest.useFakeTimers();
 
-// Restore real timers after all tests to prevent leaking to other test suites
+// Restore real timers and Date.now after all tests to prevent leaking to other test suites
 afterAll(() => {
   jest.useRealTimers();
+  global.Date.now = originalDateNow;
 });
 
 describe('MemoryStorageProvider', () => {

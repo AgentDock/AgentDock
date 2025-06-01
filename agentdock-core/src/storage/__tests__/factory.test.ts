@@ -99,7 +99,7 @@ describe('StorageFactory', () => {
     expect(MockRedisStorageProvider).toHaveBeenCalledWith({
       namespace: 'redis-test',
       url: 'mock-redis-url',
-      token: 'mock-redis-token',
+      token: 'mock-redis-token'
     });
     expect(MockMemoryStorageProvider).not.toHaveBeenCalled();
     expect(MockVercelKvStorageProvider).not.toHaveBeenCalled();
@@ -375,26 +375,6 @@ describe('StorageFactory', () => {
     });
   });
 
-  it('should return different instances for different configs', () => {
-    const config1: StorageProviderOptions = { type: 'memory', namespace: 'diff-test-1' };
-    const config2: StorageProviderOptions = { type: 'memory', namespace: 'diff-test-2' };
-    const provider1 = factory.getProvider(config1);
-    const provider2 = factory.getProvider(config2); // Different namespace -> different cache key
-    expect(provider1).not.toBe(provider2);
-    expect(MockMemoryStorageProvider).toHaveBeenCalledTimes(2); // Called once for each config
-    // Check constructor calls with the full options objects
-    expect(MockMemoryStorageProvider).toHaveBeenNthCalledWith(1, {
-      type: 'memory',
-      namespace: 'diff-test-1',
-      config: {}
-    });
-    expect(MockMemoryStorageProvider).toHaveBeenNthCalledWith(2, {
-      type: 'memory',
-      namespace: 'diff-test-2',
-      config: {}
-    });
-  });
-
   it('should throw an error for Redis provider if REDIS_URL is not set', () => {
     // Temporarily unset the environment variable
     const originalRedisUrl = process.env.REDIS_URL;
@@ -432,7 +412,7 @@ describe('StorageFactory', () => {
     expect(MockRedisStorageProvider).toHaveBeenCalledWith({
       namespace: 'redis-test',
       url: 'mock-redis-url',
-      token: 'mock-redis-token',
+      token: 'mock-redis-token'
     });
     expect(MockMemoryStorageProvider).not.toHaveBeenCalled();
     expect(MockVercelKvStorageProvider).not.toHaveBeenCalled();

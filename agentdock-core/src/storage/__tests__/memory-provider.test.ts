@@ -5,8 +5,16 @@
 import { MemoryStorageProvider } from '../providers/memory-provider';
 import { StorageOptions } from '../types';
 
-// Use fake timers for TTL tests
+// Mock the global date to control time
+global.Date.now = jest.fn(() => new Date('2023-01-01T00:00:00.000Z').getTime());
+
+// Use fake timers to test TTL
 jest.useFakeTimers();
+
+// Restore real timers after all tests to prevent leaking to other test suites
+afterAll(() => {
+  jest.useRealTimers();
+});
 
 describe('MemoryStorageProvider', () => {
   let provider: MemoryStorageProvider;

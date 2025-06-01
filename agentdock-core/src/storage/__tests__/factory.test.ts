@@ -398,7 +398,7 @@ describe('StorageFactory', () => {
   it('should throw an error for Redis provider if REDIS_URL is not set', () => {
     // Temporarily unset the environment variable
     const originalRedisUrl = process.env.REDIS_URL;
-    delete process.env.REDIS_URL;
+    process.env.REDIS_URL = undefined;
 
     const config: StorageProviderOptions = { type: 'redis', namespace: 'redis-no-url-test' };
     

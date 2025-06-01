@@ -171,23 +171,28 @@ export class VercelKVProvider implements StorageProvider {
     try {
       if (options?.ttlSeconds !== undefined && options.ttlSeconds > 0) {
         // For TTL with setMany, Vercel KV doesn't support it in mset.
-        // We must use individual set operations.
-        for (const [key, value] of entries) {
-          try { // Add try-catch for individual set
-            await this.client.set(key as string, value, { ex: options.ttlSeconds });
-          } catch (loopError) {
+        // We must use individual set operations. Use parallel execution for better performance.
+        const ttlSeconds = options.ttlSeconds; // Extract to ensure it's defined
+        const results = await Promise.allSettled(
+          entries.map(([key, value]) =>
+            this.client.set(key as string, value, { ex: ttlSeconds })
+          )
+        );
+        
+        // Log individual errors if any
+        results.forEach((result, index) => {
+          if (result.status === 'rejected') {
             logger.error(
               LogCategory.STORAGE,
               'VercelKVProvider',
-              'Error in setMany loop iteration',
+              'Error in setMany individual operation',
               {
-                key: key as string,
-                error: loopError instanceof Error ? loopError.message : String(loopError)
+                key: entries[index][0] as string,
+                error: result.reason instanceof Error ? result.reason.message : String(result.reason)
               }
             );
-            // Continue to next iteration
           }
-        }
+        });
       } else {
         // No TTL, so we can use mset for efficiency if there are items.
         const namespacedRecord = Object.fromEntries(entries);
@@ -293,7 +298,10 @@ export class VercelKVProvider implements StorageProvider {
         cursor = nextCursor;
       } while (cursor !== 0);
       
-      return allKeys.slice(options?.offset || 0, options?.limit);
+      // Fix pagination: limit should be count, not end index
+      const start = options?.offset ?? 0;
+      const end = options?.limit !== undefined ? start + options.limit : undefined;
+      return allKeys.slice(start, end);
     } catch (error) {
       logger.error(
         LogCategory.STORAGE,

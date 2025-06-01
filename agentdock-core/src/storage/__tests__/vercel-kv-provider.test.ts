@@ -29,6 +29,11 @@ jest.mock('@vercel/kv', () => ({
 // Use fake timers for TTL tests if needed
 jest.useFakeTimers();
 
+// Restore real timers after all tests to prevent leaking to other test suites
+afterAll(() => {
+  jest.useRealTimers();
+});
+
 describe('VercelKVProvider', () => {
   let provider: VercelKVProvider;
   const namespace = 'test-kv-ns';

@@ -10,7 +10,6 @@ import { logger, LogCategory } from '../../logging';
 export interface CerebrasAdapter {
   validateApiKey: typeof validateCerebrasApiKey;
   fetchModels: typeof fetchCerebrasModels;
-  createStream: typeof createCerebrasStream;
 }
 
 /**
@@ -106,44 +105,4 @@ export async function fetchCerebrasModels(apiKey: string): Promise<ModelMetadata
     });
     throw error;
   }
-}
-
-/**
- * Create a streaming response for Cerebras chat completions
- */
-export async function createCerebrasStream(
-  apiKey: string,
-  model: string,
-  messages: { role: string; content: string }[],
-  options: {
-    temperature?: number;
-    maxTokens?: number;
-    topP?: number;
-    frequencyPenalty?: number;
-    presencePenalty?: number;
-  } = {}
-) {
-  const response = await fetch('https://api.cerebras.ai/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model,
-      messages,
-      stream: true,
-      temperature: options.temperature ?? 0.7,
-      max_tokens: options.maxTokens ?? 2048,
-      top_p: options.topP ?? 1,
-      frequency_penalty: options.frequencyPenalty ?? 0,
-      presence_penalty: options.presencePenalty ?? 0,
-    }),
-  });
-
-  if (!response.ok) {
-    throw new Error(`Cerebras API error: ${response.statusText}`);
-  }
-
-  return response;
 }

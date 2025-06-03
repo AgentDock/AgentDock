@@ -211,7 +211,9 @@ export function createCerebrasModel(config: LLMConfig): LanguageModel {
       apiKey: config.apiKey,
       baseURL: 'https://api.cerebras.ai/v1',
       compatibility: 'strict'
-    });const modelOptions: any = {};
+    });
+    
+    const modelOptions: any = {};
 
     if (cerebrasConfig.extractReasoning) {
       logger.debug(LogCategory.LLM, 'createCerebrasModel', 'Enabling reasoning extraction for Cerebras model', {

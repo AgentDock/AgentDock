@@ -36,6 +36,7 @@ AgentDock currently supports these LLM providers:
 - **Google** - Gemini models
 - **DeepSeek** - DeepSeek models
 - **Groq** - Fast inference for various models
+- **Cerebras** - LLaMA and other open source models
 
 ## Error Handling
 

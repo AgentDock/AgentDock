@@ -4,7 +4,7 @@
 
 import { CoreLLM } from './core-llm';
 import { LLMConfig } from './types';
-import { createAnthropicModel, createOpenAIModel, createGeminiModel, createDeepSeekModel, createGroqModel } from './model-utils';
+import { createAnthropicModel, createOpenAIModel, createGeminiModel, createDeepSeekModel, createGroqModel,createCerebrasModel } from './model-utils';
 import { createError, ErrorCode } from '../errors';
 import { logger, LogCategory } from '../logging';
 
@@ -40,6 +40,9 @@ export function createLLM(config: LLMConfig): CoreLLM {
     case 'groq':
       model = createGroqModel(config);
       break;
+      case "cerebras":
+        model = createCerebrasModel(config);
+        break;
     default:
       throw createError('llm', `Unsupported provider: ${config.provider}`, ErrorCode.LLM_EXECUTION);
   }

@@ -33,7 +33,8 @@ const API_KEY_PROVIDERS: ApiKeyProvider[] = [
   { key: 'anthropic', label: 'Anthropic API Key', icon: KeyRound, description: 'Used for Anthropic Claude models' },
   { key: 'gemini', label: 'Google Gemini API Key', icon: KeyRound, description: 'Used for Google Gemini models' },
   { key: 'deepseek', label: 'DeepSeek API Key', icon: KeyRound, description: 'Used for DeepSeek models including DeepSeek-V3 and DeepSeek-R1' },
-  { key: 'groq', label: 'Groq API Key', icon: KeyRound, description: 'Used for Groq models like Llama 3 and Mixtral' }
+  { key: 'groq', label: 'Groq API Key', icon: KeyRound, description: 'Used for Groq models like Llama 3 and Mixtral' },
+  { key: 'cerebras', label: 'Cerebras API Key', icon: KeyRound, description: 'Used for Cerebras models like Cerebras-2 and Cerebras-3' }
 ];
 
 function SettingsPage() {
@@ -457,6 +458,15 @@ function SettingsPage() {
                         />
                       </div>
                     )}
+                     {key === "cerebras" && (
+                        <div className="pt-2">
+                          <ModelDisplay
+                            provider="cerebras"
+                            refreshTrigger={modelsRefreshTrigger}
+                            onRefreshComplete={handleRefreshTrigger}
+                          />
+                        </div>
+                      )}
                   </div>
                 ))}
               </div>

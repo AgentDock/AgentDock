@@ -110,7 +110,7 @@ const ModelsTable = memo(({ models, onRefresh, isLoading }: {
 });
 
 interface ModelDisplayProps {
-  provider: 'anthropic' | 'openai' | 'gemini' | 'deepseek' | 'groq'
+  provider: 'anthropic' | 'openai' | 'gemini' | 'deepseek' | 'groq' | 'cerebras'
   refreshTrigger: number
   onRefreshComplete?: () => void
 }

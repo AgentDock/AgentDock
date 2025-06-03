@@ -177,7 +177,18 @@ const ERROR_PATTERNS: Record<LLMProvider | 'byok', ProviderErrorPattern[]> = {
       statusCode: 401,
       userMessage: "API key required. In BYOK mode, you must provide your own API key."
     }
-  ]
+  ],
+
+  // Cerebras error patterns
+  cerebras: [
+    {
+      pattern: /invalid\s*api\s*key|unauthorized/i,
+      errorCode: ErrorCodes.LLM_API_KEY,
+      statusCode: 401,
+      userMessage: "Invalid Cerebras API key. Please check your credentials.",
+    },
+  ],
+
 };
 
 /**

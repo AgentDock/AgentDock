@@ -187,8 +187,25 @@ const ERROR_PATTERNS: Record<LLMProvider | 'byok', ProviderErrorPattern[]> = {
       statusCode: 401,
       userMessage: "Invalid Cerebras API key. Please check your credentials.",
     },
+    {
+      pattern: /rate\s*limit/i,
+      errorCode: ErrorCodes.LLM_RATE_LIMIT,
+      statusCode: 429,
+      userMessage: "You've reached the rate limit for Cerebras API. Please try again later.",
+    },
+    {
+      pattern: /context\s*length|maximum\s*context\s*length|token\s*limit/i,
+      errorCode: ErrorCodes.LLM_EXECUTION,
+      statusCode: 400,
+      userMessage: "The prompt exceeds Cerebras's maximum context length. Please reduce your input.",
+    },
+    {
+      pattern: /service\s*unavailable|server\s*error|5\d\d/i,
+      errorCode: ErrorCodes.SERVICE_UNAVAILABLE,
+      statusCode: 503,
+      userMessage: "Cerebras service is currently unavailable. Please try again later.",
+    },
   ],
-
 };
 
 /**

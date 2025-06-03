@@ -124,7 +124,7 @@ export interface GroqConfig extends LLMConfig {
   extractReasoning?: boolean;
 }
 
-export type ProviderConfig = AnthropicConfig | OpenAIConfig | GeminiConfig | DeepSeekConfig | GroqConfig;
+export type ProviderConfig = AnthropicConfig | OpenAIConfig | GeminiConfig | DeepSeekConfig | GroqConfig | CerebrasConfig;
 
 /**
  * LLM provider interface
@@ -150,9 +150,9 @@ export interface LLMAdapter {
  */
 export interface CerebrasConfig extends LLMConfig {
   /** Provider must be 'cerebras' */
-  provider: "cerebras";
-  /** Future custom settings (optional) */
-  extractReasoning?: boolean; // If you plan to support it
+  provider: 'cerebras';
+  /** Enable reasoning extraction for models that support it */
+  extractReasoning?: boolean;
 }
 
 

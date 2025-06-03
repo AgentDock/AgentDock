@@ -34,7 +34,7 @@ const API_KEY_PROVIDERS: ApiKeyProvider[] = [
   { key: 'gemini', label: 'Google Gemini API Key', icon: KeyRound, description: 'Used for Google Gemini models' },
   { key: 'deepseek', label: 'DeepSeek API Key', icon: KeyRound, description: 'Used for DeepSeek models including DeepSeek-V3 and DeepSeek-R1' },
   { key: 'groq', label: 'Groq API Key', icon: KeyRound, description: 'Used for Groq models like Llama 3 and Mixtral' },
-  { key: 'cerebras', label: 'Cerebras API Key', icon: KeyRound, description: 'Used for Cerebras models like Cerebras-2 and Cerebras-3' }
+  { key: 'cerebras', label: 'Cerebras API Key', icon: KeyRound, description: 'Used for models hosted by Cerebras, such as LLaMA 3.1, LLaMA 3.3, and Qwen 3' }
 ];
 
 function SettingsPage() {

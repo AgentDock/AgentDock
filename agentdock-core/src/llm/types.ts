@@ -15,7 +15,7 @@ export interface TokenUsage {
 /**
  * LLM provider types
  */
-export type LLMProvider = 'anthropic' | 'openai' | 'gemini' | 'deepseek' | 'groq';
+export type LLMProvider = 'anthropic' | 'openai' | 'gemini' | 'deepseek' | 'groq' | 'cerebras';
 
 /**
  * LLM configuration
@@ -124,7 +124,7 @@ export interface GroqConfig extends LLMConfig {
   extractReasoning?: boolean;
 }
 
-export type ProviderConfig = AnthropicConfig | OpenAIConfig | GeminiConfig | DeepSeekConfig | GroqConfig;
+export type ProviderConfig = AnthropicConfig | OpenAIConfig | GeminiConfig | DeepSeekConfig | GroqConfig | CerebrasConfig;
 
 /**
  * LLM provider interface
@@ -143,6 +143,18 @@ export interface LLMAdapter {
   generateText(messages: LLMMessage[], tools?: any): Promise<string>;
   getSdkLanguageModel(): LanguageModel;
 }
+
+
+/**
+ * Cerebras configuration
+ */
+export interface CerebrasConfig extends LLMConfig {
+  /** Provider must be 'cerebras' */
+  provider: 'cerebras';
+  /** Enable reasoning extraction for models that support it */
+  extractReasoning?: boolean;
+}
+
 
 /**
  * Model metadata interface

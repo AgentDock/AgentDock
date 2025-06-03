@@ -9,6 +9,7 @@ export * from './openai-adapter';
 export * from './gemini-adapter';
 export * from './groq-adapter';
 export * from './deepseek-adapter'; 
+export * from './cerebras-adapter';
 
 import { LLMProvider, ModelMetadata } from '../types';
 import { logger, LogCategory } from '../../logging';
@@ -17,7 +18,8 @@ import {
   validateOpenAIApiKey, fetchOpenAIModels,
   validateGeminiApiKey, fetchGeminiModels,
   validateDeepSeekApiKey, fetchDeepSeekModels,
-  validateGroqApiKey, fetchGroqModels
+  validateGroqApiKey, fetchGroqModels,
+  validateCerebrasApiKey, fetchCerebrasModels
 } from '.';
 
 /**
@@ -41,6 +43,8 @@ export async function validateProviderApiKey(
         return validateDeepSeekApiKey(apiKey);
       case 'groq':
         return validateGroqApiKey(apiKey);
+      case 'cerebras':
+        return validateCerebrasApiKey(apiKey);
       default:
         logger.warn(LogCategory.LLM, 'ProviderAdapter', `Unsupported provider: ${providerId}`);
         return false;
@@ -77,6 +81,8 @@ export async function fetchProviderModels(
         return fetchDeepSeekModels(apiKey);
       case 'groq':
         return fetchGroqModels(apiKey);
+      case 'cerebras':
+        return fetchCerebrasModels(apiKey);
       default:
         logger.warn(LogCategory.LLM, 'ProviderAdapter', `Unsupported provider: ${providerId}`);
         return [];

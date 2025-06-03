@@ -123,6 +123,26 @@ const DEFAULT_PROVIDERS: Record<LLMProvider, ProviderMetadata> = {
         baseConfig.extractReasoning = options.extractReasoning;
       }
     }
+  },
+  cerebras: {
+    id: 'cerebras',
+    displayName: 'Cerebras',
+    description: 'Run Llama models on Cerebras high-performance inference endpoint.',
+    defaultModel: 'llama-4-scout-17b-16e-instruct',
+    validateApiKey: (key: string) => (key.startsWith('csk_') || key.startsWith('csk-')) && key.length >= 36,
+    applyConfig: (baseConfig, modelConfig, options) => {
+      // Apply Cerebras-specific configurations
+
+      // Add reasoning extraction if enabled
+      if (modelConfig?.extractReasoning !== undefined) {
+        baseConfig.extractReasoning = modelConfig.extractReasoning;
+      }
+
+      // Add reasoning extraction from options if provided
+      if (options?.extractReasoning !== undefined) {
+        baseConfig.extractReasoning = options.extractReasoning;
+      }
+    },
   }
 };
 
@@ -175,6 +195,9 @@ export class ProviderRegistry {
     if (nodeType === 'llm.groq') {
       return 'groq';
     }
+    if (nodeType === 'llm.cerebras') {
+      return 'cerebras';
+    }
     return 'anthropic';
   }
 
@@ -194,6 +217,9 @@ export class ProviderRegistry {
     if (provider === 'groq') {
       return 'llm.groq';
     }
+    if (provider === 'cerebras') {
+      return 'llm.cerebras';
+    }
     return 'llm.anthropic';
   }
 
@@ -212,6 +238,9 @@ export class ProviderRegistry {
     }
     if (nodes.includes('llm.groq')) {
       return 'groq';
+    }
+    if (nodes.includes('llm.cerebras')) {
+      return 'cerebras';
     }
     return 'anthropic';
   }

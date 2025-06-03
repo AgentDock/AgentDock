@@ -29,7 +29,8 @@ export class ModelRegistry {
         ['openai', []],
         ['gemini', []],
         ['deepseek', []],
-        ['groq', []]
+        ['groq', []],
+        ['cerebras', []]
       ]);
     }
     return this._modelsByProvider;

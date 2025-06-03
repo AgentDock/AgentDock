@@ -15,10 +15,10 @@ export async function GET(req: NextRequest) {
     const url = new URL(req.url);
     const provider = url.searchParams.get('provider') as LLMProvider | null;
     
-    if (!provider || (provider !== 'anthropic' && provider !== 'openai' && provider !== 'gemini' && provider !== 'deepseek' && provider !== 'groq')) {
+    if (!provider || (provider !== 'anthropic' && provider !== 'openai' && provider !== 'gemini' && provider !== 'deepseek' && provider !== 'groq' && provider !== 'cerebras')) {
       return new NextResponse(
         JSON.stringify({ 
-          error: 'Invalid provider. Must be "anthropic", "openai", "gemini", "deepseek", or "groq".' 
+          error: 'Invalid provider. Must be "anthropic", "openai", "gemini", "deepseek", "groq" or "cerebras."' 
         }), 
         { 
           status: 400,

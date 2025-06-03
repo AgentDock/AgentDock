@@ -35,6 +35,9 @@ export async function validateCerebrasApiKey(apiKey: string): Promise<boolean> {
   }
 }
 
+/**
+ * Fetch Cerebras models from the Cerebras API
+ */
 export async function fetchCerebrasModels(apiKey: string): Promise<ModelMetadata[]> {
   try {
     if (!apiKey) {
@@ -88,7 +91,7 @@ export async function fetchCerebrasModels(apiKey: string): Promise<ModelMetadata
         id: model.id,
         displayName: baseMetadata.displayName || model.id,
         description: baseMetadata.description || `Cerebras model: ${model.id}`,
-        contextWindow: baseMetadata.contextWindow || model.context_window || 16384,
+        contextWindow: baseMetadata.contextWindow || model.context_window || 8192,
         defaultTemperature: 0.7,
         defaultMaxTokens: 2048,
         capabilities: baseMetadata.capabilities || ["text"],

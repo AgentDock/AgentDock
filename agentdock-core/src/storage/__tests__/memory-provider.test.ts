@@ -40,7 +40,7 @@ describe('MemoryStorageProvider', () => {
     }
   });
 
-  // --- Basic CRUD Tests --- 
+  // --- Basic CRUD Tests ---
 
   it('should set and get a value', async () => {
     const key = 'testKey';
@@ -73,7 +73,7 @@ describe('MemoryStorageProvider', () => {
     expect(notDeleted).toBe(false);
   });
 
-  // --- TTL Tests --- 
+  // --- TTL Tests ---
 
   it('should respect TTL', async () => {
     const key = 'ttlKey';
@@ -87,7 +87,7 @@ describe('MemoryStorageProvider', () => {
     expect(await provider.get(key)).toEqual(value);
 
     // Advance time just before expiry (in milliseconds)
-    jest.advanceTimersByTime( (ttlSeconds - 1) * 1000 );
+    jest.advanceTimersByTime((ttlSeconds - 1) * 1000);
     expect(await provider.get(key)).toEqual(value);
 
     // Advance time past expiry
@@ -108,7 +108,7 @@ describe('MemoryStorageProvider', () => {
     expect(await provider.get(key)).toEqual(value);
   });
 
-  // --- Namespace Tests --- 
+  // --- Namespace Tests ---
 
   it('should isolate data based on namespace', async () => {
     const key = 'sharedKey';
@@ -130,8 +130,8 @@ describe('MemoryStorageProvider', () => {
     expect(await provider2.exists(key)).toBe(true); // Should still exist in ns2
   });
 
-  // --- Many Operations Tests --- 
-  
+  // --- Many Operations Tests ---
+
   it('should set and get multiple values', async () => {
     const items = {
       key1: 'value1',
@@ -153,7 +153,11 @@ describe('MemoryStorageProvider', () => {
     expect(await provider.exists('del2')).toBe(true);
     expect(await provider.exists('keep1')).toBe(true);
 
-    const deletedCount = await provider.deleteMany(['del1', 'del2', 'nonExistent']);
+    const deletedCount = await provider.deleteMany([
+      'del1',
+      'del2',
+      'nonExistent'
+    ]);
     expect(deletedCount).toBe(2);
     expect(await provider.exists('del1')).toBe(false);
     expect(await provider.exists('del2')).toBe(false);
@@ -173,7 +177,7 @@ describe('MemoryStorageProvider', () => {
     expect(prefixedKeys).toContain('prefix/key2');
 
     // Note: Memory provider likely lists all keys if prefix is empty string or not provided
-    const allKeys = await provider.list(''); 
+    const allKeys = await provider.list('');
     expect(allKeys).toHaveLength(3);
     expect(allKeys).toContain('prefix/key1');
     expect(allKeys).toContain('prefix/key2');
@@ -197,25 +201,25 @@ describe('MemoryStorageProvider', () => {
     expect(await provider.list('')).toHaveLength(0);
   });
 
-  // --- List Operations Tests --- 
+  // --- List Operations Tests ---
 
   it('should save and get a list', async () => {
     const key = 'myList';
     const listValue = ['item1', 2, { third: true }];
     await provider.saveList(key, listValue);
-    
+
     const retrievedList = await provider.getList(key);
     expect(retrievedList).toEqual(listValue);
 
     // Get sub-list
     const subList = await provider.getList(key, 1, 2); // items at index 1 and 2
     expect(subList).toEqual([2, { third: true }]);
-    
+
     // Get from end - Adjust expectation based on current implementation
     // Current implementation doesn't handle negative start index like JS slice
     const endList = await provider.getList(key, -2); // Test case with negative start index
     // Expect the full list as negative start isn't treated as offset from end
-    expect(endList).toEqual(listValue); 
+    expect(endList).toEqual(listValue);
 
     // Get non-existent list
     const nonExistent = await provider.getList('noList');
@@ -235,8 +239,8 @@ describe('MemoryStorageProvider', () => {
     expect(notDeleted).toBe(false);
   });
 
-  // --- Edge Cases --- 
-  
+  // --- Edge Cases ---
+
   it('should handle different data types', async () => {
     const types = {
       string: 'hello',
@@ -258,5 +262,4 @@ describe('MemoryStorageProvider', () => {
     await provider.clear();
     expect(await provider.list('')).toHaveLength(0);
   });
-
 });

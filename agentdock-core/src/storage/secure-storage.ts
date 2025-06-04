@@ -6,9 +6,9 @@
 import { createError, ErrorCode } from '../errors/index';
 
 interface StorageData {
-  data: string;      // Encrypted data
-  hmac: string;      // HMAC for tampering detection
-  version: string;   // Storage format version
+  data: string; // Encrypted data
+  hmac: string; // HMAC for tampering detection
+  version: string; // Storage format version
   timestamp: number; // Creation timestamp
 }
 
@@ -72,10 +72,15 @@ export class SecureStorage {
         SecureStorage.instance = new SecureStorage(this.namespace);
       }
     } catch (error) {
-      throw createError('storage', 'Failed to reset storage', ErrorCode.STORAGE_DELETE, {
-        operation: 'reset',
-        cause: error instanceof Error ? error.message : 'Unknown error'
-      });
+      throw createError(
+        'storage',
+        'Failed to reset storage',
+        ErrorCode.STORAGE_DELETE,
+        {
+          operation: 'reset',
+          cause: error instanceof Error ? error.message : 'Unknown error'
+        }
+      );
     }
   }
 
@@ -86,11 +91,11 @@ export class SecureStorage {
     try {
       // Generate or retrieve encryption keys
       const storageKey = await this.getOrCreateKeys(key);
-      
+
       // Prepare data for storage
       const data = JSON.stringify(value);
       const iv = crypto.getRandomValues(new Uint8Array(12));
-      
+
       // Encrypt data
       const encryptedData = await crypto.subtle.encrypt(
         { name: 'AES-GCM', iv },
@@ -123,13 +128,17 @@ export class SecureStorage {
 
       // Reset retry count on successful operation
       this.retryCount.delete(key);
-
     } catch (error) {
-      throw createError('storage', 'Failed to store data securely', ErrorCode.STORAGE_WRITE, {
-        operation: 'write',
-        key,
-        cause: error instanceof Error ? error.message : 'Unknown error'
-      });
+      throw createError(
+        'storage',
+        'Failed to store data securely',
+        ErrorCode.STORAGE_WRITE,
+        {
+          operation: 'write',
+          key,
+          cause: error instanceof Error ? error.message : 'Unknown error'
+        }
+      );
     }
   }
 
@@ -144,22 +153,32 @@ export class SecureStorage {
 
       // Parse stored data
       const { data, hmac, iv, version } = JSON.parse(stored);
-      
+
       // Version check
       if (version !== SecureStorage.STORAGE_VERSION) {
-        throw createError('storage', 'Incompatible storage version', ErrorCode.STORAGE_READ, {
-          key,
-          version
-        });
+        throw createError(
+          'storage',
+          'Incompatible storage version',
+          ErrorCode.STORAGE_READ,
+          {
+            key,
+            version
+          }
+        );
       }
 
       // Retry check
       const retries = this.retryCount.get(key) || 0;
       if (retries >= SecureStorage.MAX_RETRIES) {
-        throw createError('storage', 'Maximum retry attempts exceeded', ErrorCode.MAX_RETRIES_EXCEEDED, {
-          key,
-          maxRetries: SecureStorage.MAX_RETRIES
-        });
+        throw createError(
+          'storage',
+          'Maximum retry attempts exceeded',
+          ErrorCode.MAX_RETRIES_EXCEEDED,
+          {
+            key,
+            maxRetries: SecureStorage.MAX_RETRIES
+          }
+        );
       }
 
       // Get keys
@@ -172,15 +191,17 @@ export class SecureStorage {
         storageKey.hmacKey
       );
 
-      if (!this.compareHMAC(
-        calculatedHmac,
-        this.base64ToArrayBuffer(hmac)
-      )) {
+      if (!this.compareHMAC(calculatedHmac, this.base64ToArrayBuffer(hmac))) {
         // Force complete key regeneration
         await this.reset(key);
-        throw createError('storage', 'Data tampering detected', ErrorCode.TAMPERING_DETECTED, {
-          key
-        });
+        throw createError(
+          'storage',
+          'Data tampering detected',
+          ErrorCode.TAMPERING_DETECTED,
+          {
+            key
+          }
+        );
       }
 
       try {
@@ -193,10 +214,10 @@ export class SecureStorage {
 
         // Parse and return
         const result = JSON.parse(new TextDecoder().decode(decrypted));
-        
+
         // Reset retry count on success
         this.retryCount.delete(key);
-        
+
         return result as T;
       } catch (error) {
         // Increment retry count for decryption errors
@@ -209,21 +230,25 @@ export class SecureStorage {
 
         throw error; // Re-throw to be caught by outer try-catch
       }
-
     } catch (error) {
       if (error instanceof Error) {
         // If it's already one of our errors, re-throw it
         if ('code' in error && typeof error.code === 'string') {
           throw error;
         }
-        
+
         // Otherwise, wrap it in a storage error
-        throw createError('storage', 'Failed to retrieve data', ErrorCode.STORAGE_READ, {
-          operation: 'read',
-          key,
-          retries: this.retryCount.get(key) || 0,
-          cause: error.message
-        });
+        throw createError(
+          'storage',
+          'Failed to retrieve data',
+          ErrorCode.STORAGE_READ,
+          {
+            operation: 'read',
+            key,
+            retries: this.retryCount.get(key) || 0,
+            cause: error.message
+          }
+        );
       }
       throw error;
     }
@@ -238,11 +263,16 @@ export class SecureStorage {
       this.clearKeys(key);
       this.retryCount.delete(key);
     } catch (error) {
-      throw createError('storage', 'Failed to remove data', ErrorCode.STORAGE_DELETE, {
-        operation: 'delete',
-        key,
-        cause: error instanceof Error ? error.message : 'Unknown error'
-      });
+      throw createError(
+        'storage',
+        'Failed to remove data',
+        ErrorCode.STORAGE_DELETE,
+        {
+          operation: 'delete',
+          key,
+          cause: error instanceof Error ? error.message : 'Unknown error'
+        }
+      );
     }
   }
 
@@ -262,10 +292,15 @@ export class SecureStorage {
       this.keys.clear();
       this.retryCount.clear();
     } catch (error) {
-      throw createError('storage', 'Failed to clear storage', ErrorCode.STORAGE_DELETE, {
-        operation: 'clear',
-        cause: error instanceof Error ? error.message : 'Unknown error'
-      });
+      throw createError(
+        'storage',
+        'Failed to clear storage',
+        ErrorCode.STORAGE_DELETE,
+        {
+          operation: 'clear',
+          cause: error instanceof Error ? error.message : 'Unknown error'
+        }
+      );
     }
   }
 
@@ -279,10 +314,10 @@ export class SecureStorage {
       try {
         const persistedKeysKey = `${this.namespace}:keys:${key}`;
         const persistedKeys = localStorage.getItem(persistedKeysKey);
-        
+
         if (persistedKeys) {
           const { encKey, hmacKey } = JSON.parse(persistedKeys);
-          
+
           // Import the persisted keys
           const importedEncKey = await crypto.subtle.importKey(
             'jwk',
@@ -291,7 +326,7 @@ export class SecureStorage {
             true,
             ['encrypt', 'decrypt']
           );
-          
+
           const importedHmacKey = await crypto.subtle.importKey(
             'jwk',
             JSON.parse(hmacKey),
@@ -299,46 +334,55 @@ export class SecureStorage {
             true,
             ['sign', 'verify']
           );
-          
+
           // Store the imported keys in memory
-          const storageKey: StorageKey = { 
-            key: importedEncKey, 
-            hmacKey: importedHmacKey 
+          const storageKey: StorageKey = {
+            key: importedEncKey,
+            hmacKey: importedHmacKey
           };
           this.keys.set(key, storageKey);
-          
+
           console.log(`Successfully loaded persisted keys for ${key}`);
           return storageKey;
         }
       } catch (error) {
-        console.warn('Failed to load persisted keys, generating new ones:', error);
+        console.warn(
+          'Failed to load persisted keys, generating new ones:',
+          error
+        );
       }
-      
+
       // If no persisted keys or loading failed, generate new keys
-      const encryptionKey = await crypto.subtle.generateKey(
+      const encryptionKey = (await crypto.subtle.generateKey(
         SecureStorage.KEY_ALGORITHM,
         true,
         ['encrypt', 'decrypt']
-      ) as CryptoKey;
+      )) as CryptoKey;
 
-      const hmacKey = await crypto.subtle.generateKey(
+      const hmacKey = (await crypto.subtle.generateKey(
         SecureStorage.HMAC_ALGORITHM,
         true,
         ['sign', 'verify']
-      ) as CryptoKey;
+      )) as CryptoKey;
 
       const storageKey: StorageKey = { key: encryptionKey, hmacKey };
       this.keys.set(key, storageKey);
-      
+
       // Export and persist the new keys
       try {
-        const exportedEncKey = await crypto.subtle.exportKey('jwk', encryptionKey);
+        const exportedEncKey = await crypto.subtle.exportKey(
+          'jwk',
+          encryptionKey
+        );
         const exportedHmacKey = await crypto.subtle.exportKey('jwk', hmacKey);
-        
-        localStorage.setItem(`${this.namespace}:keys:${key}`, JSON.stringify({
-          encKey: JSON.stringify(exportedEncKey),
-          hmacKey: JSON.stringify(exportedHmacKey)
-        }));
+
+        localStorage.setItem(
+          `${this.namespace}:keys:${key}`,
+          JSON.stringify({
+            encKey: JSON.stringify(exportedEncKey),
+            hmacKey: JSON.stringify(exportedHmacKey)
+          })
+        );
       } catch (error) {
         console.warn('Failed to persist encryption keys:', error);
       }
@@ -352,12 +396,11 @@ export class SecureStorage {
   /**
    * Calculate HMAC for data
    */
-  private async calculateHMAC(data: ArrayBuffer, key: CryptoKey): Promise<ArrayBuffer> {
-    return crypto.subtle.sign(
-      SecureStorage.HMAC_ALGORITHM,
-      key,
-      data
-    );
+  private async calculateHMAC(
+    data: ArrayBuffer,
+    key: CryptoKey
+  ): Promise<ArrayBuffer> {
+    return crypto.subtle.sign(SecureStorage.HMAC_ALGORITHM, key, data);
   }
 
   /**
@@ -380,14 +423,14 @@ export class SecureStorage {
   private clearKeys(key: string): void {
     // Clear in-memory keys
     this.keys.delete(key);
-    
+
     // Clear persisted keys from localStorage
     const persistedKeysKey = `${this.namespace}:keys:${key}`;
     localStorage.removeItem(persistedKeysKey);
-    
+
     // Also clear the stored data since we can't decrypt it anymore
     localStorage.removeItem(this.getStorageKey(key));
-    
+
     // Reset retry count
     this.retryCount.delete(key);
   }
@@ -422,4 +465,4 @@ export class SecureStorage {
     }
     return bytes.buffer;
   }
-} 
+}

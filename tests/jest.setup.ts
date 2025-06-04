@@ -1,6 +1,11 @@
 import '@testing-library/jest-dom';
-import { ReadableStream, TransformStream, WritableStream } from 'node:stream/web';
-import { TextEncoder, TextDecoder } from 'util';
+
+import {
+  ReadableStream,
+  TransformStream,
+  WritableStream
+} from 'node:stream/web';
+import { TextDecoder, TextEncoder } from 'util';
 import fetch, { Request, Response } from 'node-fetch';
 
 // Polyfill globals needed for edge runtime testing
@@ -55,7 +60,7 @@ global.WritableStream = WritableStream as any;
 global.ResizeObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),
   unobserve: jest.fn(),
-  disconnect: jest.fn(),
+  disconnect: jest.fn()
 }));
 
 // Mock the custom logger module MORE aggressively
@@ -66,9 +71,9 @@ jest.mock('agentdock-core/src/logging', () => ({
     warn: jest.fn(),
     error: jest.fn(),
     fatal: jest.fn(),
-    child: jest.fn().mockReturnThis(), // Ensure child() returns the mock itself for chaining
+    child: jest.fn().mockReturnThis() // Ensure child() returns the mock itself for chaining
   },
   // Re-export actual values for other things exported from the module if needed
   // e.g., if LogCategory is also exported and needed by tests:
-  LogCategory: jest.requireActual('agentdock-core/src/logging').LogCategory, 
+  LogCategory: jest.requireActual('agentdock-core/src/logging').LogCategory
 }));

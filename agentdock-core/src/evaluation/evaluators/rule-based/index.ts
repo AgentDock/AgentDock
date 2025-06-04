@@ -1,2 +1,2 @@
 // Placeholder for RuleBased evaluators
-export * from './evaluator'; 
+export * from './evaluator';

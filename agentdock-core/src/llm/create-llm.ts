@@ -2,25 +2,26 @@
  * @fileoverview Function for creating LLM instances.
  */
 
-import { CoreLLM } from './core-llm';
-import { LLMConfig } from './types';
-import { createAnthropicModel, createOpenAIModel, createGeminiModel, createDeepSeekModel, createGroqModel } from './model-utils';
 import { createError, ErrorCode } from '../errors';
-import { logger, LogCategory } from '../logging';
+import { LogCategory, logger } from '../logging';
+import { CoreLLM } from './core-llm';
+import {
+  createAnthropicModel,
+  createDeepSeekModel,
+  createGeminiModel,
+  createGroqModel,
+  createOpenAIModel
+} from './model-utils';
+import { LLMConfig } from './types';
 
 /**
  * Create an LLM instance for the specified configuration
  */
 export function createLLM(config: LLMConfig): CoreLLM {
-  logger.debug(
-    LogCategory.LLM,
-    'createLLM',
-    'Creating LLM instance',
-    {
-      provider: config.provider,
-      model: config.model
-    }
-  );
+  logger.debug(LogCategory.LLM, 'createLLM', 'Creating LLM instance', {
+    provider: config.provider,
+    model: config.model
+  });
 
   // Create the appropriate model based on the provider
   let model;
@@ -41,9 +42,13 @@ export function createLLM(config: LLMConfig): CoreLLM {
       model = createGroqModel(config);
       break;
     default:
-      throw createError('llm', `Unsupported provider: ${config.provider}`, ErrorCode.LLM_EXECUTION);
+      throw createError(
+        'llm',
+        `Unsupported provider: ${config.provider}`,
+        ErrorCode.LLM_EXECUTION
+      );
   }
 
   // Create and return the CoreLLM instance
   return new CoreLLM({ model, config });
-} 
+}

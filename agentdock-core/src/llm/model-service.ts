@@ -3,9 +3,9 @@
  * Provides a single point of access for model operations
  */
 
-import { LLMProvider, ModelMetadata } from './types';
+import { LogCategory, logger } from '../logging';
 import { ModelRegistry } from './model-registry';
-import { logger, LogCategory } from '../logging';
+import { LLMProvider, ModelMetadata } from './types';
 
 /**
  * ModelService provides a centralized way to manage models
@@ -20,11 +20,16 @@ export class ModelService {
     try {
       return ModelRegistry.getModelsForProvider(provider);
     } catch (error) {
-      logger.error(LogCategory.LLM, '[ModelService]', `Error getting models for ${provider}:`, { error });
+      logger.error(
+        LogCategory.LLM,
+        '[ModelService]',
+        `Error getting models for ${provider}:`,
+        { error }
+      );
       return [];
     }
   }
-  
+
   /**
    * Register models for a provider
    * This is used by implementations to register models fetched from the API
@@ -33,22 +38,34 @@ export class ModelService {
     try {
       ModelRegistry.registerModels(provider, models);
     } catch (error) {
-      logger.error(LogCategory.LLM, '[ModelService]', `Error registering models for ${provider}:`, { error });
+      logger.error(
+        LogCategory.LLM,
+        '[ModelService]',
+        `Error registering models for ${provider}:`,
+        { error }
+      );
     }
   }
-  
+
   /**
    * Reset models for a provider
    * This clears the models from the registry without fetching new ones
    */
   static resetModels(provider: LLMProvider | LLMProvider[]): void {
     try {
-      ModelRegistry.resetModels(Array.isArray(provider) ? provider : [provider]);
+      ModelRegistry.resetModels(
+        Array.isArray(provider) ? provider : [provider]
+      );
     } catch (error) {
-      logger.error(LogCategory.LLM, '[ModelService]', `Error resetting models for ${provider}:`, { error });
+      logger.error(
+        LogCategory.LLM,
+        '[ModelService]',
+        `Error resetting models for ${provider}:`,
+        { error }
+      );
     }
   }
-  
+
   /**
    * Get a model by ID
    */
@@ -56,11 +73,16 @@ export class ModelService {
     try {
       return ModelRegistry.getModel(modelId);
     } catch (error) {
-      logger.error(LogCategory.LLM, '[ModelService]', `Error getting model ${modelId}:`, { error });
+      logger.error(
+        LogCategory.LLM,
+        '[ModelService]',
+        `Error getting model ${modelId}:`,
+        { error }
+      );
       return undefined;
     }
   }
-  
+
   /**
    * Get all registered models
    */
@@ -68,8 +90,13 @@ export class ModelService {
     try {
       return ModelRegistry.getAllModels();
     } catch (error) {
-      logger.error(LogCategory.LLM, '[ModelService]', 'Error getting all models:', { error });
+      logger.error(
+        LogCategory.LLM,
+        '[ModelService]',
+        'Error getting all models:',
+        { error }
+      );
       return [];
     }
   }
-} 
+}

@@ -14,10 +14,7 @@
     "You have access to search capabilities and can investigate topics to build a winning case.",
     "When conducting research, use the search tool effectively."
   ],
-  "nodes": [
-    "llm.gemini",
-    "search"
-  ],
+  "nodes": ["llm.gemini", "search"],
   "nodeConfigurations": {
     "llm.gemini": {
       "model": "gemini-2.5-flash-preview-04-17",
@@ -62,4 +59,4 @@
       "How do you project confidence?"
     ]
   }
-} 
+}

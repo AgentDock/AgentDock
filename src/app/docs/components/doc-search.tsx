@@ -1,10 +1,11 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { debounce } from 'lodash-es';
+import { Search } from 'lucide-react';
+
 import { CommandDialog } from '@/components/ui/command';
+import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { closeMobileSidebar } from './docs-sidebar';
 
@@ -31,13 +32,13 @@ async function buildSearchIndex() {
       console.error('Failed to fetch search index:', response.statusText);
       return;
     }
-    
+
     const data = await response.json();
-    
+
     // Clear the array and add new items
     DOC_INDEX.length = 0;
     DOC_INDEX.push(...data);
-    
+
     console.log(`Loaded search index with ${DOC_INDEX.length} entries`);
   } catch (error) {
     console.error('Error loading search index:', error);
@@ -45,24 +46,34 @@ async function buildSearchIndex() {
 }
 
 // Helper to highlight matched text
-function highlightMatches(text: string, searchTerms: string[]): React.ReactNode {
+function highlightMatches(
+  text: string,
+  searchTerms: string[]
+): React.ReactNode {
   if (!searchTerms.length) return <>{text}</>;
-  
+
   // Create a regex that matches any of the search terms (case insensitive)
   const regex = new RegExp(`(${searchTerms.join('|')})`, 'gi');
   const parts = text.split(regex);
-  
+
   return (
     <>
       {parts.map((part, i) => {
         // Check if this part matches any search term
-        const isMatch = searchTerms.some(term => 
-          part.toLowerCase() === term.toLowerCase()
+        const isMatch = searchTerms.some(
+          (term) => part.toLowerCase() === term.toLowerCase()
         );
-        
-        return isMatch ? 
-          <span key={i} className="bg-yellow-100 dark:bg-yellow-900/40">{part}</span> : 
-          <span key={i}>{part}</span>;
+
+        return isMatch ? (
+          <span
+            key={i}
+            className="bg-yellow-100 dark:bg-yellow-900/40"
+          >
+            {part}
+          </span>
+        ) : (
+          <span key={i}>{part}</span>
+        );
       })}
     </>
   );
@@ -74,7 +85,7 @@ export function DocSearch() {
   const [isSearching, setIsSearching] = useState(false);
   const [open, setOpen] = useState(false);
   const [indexReady, setIndexReady] = useState(false);
-  
+
   // Initialize the search index
   useEffect(() => {
     if (!indexReady && DOC_INDEX.length === 0) {
@@ -85,7 +96,7 @@ export function DocSearch() {
       });
     }
   }, [indexReady]);
-  
+
   // Enhanced search implementation with relevance scoring
   const performSearch = useCallback(
     debounce((searchQuery: string) => {
@@ -96,38 +107,36 @@ export function DocSearch() {
       }
 
       const searchTerms = searchQuery.toLowerCase().split(' ').filter(Boolean);
-      
+
       // Score and filter results
-      const scoredResults = DOC_INDEX
-        .map(item => {
-          const titleLower = item.title.toLowerCase();
-          const contentLower = item.content.toLowerCase();
-          let score = 0;
-          
-          // Calculate relevance score
-          searchTerms.forEach(term => {
-            // Exact title match gets highest score
-            if (titleLower === term) score += 100;
-            
-            // Title contains term gets high score
-            else if (titleLower.includes(term)) score += 50;
-            
-            // Exact phrase match in content
-            if (contentLower.includes(term)) score += 10;
-            
-            // Bonus for longer term matches (likely more specific)
-            score += term.length / 10;
-          });
-          
-          // Only include results that match at least one term
-          const hasMatch = score > 0;
-          
-          return {
-            ...item,
-            score: hasMatch ? score : 0
-          };
-        })
-        .filter(item => item.score! > 0)
+      const scoredResults = DOC_INDEX.map((item) => {
+        const titleLower = item.title.toLowerCase();
+        const contentLower = item.content.toLowerCase();
+        let score = 0;
+
+        // Calculate relevance score
+        searchTerms.forEach((term) => {
+          // Exact title match gets highest score
+          if (titleLower === term) score += 100;
+          // Title contains term gets high score
+          else if (titleLower.includes(term)) score += 50;
+
+          // Exact phrase match in content
+          if (contentLower.includes(term)) score += 10;
+
+          // Bonus for longer term matches (likely more specific)
+          score += term.length / 10;
+        });
+
+        // Only include results that match at least one term
+        const hasMatch = score > 0;
+
+        return {
+          ...item,
+          score: hasMatch ? score : 0
+        };
+      })
+        .filter((item) => item.score! > 0)
         .sort((a, b) => b.score! - a.score!)
         .slice(0, MAX_RESULTS);
 
@@ -152,7 +161,7 @@ export function DocSearch() {
     const down = (e: KeyboardEvent) => {
       if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        setOpen(open => !open);
+        setOpen((open) => !open);
       }
     };
 
@@ -162,12 +171,12 @@ export function DocSearch() {
 
   const handleSelect = (url: string) => {
     setOpen(false);
-    
+
     // Close the mobile sidebar if we're on mobile
     if (typeof window !== 'undefined' && window.innerWidth < 768) {
       closeMobileSidebar();
     }
-    
+
     // Navigate to the selected result
     window.location.href = url;
   };
@@ -190,7 +199,10 @@ export function DocSearch() {
         </kbd>
       </button>
 
-      <CommandDialog open={open} onOpenChange={setOpen}>
+      <CommandDialog
+        open={open}
+        onOpenChange={setOpen}
+      >
         <div className="flex items-center border-b px-3">
           <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
           <Input
@@ -201,11 +213,11 @@ export function DocSearch() {
             autoFocus
           />
         </div>
-        
+
         {isSearching && (
           <div className="py-6 text-center text-sm">Searching...</div>
         )}
-        
+
         {!isSearching && results.length > 0 && (
           <div className="py-2">
             <div className="px-4 py-1.5 text-xs font-medium text-muted-foreground">
@@ -229,15 +241,17 @@ export function DocSearch() {
             </ScrollArea>
           </div>
         )}
-        
+
         {!isSearching && query.length > 0 && results.length === 0 && (
           <div className="py-6 text-center text-sm">No results found.</div>
         )}
-        
+
         {!indexReady && !isSearching && DOC_INDEX.length === 0 && (
-          <div className="py-6 text-center text-sm">Loading search index...</div>
+          <div className="py-6 text-center text-sm">
+            Loading search index...
+          </div>
         )}
       </CommandDialog>
     </>
   );
-} 
+}

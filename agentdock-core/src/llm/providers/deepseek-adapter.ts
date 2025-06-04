@@ -3,10 +3,11 @@
  * Handles DeepSeek-specific validation and model fetching logic
  */
 
-import { ModelMetadata } from '../types';
-import { ModelService } from '../model-service';
-import { logger, LogCategory } from '../../logging';
 import OpenAI from 'openai';
+
+import { LogCategory, logger } from '../../logging';
+import { ModelService } from '../model-service';
+import { ModelMetadata } from '../types';
 
 /**
  * Validate a DeepSeek API key by making a request to the DeepSeek API
@@ -15,20 +16,25 @@ import OpenAI from 'openai';
 export async function validateDeepSeekApiKey(apiKey: string): Promise<boolean> {
   try {
     if (!apiKey) return false;
-    
+
     // Create OpenAI client with DeepSeek baseURL
     const deepseek = new OpenAI({
       apiKey,
       baseURL: 'https://api.deepseek.com/v1'
     });
-    
+
     // Try to list models
     const response = await deepseek.models.list();
     return Array.isArray(response.data);
   } catch (error) {
-    logger.error(LogCategory.LLM, '[DeepSeekAdapter]', 'Error validating API key:', { 
-      error: error instanceof Error ? error.message : String(error) 
-    });
+    logger.error(
+      LogCategory.LLM,
+      '[DeepSeekAdapter]',
+      'Error validating API key:',
+      {
+        error: error instanceof Error ? error.message : String(error)
+      }
+    );
     return false;
   }
 }
@@ -36,7 +42,9 @@ export async function validateDeepSeekApiKey(apiKey: string): Promise<boolean> {
 /**
  * Fetch models from the DeepSeek API and register them with the model registry
  */
-export async function fetchDeepSeekModels(apiKey: string): Promise<ModelMetadata[]> {
+export async function fetchDeepSeekModels(
+  apiKey: string
+): Promise<ModelMetadata[]> {
   try {
     if (!apiKey) {
       throw new Error('API key is required');
@@ -50,31 +58,39 @@ export async function fetchDeepSeekModels(apiKey: string): Promise<ModelMetadata
 
     // Fetch available models
     const response = await deepseek.models.list();
-    
+
     // Filter and format models
-    const models = response.data
-      .map(model => ({
-        id: model.id,
-        displayName: model.id,
-        description: 'DeepSeek language model',
-        // Default context window sizes
-        contextWindow: model.id.includes('128k') ? 131072 : 32768,
-        defaultTemperature: 0.7,
-        defaultMaxTokens: 2048,
-        capabilities: ['text', 'code']
-      }));
+    const models = response.data.map((model) => ({
+      id: model.id,
+      displayName: model.id,
+      description: 'DeepSeek language model',
+      // Default context window sizes
+      contextWindow: model.id.includes('128k') ? 131072 : 32768,
+      defaultTemperature: 0.7,
+      defaultMaxTokens: 2048,
+      capabilities: ['text', 'code']
+    }));
 
     // Register models with the registry
     ModelService.registerModels('deepseek', models);
 
-    logger.debug(LogCategory.LLM, '[DeepSeekAdapter]', `Processed ${models.length} models`);
+    logger.debug(
+      LogCategory.LLM,
+      '[DeepSeekAdapter]',
+      `Processed ${models.length} models`
+    );
 
     return ModelService.getModels('deepseek');
   } catch (error) {
-    logger.error(LogCategory.LLM, '[DeepSeekAdapter]', 'Error fetching models:', { 
-      error: error instanceof Error ? error.message : String(error) 
-    });
-    
+    logger.error(
+      LogCategory.LLM,
+      '[DeepSeekAdapter]',
+      'Error fetching models:',
+      {
+        error: error instanceof Error ? error.message : String(error)
+      }
+    );
+
     // If API call fails, provide fallback models
     try {
       const fallbackModels = [
@@ -97,19 +113,19 @@ export async function fetchDeepSeekModels(apiKey: string): Promise<ModelMetadata
           capabilities: ['text']
         }
       ];
-      
+
       ModelService.registerModels('deepseek', fallbackModels);
-      
+
       logger.warn(
-        LogCategory.LLM, 
-        '[DeepSeekAdapter]', 
+        LogCategory.LLM,
+        '[DeepSeekAdapter]',
         'Failed to fetch models from API, using fallback models',
         { error: error instanceof Error ? error.message : 'Unknown error' }
       );
-      
+
       return ModelService.getModels('deepseek');
     } catch {
       throw error;
     }
   }
-} 
+}

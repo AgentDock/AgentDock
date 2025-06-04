@@ -2,9 +2,14 @@
  * @fileoverview Tests for SecureStorage implementation
  */
 
-import { SecureStorage } from '../secure-storage';
 import { ErrorCode } from '../../errors';
-import { mockCrypto, mockLocalStorage, base64ToArrayBuffer, arrayBufferToBase64 } from '../../test/setup';
+import {
+  arrayBufferToBase64,
+  base64ToArrayBuffer,
+  mockCrypto,
+  mockLocalStorage
+} from '../../test/setup';
+import { SecureStorage } from '../secure-storage';
 
 describe('SecureStorage', () => {
   let storage: SecureStorage;
@@ -23,8 +28,12 @@ describe('SecureStorage', () => {
       usages: ['encrypt', 'decrypt']
     }));
 
-    mockCrypto.subtle.encrypt.mockImplementation(async () => new ArrayBuffer(32));
-    mockCrypto.subtle.decrypt.mockImplementation(async () => new TextEncoder().encode(JSON.stringify(testValue)));
+    mockCrypto.subtle.encrypt.mockImplementation(
+      async () => new ArrayBuffer(32)
+    );
+    mockCrypto.subtle.decrypt.mockImplementation(async () =>
+      new TextEncoder().encode(JSON.stringify(testValue))
+    );
     mockCrypto.subtle.sign.mockImplementation(async () => new ArrayBuffer(32));
     mockCrypto.getRandomValues.mockImplementation(() => new Uint8Array(12));
   });
@@ -40,7 +49,9 @@ describe('SecureStorage', () => {
     });
 
     it('should handle encryption errors', async () => {
-      mockCrypto.subtle.encrypt.mockRejectedValueOnce(new Error('Encryption failed'));
+      mockCrypto.subtle.encrypt.mockRejectedValueOnce(
+        new Error('Encryption failed')
+      );
 
       await expect(storage.set(testKey, testValue)).rejects.toMatchObject({
         code: ErrorCode.STORAGE_WRITE
@@ -67,7 +78,9 @@ describe('SecureStorage', () => {
     };
 
     beforeEach(() => {
-      mockLocalStorage.getItem.mockImplementation(() => JSON.stringify(mockStoredData));
+      mockLocalStorage.getItem.mockImplementation(() =>
+        JSON.stringify(mockStoredData)
+      );
     });
 
     it('should decrypt and verify stored data', async () => {
@@ -86,7 +99,9 @@ describe('SecureStorage', () => {
     });
 
     it('should handle decryption errors', async () => {
-      mockCrypto.subtle.decrypt.mockRejectedValueOnce(new Error('Decryption failed'));
+      mockCrypto.subtle.decrypt.mockRejectedValueOnce(
+        new Error('Decryption failed')
+      );
 
       await expect(storage.get(testKey)).rejects.toMatchObject({
         code: ErrorCode.STORAGE_READ
@@ -95,7 +110,9 @@ describe('SecureStorage', () => {
 
     it('should handle tampering detection', async () => {
       // Simulate different HMAC value
-      mockCrypto.subtle.sign.mockImplementationOnce(async () => new ArrayBuffer(16));
+      mockCrypto.subtle.sign.mockImplementationOnce(
+        async () => new ArrayBuffer(16)
+      );
 
       await expect(storage.get(testKey)).rejects.toMatchObject({
         code: ErrorCode.TAMPERING_DETECTED
@@ -103,7 +120,9 @@ describe('SecureStorage', () => {
     });
 
     it('should enforce retry limit', async () => {
-      mockCrypto.subtle.decrypt.mockRejectedValue(new Error('Decryption failed'));
+      mockCrypto.subtle.decrypt.mockRejectedValue(
+        new Error('Decryption failed')
+      );
 
       // Attempt multiple times
       for (let i = 0; i < 3; i++) {
@@ -119,7 +138,7 @@ describe('SecureStorage', () => {
     });
 
     it('should handle version mismatch', async () => {
-      mockLocalStorage.getItem.mockImplementationOnce(() => 
+      mockLocalStorage.getItem.mockImplementationOnce(() =>
         JSON.stringify({ ...mockStoredData, version: '0.9' })
       );
 
@@ -185,9 +204,15 @@ describe('SecureStorage', () => {
         algorithm: { name: 'AES-GCM' },
         usages: ['encrypt', 'decrypt']
       }));
-      mockCrypto.subtle.encrypt.mockImplementation(async () => new ArrayBuffer(32));
-      mockCrypto.subtle.decrypt.mockImplementation(async () => new TextEncoder().encode(JSON.stringify(testValue)));
-      mockCrypto.subtle.sign.mockImplementation(async () => new ArrayBuffer(32));
+      mockCrypto.subtle.encrypt.mockImplementation(
+        async () => new ArrayBuffer(32)
+      );
+      mockCrypto.subtle.decrypt.mockImplementation(async () =>
+        new TextEncoder().encode(JSON.stringify(testValue))
+      );
+      mockCrypto.subtle.sign.mockImplementation(
+        async () => new ArrayBuffer(32)
+      );
       mockCrypto.getRandomValues.mockImplementation(() => new Uint8Array(12));
     });
 
@@ -204,8 +229,10 @@ describe('SecureStorage', () => {
       const initialCalls = mockCrypto.subtle.generateKey.mock.calls.length;
 
       // Simulate tampering detection
-      mockCrypto.subtle.sign.mockImplementationOnce(async () => new ArrayBuffer(16));
-      
+      mockCrypto.subtle.sign.mockImplementationOnce(
+        async () => new ArrayBuffer(16)
+      );
+
       try {
         await storage.get(testKey);
       } catch (error) {
@@ -218,4 +245,4 @@ describe('SecureStorage', () => {
       expect(totalCalls - initialCalls).toBe(2); // Should generate 2 new keys
     });
   });
-}); 
+});

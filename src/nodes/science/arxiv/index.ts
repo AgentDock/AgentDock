@@ -2,12 +2,16 @@
  * @fileoverview arXiv API tool implementation for searching and retrieving scientific papers
  */
 
+import { LogCategory, logger } from 'agentdock-core';
 import { z } from 'zod';
+
 import { Tool, ToolExecutionOptions } from '../../types';
-import { logger, LogCategory } from 'agentdock-core';
-import { ArxivSearchSchema, ArxivFetchSchema } from './schema';
-import { searchArxiv, fetchArxivPaper } from './api';
-import { formatSearchResultsAsMarkdown, formatPaperAsMarkdown } from './formatters';
+import { fetchArxivPaper, searchArxiv } from './api';
+import {
+  formatPaperAsMarkdown,
+  formatSearchResultsAsMarkdown
+} from './formatters';
+import { ArxivFetchSchema, ArxivSearchSchema } from './schema';
 
 // Type inference from schemas
 type ArxivSearchParams = z.infer<typeof ArxivSearchSchema>;
@@ -39,14 +43,14 @@ This tool accesses arXiv.org, an open-access archive for scholarly articles in p
   parameters: ArxivSearchSchema,
   execute: async (params: ArxivSearchParams, options: ToolExecutionOptions) => {
     try {
-      logger.debug(LogCategory.NODE, '[ArxivAPI]', 'Starting arXiv search', { 
+      logger.debug(LogCategory.NODE, '[ArxivAPI]', 'Starting arXiv search', {
         query: params.query,
-        toolCallId: options.toolCallId,
+        toolCallId: options.toolCallId
       });
-      
+
       const results = await searchArxiv(params);
       const markdown = formatSearchResultsAsMarkdown(params.query, results);
-      
+
       return {
         type: 'arxiv_search_result',
         content: markdown,
@@ -57,13 +61,19 @@ This tool accesses arXiv.org, an open-access archive for scholarly articles in p
         }
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      
-      logger.error(LogCategory.NODE, '[ArxivAPI]', 'Error in arxiv_search tool', {
-        error: errorMessage,
-        params,
-      });
-      
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+
+      logger.error(
+        LogCategory.NODE,
+        '[ArxivAPI]',
+        'Error in arxiv_search tool',
+        {
+          error: errorMessage,
+          params
+        }
+      );
+
       return {
         type: 'arxiv_search_result',
         content: `## arXiv Search Error\n\nUnable to search arXiv for "${params.query}": ${errorMessage}`,
@@ -99,15 +109,15 @@ This tool accesses arXiv.org, an open-access archive for scholarly articles in p
   parameters: ArxivFetchSchema,
   execute: async (params: ArxivFetchParams, options: ToolExecutionOptions) => {
     try {
-      logger.debug(LogCategory.NODE, '[ArxivAPI]', 'Starting arXiv fetch', { 
+      logger.debug(LogCategory.NODE, '[ArxivAPI]', 'Starting arXiv fetch', {
         id: params.id,
         format: params.format,
-        toolCallId: options.toolCallId,
+        toolCallId: options.toolCallId
       });
-      
+
       const paper = await fetchArxivPaper(params);
       const markdown = formatPaperAsMarkdown(paper);
-      
+
       return {
         type: 'arxiv_paper_result',
         content: markdown,
@@ -116,13 +126,19 @@ This tool accesses arXiv.org, an open-access archive for scholarly articles in p
         }
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      
-      logger.error(LogCategory.NODE, '[ArxivAPI]', 'Error in arxiv_fetch tool', {
-        error: errorMessage,
-        params,
-      });
-      
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+
+      logger.error(
+        LogCategory.NODE,
+        '[ArxivAPI]',
+        'Error in arxiv_fetch tool',
+        {
+          error: errorMessage,
+          params
+        }
+      );
+
       return {
         type: 'arxiv_paper_result',
         content: `## arXiv Paper Fetch Error\n\nUnable to retrieve paper with ID "${params.id}": ${errorMessage}`,
@@ -141,4 +157,4 @@ This tool accesses arXiv.org, an open-access archive for scholarly articles in p
 export const tools = {
   arxiv_search: arxivSearchTool,
   arxiv_fetch: arxivFetchTool
-}; 
+};

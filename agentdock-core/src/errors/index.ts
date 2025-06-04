@@ -6,13 +6,13 @@
 /**
  * Error categories
  */
-export type ErrorCategory = 
+export type ErrorCategory =
   | 'node'
   | 'config'
   | 'llm'
   | 'api'
   | 'storage'
-  | 'service'  // Added for service provider errors
+  | 'service' // Added for service provider errors
   | 'generic';
 
 /**
@@ -25,22 +25,22 @@ export enum ErrorCode {
   NODE_CLEANUP = 'NODE_CLEANUP_ERROR',
   NODE_NOT_FOUND = 'NODE_NOT_FOUND',
   NODE_VALIDATION = 'NODE_VALIDATION_ERROR',
-  
+
   // Configuration errors
   CONFIG_VALIDATION = 'CONFIG_VALIDATION_ERROR',
   CONFIG_LOADING = 'CONFIG_LOADING_ERROR',
   CONFIG_NOT_FOUND = 'CONFIG_NOT_FOUND',
-  
+
   // Message handling errors
   MESSAGE_VALIDATION = 'MESSAGE_VALIDATION_ERROR',
   MESSAGE_PROCESSING = 'MESSAGE_PROCESSING_ERROR',
   MESSAGE_STREAMING = 'MESSAGE_STREAMING_ERROR',
-  
+
   // API errors
   API_REQUEST = 'API_REQUEST_ERROR',
   API_RESPONSE = 'API_RESPONSE_ERROR',
   API_VALIDATION = 'API_VALIDATION_ERROR',
-  
+
   // LLM-related errors
   LLM_API_KEY = 'LLM_API_KEY_ERROR',
   LLM_REQUEST = 'LLM_REQUEST_ERROR',
@@ -50,23 +50,23 @@ export enum ErrorCode {
   LLM_SERVICE_KEY_FETCH = 'LLM_SERVICE_KEY_FETCH_ERROR',
   LLM_SERVICE_KEY_INVALID = 'LLM_SERVICE_KEY_INVALID_ERROR',
   LLM_OVERLOADED = 'LLM_OVERLOADED_ERROR',
-  
+
   // Storage errors
   STORAGE_READ = 'STORAGE_READ_ERROR',
   STORAGE_WRITE = 'STORAGE_WRITE_ERROR',
   STORAGE_DELETE = 'STORAGE_DELETE_ERROR',
-  
+
   // Security errors
   VALIDATION_ERROR = 'VALIDATION_ERROR',
   DECRYPTION_FAILED = 'DECRYPTION_FAILED',
   TAMPERING_DETECTED = 'TAMPERING_DETECTED',
   MAX_RETRIES_EXCEEDED = 'MAX_RETRIES_EXCEEDED',
-  
+
   // Generic errors
   UNKNOWN = 'UNKNOWN_ERROR',
   INTERNAL = 'INTERNAL_ERROR',
   NOT_IMPLEMENTED = 'NOT_IMPLEMENTED',
-  
+
   // Service errors
   SERVICE_KEY_MISSING = 'SERVICE_KEY_MISSING',
   SERVICE_KEY_INVALID = 'SERVICE_KEY_INVALID',
@@ -86,10 +86,10 @@ export class AgentError extends Error {
   ) {
     super(message);
     this.name = 'AgentError';
-    
+
     // Ensure proper prototype chain for instanceof checks
     Object.setPrototypeOf(this, new.target.prototype);
-    
+
     // Capture stack trace
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, this.constructor);
@@ -113,13 +113,10 @@ export class AgentError extends Error {
    * Convert error to HTTP response
    */
   toResponse() {
-    return new Response(
-      JSON.stringify(this.toJSON()),
-      {
-        status: this.httpStatus,
-        headers: { 'Content-Type': 'application/json' }
-      }
-    );
+    return new Response(JSON.stringify(this.toJSON()), {
+      status: this.httpStatus,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 }
 
@@ -132,11 +129,16 @@ export class APIError extends AgentError {
     details: Record<string, unknown> = {},
     httpStatus: number = 500
   ) {
-    super(message, code, {
-      path,
-      method,
-      ...details
-    }, httpStatus);
+    super(
+      message,
+      code,
+      {
+        path,
+        method,
+        ...details
+      },
+      httpStatus
+    );
     this.name = 'APIError';
     Object.setPrototypeOf(this, APIError.prototype);
   }
@@ -146,7 +148,14 @@ export class APIError extends AgentError {
  * Create an error instance with category and code
  */
 export function createError(
-  category: ErrorCategory | 'node' | 'config' | 'llm' | 'api' | 'storage' | 'generic',
+  category:
+    | ErrorCategory
+    | 'node'
+    | 'config'
+    | 'llm'
+    | 'api'
+    | 'storage'
+    | 'generic',
   message: string,
   code: ErrorCode,
   details: Record<string, unknown> = {},
@@ -165,17 +174,29 @@ export function createError(
   }
 
   // Handle all other errors
-  return new AgentError(message, code, {
-    category,
-    ...details
-  }, httpStatus);
+  return new AgentError(
+    message,
+    code,
+    {
+      category,
+      ...details
+    },
+    httpStatus
+  );
 }
 
 /**
  * Wrap an error with consistent formatting and logging
  */
 export function wrapError(
-  category: ErrorCategory | 'node' | 'config' | 'llm' | 'api' | 'storage' | 'generic',
+  category:
+    | ErrorCategory
+    | 'node'
+    | 'config'
+    | 'llm'
+    | 'api'
+    | 'storage'
+    | 'generic',
   operation: string,
   error: unknown,
   defaultCode: ErrorCode = ErrorCode.INTERNAL,
@@ -187,18 +208,14 @@ export function wrapError(
   }
 
   // Create a standardized error message
-  const message = error instanceof Error ? error.message : 'Unknown error occurred';
-  
+  const message =
+    error instanceof Error ? error.message : 'Unknown error occurred';
+
   // Create error with consistent format
-  return createError(
-    category,
-    `${operation}: ${message}`,
-    defaultCode,
-    {
-      ...details,
-      originalError: error
-    }
-  );
+  return createError(category, `${operation}: ${message}`, defaultCode, {
+    ...details,
+    originalError: error
+  });
 }
 
-// Note: LLM error utilities are imported in the main index.ts file to avoid circular dependencies 
+// Note: LLM error utilities are imported in the main index.ts file to avoid circular dependencies

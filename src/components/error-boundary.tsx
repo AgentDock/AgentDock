@@ -1,9 +1,10 @@
-"use client";
+'use client';
 
-import { Component, ErrorInfo, ReactNode } from "react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { AlertCircle, RefreshCw, Home } from "lucide-react";
+import { Component, ErrorInfo, ReactNode } from 'react';
+import { AlertCircle, Home, RefreshCw } from 'lucide-react';
+
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 
 interface Props {
   children: ReactNode;
@@ -52,24 +53,24 @@ export class ErrorBoundary extends Component<Props, State> {
   };
 
   private getErrorMessage(error: Error | null): string {
-    if (!error) return "An unexpected error occurred";
+    if (!error) return 'An unexpected error occurred';
 
     // Handle known error types
     if (error.name === 'SecurityError') {
-      return "A security error occurred. Please check your permissions.";
+      return 'A security error occurred. Please check your permissions.';
     }
     if (error.name === 'NetworkError') {
-      return "A network error occurred. Please check your connection.";
+      return 'A network error occurred. Please check your connection.';
     }
     if (error.name === 'ValidationError') {
-      return "Invalid data provided. Please check your input.";
+      return 'Invalid data provided. Please check your input.';
     }
     if (error.name === 'StorageError') {
-      return "Failed to access storage. Please check your browser settings.";
+      return 'Failed to access storage. Please check your browser settings.';
     }
 
     // Return the actual error message if available
-    return error.message || "An unexpected error occurred";
+    return error.message || 'An unexpected error occurred';
   }
 
   private ErrorFallback = () => {
@@ -78,17 +79,21 @@ export class ErrorBoundary extends Component<Props, State> {
     const isStorageError = this.state.error?.name === 'StorageError';
 
     return (
-      <Alert variant="destructive" className="my-4">
+      <Alert
+        variant="destructive"
+        className="my-4"
+      >
         <AlertCircle className="h-4 w-4" />
         <AlertTitle>Something went wrong</AlertTitle>
         <AlertDescription className="mt-2 flex flex-col gap-4">
           <p className="text-sm">{errorMessage}</p>
-          
+
           {/* Show technical details in development */}
           {process.env.NODE_ENV === 'development' && this.state.errorInfo && (
             <pre className="text-xs bg-muted p-2 rounded-md overflow-auto">
               <code>
-                {this.state.error?.stack}\n\nComponent Stack:\n{this.state.errorInfo.componentStack}
+                {this.state.error?.stack}\n\nComponent Stack:\n
+                {this.state.errorInfo.componentStack}
               </code>
             </pre>
           )}
@@ -107,7 +112,7 @@ export class ErrorBoundary extends Component<Props, State> {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => window.location.href = '/'}
+                onClick={() => (window.location.href = '/')}
               >
                 <Home className="mr-2 h-4 w-4" />
                 Back to home
@@ -140,4 +145,4 @@ export class ErrorBoundary extends Component<Props, State> {
 
     return this.props.children;
   }
-} 
+}

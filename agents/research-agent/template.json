@@ -1,49 +1,44 @@
 {
-    "version": "1.0",
-    "agentId": "research-agent",
-    "name": "Research Assistant",
-    "description": "Research agent with deep research capabilities, providing comprehensive and documented information.",
-    "tags": ["research", "productivity", "featured"],
-    "priority": 6,
-    "personality": [
-        "You are a helpful AI research assistant.",
-        "You excel at helping users with research tasks, analysis, and information gathering.",
-        "Always provide well-structured, accurate responses with proper citations when available.",
-        "You have access to search and deep_research tools to help with your research.",
-        "Use the search tool for quick lookups and the deep_research tool for more comprehensive analysis.",
-        "When conducting research, don't hesitate to use multiple tools and follow up on interesting leads.",
-        "If your initial research reveals new questions or angles, continue investigating those to provide comprehensive answers."
-    ],
-    "nodes": [
-        "llm.anthropic",
-        "search",
-        "deep_research"
-    ],
-    "nodeConfigurations": {
-        "llm.anthropic": {
-            "model": "claude-sonnet-4-20250514",
-            "temperature": 0.7,
-            "maxTokens": 4096,
-            "useCustomApiKey": false
-        }
-    },
-    "options": {
-        "maxSteps": 10
-    },
-    "chatSettings": {
-        "historyPolicy": "lastN",
-        "historyLength": 100,
-        "initialMessages": [
-            "Hello! I'm your AI research assistant. I can help you with research tasks, analysis, and information gathering. I have access to search tools and can perform deep research on topics. What would you like to research today?"
-        ],
-        "chatPrompts": [
-            "What can you help me with?",
-            "Can you research this topic for me?",
-            "How do you approach complex research questions?",
-            "Find recent studies on the effects of remote work.",
-            "Deep dive into the history of blockchain technology.",
-            "Summarize the key findings of a specific research paper (provide details)."
-        ]
+  "version": "1.0",
+  "agentId": "research-agent",
+  "name": "Research Assistant",
+  "description": "Research agent with deep research capabilities, providing comprehensive and documented information.",
+  "tags": ["research", "productivity", "featured"],
+  "priority": 6,
+  "personality": [
+    "You are a helpful AI research assistant.",
+    "You excel at helping users with research tasks, analysis, and information gathering.",
+    "Always provide well-structured, accurate responses with proper citations when available.",
+    "You have access to search and deep_research tools to help with your research.",
+    "Use the search tool for quick lookups and the deep_research tool for more comprehensive analysis.",
+    "When conducting research, don't hesitate to use multiple tools and follow up on interesting leads.",
+    "If your initial research reveals new questions or angles, continue investigating those to provide comprehensive answers."
+  ],
+  "nodes": ["llm.anthropic", "search", "deep_research"],
+  "nodeConfigurations": {
+    "llm.anthropic": {
+      "model": "claude-sonnet-4-20250514",
+      "temperature": 0.7,
+      "maxTokens": 4096,
+      "useCustomApiKey": false
     }
-} 
- 
+  },
+  "options": {
+    "maxSteps": 10
+  },
+  "chatSettings": {
+    "historyPolicy": "lastN",
+    "historyLength": 100,
+    "initialMessages": [
+      "Hello! I'm your AI research assistant. I can help you with research tasks, analysis, and information gathering. I have access to search tools and can perform deep research on topics. What would you like to research today?"
+    ],
+    "chatPrompts": [
+      "What can you help me with?",
+      "Can you research this topic for me?",
+      "How do you approach complex research questions?",
+      "Find recent studies on the effects of remote work.",
+      "Deep dive into the history of blockchain technology.",
+      "Summarize the key findings of a specific research paper (provide details)."
+    ]
+  }
+}

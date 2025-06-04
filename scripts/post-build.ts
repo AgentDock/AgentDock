@@ -1,6 +1,6 @@
-import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
-import { logger, LogCategory } from 'agentdock-core';
+import { LogCategory, logger } from 'agentdock-core';
 
 interface AppPathsManifest {
   [key: string]: string;
@@ -32,8 +32,14 @@ interface RoutesManifest {
 
 async function generateRoutesManifest() {
   try {
-    const appManifestPath = join(process.cwd(), '.next/server/app-paths-manifest.json');
-    const pagesManifestPath = join(process.cwd(), '.next/server/pages-manifest.json');
+    const appManifestPath = join(
+      process.cwd(),
+      '.next/server/app-paths-manifest.json'
+    );
+    const pagesManifestPath = join(
+      process.cwd(),
+      '.next/server/pages-manifest.json'
+    );
     const outputPath = join(process.cwd(), '.next/routes-manifest.json');
 
     // Check if manifests exist
@@ -42,8 +48,12 @@ async function generateRoutesManifest() {
     }
 
     // Read manifests
-    const appManifest: AppPathsManifest = JSON.parse(readFileSync(appManifestPath, 'utf8'));
-    const pagesManifest: PagesManifest = JSON.parse(readFileSync(pagesManifestPath, 'utf8'));
+    const appManifest: AppPathsManifest = JSON.parse(
+      readFileSync(appManifestPath, 'utf8')
+    );
+    const pagesManifest: PagesManifest = JSON.parse(
+      readFileSync(pagesManifestPath, 'utf8')
+    );
 
     // Create routes manifest structure
     const routesManifest: RoutesManifest = {
@@ -114,4 +124,4 @@ async function generateRoutesManifest() {
   }
 }
 
-generateRoutesManifest(); 
+generateRoutesManifest();

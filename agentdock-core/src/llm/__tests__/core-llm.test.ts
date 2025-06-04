@@ -1,12 +1,16 @@
 import { CoreLLM, createLLM } from '..';
+import {
+  createAnthropicModel,
+  createGeminiModel,
+  createOpenAIModel
+} from '../model-utils';
 import { LLMConfig } from '../types';
-import { createAnthropicModel, createGeminiModel, createOpenAIModel } from '../model-utils';
 
 // Mock the model creation functions
 jest.mock('../model-utils', () => ({
   createAnthropicModel: jest.fn(),
   createOpenAIModel: jest.fn(),
-  createGeminiModel: jest.fn(),
+  createGeminiModel: jest.fn()
 }));
 
 // Mock the AI SDK functions
@@ -14,7 +18,7 @@ jest.mock('ai', () => ({
   generateText: jest.fn(),
   streamText: jest.fn(),
   generateObject: jest.fn(),
-  streamObject: jest.fn(),
+  streamObject: jest.fn()
 }));
 
 describe('CoreLLM', () => {
@@ -28,7 +32,7 @@ describe('CoreLLM', () => {
       // Mock implementation
       const mockModel = {
         provider: 'openai',
-        modelId: 'gpt-3.5-turbo',
+        modelId: 'gpt-3.5-turbo'
       };
       (createOpenAIModel as jest.Mock).mockReturnValue(mockModel);
 
@@ -36,7 +40,7 @@ describe('CoreLLM', () => {
       const config: LLMConfig = {
         provider: 'openai',
         model: 'gpt-3.5-turbo',
-        apiKey: 'test-key',
+        apiKey: 'test-key'
       };
 
       // Create the LLM
@@ -53,7 +57,7 @@ describe('CoreLLM', () => {
       // Mock implementation
       const mockModel = {
         provider: 'anthropic',
-        modelId: 'claude-3-haiku-20240307',
+        modelId: 'claude-3-haiku-20240307'
       };
       (createAnthropicModel as jest.Mock).mockReturnValue(mockModel);
 
@@ -61,7 +65,7 @@ describe('CoreLLM', () => {
       const config: LLMConfig = {
         provider: 'anthropic',
         model: 'claude-3-haiku-20240307',
-        apiKey: 'sk-ant-test-key',
+        apiKey: 'sk-ant-test-key'
       };
 
       // Create the LLM
@@ -78,7 +82,7 @@ describe('CoreLLM', () => {
       // Mock implementation
       const mockModel = {
         provider: 'google',
-        modelId: 'gemini-1.5-pro-latest',
+        modelId: 'gemini-1.5-pro-latest'
       };
       (createGeminiModel as jest.Mock).mockReturnValue(mockModel);
 
@@ -87,7 +91,7 @@ describe('CoreLLM', () => {
         provider: 'gemini',
         model: 'gemini-1.5-pro-latest',
         apiKey: 'test-key',
-        useSearchGrounding: false,
+        useSearchGrounding: false
       };
 
       // Create the LLM
@@ -104,7 +108,7 @@ describe('CoreLLM', () => {
       // Mock implementation
       const mockModel = {
         provider: 'google',
-        modelId: 'gemini-1.5-pro-latest',
+        modelId: 'gemini-1.5-pro-latest'
       };
       (createGeminiModel as jest.Mock).mockReturnValue(mockModel);
 
@@ -113,7 +117,7 @@ describe('CoreLLM', () => {
         provider: 'gemini',
         model: 'gemini-1.5-pro-latest',
         apiKey: 'test-key',
-        useSearchGrounding: true,
+        useSearchGrounding: true
       };
 
       // Create the LLM
@@ -131,11 +135,13 @@ describe('CoreLLM', () => {
       const config = {
         provider: 'unsupported' as any,
         model: 'model',
-        apiKey: 'test-key',
+        apiKey: 'test-key'
       };
 
       // Verify that it throws an error
-      expect(() => createLLM(config)).toThrow('Unsupported provider: unsupported');
+      expect(() => createLLM(config)).toThrow(
+        'Unsupported provider: unsupported'
+      );
     });
   });
 
@@ -143,7 +149,7 @@ describe('CoreLLM', () => {
     let llm: CoreLLM;
     const mockModel = {
       provider: 'openai',
-      modelId: 'gpt-3.5-turbo',
+      modelId: 'gpt-3.5-turbo'
     };
 
     beforeEach(() => {
@@ -151,7 +157,7 @@ describe('CoreLLM', () => {
       const config: LLMConfig = {
         provider: 'openai',
         model: 'gpt-3.5-turbo',
-        apiKey: 'test-key',
+        apiKey: 'test-key'
       };
       llm = createLLM(config);
     });
@@ -172,4 +178,4 @@ describe('CoreLLM', () => {
       expect(llm.getLastTokenUsage()).toBeNull();
     });
   });
-}); 
+});

@@ -10,9 +10,7 @@
     "When appropriate, use examples to illustrate your points.",
     "Always be respectful and considerate in your responses."
   ],
-  "nodes": [
-    "llm.deepseek"
-  ],
+  "nodes": ["llm.deepseek"],
   "nodeConfigurations": {
     "llm.deepseek": {
       "model": "deepseek-chat",
@@ -40,4 +38,4 @@
     "maxSteps": 5
   },
   "notes": "DeepSeek API is compatible with OpenAI's format. This agent uses the OpenAI client with DeepSeek's API endpoint."
-} 
+}

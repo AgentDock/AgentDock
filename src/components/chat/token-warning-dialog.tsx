@@ -1,12 +1,12 @@
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+  DialogTitle
+} from '@/components/ui/dialog';
 
 // Export the type so it can be imported
 export interface TokenWarning {
@@ -20,18 +20,24 @@ interface TokenWarningDialogProps {
   tokenWarning: TokenWarning | null;
 }
 
-export function TokenWarningDialog({ 
-  isOpen, 
-  onOpenChange, 
-  tokenWarning 
+export function TokenWarningDialog({
+  isOpen,
+  onOpenChange,
+  tokenWarning
 }: TokenWarningDialogProps) {
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={onOpenChange}
+    >
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{tokenWarning?.title || 'Token Usage Warning'}</DialogTitle>
+          <DialogTitle>
+            {tokenWarning?.title || 'Token Usage Warning'}
+          </DialogTitle>
           <DialogDescription>
-            Important notice regarding the token consumption for this chat session.
+            Important notice regarding the token consumption for this chat
+            session.
           </DialogDescription>
         </DialogHeader>
         {/* Render structured warning if available */}

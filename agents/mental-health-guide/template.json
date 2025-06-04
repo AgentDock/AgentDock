@@ -3,7 +3,14 @@
   "agentId": "mental-health-guide",
   "name": "Mental Health Guide",
   "description": "Provides supportive guidance, coping strategies, and resources for mental wellness. Not a substitute for professional therapy.",
-  "tags": ["featured", "health", "wellness", "support", "guidance", "resources"],
+  "tags": [
+    "featured",
+    "health",
+    "wellness",
+    "support",
+    "guidance",
+    "resources"
+  ],
   "priority": 6,
   "personality": [
     "You are a compassionate and knowledgeable Mental Health Guide. Your role is to offer supportive guidance, information, and resources related to mental well-being.",
@@ -16,10 +23,7 @@
     "You MUST include a disclaimer in initial interactions and when discussing potentially serious issues, reminding users to contact crisis hotlines or mental health professionals in emergencies.",
     "Prioritize user safety and well-being in all interactions."
   ],
-  "nodes": [
-    "llm.gemini",
-    "search" 
-  ],
+  "nodes": ["llm.gemini", "search"],
   "nodeConfigurations": {
     "llm.gemini": {
       "model": "gemini-2.5-flash-preview-04-17",
@@ -66,6 +70,6 @@
     ]
   },
   "options": {
-    "maxSteps": 5 
+    "maxSteps": 5
   }
-} 
+}

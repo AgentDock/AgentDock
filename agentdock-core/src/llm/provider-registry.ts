@@ -3,12 +3,12 @@
  * Provides a centralized registry for provider metadata.
  */
 
+import { LogCategory, logger } from '../logging';
 import { LLMProvider, ProviderMetadata } from './types';
-import { logger, LogCategory } from '../logging';
 
 // Default provider metadata
 const DEFAULT_PROVIDERS: Record<LLMProvider, ProviderMetadata> = {
-  'anthropic': {
+  anthropic: {
     id: 'anthropic',
     displayName: 'Anthropic',
     description: 'Claude models by Anthropic',
@@ -19,18 +19,19 @@ const DEFAULT_PROVIDERS: Record<LLMProvider, ProviderMetadata> = {
       // Currently no special configurations needed
     }
   },
-  'openai': {
+  openai: {
     id: 'openai',
     displayName: 'OpenAI',
     description: 'GPT models by OpenAI',
     defaultModel: 'gpt-4',
-    validateApiKey: (key: string) => key.startsWith('sk-') && !key.startsWith('sk-ant-'),
+    validateApiKey: (key: string) =>
+      key.startsWith('sk-') && !key.startsWith('sk-ant-'),
     applyConfig: (baseConfig, modelConfig, options) => {
       // Apply OpenAI-specific configurations
       // Currently no special configurations needed
     }
   },
-  'gemini': {
+  gemini: {
     id: 'gemini',
     displayName: 'Google Gemini',
     description: 'Gemini models by Google',
@@ -38,48 +39,54 @@ const DEFAULT_PROVIDERS: Record<LLMProvider, ProviderMetadata> = {
     validateApiKey: (key: string) => key.length > 0, // Google API keys don't have a specific format to validate
     applyConfig: (baseConfig, modelConfig, options) => {
       // Apply Gemini-specific configurations
-      
+
       // First check options (highest priority)
       if (options) {
         // Add search grounding if specified in options
         if (options.useSearchGrounding !== undefined) {
           baseConfig.useSearchGrounding = options.useSearchGrounding;
         }
-        
+
         // Add safety settings if specified in options
         if (options.safetySettings) {
           baseConfig.safetySettings = options.safetySettings;
         }
-        
+
         // Add dynamic retrieval config if specified in options
         if (options.dynamicRetrievalConfig) {
           baseConfig.dynamicRetrievalConfig = options.dynamicRetrievalConfig;
         }
       }
-      
+
       // Then check model config (lower priority, only if not already set)
       // Add search grounding if enabled and not already set
-      if (modelConfig?.useSearchGrounding !== undefined && baseConfig.useSearchGrounding === undefined) {
+      if (
+        modelConfig?.useSearchGrounding !== undefined &&
+        baseConfig.useSearchGrounding === undefined
+      ) {
         baseConfig.useSearchGrounding = modelConfig.useSearchGrounding;
       }
-      
+
       // Add dynamic retrieval config if provided and not already set
-      if (modelConfig?.dynamicRetrievalConfig && !baseConfig.dynamicRetrievalConfig) {
+      if (
+        modelConfig?.dynamicRetrievalConfig &&
+        !baseConfig.dynamicRetrievalConfig
+      ) {
         baseConfig.dynamicRetrievalConfig = modelConfig.dynamicRetrievalConfig;
       }
-      
+
       // Add safety settings if provided and not already set
       if (modelConfig?.safetySettings && !baseConfig.safetySettings) {
         baseConfig.safetySettings = modelConfig.safetySettings;
       }
-      
+
       // Default to true for search grounding if not specified anywhere
       if (baseConfig.useSearchGrounding === undefined) {
         baseConfig.useSearchGrounding = true;
       }
     }
   },
-  'deepseek': {
+  deepseek: {
     id: 'deepseek',
     displayName: 'DeepSeek',
     description: 'DeepSeek models including DeepSeek-V3 and DeepSeek-R1',
@@ -87,32 +94,33 @@ const DEFAULT_PROVIDERS: Record<LLMProvider, ProviderMetadata> = {
     validateApiKey: (key: string) => key.length > 0, // DeepSeek API keys don't have a specific format to validate
     applyConfig: (baseConfig, modelConfig, options) => {
       // Apply DeepSeek-specific configurations
-      
+
       // Add safety settings if provided in options
       if (options?.safetySettings) {
         baseConfig.safetySettings = options.safetySettings;
       }
-      
+
       // Add safety settings from model config if not already set
       if (modelConfig?.safetySettings && !baseConfig.safetySettings) {
         baseConfig.safetySettings = modelConfig.safetySettings;
       }
-      
+
       // Add reasoning extraction if enabled
       if (modelConfig?.extractReasoning !== undefined) {
         baseConfig.extractReasoning = modelConfig.extractReasoning;
       }
     }
   },
-  'groq': {
+  groq: {
     id: 'groq',
     displayName: 'Groq',
-    description: 'Groq API for ultra-fast LLM inference with models like Llama 3',
+    description:
+      'Groq API for ultra-fast LLM inference with models like Llama 3',
     defaultModel: 'llama-3.1-8b-instant',
     validateApiKey: (key: string) => key.startsWith('gsk_') || key.length > 25, // Groq API keys start with gsk_
     applyConfig: (baseConfig, modelConfig, options) => {
       // Apply Groq-specific configurations
-      
+
       // Add reasoning extraction if enabled
       if (modelConfig?.extractReasoning !== undefined) {
         baseConfig.extractReasoning = modelConfig.extractReasoning;
@@ -141,7 +149,11 @@ export class ProviderRegistry {
    * This allows applications to override default provider metadata
    */
   static registerProvider(provider: ProviderMetadata): void {
-    logger.debug(LogCategory.LLM, 'ProviderRegistry', `Registering provider: ${provider.id}`);
+    logger.debug(
+      LogCategory.LLM,
+      'ProviderRegistry',
+      `Registering provider: ${provider.id}`
+    );
     this.providers.set(provider.id, provider);
   }
 
@@ -222,9 +234,13 @@ export class ProviderRegistry {
   static validateApiKey(provider: LLMProvider, apiKey: string): boolean {
     const providerMetadata = this.getProvider(provider);
     if (!providerMetadata) {
-      logger.warn(LogCategory.LLM, 'ProviderRegistry', `Provider not found: ${provider}`);
+      logger.warn(
+        LogCategory.LLM,
+        'ProviderRegistry',
+        `Provider not found: ${provider}`
+      );
       return false;
     }
     return providerMetadata.validateApiKey(apiKey);
   }
-} 
+}

@@ -3,11 +3,7 @@
   "agentId": "orchestrated-agent",
   "name": "Orchestrated Agent Example",
   "description": "An example agent that uses a sub-definition to switch between different tools and models.",
-  "tags": [
-    "technical",
-    "productivity",
-    "examples"
-  ],
+  "tags": ["technical", "productivity", "examples"],
   "personality": [
     "You are a helpful virtual assistant that specializes in various tasks.",
     "You communicate clearly and concisely.",
@@ -87,7 +83,16 @@
       }
     ]
   },
-  "nodes": ["llm.anthropic", "search", "think", "reflect", "brainstorm", "compare", "critique", "debate"],
+  "nodes": [
+    "llm.anthropic",
+    "search",
+    "think",
+    "reflect",
+    "brainstorm",
+    "compare",
+    "critique",
+    "debate"
+  ],
   "nodeConfigurations": {
     "llm.anthropic": {
       "model": "claude-sonnet-4-20250514",
@@ -118,4 +123,4 @@
       "maxToolOutputTokens": 500
     }
   }
-} 
+}

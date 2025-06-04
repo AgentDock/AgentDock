@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { LLMProvider, logger, LogCategory } from 'agentdock-core';
+import { LLMProvider, LogCategory, logger } from 'agentdock-core';
+
 import { ModelService } from '@/lib/services/model-service';
 
 // Do NOT use edge runtime for this route
@@ -14,13 +15,21 @@ export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url);
     const provider = url.searchParams.get('provider') as LLMProvider | null;
-    
-    if (!provider || (provider !== 'anthropic' && provider !== 'openai' && provider !== 'gemini' && provider !== 'deepseek' && provider !== 'groq')) {
+
+    if (
+      !provider ||
+      (provider !== 'anthropic' &&
+        provider !== 'openai' &&
+        provider !== 'gemini' &&
+        provider !== 'deepseek' &&
+        provider !== 'groq')
+    ) {
       return new NextResponse(
-        JSON.stringify({ 
-          error: 'Invalid provider. Must be "anthropic", "openai", "gemini", "deepseek", or "groq".' 
-        }), 
-        { 
+        JSON.stringify({
+          error:
+            'Invalid provider. Must be "anthropic", "openai", "gemini", "deepseek", or "groq".'
+        }),
+        {
           status: 400,
           headers: {
             'Content-Type': 'application/json',
@@ -29,13 +38,17 @@ export async function GET(req: NextRequest) {
         }
       );
     }
-    
+
     // Get models directly from the registry - no fetching
     const models = ModelService.getModels(provider);
-    logger.debug(LogCategory.API, '[ModelsAPI]', `Provider: ${provider}, Models: ${models.length}`);
-    
+    logger.debug(
+      LogCategory.API,
+      '[ModelsAPI]',
+      `Provider: ${provider}, Models: ${models.length}`
+    );
+
     return new NextResponse(
-      JSON.stringify({ 
+      JSON.stringify({
         provider,
         count: models.length,
         models
@@ -49,13 +62,13 @@ export async function GET(req: NextRequest) {
       }
     );
   } catch (error) {
-    logger.error(LogCategory.API, '[ModelsAPI]', 'Error getting models:', { 
+    logger.error(LogCategory.API, '[ModelsAPI]', 'Error getting models:', {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined
     });
-    
+
     return new NextResponse(
-      JSON.stringify({ 
+      JSON.stringify({
         error: 'Failed to get models',
         message: error instanceof Error ? error.message : 'Unknown error'
       }),
@@ -68,4 +81,4 @@ export async function GET(req: NextRequest) {
       }
     );
   }
-} 
+}

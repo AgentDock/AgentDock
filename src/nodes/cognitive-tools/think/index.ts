@@ -3,18 +3,27 @@
  * This tool helps agents think through complex problems using structured analysis.
  */
 
+import { LogCategory, logger } from 'agentdock-core';
 import { z } from 'zod';
+
+import { createToolResult, ToolResult } from '@/lib/utils/markdown-utils';
 import { Tool, ToolExecutionOptions } from '../../types';
-import { logger, LogCategory } from 'agentdock-core';
 import { ThinkComponent } from './components';
-import { ToolResult, createToolResult } from '@/lib/utils/markdown-utils';
 
 /**
  * Think tool schema - Defined locally
  */
 export const thinkSchema = z.object({
-  adTopic: z.string().min(1, "Topic must not be empty").describe("The main topic being analyzed."),
-  reasoning: z.string().min(1, "Reasoning content must be provided.").describe("The pre-generated structured reasoning content in Markdown format.")
+  adTopic: z
+    .string()
+    .min(1, 'Topic must not be empty')
+    .describe('The main topic being analyzed.'),
+  reasoning: z
+    .string()
+    .min(1, 'Reasoning content must be provided.')
+    .describe(
+      'The pre-generated structured reasoning content in Markdown format.'
+    )
 });
 
 /**
@@ -44,8 +53,8 @@ The tool will generate comprehensive, structured reasoning on any topic provided
  * Default Think parameters
  */
 export const defaultThinkParams: ThinkParams = {
-  adTopic: "",
-  reasoning: ""
+  adTopic: '',
+  reasoning: ''
 };
 
 /**
@@ -54,7 +63,7 @@ export const defaultThinkParams: ThinkParams = {
 function safelyHandleError(error: unknown, topic: string): ToolResult {
   // Ensure error is properly converted to string in all cases
   let errorMessage: string;
-  
+
   if (error instanceof Error) {
     errorMessage = error.message;
   } else if (typeof error === 'string') {
@@ -70,9 +79,11 @@ function safelyHandleError(error: unknown, topic: string): ToolResult {
       errorMessage = 'Error: Could not format error details';
     }
   }
-  
-  logger.error(LogCategory.NODE, '[Think]', 'Execution error:', { error: errorMessage });
-  
+
+  logger.error(LogCategory.NODE, '[Think]', 'Execution error:', {
+    error: errorMessage
+  });
+
   // Return a simple, plain Markdown error string using createToolResult
   const title = `## 🧠 Thinking about: ${topic}`;
   const errorContent = `Error: ${errorMessage}`;
@@ -86,38 +97,62 @@ export const thinkTool: Tool = {
   name: 'think',
   description: thinkToolDescription,
   parameters: thinkSchema,
-  execute: async (params: ThinkParams, options: ToolExecutionOptions): Promise<ToolResult> => {
+  execute: async (
+    params: ThinkParams,
+    options: ToolExecutionOptions
+  ): Promise<ToolResult> => {
     try {
       // Validate parameters using the schema
       const validation = thinkSchema.safeParse(params);
       if (!validation.success) {
-        const errorMessage = validation.error.errors.map(e => `${e.path.join('.')} - ${e.message}`).join(', ');
-        logger.warn(LogCategory.NODE, '[Think]', 'Invalid parameters received', { errors: errorMessage });
+        const errorMessage = validation.error.errors
+          .map((e) => `${e.path.join('.')} - ${e.message}`)
+          .join(', ');
+        logger.warn(
+          LogCategory.NODE,
+          '[Think]',
+          'Invalid parameters received',
+          { errors: errorMessage }
+        );
         // Use the simplified safelyHandleError
-        return safelyHandleError(`Invalid parameters: ${errorMessage}`, params.adTopic || 'Unknown Topic');
+        return safelyHandleError(
+          `Invalid parameters: ${errorMessage}`,
+          params.adTopic || 'Unknown Topic'
+        );
       }
-      
+
       const { adTopic, reasoning } = validation.data; // Use validated data
-      
-      logger.debug(LogCategory.NODE, '[Think]', `Formatting reasoning for: "${adTopic}"`, {
-        toolCallId: options.toolCallId,
-        reasoningLength: reasoning.length,
-        timestamp: new Date().toISOString()
-      });
-      
+
+      logger.debug(
+        LogCategory.NODE,
+        '[Think]',
+        `Formatting reasoning for: "${adTopic}"`,
+        {
+          toolCallId: options.toolCallId,
+          reasoningLength: reasoning.length,
+          timestamp: new Date().toISOString()
+        }
+      );
+
       // Call the component function ONLY for successful formatting
       const result = ThinkComponent({ topic: adTopic, reasoning });
-      
-      logger.debug(LogCategory.NODE, '[Think]', 'Returning formatted reasoning via ThinkComponent', {
-        topic: adTopic,
-        reasoningLength: reasoning.length,
-        timestamp: new Date().toISOString()
-      });
-      
+
+      logger.debug(
+        LogCategory.NODE,
+        '[Think]',
+        'Returning formatted reasoning via ThinkComponent',
+        {
+          topic: adTopic,
+          reasoningLength: reasoning.length,
+          timestamp: new Date().toISOString()
+        }
+      );
+
       return result;
     } catch (error) {
       // Ensure adTopic is passed even if params might be malformed before validation
-      const topic = typeof params?.adTopic === 'string' ? params.adTopic : 'Unknown Topic';
+      const topic =
+        typeof params?.adTopic === 'string' ? params.adTopic : 'Unknown Topic';
       // Use the simplified safelyHandleError
       return safelyHandleError(error, topic);
     }
@@ -129,4 +164,4 @@ export const thinkTool: Tool = {
  */
 export const tools = {
   think: thinkTool
-}; 
+};

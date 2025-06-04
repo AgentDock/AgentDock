@@ -1,16 +1,16 @@
 /**
  * Cognitive Tools Index
- * 
+ *
  * This file exports all cognitive enhancement tools that improve LLM reasoning
  * without requiring external API calls or retrieving external data.
  */
 
-import { tools as thinkTools } from './think';
-import { tools as reflectTools } from './reflect';
+import { tools as brainstormTools } from './brainstorm';
 import { tools as compareTools } from './compare';
 import { tools as critiqueTools } from './critique';
 import { tools as debateTools } from './debate';
-import { tools as brainstormTools } from './brainstorm';
+import { tools as reflectTools } from './reflect';
+import { tools as thinkTools } from './think';
 
 /**
  * Export tools directly for the registry
@@ -23,4 +23,4 @@ export const tools = {
   ...critiqueTools,
   ...debateTools,
   ...brainstormTools
-}; 
+};

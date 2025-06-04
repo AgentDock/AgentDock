@@ -45,4 +45,4 @@ export class Redis {
   }
 }
 
-export default Redis; 
+export default Redis;

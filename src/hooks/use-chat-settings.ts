@@ -1,12 +1,14 @@
-import { useState, useEffect } from 'react';
-import { logger, LogCategory, ProviderRegistry } from 'agentdock-core';
+import { useEffect, useState } from 'react';
+import { LogCategory, logger, ProviderRegistry } from 'agentdock-core';
+
 import { SecureStorage } from 'agentdock-core/storage/secure-storage';
-import { templates, TemplateId } from '@/generated/templates';
-import type { GlobalSettings } from '@/lib/types/settings';
 import type { ValidatedPersonality } from 'agentdock-core/types/agent-config';
 import { PersonalitySchema } from 'agentdock-core/types/agent-config';
-import type { ChatUISettings, LLMProvider } from '@/lib/types/chat';
+
+import { TemplateId, templates } from '@/generated/templates';
 import { ModelRegistry } from '@/lib/models/registry';
+import type { ChatUISettings, LLMProvider } from '@/lib/types/chat';
+import type { GlobalSettings } from '@/lib/types/settings';
 
 // Create a single instance for storage
 const storage = SecureStorage.getInstance('agentdock');
@@ -24,7 +26,7 @@ export function useChatSettings(agentId: string | null) {
   useEffect(() => {
     const loadSettings = async () => {
       if (!agentId) return;
-      
+
       try {
         setIsLoading(true);
         setError(null);
@@ -36,16 +38,19 @@ export function useChatSettings(agentId: string | null) {
         }
 
         // Determine provider from template nodes using the core registry
-        const provider = ProviderRegistry.getProviderFromNodes((template.nodes || []).slice());
+        const provider = ProviderRegistry.getProviderFromNodes(
+          (template.nodes || []).slice()
+        );
         const providerMetadata = ProviderRegistry.getProvider(provider);
         if (!providerMetadata) {
           throw new Error(`Provider not found: ${provider}`);
         }
 
         // Load global settings for API key
-        const globalSettings = await storage.get<GlobalSettings>('global_settings');
+        const globalSettings =
+          await storage.get<GlobalSettings>('global_settings');
         const apiKeys = globalSettings?.apiKeys || {};
-        
+
         // Skip API key validation - server will handle env vars if needed
         // if (!apiKeys[provider as keyof typeof apiKeys]) {
         //   throw new Error(`Please add your ${providerMetadata.displayName} API key in settings to use the chat`);
@@ -56,10 +61,10 @@ export function useChatSettings(agentId: string | null) {
         const nodeConfigs = template.nodeConfigurations as Record<string, any>;
         const modelConfig = nodeConfigs[nodeType] ?? {};
         const modelId = modelConfig.model || providerMetadata.defaultModel;
-        
+
         // Get model metadata from application registry
         const modelMetadata = ModelRegistry.getModel(modelId);
-        
+
         // Use model metadata for defaults if available
         const defaultTemperature = modelMetadata?.defaultTemperature || 0.7;
         const defaultMaxTokens = modelMetadata?.defaultMaxTokens || 2048;
@@ -78,9 +83,9 @@ export function useChatSettings(agentId: string | null) {
         });
 
         setDebugMode(globalSettings?.core?.debugMode || false);
-
       } catch (error) {
-        const message = error instanceof Error ? error.message : 'Failed to load settings';
+        const message =
+          error instanceof Error ? error.message : 'Failed to load settings';
         setError(message);
         logger.error(LogCategory.SYSTEM, 'useChatSettings', message, { error });
       } finally {

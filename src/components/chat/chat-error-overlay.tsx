@@ -1,9 +1,9 @@
-"use client"
+'use client';
 
-import * as React from "react"
-import { useRouter } from "next/navigation"
-import { APIError, ErrorCode, logger, LogCategory } from 'agentdock-core'
-import { AlertCircle } from "lucide-react"
+import * as React from 'react';
+import { useRouter } from 'next/navigation';
+import { APIError, ErrorCode, LogCategory, logger } from 'agentdock-core';
+import { AlertCircle } from 'lucide-react';
 
 import {
   AlertDialog,
@@ -12,10 +12,9 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-
-import { Button } from "@/components/ui/button"
+  AlertDialogTitle
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
 
 // Define interface for errors with code property
 interface ExtendedError extends Error {
@@ -23,11 +22,11 @@ interface ExtendedError extends Error {
 }
 
 interface ChatErrorOverlayProps {
-  error: Error
-  onRetry: () => void
-  onDismiss?: () => void
-  open: boolean
-  agentId?: string
+  error: Error;
+  onRetry: () => void;
+  onDismiss?: () => void;
+  open: boolean;
+  agentId?: string;
 }
 
 // Error categories for more consistent handling
@@ -47,37 +46,44 @@ interface ErrorConfig {
   actions: 'settings' | 'retry' | 'default';
 }
 
-export function ChatErrorOverlay({ error, onRetry, onDismiss, open, agentId }: ChatErrorOverlayProps) {
-  const router = useRouter()
+export function ChatErrorOverlay({
+  error,
+  onRetry,
+  onDismiss,
+  open,
+  agentId
+}: ChatErrorOverlayProps) {
+  const router = useRouter();
   const extendedError = error as ExtendedError;
 
   // Log error when overlay opens
   React.useEffect(() => {
     if (open) {
-      logger.error(
-        LogCategory.API,
-        'ChatContainer',
-        'Chat error occurred',
-        { 
-          error: error.message,
-          errorCode: extendedError.code
-        }
-      )
+      logger.error(LogCategory.API, 'ChatContainer', 'Chat error occurred', {
+        error: error.message,
+        errorCode: extendedError.code
+      });
     }
-  }, [error, extendedError.code, open])
+  }, [error, extendedError.code, open]);
 
   // Get error configuration based on type
   const errorCategory = getErrorCategory(error, extendedError.code);
   const errorConfig = getErrorConfig(errorCategory, error);
-  
+
   if (!open) return null;
-  
+
   return (
-    <AlertDialog open={open} onOpenChange={onDismiss ? () => onDismiss() : undefined}>
+    <AlertDialog
+      open={open}
+      onOpenChange={onDismiss ? () => onDismiss() : undefined}
+    >
       <AlertDialogContent className="sm:max-w-md">
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2 text-destructive">
-            <AlertCircle className="h-5 w-5" aria-hidden="true" />
+            <AlertCircle
+              className="h-5 w-5"
+              aria-hidden="true"
+            />
             <span>{errorConfig.title}</span>
           </AlertDialogTitle>
           <AlertDialogDescription className="text-sm">
@@ -85,37 +91,42 @@ export function ChatErrorOverlay({ error, onRetry, onDismiss, open, agentId }: C
           </AlertDialogDescription>
           {process.env.NODE_ENV === 'development' && extendedError.code && (
             <p className="text-xs text-muted-foreground mt-2 pt-2 border-t">
-              Error code: <code className="font-mono">{extendedError.code}</code>
+              Error code:{' '}
+              <code className="font-mono">{extendedError.code}</code>
             </p>
           )}
         </AlertDialogHeader>
         <AlertDialogFooter className="flex-col sm:flex-row gap-2">
           {errorConfig.actions === 'settings' ? (
             <>
-              <Button 
+              <Button
                 onClick={() => router.push('/settings')}
                 variant="default"
                 className="w-full sm:w-auto"
               >
                 Go to Settings
               </Button>
-              <AlertDialogCancel className="mt-2 sm:mt-0">Dismiss</AlertDialogCancel>
+              <AlertDialogCancel className="mt-2 sm:mt-0">
+                Dismiss
+              </AlertDialogCancel>
             </>
           ) : (
             <>
-              <Button 
+              <Button
                 onClick={onRetry}
                 className="w-full sm:w-auto"
               >
                 Try Again
               </Button>
-              <AlertDialogCancel className="mt-2 sm:mt-0">Dismiss</AlertDialogCancel>
+              <AlertDialogCancel className="mt-2 sm:mt-0">
+                Dismiss
+              </AlertDialogCancel>
             </>
           )}
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
-  )
+  );
 }
 
 // Consolidated error category detection function
@@ -129,7 +140,7 @@ function getErrorCategory(error: Error, errorCode?: string): ErrorCategory {
   ) {
     return ErrorCategory.Security;
   }
-  
+
   // Rate limit errors
   if (
     (error instanceof APIError && error.code === ErrorCode.LLM_RATE_LIMIT) ||
@@ -138,17 +149,18 @@ function getErrorCategory(error: Error, errorCode?: string): ErrorCategory {
   ) {
     return ErrorCategory.Network;
   }
-  
+
   // Service unavailable errors
   if (
-    (error instanceof APIError && error.code === ErrorCode.SERVICE_UNAVAILABLE) ||
+    (error instanceof APIError &&
+      error.code === ErrorCode.SERVICE_UNAVAILABLE) ||
     errorCode === 'SERVICE_UNAVAILABLE' ||
-    error.message.toLowerCase().includes('service unavailable') || 
+    error.message.toLowerCase().includes('service unavailable') ||
     error.message.toLowerCase().includes('server error')
   ) {
     return ErrorCategory.Network;
   }
-  
+
   // LLM execution errors
   if (
     (error instanceof APIError && error.code === ErrorCode.LLM_EXECUTION) ||
@@ -156,68 +168,77 @@ function getErrorCategory(error: Error, errorCode?: string): ErrorCategory {
   ) {
     return ErrorCategory.LLM;
   }
-  
+
   // Connection errors
   if (
-    error.message.includes('ECONNRESET') || 
+    error.message.includes('ECONNRESET') ||
     error.message.includes('Failed to fetch') ||
     error.message.includes('Network error')
   ) {
     return ErrorCategory.Network;
   }
-  
+
   return ErrorCategory.Unknown;
 }
 
 // Clean error message for display
 function getCleanErrorMessage(error: Error): string {
   let cleanMessage = error.message;
-  
+
   // Remove JSON content
-  if (cleanMessage.includes("{") && cleanMessage.includes("}")) {
+  if (cleanMessage.includes('{') && cleanMessage.includes('}')) {
     const jsonMatch = cleanMessage.match(/"error":"([^"]+)"/);
     if (jsonMatch && jsonMatch[1]) {
       cleanMessage = jsonMatch[1];
     } else {
-      cleanMessage = "An error occurred while processing your request.";
+      cleanMessage = 'An error occurred while processing your request.';
     }
   }
-  
+
   // Remove stack traces
-  if (cleanMessage.includes("at ") && cleanMessage.includes(".js:")) {
-    cleanMessage = cleanMessage.split("\n")[0];
+  if (cleanMessage.includes('at ') && cleanMessage.includes('.js:')) {
+    cleanMessage = cleanMessage.split('\n')[0];
   }
-  
+
   return cleanMessage;
 }
 
 // Get error display configuration
-function getErrorConfig(errorCategory: ErrorCategory, error: Error): ErrorConfig {
+function getErrorConfig(
+  errorCategory: ErrorCategory,
+  error: Error
+): ErrorConfig {
   switch (errorCategory) {
     case ErrorCategory.Security:
       return {
         title: 'API Key Required',
-        message: "This agent requires an API key to function. Please go to the Settings page to configure your API keys, then return to try again.",
+        message:
+          'This agent requires an API key to function. Please go to the Settings page to configure your API keys, then return to try again.',
         actions: 'settings'
       };
     case ErrorCategory.Network:
       if (error.message.toLowerCase().includes('rate limit')) {
         return {
           title: 'Rate Limit Exceeded',
-          message: "You've reached the rate limit for this API. Please wait a moment before trying again.",
+          message:
+            "You've reached the rate limit for this API. Please wait a moment before trying again.",
           actions: 'default'
         };
-      } else if (error.message.toLowerCase().includes('service unavailable') || 
-                error.message.toLowerCase().includes('server error')) {
+      } else if (
+        error.message.toLowerCase().includes('service unavailable') ||
+        error.message.toLowerCase().includes('server error')
+      ) {
         return {
           title: 'Service Unavailable',
-          message: "The AI service is currently unavailable. Please try again later.",
+          message:
+            'The AI service is currently unavailable. Please try again later.',
           actions: 'default'
         };
       } else {
         return {
           title: 'Connection Error',
-          message: "Failed to connect to the AI service. Please check your internet connection and try again.",
+          message:
+            'Failed to connect to the AI service. Please check your internet connection and try again.',
           actions: 'retry'
         };
       }
@@ -230,7 +251,8 @@ function getErrorConfig(errorCategory: ErrorCategory, error: Error): ErrorConfig
     case ErrorCategory.Storage:
       return {
         title: 'Storage Error',
-        message: "Failed to access local storage. Please ensure cookies and local storage are enabled.",
+        message:
+          'Failed to access local storage. Please ensure cookies and local storage are enabled.',
         actions: 'retry'
       };
     case ErrorCategory.LLM:
@@ -246,7 +268,7 @@ function getErrorConfig(errorCategory: ErrorCategory, error: Error): ErrorConfig
         actions: 'retry'
       };
   }
-} 
+}
 
 function renderErrorActions(
   actionType: 'settings' | 'retry' | 'default',
@@ -257,7 +279,7 @@ function renderErrorActions(
     case 'settings':
       return (
         <>
-          <Button 
+          <Button
             onClick={() => router.push('/settings')}
             variant="default"
             className="w-full sm:w-auto"
@@ -270,7 +292,7 @@ function renderErrorActions(
     case 'retry':
       return (
         <>
-          <Button 
+          <Button
             onClick={onRetry}
             className="w-full sm:w-auto"
           >
@@ -282,7 +304,7 @@ function renderErrorActions(
     default:
       return (
         <>
-          <Button 
+          <Button
             onClick={onRetry}
             className="w-full sm:w-auto"
           >
@@ -292,4 +314,4 @@ function renderErrorActions(
         </>
       );
   }
-} 
+}

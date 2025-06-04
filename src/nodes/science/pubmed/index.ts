@@ -3,12 +3,16 @@
  * through NCBI's Entrez Programming Utilities (E-utilities).
  */
 
+import { LogCategory, logger } from 'agentdock-core';
 import { z } from 'zod';
+
 import { Tool, ToolExecutionOptions } from '../../types';
-import { logger, LogCategory } from 'agentdock-core';
-import { PubMedSearchSchema, PubMedFetchSchema } from './schema';
-import { searchPubMed, fetchPubMedArticle } from './api';
-import { formatSearchResultsAsMarkdown, formatArticleAsMarkdown } from './formatters';
+import { fetchPubMedArticle, searchPubMed } from './api';
+import {
+  formatArticleAsMarkdown,
+  formatSearchResultsAsMarkdown
+} from './formatters';
+import { PubMedFetchSchema, PubMedSearchSchema } from './schema';
 
 // Type inference from schemas
 type PubMedSearchParams = z.infer<typeof PubMedSearchSchema>;
@@ -37,16 +41,19 @@ The tool requires:
 This tool accesses the National Library of Medicine's PubMed database through the E-utilities API.
 `,
   parameters: PubMedSearchSchema,
-  execute: async (params: PubMedSearchParams, options: ToolExecutionOptions) => {
+  execute: async (
+    params: PubMedSearchParams,
+    options: ToolExecutionOptions
+  ) => {
     try {
-      logger.debug(LogCategory.NODE, '[PubMedAPI]', 'Starting PubMed search', { 
+      logger.debug(LogCategory.NODE, '[PubMedAPI]', 'Starting PubMed search', {
         query: params.query,
-        toolCallId: options.toolCallId,
+        toolCallId: options.toolCallId
       });
-      
+
       const results = await searchPubMed(params);
       const markdown = formatSearchResultsAsMarkdown(params.query, results);
-      
+
       return {
         type: 'pubmed_search_result',
         content: markdown,
@@ -57,13 +64,19 @@ This tool accesses the National Library of Medicine's PubMed database through th
         }
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      
-      logger.error(LogCategory.NODE, '[PubMedAPI]', 'Error in pubmed_search tool', {
-        error: errorMessage,
-        params,
-      });
-      
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+
+      logger.error(
+        LogCategory.NODE,
+        '[PubMedAPI]',
+        'Error in pubmed_search tool',
+        {
+          error: errorMessage,
+          params
+        }
+      );
+
       return {
         type: 'pubmed_search_result',
         content: `## PubMed Search Error\n\nUnable to search PubMed for "${params.query}": ${errorMessage}`,
@@ -99,15 +112,15 @@ This tool accesses the National Library of Medicine's PubMed database through th
   parameters: PubMedFetchSchema,
   execute: async (params: PubMedFetchParams, options: ToolExecutionOptions) => {
     try {
-      logger.debug(LogCategory.NODE, '[PubMedAPI]', 'Starting PubMed fetch', { 
+      logger.debug(LogCategory.NODE, '[PubMedAPI]', 'Starting PubMed fetch', {
         pmid: params.pmid,
         format: params.format,
-        toolCallId: options.toolCallId,
+        toolCallId: options.toolCallId
       });
-      
+
       const article = await fetchPubMedArticle(params);
       const markdown = formatArticleAsMarkdown(article);
-      
+
       return {
         type: 'pubmed_article_result',
         content: markdown,
@@ -116,13 +129,19 @@ This tool accesses the National Library of Medicine's PubMed database through th
         }
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      
-      logger.error(LogCategory.NODE, '[PubMedAPI]', 'Error in pubmed_fetch tool', {
-        error: errorMessage,
-        params,
-      });
-      
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+
+      logger.error(
+        LogCategory.NODE,
+        '[PubMedAPI]',
+        'Error in pubmed_fetch tool',
+        {
+          error: errorMessage,
+          params
+        }
+      );
+
       return {
         type: 'pubmed_article_result',
         content: `## PubMed Article Fetch Error\n\nUnable to retrieve article with PMID "${params.pmid}": ${errorMessage}`,
@@ -141,4 +160,4 @@ This tool accesses the National Library of Medicine's PubMed database through th
 export const tools = {
   pubmed_search: pubmedSearchTool,
   pubmed_fetch: pubmedFetchTool
-}; 
+};

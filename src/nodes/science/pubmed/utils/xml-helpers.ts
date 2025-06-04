@@ -2,7 +2,7 @@
  * @fileoverview Helper functions for XML parsing and manipulation
  */
 
-import { DOMParser, Document, Element } from '@xmldom/xmldom';
+import { Document, DOMParser, Element } from '@xmldom/xmldom';
 
 /**
  * Convert XML string to DOM Document for easier parsing
@@ -27,5 +27,5 @@ export function getElementText(doc: Document, tagName: string): string {
  */
 export function getElementsText(doc: Document, tagName: string): string[] {
   const elements = doc.getElementsByTagName(tagName);
-  return Array.from(elements).map(el => el.textContent || '');
-} 
+  return Array.from(elements).map((el) => el.textContent || '');
+}

@@ -3,9 +3,10 @@
  */
 
 import { z } from 'zod';
-import { BaseNode, NodeMetadata } from '../nodes/base-node';
+
 import { CoreLLM } from '../llm/core-llm';
 import { TokenUsage } from '../llm/types';
+import { BaseNode, NodeMetadata } from '../nodes/base-node';
 
 // Tool registration types
 export interface ToolRegistrationOptions {
@@ -96,4 +97,4 @@ export interface Tool<TParams = unknown, TResult = unknown> extends BaseNode {
   description: string;
   parameters: JSONSchema;
   execute(params: TParams): Promise<ToolResult>;
-} 
+}

@@ -3,7 +3,8 @@
  * This ensures tools are only initialized when they're actually needed
  */
 
-import { logger, LogCategory } from 'agentdock-core';
+import { LogCategory, logger } from 'agentdock-core';
+
 import { initToolRegistry } from '@/nodes/init';
 
 // Track initialization state
@@ -16,7 +17,11 @@ let toolsInitialized = false;
  */
 export function ensureToolsInitialized(): void {
   if (toolsInitialized) {
-    logger.debug(LogCategory.NODE, 'ToolInitializer', 'Tools already initialized, skipping');
+    logger.debug(
+      LogCategory.NODE,
+      'ToolInitializer',
+      'Tools already initialized, skipping'
+    );
     return;
   }
 
@@ -26,28 +31,32 @@ export function ensureToolsInitialized(): void {
   try {
     // Initialize tools
     initToolRegistry();
-    
+
     // Mark as initialized
     toolsInitialized = true;
-    
+
     // Log performance in development
     if (process.env.NODE_ENV === 'development') {
       const duration = Math.round(performance.now() - startTime);
       logger.info(
-        LogCategory.NODE, 
-        'ToolInitializer', 
+        LogCategory.NODE,
+        'ToolInitializer',
         `Tools initialized successfully in ${duration}ms`
       );
     } else {
-      logger.info(LogCategory.NODE, 'ToolInitializer', 'Tools initialized successfully');
+      logger.info(
+        LogCategory.NODE,
+        'ToolInitializer',
+        'Tools initialized successfully'
+      );
     }
   } catch (error) {
     logger.error(
-      LogCategory.NODE, 
-      'ToolInitializer', 
-      'Failed to initialize tools', 
+      LogCategory.NODE,
+      'ToolInitializer',
+      'Failed to initialize tools',
       { error: error instanceof Error ? error.message : 'Unknown error' }
     );
     throw error;
   }
-} 
+}

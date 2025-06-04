@@ -2,8 +2,14 @@
  * @fileoverview Tests for agent configuration schema and validation
  */
 
-import { AgentConfigSchema, PersonalitySchema, createAgentConfig, ValidatedPersonality } from '../agent-config';
 import { z } from 'zod';
+
+import {
+  AgentConfigSchema,
+  createAgentConfig,
+  PersonalitySchema,
+  ValidatedPersonality
+} from '../agent-config';
 
 describe('PersonalitySchema', () => {
   it('should accept string input', () => {
@@ -19,7 +25,9 @@ describe('PersonalitySchema', () => {
       'Just ask me anything'
     ]);
     expect(typeof result).toBe('string');
-    expect(result).toBe('Hello, I am an AI assistant\nI can help you with various tasks\nJust ask me anything');
+    expect(result).toBe(
+      'Hello, I am an AI assistant\nI can help you with various tasks\nJust ask me anything'
+    );
   });
 
   it('should reject invalid inputs', () => {
@@ -80,7 +88,9 @@ describe('AgentConfigSchema', () => {
     const result = AgentConfigSchema.parse(config);
     expect(result).toBeDefined();
     expect(typeof result.personality).toBe('string');
-    expect(result.personality as unknown as string).toBe('I am a test agent\nI can help with testing');
+    expect(result.personality as unknown as string).toBe(
+      'I am a test agent\nI can help with testing'
+    );
   });
 });
 
@@ -113,12 +123,17 @@ describe('createAgentConfig', () => {
     const result = createAgentConfig({
       agentId: 'test-agent',
       name: 'Test Agent',
-      personality: PersonalitySchema.parse(['I am a test agent', 'I can help with testing'])
+      personality: PersonalitySchema.parse([
+        'I am a test agent',
+        'I can help with testing'
+      ])
     });
 
     expect(result).toBeDefined();
     expect(typeof result.personality).toBe('string');
-    expect(result.personality as unknown as string).toBe('I am a test agent\nI can help with testing');
+    expect(result.personality as unknown as string).toBe(
+      'I am a test agent\nI can help with testing'
+    );
   });
 });
 
@@ -148,4 +163,4 @@ describe('AgentConfig', () => {
   });
 
   // Add more test cases as needed
-}); 
+});

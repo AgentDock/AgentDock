@@ -44,12 +44,20 @@ export interface LLMProvider {
   /**
    * Generate text from messages
    */
-  generateText(messages: LLMMessage[], config: LLMConfig, tools?: any): Promise<string>;
+  generateText(
+    messages: LLMMessage[],
+    config: LLMConfig,
+    tools?: any
+  ): Promise<string>;
 
   /**
    * Generate a stream from messages
    */
-  generateStream(messages: LLMMessage[], config: LLMConfig, tools?: any): Promise<ReadableStream<Uint8Array>>;
+  generateStream(
+    messages: LLMMessage[],
+    config: LLMConfig,
+    tools?: any
+  ): Promise<ReadableStream<Uint8Array>>;
 }
 
 /**
@@ -64,6 +72,9 @@ export interface LLMAdapter {
   /**
    * Generate a stream from messages
    */
-  generateStream(messages: LLMMessage[], tools?: any): Promise<ReadableStream<Uint8Array>>;
+  generateStream(
+    messages: LLMMessage[],
+    tools?: any
+  ): Promise<ReadableStream<Uint8Array>>;
   toLanguageModel(): LanguageModelV1;
-} 
+}

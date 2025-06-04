@@ -1,12 +1,31 @@
-"use client"
+'use client';
 
-import { Sun, Moon, PanelLeftClose, PanelLeftOpen, Menu, Github } from "lucide-react"
-import { useTheme } from "next-themes"
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
-import { Button } from "@/components/ui/button"
-import { MobileNav } from "@/components/layout/mobile-nav"
-import Link from "next/link"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import Link from 'next/link';
+import {
+  Github,
+  Menu,
+  Moon,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Sun
+} from 'lucide-react';
+import { useTheme } from 'next-themes';
+
+import { MobileNav } from '@/components/layout/mobile-nav';
+import { Button } from '@/components/ui/button';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger
+} from '@/components/ui/sheet';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
+} from '@/components/ui/tooltip';
 
 interface SiteHeaderProps {
   isCollapsed: boolean;
@@ -14,7 +33,7 @@ interface SiteHeaderProps {
 }
 
 export function SiteHeader({ isCollapsed, onCollapse }: SiteHeaderProps) {
-  const { setTheme, theme } = useTheme()
+  const { setTheme, theme } = useTheme();
 
   // Add debugging for theme changes
   const safeSetTheme = (newTheme: string) => {
@@ -23,17 +42,17 @@ export function SiteHeader({ isCollapsed, onCollapse }: SiteHeaderProps) {
       timestamp: new Date().toISOString(),
       source: 'site-header'
     });
-    
+
     // Throttle changes to prevent rapid toggling
     setTheme(newTheme);
-  }
+  };
 
   return (
-    <header 
+    <header
       className="sticky top-0 z-30 w-full bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60"
-      style={{ 
-        transform: "translateZ(0)",
-        willChange: "transform"
+      style={{
+        transform: 'translateZ(0)',
+        willChange: 'transform'
       }}
     >
       <div className="flex h-14 items-center px-4">
@@ -50,15 +69,22 @@ export function SiteHeader({ isCollapsed, onCollapse }: SiteHeaderProps) {
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[280px] p-0">
+            <SheetContent
+              side="left"
+              className="w-[280px] p-0"
+            >
               <SheetHeader className="sr-only">
                 <SheetTitle>Navigation Menu</SheetTitle>
               </SheetHeader>
-              <MobileNav onNavigate={() => {
-                // Close the sheet when a navigation item is clicked
-                const closeButton = document.querySelector('[data-radix-sheet-close]') as HTMLButtonElement | null;
-                if (closeButton) closeButton.click();
-              }} />
+              <MobileNav
+                onNavigate={() => {
+                  // Close the sheet when a navigation item is clicked
+                  const closeButton = document.querySelector(
+                    '[data-radix-sheet-close]'
+                  ) as HTMLButtonElement | null;
+                  if (closeButton) closeButton.click();
+                }}
+              />
             </SheetContent>
           </Sheet>
 
@@ -68,7 +94,7 @@ export function SiteHeader({ isCollapsed, onCollapse }: SiteHeaderProps) {
             size="icon"
             onClick={onCollapse}
             className="hidden md:flex"
-            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             {isCollapsed ? (
               <PanelLeftOpen className="h-4 w-4" />
@@ -84,12 +110,16 @@ export function SiteHeader({ isCollapsed, onCollapse }: SiteHeaderProps) {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Link 
-                  href="https://github.com/agentdock/agentdock" 
-                  target="_blank" 
+                <Link
+                  href="https://github.com/agentdock/agentdock"
+                  target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <Button variant="ghost" size="icon" className="relative h-9 w-9">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="relative h-9 w-9"
+                  >
                     <Github className="h-5 w-5" />
                     <span className="sr-only">GitHub Repository</span>
                   </Button>
@@ -106,7 +136,7 @@ export function SiteHeader({ isCollapsed, onCollapse }: SiteHeaderProps) {
             variant="ghost"
             size="icon"
             onClick={() => {
-              const newTheme = theme === "dark" ? "light" : "dark";
+              const newTheme = theme === 'dark' ? 'light' : 'dark';
               safeSetTheme(newTheme);
             }}
             className="relative h-9 w-9"
@@ -118,5 +148,5 @@ export function SiteHeader({ isCollapsed, onCollapse }: SiteHeaderProps) {
         </div>
       </div>
     </header>
-  )
-} 
+  );
+}

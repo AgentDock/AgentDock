@@ -4,22 +4,23 @@
  */
 
 import { z } from 'zod';
-import { 
-  formatBold, 
-  formatHeader, 
-  formatSubheader, 
-  joinSections, 
-  createToolResult 
+
+import {
+  createToolResult,
+  formatBold,
+  formatHeader,
+  formatSubheader,
+  joinSections
 } from '@/lib/utils/markdown-utils';
 
 /**
  * Weather icon mapping
  */
 export const weatherIcons: Record<number, string> = {
-  0: '☀️',  // Clear sky
-  1: '🌤️',  // Partly cloudy
-  2: '☁️',  // Cloudy
-  3: '☁️',  // Overcast
+  0: '☀️', // Clear sky
+  1: '🌤️', // Partly cloudy
+  2: '☁️', // Cloudy
+  3: '☁️', // Overcast
   45: '🌫️', // Foggy
   48: '🌫️', // Depositing rime fog
   51: '🌧️', // Light drizzle
@@ -39,7 +40,7 @@ export const weatherIcons: Record<number, string> = {
   86: '🌨️', // Heavy snow showers
   95: '⛈️', // Thunderstorm
   96: '⛈️', // Thunderstorm with slight hail
-  99: '⛈️'  // Thunderstorm with heavy hail
+  99: '⛈️' // Thunderstorm with heavy hail
 };
 
 /**
@@ -94,15 +95,17 @@ export const weatherForecastSchema = z.object({
   className: z.string().optional(),
   style: z.record(z.string()).optional(),
   data: z.object({
-    daily: z.array(z.object({
-      date: z.string(),
-      temperatureMin: z.number(),
-      temperatureMax: z.number(),
-      weatherCode: z.number(),
-      windSpeed: z.number(),
-      windDirection: z.number(),
-      precipitationProbability: z.number()
-    }))
+    daily: z.array(
+      z.object({
+        date: z.string(),
+        temperatureMin: z.number(),
+        temperatureMax: z.number(),
+        weatherCode: z.number(),
+        windSpeed: z.number(),
+        windDirection: z.number(),
+        precipitationProbability: z.number()
+      })
+    )
   })
 });
 
@@ -182,7 +185,7 @@ export function createWeatherCard(data: WeatherCard['data']): string {
   const description = getWeatherDescription(current.weatherCode);
   const wind = formatWind(current.windSpeed, current.windDirection);
   const temp = formatTemperature(current.temperature);
-  
+
   return `## Current Weather in ${location.name}, ${location.country}${location.region ? `, ${location.region}` : ''}
 
 ${icon} **${description}**
@@ -196,21 +199,23 @@ ${icon} **${description}**
  */
 export function createWeatherForecast(data: WeatherForecastData): string {
   const forecastHeader = `## 7-Day Forecast\n`;
-  
-  const forecastDays = data.data.daily.map(day => {
-    const icon = weatherIcons[day.weatherCode] || '❓';
-    const date = formatDate(day.date);
-    const tempMin = formatTemperature(day.temperatureMin);
-    const tempMax = formatTemperature(day.temperatureMax);
-    const wind = formatWind(day.windSpeed, day.windDirection);
-    const precip = Math.round(day.precipitationProbability);
-    
-    return `### ${date}
+
+  const forecastDays = data.data.daily
+    .map((day) => {
+      const icon = weatherIcons[day.weatherCode] || '❓';
+      const date = formatDate(day.date);
+      const tempMin = formatTemperature(day.temperatureMin);
+      const tempMax = formatTemperature(day.temperatureMax);
+      const wind = formatWind(day.windSpeed, day.windDirection);
+      const precip = Math.round(day.precipitationProbability);
+
+      return `### ${date}
 ${icon} **${getWeatherDescription(day.weatherCode)}**
 - Temperature Range: ${tempMin} to ${tempMax}
 - Wind: ${wind}
 - Precipitation: ${precip}%`;
-  }).join('\n\n');
+    })
+    .join('\n\n');
 
   return forecastHeader + '\n' + forecastDays;
 }
@@ -262,12 +267,15 @@ interface WeatherProps {
 /**
  * Current weather React component
  */
-export function CurrentWeather({ location, conditions }: WeatherProps['current']) {
+export function CurrentWeather({
+  location,
+  conditions
+}: WeatherProps['current']) {
   const icon = weatherIcons[conditions.weatherCode] || '❓';
   const description = getWeatherDescription(conditions.weatherCode);
   const wind = formatWind(conditions.windSpeed, conditions.windDirection);
   const temp = formatTemperature(conditions.temperature);
-  
+
   return createToolResult(
     'weather_current',
     `${icon} ${formatBold(description)} in ${location.name}, ${location.country}${location.region ? `, ${location.region}` : ''}
@@ -281,20 +289,25 @@ Time: ${conditions.isDay ? 'Day' : 'Night'}`
  * Weather forecast React component
  */
 export function WeatherForecast({ forecast }: Pick<WeatherProps, 'forecast'>) {
-  const forecastContent = forecast.map(day => {
-    const icon = weatherIcons[day.conditions.weatherCode] || '❓';
-    const date = formatDate(day.date);
-    const tempMin = formatTemperature(day.temperature.min);
-    const tempMax = formatTemperature(day.temperature.max);
-    const wind = formatWind(day.conditions.windSpeed, day.conditions.windDirection);
-    const precip = Math.round(day.conditions.precipitationProbability);
-    
-    return `${formatSubheader(date)}
+  const forecastContent = forecast
+    .map((day) => {
+      const icon = weatherIcons[day.conditions.weatherCode] || '❓';
+      const date = formatDate(day.date);
+      const tempMin = formatTemperature(day.temperature.min);
+      const tempMax = formatTemperature(day.temperature.max);
+      const wind = formatWind(
+        day.conditions.windSpeed,
+        day.conditions.windDirection
+      );
+      const precip = Math.round(day.conditions.precipitationProbability);
+
+      return `${formatSubheader(date)}
 ${icon} ${formatBold(getWeatherDescription(day.conditions.weatherCode))}
 - Temperature Range: ${tempMin} to ${tempMax}
 - Wind: ${wind}
 - Precipitation: ${precip}%`;
-  }).join('\n\n');
+    })
+    .join('\n\n');
 
   return createToolResult(
     'weather_forecast',
@@ -308,13 +321,13 @@ ${icon} ${formatBold(getWeatherDescription(day.conditions.weatherCode))}
 export function Weather(props: WeatherProps) {
   const current = CurrentWeather(props.current);
   const forecast = WeatherForecast({ forecast: props.forecast });
-  
+
   return createToolResult(
     'weather_complete',
     joinSections(
-      current.content, 
-      forecast.content, 
+      current.content,
+      forecast.content,
       `Last updated: ${new Date(props.timestamp).toLocaleString()}`
     )
   );
-} 
+}

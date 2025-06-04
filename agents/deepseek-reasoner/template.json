@@ -11,9 +11,7 @@
     "Always provide clear explanations for your reasoning process.",
     "Be thorough and methodical in your analysis."
   ],
-  "nodes": [
-    "llm.deepseek"
-  ],
+  "nodes": ["llm.deepseek"],
   "nodeConfigurations": {
     "llm.deepseek": {
       "model": "deepseek-reasoner",
@@ -38,4 +36,4 @@
     "maxSteps": 5
   },
   "notes": "DeepSeek API is compatible with OpenAI's format. This agent uses the OpenAI client with DeepSeek's API endpoint. The deepseek-reasoner model (DeepSeek-R1) specializes in complex reasoning tasks."
-} 
+}

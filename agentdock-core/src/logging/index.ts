@@ -31,7 +31,7 @@ export interface LogEntry {
 }
 
 // Common operation types for standardized logging
-export type CommonOperation = 
+export type CommonOperation =
   | 'initialize'
   | 'execute'
   | 'cleanup'
@@ -56,9 +56,9 @@ class Logger {
   private static instance: Logger;
   private static levelColors: Record<LogLevel, string> = {
     [LogLevel.DEBUG]: '\x1b[36m', // Cyan
-    [LogLevel.INFO]: '\x1b[32m',  // Green
-    [LogLevel.WARN]: '\x1b[33m',  // Yellow
-    [LogLevel.ERROR]: '\x1b[31m'  // Red
+    [LogLevel.INFO]: '\x1b[32m', // Green
+    [LogLevel.WARN]: '\x1b[33m', // Yellow
+    [LogLevel.ERROR]: '\x1b[31m' // Red
   };
 
   private static reset = '\x1b[0m';
@@ -82,25 +82,39 @@ class Logger {
     return levels.indexOf(level) >= levels.indexOf(this.logLevel);
   }
 
-  private formatConsole(level: LogLevel, category: LogCategory, component: string, message: string, metadata?: Record<string, unknown>) {
+  private formatConsole(
+    level: LogLevel,
+    category: LogCategory,
+    component: string,
+    message: string,
+    metadata?: Record<string, unknown>
+  ) {
     const color = Logger.levelColors[level];
     const timestamp = new Date().toISOString();
     const prefix = `${color}[${level.toUpperCase()}]${Logger.reset}`;
     const categoryStr = `[${category}]`;
     const componentStr = `[${component}]`;
-    
-    console.log(`${prefix} ${timestamp} ${categoryStr} ${componentStr} ${message}`);
+
+    console.log(
+      `${prefix} ${timestamp} ${categoryStr} ${componentStr} ${message}`
+    );
     if (metadata && Object.keys(metadata).length > 0) {
       console.log('Metadata:', metadata);
     }
   }
 
-  private formatBrowser(level: LogLevel, category: LogCategory, component: string, message: string, metadata?: Record<string, unknown>) {
+  private formatBrowser(
+    level: LogLevel,
+    category: LogCategory,
+    component: string,
+    message: string,
+    metadata?: Record<string, unknown>
+  ) {
     const styles = {
       [LogLevel.DEBUG]: 'color: #0ea5e9', // Blue
-      [LogLevel.INFO]: 'color: #22c55e',  // Green
-      [LogLevel.WARN]: 'color: #eab308',  // Yellow
-      [LogLevel.ERROR]: 'color: #ef4444'  // Red
+      [LogLevel.INFO]: 'color: #22c55e', // Green
+      [LogLevel.WARN]: 'color: #eab308', // Yellow
+      [LogLevel.ERROR]: 'color: #ef4444' // Red
     };
 
     const timestamp = new Date().toISOString();
@@ -181,13 +195,17 @@ class Logger {
       level: LogLevel.ERROR,
       category,
       component,
-      message: error instanceof Error ? error.message : 'Unknown error occurred',
+      message:
+        error instanceof Error ? error.message : 'Unknown error occurred',
       metadata: {
-        error: error instanceof Error ? {
-          name: error.name,
-          message: error.message,
-          stack: error.stack
-        } : error,
+        error:
+          error instanceof Error
+            ? {
+                name: error.name,
+                message: error.message,
+                stack: error.stack
+              }
+            : error,
         ...metadata,
         timestamp: new Date().toISOString()
       },
@@ -198,19 +216,41 @@ class Logger {
   }
 
   // Base logging methods
-  async debug(category: LogCategory, component: string, message: string, metadata?: Record<string, unknown>): Promise<void> {
+  async debug(
+    category: LogCategory,
+    component: string,
+    message: string,
+    metadata?: Record<string, unknown>
+  ): Promise<void> {
     if (!this.shouldLog(LogLevel.DEBUG)) return;
-    
+
     if (typeof window === 'undefined') {
-      this.formatConsole(LogLevel.DEBUG, category, component, message, metadata);
+      this.formatConsole(
+        LogLevel.DEBUG,
+        category,
+        component,
+        message,
+        metadata
+      );
     } else {
-      this.formatBrowser(LogLevel.DEBUG, category, component, message, metadata);
+      this.formatBrowser(
+        LogLevel.DEBUG,
+        category,
+        component,
+        message,
+        metadata
+      );
     }
   }
 
-  async info(category: LogCategory, component: string, message: string, metadata?: Record<string, unknown>): Promise<void> {
+  async info(
+    category: LogCategory,
+    component: string,
+    message: string,
+    metadata?: Record<string, unknown>
+  ): Promise<void> {
     if (!this.shouldLog(LogLevel.INFO)) return;
-    
+
     if (typeof window === 'undefined') {
       this.formatConsole(LogLevel.INFO, category, component, message, metadata);
     } else {
@@ -218,9 +258,14 @@ class Logger {
     }
   }
 
-  async warn(category: LogCategory, component: string, message: string, metadata?: Record<string, unknown>): Promise<void> {
+  async warn(
+    category: LogCategory,
+    component: string,
+    message: string,
+    metadata?: Record<string, unknown>
+  ): Promise<void> {
     if (!this.shouldLog(LogLevel.WARN)) return;
-    
+
     if (typeof window === 'undefined') {
       this.formatConsole(LogLevel.WARN, category, component, message, metadata);
     } else {
@@ -228,13 +273,30 @@ class Logger {
     }
   }
 
-  async error(category: LogCategory, component: string, message: string, metadata?: Record<string, unknown>): Promise<void> {
+  async error(
+    category: LogCategory,
+    component: string,
+    message: string,
+    metadata?: Record<string, unknown>
+  ): Promise<void> {
     if (!this.shouldLog(LogLevel.ERROR)) return;
-    
+
     if (typeof window === 'undefined') {
-      this.formatConsole(LogLevel.ERROR, category, component, message, metadata);
+      this.formatConsole(
+        LogLevel.ERROR,
+        category,
+        component,
+        message,
+        metadata
+      );
     } else {
-      this.formatBrowser(LogLevel.ERROR, category, component, message, metadata);
+      this.formatBrowser(
+        LogLevel.ERROR,
+        category,
+        component,
+        message,
+        metadata
+      );
     }
   }
 
@@ -250,4 +312,4 @@ class Logger {
   }
 }
 
-export const logger = Logger.getInstance(); 
+export const logger = Logger.getInstance();

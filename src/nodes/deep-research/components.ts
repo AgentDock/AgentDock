@@ -3,7 +3,11 @@
  * Component now takes raw findings and formats them directly.
  */
 
-import { createToolResult, formatHeader, formatBold } from '@/lib/utils/markdown-utils';
+import {
+  createToolResult,
+  formatBold,
+  formatHeader
+} from '@/lib/utils/markdown-utils';
 
 /**
  * Deep Research result interface
@@ -14,7 +18,7 @@ import { createToolResult, formatHeader, formatBold } from '@/lib/utils/markdown
 export interface DeepResearchResult {
   query: string;
   // summary: string; // Removed
-  sources: Array<{ title: string; url: string; }>;
+  sources: Array<{ title: string; url: string }>;
   depth: number;
   breadth: number;
   findings: string[]; // Now required
@@ -34,14 +38,15 @@ export function DeepResearchReport(props: DeepResearchResult) {
 
   // 3. Format Research Stats
   const uniqueSourceCount = deduplicateSources(props.sources || []).length;
-  const statsSection = `## Research Statistics\n\n` +
+  const statsSection =
+    `## Research Statistics\n\n` +
     `- **Depth**: ${props.depth} ${props.depth === 1 ? '(Basic search)' : props.depth === 2 ? '(Search + content extraction)' : '(Comprehensive research)'}\n` +
     `- **Breadth**: ${props.breadth} sources requested\n` +
     `- **Sources analyzed**: ${uniqueSourceCount} unique sources\n` +
     `- **Findings extracted**: ${props.findings?.length || 0} key points\n`;
 
   // 4. Format Findings Section - with extra cleaning to prevent duplicate headings
-  let findingsSection = "";
+  let findingsSection = '';
 
   if (props.findings && props.findings.length > 0) {
     // Additional cleaning to prevent duplicate heading issues:
@@ -49,33 +54,37 @@ export function DeepResearchReport(props: DeepResearchResult) {
     // 2. Remove any finding that is too short or doesn't provide substantial information
     // 3. Ensure proper formatting with numbers and spacing
     const cleanFindings = props.findings
-      .map(f => f.trim().replace(/\[([^\]]+)\]\([^)]+\)/g, '$1'))
-      .filter(f => 
-        f.length > 10 && 
-        !f.toLowerCase().match(/^key\s+(factual\s+)?findings/) && 
-        !f.toLowerCase().includes('following are') &&
-        !f.toLowerCase().includes('research findings') &&
-        !f.toLowerCase().match(/^here are/i)
+      .map((f) => f.trim().replace(/\[([^\]]+)\]\([^)]+\)/g, '$1'))
+      .filter(
+        (f) =>
+          f.length > 10 &&
+          !f.toLowerCase().match(/^key\s+(factual\s+)?findings/) &&
+          !f.toLowerCase().includes('following are') &&
+          !f.toLowerCase().includes('research findings') &&
+          !f.toLowerCase().match(/^here are/i)
       );
-    
+
     // Format all findings under a single "Key Findings" section with proper formatting and numbering
     findingsSection = `## Key Findings\n\n${cleanFindings.map((f, i) => `${i + 1}. ${f}`).join('\n\n')}`;
   } else {
     // Explicit message if findings array is empty/missing
-    findingsSection = '## Key Findings\n\nAnalysis could not be completed or yielded no findings.';
+    findingsSection =
+      '## Key Findings\n\nAnalysis could not be completed or yielded no findings.';
   }
 
   // 5. Format Sources Section (keep deduplication)
   const uniqueSources = deduplicateSources(props.sources || []);
   let sourcesSection = '';
-  
+
   if (uniqueSources.length > 0) {
     const sourcesHeader = `## Sources`;
-    const sourcesList = uniqueSources.map((source, index) => {
-      // Extract domain from URL for cleaner display
-      const domain = extractDomain(source.url);
-      return `${index + 1}. [${source.title}](${source.url}) ${domain ? `(${domain})` : ''}`;
-    }).join('\n');
+    const sourcesList = uniqueSources
+      .map((source, index) => {
+        // Extract domain from URL for cleaner display
+        const domain = extractDomain(source.url);
+        return `${index + 1}. [${source.title}](${source.url}) ${domain ? `(${domain})` : ''}`;
+      })
+      .join('\n');
     sourcesSection = `${sourcesHeader}\n\n${sourcesList}`;
   } else {
     sourcesSection = '## Sources\n\nNo sources found.';
@@ -85,22 +94,24 @@ export function DeepResearchReport(props: DeepResearchResult) {
   const reportSections = [
     title.trim(),
     statusSection.trim(),
-    findingsSection.trim(),  // Key Findings moved up before Research Statistics
-    statsSection.trim(),     // Research Statistics now before Sources
-    sourcesSection.trim()    // Sources now last
+    findingsSection.trim(), // Key Findings moved up before Research Statistics
+    statsSection.trim(), // Research Statistics now before Sources
+    sourcesSection.trim() // Sources now last
   ].filter(Boolean); // Filter out empty strings
-  
+
   const content = reportSections.join('\n\n');
-  
+
   return createToolResult('deep_research_result', content);
 }
 
 /**
  * Helper function to deduplicate sources by URL
  */
-function deduplicateSources(sources: Array<{ title: string, url: string }>): Array<{ title: string, url: string }> {
+function deduplicateSources(
+  sources: Array<{ title: string; url: string }>
+): Array<{ title: string; url: string }> {
   const uniqueUrls = new Set<string>();
-  return sources.filter(source => {
+  return sources.filter((source) => {
     // Normalize URL by removing trailing slashes and query parameters
     const normalizedUrl = source.url.replace(/\/+$/, '').split('?')[0];
     if (uniqueUrls.has(normalizedUrl)) {
@@ -121,4 +132,4 @@ function extractDomain(url: string): string {
   } catch (e) {
     return '';
   }
-} 
+}

@@ -14,12 +14,10 @@
     "Expect schema designs formatted with clear Markdown including DDL statements, ER diagrams (described in text), indexing recommendations, and performance considerations. Code blocks will showcase SQL/NoSQL schema definitions.",
     "When requested, I create simple, accurate Mermaid diagrams to visualize entity relationships. I use precise Mermaid syntax, carefully checking for: properly closed brackets, correct node shapes, properly formatted arrows, escaped quotes, and complete subgraph definitions. I primarily use entity-relationship (erDiagram) and class diagram formats, keeping diagrams concise and focused on key entities."
   ],
-  "nodes": [
-    "llm.gemini"
-  ],
+  "nodes": ["llm.gemini"],
   "nodeConfigurations": {
     "llm.gemini": {
-      "model": "gemini-2.5-flash-preview-04-17",  
+      "model": "gemini-2.5-flash-preview-04-17",
       "temperature": 0.5,
       "maxTokens": 8192,
       "useCustomApiKey": false,
@@ -59,4 +57,4 @@
   "options": {
     "maxSteps": 15
   }
-} 
+}

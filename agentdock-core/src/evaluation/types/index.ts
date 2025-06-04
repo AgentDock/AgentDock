@@ -3,16 +3,35 @@
  */
 
 // Import Message type from the correct location and alias it as AgentMessage for this module and export
-import type { Message, MessageContent, TextContent, ImageContent, ToolCallContent, ToolResultContent } from '../../types/messages';
+import type {
+  ImageContent,
+  Message,
+  MessageContent,
+  TextContent,
+  ToolCallContent,
+  ToolResultContent
+} from '../../types/messages';
+
 export type AgentMessage = Message;
 // Export MessageContent and its constituent types as they are used by ToolUsageEvaluator
-export type { MessageContent, TextContent, ImageContent, ToolCallContent, ToolResultContent };
+export type {
+  MessageContent,
+  TextContent,
+  ImageContent,
+  ToolCallContent,
+  ToolResultContent
+};
 
 /**
  * Defines the scale used for scoring an evaluation criterion.
  * Allows standard scales plus custom string identifiers.
  */
-export type EvaluationScale = 'binary' | 'likert5' | 'numeric' | 'pass/fail' | string;
+export type EvaluationScale =
+  | 'binary'
+  | 'likert5'
+  | 'numeric'
+  | 'pass/fail'
+  | string;
 
 /**
  * Represents a single criterion used for evaluation.
@@ -24,8 +43,8 @@ export interface EvaluationCriteria {
   description: string;
   /** The scale used for scoring this criterion. */
   scale: EvaluationScale;
-  /** 
-   * Optional weight for this criterion when calculating an aggregated score. 
+  /**
+   * Optional weight for this criterion when calculating an aggregated score.
    * Must be a finite, positive number. Defaults to 1.
    */
   weight?: number;
@@ -115,5 +134,8 @@ export interface Evaluator {
    * @param criteria The specific criteria this evaluator should assess. An evaluator might only handle a subset of criteria passed in the input.
    * @returns A promise resolving to an array of EvaluationResult objects for the criteria this evaluator assessed.
    */
-  evaluate(input: EvaluationInput, criteria: EvaluationCriteria[]): Promise<EvaluationResult[]>;
-} 
+  evaluate(
+    input: EvaluationInput,
+    criteria: EvaluationCriteria[]
+  ): Promise<EvaluationResult[]>;
+}

@@ -3,7 +3,7 @@
  * This is the foundation of the node-based architecture.
  */
 
-import { MessageBus, NodeMessage, MessageHandler } from '../messaging/types';
+import { MessageBus, MessageHandler, NodeMessage } from '../messaging/types';
 import { NodeCategory } from '../types/node-category';
 
 /**
@@ -24,9 +24,9 @@ export interface NodeMetadata {
   readonly version: string;
   /** Compatibility information */
   readonly compatibility: {
-    core: boolean;    // Works with Core
-    pro: boolean;     // Works with Pro
-    custom: boolean;  // Available for custom implementations
+    core: boolean; // Works with Core
+    pro: boolean; // Works with Pro
+    custom: boolean; // Available for custom implementations
   };
 }
 
@@ -55,13 +55,13 @@ export interface NodePort {
 export abstract class BaseNode<TConfig = unknown> {
   /** Unique identifier for the node */
   readonly id: string;
-  
+
   /** Unique type identifier for the node */
   abstract readonly type: string;
-  
+
   /** Node configuration (immutable after construction) */
   protected config: TConfig;
-  
+
   /** Node metadata (immutable after construction) */
   readonly metadata: NodeMetadata;
 
@@ -130,7 +130,7 @@ export abstract class BaseNode<TConfig = unknown> {
    */
   protected registerMessageHandlers(): void {
     if (!this.messageBus) return;
-    
+
     // Convert Map entries to array for iteration
     Array.from(this.handlers.entries()).forEach(([type, handler]) => {
       this.messageBus?.subscribe(type, handler);
@@ -140,7 +140,10 @@ export abstract class BaseNode<TConfig = unknown> {
   /**
    * Add a message handler
    */
-  protected addMessageHandler<T>(type: string, handler: MessageHandler<T>): void {
+  protected addMessageHandler<T>(
+    type: string,
+    handler: MessageHandler<T>
+  ): void {
     this.handlers.set(type, handler as MessageHandler);
     if (this.messageBus) {
       this.messageBus.subscribe(type, handler);
@@ -172,22 +175,22 @@ export abstract class BaseNode<TConfig = unknown> {
 
   /** Get the node category (core or custom) */
   protected abstract getCategory(): NodeCategory;
-  
+
   /** Get the display name of the node */
   protected abstract getLabel(): string;
-  
+
   /** Get the node description */
   protected abstract getDescription(): string;
-  
+
   /** Get the node version */
   protected abstract getVersion(): string;
-  
+
   /** Get compatibility information */
   protected abstract getCompatibility(): NodeMetadata['compatibility'];
-  
+
   /** Define the node's input ports */
   protected abstract getInputs(): readonly NodePort[];
-  
+
   /** Define the node's output ports */
   protected abstract getOutputs(): readonly NodePort[];
 
@@ -245,4 +248,4 @@ export abstract class BaseNode<TConfig = unknown> {
 export interface BaseNodeConstructor {
   new (id: string, config: any): BaseNode;
   getNodeMetadata(): NodeMetadata;
-} 
+}

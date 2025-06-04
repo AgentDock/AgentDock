@@ -1,16 +1,18 @@
 /**
  * @fileoverview Core state management types for the AgentDock application.
  * This module defines the type system for our React Context-based store.
- * 
+ *
  * @module lib/store/types
  */
 
 import type { BaseNode } from 'agentdock-core';
-import type { ValidatedPersonality } from 'agentdock-core/types/agent-config';
-import type { TemplateChatSettings, ChatSettings } from '@/lib/types/chat';
 
-export type { BaseNode }; 
-  
+import type { ValidatedPersonality } from 'agentdock-core/types/agent-config';
+
+import type { ChatSettings, TemplateChatSettings } from '@/lib/types/chat';
+
+export type { BaseNode };
+
 export interface AgentTemplate {
   version?: string;
   agentId: string;
@@ -85,6 +87,9 @@ export interface AppState {
 
 export interface Store extends AppState {
   initialize: () => Promise<void>;
-  updateAgentRuntime: (agentId: string, settings: Partial<AgentRuntimeSettings>) => Promise<void>;
+  updateAgentRuntime: (
+    agentId: string,
+    settings: Partial<AgentRuntimeSettings>
+  ) => Promise<void>;
   reset: () => void;
-} 
+}

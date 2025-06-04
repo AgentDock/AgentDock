@@ -1,4 +1,4 @@
-import { logger, LogCategory } from 'agentdock-core';
+import { LogCategory, logger } from 'agentdock-core';
 
 /**
  * Standardized error logging function
@@ -14,17 +14,12 @@ export async function logError(
   additionalInfo?: Record<string, unknown>
 ) {
   const errorMessage = error instanceof Error ? error.message : String(error);
-  
+
   try {
-    await logger.error(
-      LogCategory.SYSTEM,
-      component,
-      action,
-      {
-        error: errorMessage,
-        ...additionalInfo
-      }
-    );
+    await logger.error(LogCategory.SYSTEM, component, action, {
+      error: errorMessage,
+      ...additionalInfo
+    });
   } catch (e) {
     // Fallback if logger fails
     console.error(`[${component}] ${action}: ${errorMessage}`, additionalInfo);
@@ -45,12 +40,7 @@ export async function logInfo(
   data?: Record<string, unknown>
 ) {
   try {
-    await logger.info(
-      LogCategory.SYSTEM,
-      component,
-      message || action,
-      data
-    );
+    await logger.info(LogCategory.SYSTEM, component, message || action, data);
   } catch (e) {
     // Fallback if logger fails
     console.info(`[${component}] ${message || action}`, data);
@@ -71,14 +61,9 @@ export async function logDebug(
   data?: Record<string, unknown>
 ) {
   try {
-    await logger.debug(
-      LogCategory.SYSTEM,
-      component,
-      message || action,
-      data
-    );
+    await logger.debug(LogCategory.SYSTEM, component, message || action, data);
   } catch (e) {
     // Fallback if logger fails
     console.debug(`[${component}] ${message || action}`, data);
   }
-} 
+}

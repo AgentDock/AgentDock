@@ -1,5 +1,6 @@
-import { siteConfig } from './config';
 import { Metadata } from 'next';
+
+import { siteConfig } from './config';
 
 /**
  * Generate Open Graph image URL with custom parameters
@@ -7,7 +8,7 @@ import { Metadata } from 'next';
 export function generateOgImageUrl({
   title,
   from = '0062F0',
-  to = '091E3B',
+  to = '091E3B'
 }: {
   title?: string;
   from?: string;
@@ -16,12 +17,12 @@ export function generateOgImageUrl({
   // Get the base URL for the OG image API
   const baseUrl = siteConfig.ogImage;
   const params = new URLSearchParams();
-  
+
   // Add parameters if provided
   if (title) params.set('title', title);
   if (from) params.set('from', from);
   if (to) params.set('to', to);
-  
+
   // Return full URL with parameters
   const paramsString = params.toString();
   return paramsString ? `${baseUrl}?${paramsString}` : baseUrl;
@@ -34,7 +35,7 @@ export function generatePageMetadata({
   title,
   description,
   ogImageParams,
-  noIndex = false,
+  noIndex = false
 }: {
   title?: string;
   description?: string;
@@ -46,15 +47,17 @@ export function generatePageMetadata({
   noIndex?: boolean;
 }): Metadata {
   // Generate OG image URL - use title only, no description
-  const ogImageUrl = generateOgImageUrl(ogImageParams || { 
-    title
-  });
-  
+  const ogImageUrl = generateOgImageUrl(
+    ogImageParams || {
+      title
+    }
+  );
+
   // Create metadata object
   const metadata: Metadata = {
-    title: title ? 
-      { absolute: `${title} | ${siteConfig.name}` } : 
-      { default: siteConfig.name, template: `%s | ${siteConfig.name}` },
+    title: title
+      ? { absolute: `${title} | ${siteConfig.name}` }
+      : { default: siteConfig.name, template: `%s | ${siteConfig.name}` },
     description: description || siteConfig.description,
     openGraph: {
       type: 'website',
@@ -68,26 +71,26 @@ export function generatePageMetadata({
           url: ogImageUrl,
           width: 1200,
           height: 630,
-          alt: title || siteConfig.name,
-        },
-      ],
+          alt: title || siteConfig.name
+        }
+      ]
     },
     twitter: {
       card: 'summary_large_image',
       title: title || siteConfig.name,
       description: description || siteConfig.description,
       images: [ogImageUrl],
-      creator: '@agentdock',
-    },
+      creator: '@agentdock'
+    }
   };
-  
+
   // Add robots noindex directive if requested
   if (noIndex) {
     metadata.robots = {
       index: false,
-      follow: true,
+      follow: true
     };
   }
-  
+
   return metadata;
-} 
+}

@@ -3,10 +3,11 @@
  * Handles OpenAI-specific validation and model fetching logic
  */
 
-import { ModelMetadata } from '../types';
-import { ModelService } from '../model-service';
-import { logger, LogCategory } from '../../logging';
 import OpenAI from 'openai';
+
+import { LogCategory, logger } from '../../logging';
+import { ModelService } from '../model-service';
+import { ModelMetadata } from '../types';
 
 /**
  * Validate an OpenAI API key by making a request to the OpenAI API
@@ -14,19 +15,24 @@ import OpenAI from 'openai';
 export async function validateOpenAIApiKey(apiKey: string): Promise<boolean> {
   try {
     if (!apiKey) return false;
-    
+
     // Create OpenAI client
     const openai = new OpenAI({
       apiKey
     });
-    
+
     // Try to list models
     const response = await openai.models.list();
     return Array.isArray(response.data);
   } catch (error) {
-    logger.error(LogCategory.LLM, '[OpenAIAdapter]', 'Error validating API key:', { 
-      error: error instanceof Error ? error.message : String(error) 
-    });
+    logger.error(
+      LogCategory.LLM,
+      '[OpenAIAdapter]',
+      'Error validating API key:',
+      {
+        error: error instanceof Error ? error.message : String(error)
+      }
+    );
     return false;
   }
 }
@@ -34,7 +40,9 @@ export async function validateOpenAIApiKey(apiKey: string): Promise<boolean> {
 /**
  * Fetch models from the OpenAI API and register them with the model registry
  */
-export async function fetchOpenAIModels(apiKey: string): Promise<ModelMetadata[]> {
+export async function fetchOpenAIModels(
+  apiKey: string
+): Promise<ModelMetadata[]> {
   try {
     if (!apiKey) {
       throw new Error('API key is required');
@@ -47,16 +55,17 @@ export async function fetchOpenAIModels(apiKey: string): Promise<ModelMetadata[]
 
     // Fetch available models
     const response = await openai.models.list();
-    
+
     // Filter and format models
     const models = response.data
-      .filter(model => 
-        // Filter for GPT models
-        model.id.includes('gpt') || 
-        // Include other relevant models as needed
-        model.id.includes('text-embedding')
+      .filter(
+        (model) =>
+          // Filter for GPT models
+          model.id.includes('gpt') ||
+          // Include other relevant models as needed
+          model.id.includes('text-embedding')
       )
-      .map(model => ({
+      .map((model) => ({
         id: model.id,
         displayName: model.id,
         description: 'OpenAI language model',
@@ -69,12 +78,16 @@ export async function fetchOpenAIModels(apiKey: string): Promise<ModelMetadata[]
     // Register models with the registry
     ModelService.registerModels('openai', models);
 
-    logger.debug(LogCategory.LLM, '[OpenAIAdapter]', `Processed ${models.length} models`);
+    logger.debug(
+      LogCategory.LLM,
+      '[OpenAIAdapter]',
+      `Processed ${models.length} models`
+    );
 
     return ModelService.getModels('openai');
   } catch (error) {
-    logger.error(LogCategory.LLM, '[OpenAIAdapter]', 'Error fetching models:', { 
-      error: error instanceof Error ? error.message : String(error) 
+    logger.error(LogCategory.LLM, '[OpenAIAdapter]', 'Error fetching models:', {
+      error: error instanceof Error ? error.message : String(error)
     });
     throw error;
   }
@@ -88,4 +101,4 @@ function getContextWindowSize(modelId: string): number {
   if (modelId.includes('gpt-3.5-turbo-16k')) return 16384;
   if (modelId.includes('gpt-3.5-turbo')) return 4096;
   return 4096; // Default fallback
-} 
+}

@@ -32,7 +32,9 @@
     "postinstall": "cd agentdock-core && pnpm install && cd .. && tsx --no-deprecation scripts/generate-llms-from-docs.ts",
     "generate-llms": "tsx --no-deprecation scripts/generate-llms-from-docs.ts",
     "build:agentdock-core": "pnpm --filter agentdock-core build",
-    "run-eval-example": "tsx examples/run_evaluation_example.ts"
+    "run-eval-example": "tsx examples/run_evaluation_example.ts",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write ."
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -130,6 +132,7 @@
     "@babel/core": "^7.27.4",
     "@babel/preset-env": "^7.27.2",
     "@eslint/eslintrc": "^3.3.1",
+    "@ianvs/prettier-plugin-sort-imports": "^4.4.1",
     "@tailwindcss/typography": "^0.5.16",
     "@testing-library/jest-dom": "^6.6.3",
     "@types/jest": "^29.5.14",
@@ -153,6 +156,8 @@
     "next-themes": "^0.2.1",
     "node-fetch": "2",
     "postcss-import": "^15.1.0",
+    "prettier": "^3.5.3",
+    "prettier-plugin-tailwindcss": "^0.6.11",
     "shadcn": "^2.4.0",
     "sharp": "^0.34.1",
     "to-ico": "^1.1.5",

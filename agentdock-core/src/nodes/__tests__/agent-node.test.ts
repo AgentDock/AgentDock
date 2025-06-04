@@ -71,12 +71,10 @@ describe('AgentNode', () => {
     mockCoreLLMInstance = {
       getProvider: jest.fn().mockReturnValue('anthropic'),
       getModelId: jest.fn().mockReturnValue('claude-3-opus-20240229'),
-      getModel: jest
-        .fn()
-        .mockReturnValue({
-          provider: 'anthropic',
-          modelId: 'claude-3-opus-20240229'
-        }),
+      getModel: jest.fn().mockReturnValue({
+        provider: 'anthropic',
+        modelId: 'claude-3-opus-20240229'
+      }),
       streamText: jest.fn().mockResolvedValue({
         /* ... */
       })

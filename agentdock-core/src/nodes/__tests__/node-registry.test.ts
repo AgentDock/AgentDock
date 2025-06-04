@@ -94,14 +94,12 @@ describe('NodeRegistry', () => {
     });
 
     it('should overwrite if registering a duplicate core node type', () => {
-      const secondMockClass = jest
-        .fn()
-        .mockImplementation(() =>
-          createMockBaseNode({
-            type: 'core-test-node',
-            category: NodeCategory.CORE
-          })
-        ) as any;
+      const secondMockClass = jest.fn().mockImplementation(() =>
+        createMockBaseNode({
+          type: 'core-test-node',
+          category: NodeCategory.CORE
+        })
+      ) as any;
       (secondMockClass as any).getNodeMetadata = jest
         .fn()
         .mockReturnValue(mockCoreMetadata);
@@ -151,14 +149,12 @@ describe('NodeRegistry', () => {
     });
 
     it('should overwrite if registering a duplicate custom node type', () => {
-      const secondMockClass = jest
-        .fn()
-        .mockImplementation(() =>
-          createMockBaseNode({
-            type: 'custom-test-node',
-            category: NodeCategory.CUSTOM
-          })
-        ) as any;
+      const secondMockClass = jest.fn().mockImplementation(() =>
+        createMockBaseNode({
+          type: 'custom-test-node',
+          category: NodeCategory.CUSTOM
+        })
+      ) as any;
       (secondMockClass as any).getNodeMetadata = jest
         .fn()
         .mockReturnValue(mockCustomMetadata);

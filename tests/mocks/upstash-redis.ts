@@ -13,7 +13,7 @@ export class Redis {
   }
 
   async del(key: string): Promise<number> {
-    return 1;
+    return 0;
   }
 
   async exists(key: string): Promise<number> {

@@ -25,7 +25,8 @@ export default [
       'coverage/',
       '**/*.config.js',
       '**/*.config.ts',
-      'eslint.config.mjs'
+      'eslint.config.mjs',
+      'prettier.config.mjs'
     ]
   },
 

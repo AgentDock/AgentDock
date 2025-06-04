@@ -52,6 +52,7 @@ coverage/
 
 # Configuration files (preserve specific formatting)
 prettier.config.mjs
+eslint.config.mjs
 
 # Cursor rules (specific formatting)
 .cursor/rules/**/*.mdc

@@ -34,7 +34,8 @@
     "build:agentdock-core": "pnpm --filter agentdock-core build",
     "run-eval-example": "tsx examples/run_evaluation_example.ts",
     "format": "prettier --check .",
-    "format:fix": "prettier --write ."
+    "format:fix": "prettier --write .",
+    "format:staged": "lint-staged"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -132,6 +133,7 @@
     "@babel/core": "^7.27.4",
     "@babel/preset-env": "^7.27.2",
     "@eslint/eslintrc": "^3.3.1",
+    "lint-staged": "^15.2.10",
     "@ianvs/prettier-plugin-sort-imports": "^4.4.1",
     "@tailwindcss/typography": "^0.5.16",
     "@testing-library/jest-dom": "^6.6.3",
@@ -173,6 +175,11 @@
   "resolutions": {
     "@types/react": "19.0.10",
     "@types/react-dom": "19.0.4"
+  },
+  "lint-staged": {
+    "*": [
+      "prettier --check --ignore-unknown"
+    ]
   },
   "pnpm": {
     "overrides": {

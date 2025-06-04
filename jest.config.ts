@@ -19,7 +19,6 @@ const customJestConfig: Config = {
   },
   transform: {
     '^.+\\.(ts|tsx)$': 'ts-jest',
-    '^.+\\.(js|jsx|mjs)$': 'babel-jest',
   },
   transformIgnorePatterns: [
     '/node_modules/(?!(node-fetch|@upstash/redis|uncrypto|@vercel))',

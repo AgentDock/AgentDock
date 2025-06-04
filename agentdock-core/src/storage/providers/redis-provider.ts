@@ -147,7 +147,7 @@ export class RedisStorageProvider implements StorageProvider {
           const keys: string[] = [];
           do {
               // Scan returns [stringCursor, keys[]]
-              const [nextCursorStr, foundKeys] = await this.client.scan(cursor as number, { match: pattern, count: 100 });
+              const [nextCursorStr, foundKeys]: [string, string[]] = await this.client.scan(cursor as number, { match: pattern, count: 100 });
               keys.push(...foundKeys);
               cursor = nextCursorStr; // Store string cursor for next iteration
           } while (cursor !== '0'); // Compare with string '0' as returned by upstash/redis scan
@@ -170,7 +170,7 @@ export class RedisStorageProvider implements StorageProvider {
            let deletedCount = 0;
            do {
                // Scan returns [stringCursor, keys[]]
-               const [nextCursorStr, keysToDelete] = await this.client.scan(cursor as number, { match: pattern, count: 100 });
+               const [nextCursorStr, keysToDelete]: [string, string[]] = await this.client.scan(cursor as number, { match: pattern, count: 100 });
                if (keysToDelete.length > 0) {
                    deletedCount += await this.client.del(...keysToDelete);
                }

@@ -18,7 +18,7 @@ import {
   type AgentMessage,
   type MessageContent,
   type AggregatedEvaluationResult
-} from '../../agentdock-core'; // Corrected import path (up two levels)
+} from '../../agentdock-core/src'; // Corrected import path (up two levels)
 
 // TODO: [Phase 2] Refactor agentdock-core to re-export JsonFileStorageProvider from a public entry point 
 // (e.g., 'agentdock-core/evaluation') and update this import to avoid deep relative paths.

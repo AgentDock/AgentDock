@@ -25,6 +25,7 @@ export default [
             "coverage/",
             "**/*.config.js",
             "**/*.config.ts",
+            "eslint.config.mjs",
         ],
     },
 
@@ -40,6 +41,7 @@ export default [
     // Configuration for TypeScript/JavaScript files (including Next.js/React)
     {
         files: ["**/*.{js,jsx,mjs,cjs,ts,tsx}"],
+        ignores: ["eslint.config.mjs"],
         plugins: {
             '@typescript-eslint': tsPlugin,
             'react': reactPlugin,

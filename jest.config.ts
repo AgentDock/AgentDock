@@ -14,12 +14,15 @@ const customJestConfig: Config = {
     '^@/(.*)$': '<rootDir>/src/$1',
     // Add mapping for agentdock-core internal logger
     '^agentdock-core/src/logging$': '<rootDir>/agentdock-core/src/logging/index.ts',
+    // Mock @upstash/redis to avoid ES module issues
+    '^@upstash/redis$': '<rootDir>/tests/mocks/upstash-redis.ts',
   },
   transform: {
     '^.+\\.(ts|tsx)$': 'ts-jest',
+    '^.+\\.(js|jsx|mjs)$': 'babel-jest',
   },
   transformIgnorePatterns: [
-    '/node_modules/(?!node-fetch)',
+    '/node_modules/(?!(node-fetch|@upstash/redis|uncrypto|@vercel))',
   ],
   testMatch: [
     '<rootDir>/tests/**/*.test.ts',

@@ -5,18 +5,19 @@
 export const siteConfig = {
   name: 'AgentDock Hub',
   url: process.env.NEXT_PUBLIC_APP_URL || 'https://hub.agentdock.ai',
-  ogImage: (process.env.NEXT_PUBLIC_APP_URL || 'https://hub.agentdock.ai') + '/api/og',
+  ogImage:
+    (process.env.NEXT_PUBLIC_APP_URL || 'https://hub.agentdock.ai') + '/api/og',
   description: 'Build Anything with AI Agents',
   links: {
     twitter: 'https://twitter.com/agentdock',
-    github: 'https://github.com/agentdock',
-  },
+    github: 'https://github.com/agentdock'
+  }
 } as const;
 
 export const metadata = {
   title: {
     default: siteConfig.name,
-    template: `%s | ${siteConfig.name}`,
+    template: `%s | ${siteConfig.name}`
   },
   description: siteConfig.description,
   keywords: [
@@ -30,13 +31,13 @@ export const metadata = {
     'AgentDock',
     'Agentic AI',
     'Workflows',
-    'Agentic Framework',
+    'Agentic Framework'
   ],
   authors: [
     {
       name: 'AgentDock',
-      url: siteConfig.url,
-    },
+      url: siteConfig.url
+    }
   ],
   creator: 'AgentDock',
   openGraph: {
@@ -51,21 +52,21 @@ export const metadata = {
         url: siteConfig.ogImage,
         width: 1200,
         height: 630,
-        alt: siteConfig.name,
-      },
-    ],
+        alt: siteConfig.name
+      }
+    ]
   },
   twitter: {
     card: 'summary_large_image',
     title: siteConfig.name,
     description: siteConfig.description,
     images: [siteConfig.ogImage],
-    creator: '@agentdock',
+    creator: '@agentdock'
   },
   icons: {
     icon: '/favicon.ico',
     shortcut: '/favicon-16x16.png',
-    apple: '/apple-touch-icon.png',
+    apple: '/apple-touch-icon.png'
   },
-  manifest: '/site.webmanifest',
-} as const; 
+  manifest: '/site.webmanifest'
+} as const;

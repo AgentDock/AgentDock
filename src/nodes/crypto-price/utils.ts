@@ -28,10 +28,13 @@ export function isValidIdFormat(id: string): boolean {
  * @param currency Currency code (e.g., 'usd', 'eur')
  * @returns Formatted currency string
  */
-export function formatCurrency(amount: number, currency: string = 'usd'): string {
+export function formatCurrency(
+  amount: number,
+  currency: string = 'usd'
+): string {
   // Get currency symbol
   const currencySymbol = getCurrencySymbol(currency);
-  
+
   // Format with appropriate decimal places
   return `${currencySymbol}${amount.toLocaleString('en-US', {
     minimumFractionDigits: 2,
@@ -55,9 +58,9 @@ export function getCurrencySymbol(currency: string = 'usd'): string {
     inr: '₹',
     rub: '₽',
     btc: '₿',
-    eth: 'Ξ',
+    eth: 'Ξ'
   };
-  
+
   return symbols[currency.toLowerCase()] || currency.toUpperCase() + ' ';
 }
 
@@ -125,4 +128,4 @@ export function getPriceChangeSymbol(change: number): string {
   if (change > 0) return '▲';
   if (change < 0) return '▼';
   return '▶';
-} 
+}

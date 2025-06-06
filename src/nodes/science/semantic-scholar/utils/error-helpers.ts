@@ -2,7 +2,7 @@
  * @fileoverview Error handling utilities for Semantic Scholar API
  */
 
-import { logger, LogCategory } from 'agentdock-core';
+import { LogCategory, logger } from 'agentdock-core';
 
 /**
  * Handle API errors with consistent logging and formatting
@@ -12,29 +12,39 @@ import { logger, LogCategory } from 'agentdock-core';
 export function handleApiError(error: unknown): string {
   // If the error is a string, return it directly
   if (typeof error === 'string') {
-    logger.error(LogCategory.NODE, '[SemanticScholarAPI]', 'API Error (string)', { error });
+    logger.error(
+      LogCategory.NODE,
+      '[SemanticScholarAPI]',
+      'API Error (string)',
+      { error }
+    );
     return error;
   }
-  
+
   // If the error is an Error object, return its message
   if (error instanceof Error) {
     logger.error(
-      LogCategory.NODE, 
-      '[SemanticScholarAPI]', 
-      'API Error (Error)', 
-      { 
+      LogCategory.NODE,
+      '[SemanticScholarAPI]',
+      'API Error (Error)',
+      {
         error: error.message,
         stack: error.stack
       }
     );
     return error.message;
   }
-  
+
   // If the error is a Response object from fetch
-  if (error && typeof error === 'object' && 'status' in error && 'statusText' in error) {
+  if (
+    error &&
+    typeof error === 'object' &&
+    'status' in error &&
+    'statusText' in error
+  ) {
     const response = error as Response;
     const status = response.status;
-    
+
     // Log the error with appropriate level
     logger.error(
       LogCategory.NODE,
@@ -45,7 +55,7 @@ export function handleApiError(error: unknown): string {
         statusText: response.statusText
       }
     );
-    
+
     // Return a user-friendly message based on status code
     if (status === 429) {
       return 'Rate limit exceeded. Please try again later.';
@@ -59,9 +69,11 @@ export function handleApiError(error: unknown): string {
       return `API request failed with status ${status}`;
     }
   }
-  
+
   // For any other type of error, convert to string
   const errorString = String(error);
-  logger.error(LogCategory.NODE, '[SemanticScholarAPI]', 'Unknown API Error', { error: errorString });
+  logger.error(LogCategory.NODE, '[SemanticScholarAPI]', 'Unknown API Error', {
+    error: errorString
+  });
   return `Unknown error: ${errorString}`;
-} 
+}

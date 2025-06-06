@@ -3,7 +3,8 @@
  */
 
 // Base URL for Semantic Scholar API
-export const SEMANTIC_SCHOLAR_API_URL = 'https://api.semanticscholar.org/graph/v1';
+export const SEMANTIC_SCHOLAR_API_URL =
+  'https://api.semanticscholar.org/graph/v1';
 
 // Default parameters
 export const DEFAULT_SEARCH_RESULTS = 10;
@@ -31,7 +32,7 @@ export const PAPER_FIELDS = [
   'publicationVenue',
   'publicationTypes',
   'fieldsOfStudy',
-  'tldr',
+  'tldr'
 ].join(',');
 
 // Fields to request when fetching authors
@@ -44,9 +45,9 @@ export const AUTHOR_FIELDS = [
   'homepage',
   'paperCount',
   'citationCount',
-  'hIndex',
+  'hIndex'
 ].join(',');
 
 // Rate limits (100 requests per 5 minutes without API key)
 export const RATE_LIMIT_MS = 300; // Conservative 300ms per request
-export const MAX_REQUESTS_PER_MINUTE = 20; // Conservative 20 requests per minute 
+export const MAX_REQUESTS_PER_MINUTE = 20; // Conservative 20 requests per minute

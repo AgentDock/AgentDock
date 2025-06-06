@@ -2,4 +2,4 @@
  * @fileoverview Exports all formatters
  */
 
-export * from './markdown'; 
+export * from './markdown';

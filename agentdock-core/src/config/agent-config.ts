@@ -2,10 +2,14 @@
  * @fileoverview Core agent configuration loading and validation
  */
 
-import { AgentConfig, AgentConfigSchema, PersonalitySchema } from '../types/agent-config';
 import { createError, ErrorCode } from '../errors';
-import { logger, LogCategory } from '../logging';
 import { ProviderRegistry } from '../llm/provider-registry';
+import { LogCategory, logger } from '../logging';
+import {
+  AgentConfig,
+  AgentConfigSchema,
+  PersonalitySchema
+} from '../types/agent-config';
 
 /**
  * Ensures a value is a string
@@ -67,7 +71,9 @@ export async function loadAgentConfig(
       nodes: [...template.nodes],
       chatSettings: {
         ...template.chatSettings,
-        initialMessages: template.chatSettings?.initialMessages ? [...template.chatSettings.initialMessages] : []
+        initialMessages: template.chatSettings?.initialMessages
+          ? [...template.chatSettings.initialMessages]
+          : []
       },
       nodeConfigurations: {
         ...template.nodeConfigurations,
@@ -86,11 +92,11 @@ export async function loadAgentConfig(
     if (error && typeof error === 'object' && 'code' in error) {
       throw error;
     }
-    
+
     throw createError(
       'config',
       `Failed to load agent configuration: ${error instanceof Error ? error.message : 'Unknown error'}`,
       ErrorCode.CONFIG_NOT_FOUND
     );
   }
-} 
+}

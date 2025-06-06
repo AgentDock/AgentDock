@@ -3,20 +3,18 @@
  */
 
 import { z } from 'zod';
+
 import { ArxivPaper } from '../component';
-import { 
-  ARXIV_API_URL, 
-  RATE_LIMIT_MS 
-} from './constants';
 import { ArxivFetchSchema } from '../schema';
 import { handleApiError } from '../utils/error-helpers';
-import { parseXML, getElements, parseArxivEntry } from '../utils/xml-helpers';
+import { getElements, parseArxivEntry, parseXML } from '../utils/xml-helpers';
+import { ARXIV_API_URL, RATE_LIMIT_MS } from './constants';
 
 /**
  * Sleep for a specified number of milliseconds
  * @param ms Milliseconds to sleep
  */
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
  * Extract arXiv ID from a string that might be a full URL or just the ID
@@ -32,7 +30,7 @@ function extractArxivId(idOrUrl: string): string {
       return matches[1].replace('.pdf', '');
     }
   }
-  
+
   // If not matched as a URL, assume it's already an ID (e.g., "2303.08774" or "2303.08774v2")
   return idOrUrl;
 }
@@ -42,48 +40,52 @@ function extractArxivId(idOrUrl: string): string {
  * @param fetchParams Parameters for the fetch operation
  * @returns The fetched paper details
  */
-export async function fetchArxivPaper(fetchParams: z.infer<typeof ArxivFetchSchema>): Promise<ArxivPaper> {
+export async function fetchArxivPaper(
+  fetchParams: z.infer<typeof ArxivFetchSchema>
+): Promise<ArxivPaper> {
   try {
     // Validate and process the fetch parameters
     const validParams = ArxivFetchSchema.parse(fetchParams);
-    
+
     // Extract the arXiv ID from the provided ID
     const arxivId = extractArxivId(validParams.id);
-    
+
     // Build the query parameters
     const queryParams = new URLSearchParams();
     queryParams.append('id_list', arxivId);
-    
+
     // Construct the URL
     const url = `${ARXIV_API_URL}?${queryParams.toString()}`;
-    
+
     // Respect the rate limit
     await sleep(RATE_LIMIT_MS);
-    
+
     // Make the request
     const response = await fetch(url);
-    
+
     if (!response.ok) {
-      throw new Error(`arXiv API returned ${response.status}: ${response.statusText}`);
+      throw new Error(
+        `arXiv API returned ${response.status}: ${response.statusText}`
+      );
     }
-    
+
     // Parse the XML response
     const xmlText = await response.text();
     const xmlDoc = parseXML(xmlText);
-    
+
     // Extract the entry
     const entries = getElements(xmlDoc, 'entry');
-    
+
     if (entries.length === 0) {
       throw new Error(`No paper found with ID: ${arxivId}`);
     }
-    
+
     // Parse the paper details
     const paper = parseArxivEntry(entries[0]);
-    
+
     return paper;
   } catch (error) {
     const errorMessage = handleApiError(error);
     throw new Error(`Error fetching arXiv paper: ${errorMessage}`);
   }
-} 
+}

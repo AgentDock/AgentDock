@@ -39,7 +39,12 @@ export interface ChatSettings extends BaseChatSettings {
 /**
  * LLM provider type
  */
-export type LLMProvider = 'anthropic' | 'openai' | 'gemini' | 'deepseek' | 'groq';
+export type LLMProvider =
+  | 'anthropic'
+  | 'openai'
+  | 'gemini'
+  | 'deepseek'
+  | 'groq';
 
 /**
  * Chat settings for the UI
@@ -88,4 +93,4 @@ export interface ChatRuntimeConfig {
     /** Chat prompt suggestions */
     chatPrompts?: string[];
   };
-} 
+}

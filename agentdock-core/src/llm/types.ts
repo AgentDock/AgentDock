@@ -1,3 +1,5 @@
+import type { LanguageModel } from 'ai';
+
 /**
  * @fileoverview Type definitions for LLM module.
  */
@@ -15,7 +17,12 @@ export interface TokenUsage {
 /**
  * LLM provider types
  */
-export type LLMProvider = 'anthropic' | 'openai' | 'gemini' | 'deepseek' | 'groq';
+export type LLMProvider =
+  | 'anthropic'
+  | 'openai'
+  | 'gemini'
+  | 'deepseek'
+  | 'groq';
 
 /**
  * LLM configuration
@@ -124,17 +131,28 @@ export interface GroqConfig extends LLMConfig {
   extractReasoning?: boolean;
 }
 
-export type ProviderConfig = AnthropicConfig | OpenAIConfig | GeminiConfig | DeepSeekConfig | GroqConfig;
+export type ProviderConfig =
+  | AnthropicConfig
+  | OpenAIConfig
+  | GeminiConfig
+  | DeepSeekConfig
+  | GroqConfig;
 
 /**
  * LLM provider interface
  */
 export interface LLMProviderInterface {
-  generateStream(messages: LLMMessage[], config: LLMConfig, tools?: any): Promise<ReadableStream>;
-  generateText(messages: LLMMessage[], config: LLMConfig, tools?: any): Promise<string>;
+  generateStream(
+    messages: LLMMessage[],
+    config: LLMConfig,
+    tools?: any
+  ): Promise<ReadableStream>;
+  generateText(
+    messages: LLMMessage[],
+    config: LLMConfig,
+    tools?: any
+  ): Promise<string>;
 }
-
-import type { LanguageModel } from 'ai';
 
 export interface LLMAdapter {
   provider: LLMProviderInterface;
@@ -168,4 +186,4 @@ export interface ProviderMetadata {
   defaultModel: string;
   /** Apply provider-specific configurations to the base config */
   applyConfig?: (baseConfig: any, modelConfig: any, options?: any) => void;
-} 
+}

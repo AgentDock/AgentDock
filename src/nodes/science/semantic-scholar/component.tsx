@@ -68,23 +68,17 @@ export const SemanticScholarSearchResultComponent: React.FC<{
     <div className="semantic-scholar-search-result">
       <h3>Semantic Scholar Search Results for &quot;{result.query}&quot;</h3>
       <p>Found {result.total} results</p>
-      
-      {result.searchParams.year && (
-        <p>Year: {result.searchParams.year}</p>
-      )}
-      
-      {result.searchParams.venue && (
-        <p>Venue: {result.searchParams.venue}</p>
-      )}
-      
-      {result.searchParams.openAccess && (
-        <p>Open Access Only</p>
-      )}
-      
+
+      {result.searchParams.year && <p>Year: {result.searchParams.year}</p>}
+
+      {result.searchParams.venue && <p>Venue: {result.searchParams.venue}</p>}
+
+      {result.searchParams.openAccess && <p>Open Access Only</p>}
+
       {result.searchParams.fieldsOfStudy && (
         <p>Field of Study: {result.searchParams.fieldsOfStudy}</p>
       )}
-      
+
       <ul>
         {result.papers.map((paper, index) => (
           <li key={paper.paperId || index}>
@@ -92,24 +86,33 @@ export const SemanticScholarSearchResultComponent: React.FC<{
               <strong>{paper.title}</strong>
               {paper.authors.length > 0 && (
                 <p>
-                  <em>{paper.authors.map(author => author.name).join(', ')}</em>
+                  <em>
+                    {paper.authors.map((author) => author.name).join(', ')}
+                  </em>
                 </p>
               )}
-              {paper.venue && (
-                <p>Venue: {paper.venue}</p>
-              )}
+              {paper.venue && <p>Venue: {paper.venue}</p>}
               <p>
                 {paper.year && `Published: ${paper.year}`}
-                {paper.citationCount !== undefined && ` | Citations: ${paper.citationCount}`}
+                {paper.citationCount !== undefined &&
+                  ` | Citations: ${paper.citationCount}`}
               </p>
               <p>
-                <a href={paper.url} target="_blank" rel="noopener noreferrer">
+                <a
+                  href={paper.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   View on Semantic Scholar
                 </a>
                 {paper.openAccessPdf && (
                   <>
                     {' | '}
-                    <a href={paper.openAccessPdf.url} target="_blank" rel="noopener noreferrer">
+                    <a
+                      href={paper.openAccessPdf.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       PDF
                     </a>
                   </>
@@ -132,68 +135,95 @@ export const SemanticScholarPaperComponent: React.FC<{
   return (
     <div className="semantic-scholar-paper">
       <h3>{paper.title}</h3>
-      
+
       {paper.authors.length > 0 && (
         <p>
-          <strong>Authors:</strong> {paper.authors.map(author => author.name).join(', ')}
+          <strong>Authors:</strong>{' '}
+          {paper.authors.map((author) => author.name).join(', ')}
         </p>
       )}
-      
+
       {paper.venue && (
-        <p><strong>Venue:</strong> {paper.venue}</p>
+        <p>
+          <strong>Venue:</strong> {paper.venue}
+        </p>
       )}
-      
+
       {paper.year && (
-        <p><strong>Year:</strong> {paper.year}</p>
+        <p>
+          <strong>Year:</strong> {paper.year}
+        </p>
       )}
-      
+
       {paper.publicationDate && (
-        <p><strong>Publication Date:</strong> {paper.publicationDate}</p>
+        <p>
+          <strong>Publication Date:</strong> {paper.publicationDate}
+        </p>
       )}
-      
+
       {paper.citationCount !== undefined && (
-        <p><strong>Citations:</strong> {paper.citationCount}</p>
+        <p>
+          <strong>Citations:</strong> {paper.citationCount}
+        </p>
       )}
-      
+
       {paper.referenceCount !== undefined && (
-        <p><strong>References:</strong> {paper.referenceCount}</p>
+        <p>
+          <strong>References:</strong> {paper.referenceCount}
+        </p>
       )}
-      
+
       {paper.fieldsOfStudy && paper.fieldsOfStudy.length > 0 && (
-        <p><strong>Fields of Study:</strong> {paper.fieldsOfStudy.join(', ')}</p>
+        <p>
+          <strong>Fields of Study:</strong> {paper.fieldsOfStudy.join(', ')}
+        </p>
       )}
-      
+
       {paper.abstract && (
         <div>
           <h4>Abstract</h4>
           <p>{paper.abstract}</p>
         </div>
       )}
-      
+
       {paper.tldr && (
         <div>
           <h4>TL;DR</h4>
-          <p><em>{paper.tldr.text}</em></p>
+          <p>
+            <em>{paper.tldr.text}</em>
+          </p>
         </div>
       )}
-      
+
       <p>
-        <a href={paper.url} target="_blank" rel="noopener noreferrer">
+        <a
+          href={paper.url}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           View on Semantic Scholar
         </a>
         {paper.openAccessPdf && (
           <>
             {' | '}
-            <a href={paper.openAccessPdf.url} target="_blank" rel="noopener noreferrer">
+            <a
+              href={paper.openAccessPdf.url}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               Download PDF
             </a>
           </>
         )}
       </p>
-      
+
       {paper.externalIds && paper.externalIds.DOI && (
         <p>
-          <a href={`https://doi.org/${paper.externalIds.DOI}`} target="_blank" rel="noopener noreferrer">
+          <a
+            href={`https://doi.org/${paper.externalIds.DOI}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             DOI: {paper.externalIds.DOI}
           </a>
         </p>
@@ -211,30 +241,42 @@ export const SemanticScholarAuthorComponent: React.FC<{
   return (
     <div className="semantic-scholar-author">
       <h3>{author.name}</h3>
-      
+
       {author.affiliations && author.affiliations.length > 0 && (
-        <p><strong>Affiliations:</strong> {author.affiliations.join(', ')}</p>
+        <p>
+          <strong>Affiliations:</strong> {author.affiliations.join(', ')}
+        </p>
       )}
-      
+
       {author.paperCount !== undefined && (
-        <p><strong>Papers:</strong> {author.paperCount}</p>
+        <p>
+          <strong>Papers:</strong> {author.paperCount}
+        </p>
       )}
-      
+
       {author.citationCount !== undefined && (
-        <p><strong>Citations:</strong> {author.citationCount}</p>
+        <p>
+          <strong>Citations:</strong> {author.citationCount}
+        </p>
       )}
-      
+
       {author.hIndex !== undefined && (
-        <p><strong>h-index:</strong> {author.hIndex}</p>
+        <p>
+          <strong>h-index:</strong> {author.hIndex}
+        </p>
       )}
-      
+
       {author.url && (
         <p>
-          <a href={author.url} target="_blank" rel="noopener noreferrer">
+          <a
+            href={author.url}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             View on Semantic Scholar
           </a>
         </p>
       )}
     </div>
   );
-}; 
+};

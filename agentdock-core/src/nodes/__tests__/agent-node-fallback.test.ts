@@ -2,11 +2,11 @@
  * @fileoverview Tests for the AgentNode fallback functionality.
  */
 
-import { AgentNode, AgentNodeConfig } from '../agent-node';
+import { AgentError, ErrorCode } from '../../errors';
+import { OrchestrationManager } from '../../orchestration/index';
 import { AgentConfig, ValidatedPersonality } from '../../types/agent-config';
 import { Message } from '../../types/messages';
-import { OrchestrationManager } from '../../orchestration/index';
-import { AgentError, ErrorCode } from '../../errors';
+import { AgentNode, AgentNodeConfig } from '../agent-node';
 
 // Mock setup - DIRECT mocks, not using jest.doMock
 // Create mocks before importing any modules that will use them
@@ -33,7 +33,9 @@ jest.mock('../../llm', () => ({
   createLLM: jest.fn((config) => {
     if (config?.apiKey === 'mock-fallback-key') return mockFallbackLLM;
     if (config?.apiKey === 'mock-primary-key') return mockCoreLLM;
-    throw new Error(`Mock createLLM called with unexpected key: ${config?.apiKey}`);
+    throw new Error(
+      `Mock createLLM called with unexpected key: ${config?.apiKey}`
+    );
   }),
   LLMOrchestrationService: jest.fn().mockImplementation(() => ({
     streamWithOrchestration: mockStreamWithOrchestration
@@ -48,13 +50,19 @@ jest.mock('../../llm/provider-registry', () => ({
       return null;
     }),
     getNodeTypeFromProvider: jest.fn(() => 'mock-node-type'),
-    getProviderFromNodes: jest.fn((nodes) => nodes?.length > 0 ? nodes[0] : null)
+    getProviderFromNodes: jest.fn((nodes) =>
+      nodes?.length > 0 ? nodes[0] : null
+    )
   }
 }));
 
 jest.mock('../../logging', () => ({
   logger: {
-    debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn(), log: jest.fn()
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+    log: jest.fn()
   },
   LogCategory: { NODE: 'node', LLM: 'llm' }
 }));
@@ -108,14 +116,14 @@ describe('AgentNode Fallback Tests', () => {
     it('should initialize primary LLM', () => {
       const config = makeNodeConfig({ fallbackApiKey: undefined });
       const node = new AgentNode('test1', config);
-      
+
       // Verify internal state via behavior testing
       expect(node).toBeDefined();
       // The createLLM function should have been called once with primary config
       expect(require('../../llm').createLLM).toHaveBeenCalledTimes(1);
       expect(require('../../llm').createLLM).toHaveBeenCalledWith(
-        expect.objectContaining({ 
-          provider: 'anthropic', 
+        expect.objectContaining({
+          provider: 'anthropic',
           apiKey: 'mock-primary-key'
         })
       );
@@ -124,21 +132,21 @@ describe('AgentNode Fallback Tests', () => {
     it('should initialize both primary and fallback LLMs', () => {
       const config = makeNodeConfig();
       const node = new AgentNode('test2', config);
-      
+
       expect(node).toBeDefined();
       // createLLM should be called twice - once for primary, once for fallback
       expect(require('../../llm').createLLM).toHaveBeenCalledTimes(2);
       // Check call arguments for primary LLM
       expect(require('../../llm').createLLM).toHaveBeenCalledWith(
-        expect.objectContaining({ 
-          provider: 'anthropic', 
+        expect.objectContaining({
+          provider: 'anthropic',
           apiKey: 'mock-primary-key'
         })
       );
       // Check call arguments for fallback LLM
       expect(require('../../llm').createLLM).toHaveBeenCalledWith(
-        expect.objectContaining({ 
-          provider: 'openai', 
+        expect.objectContaining({
+          provider: 'openai',
           apiKey: 'mock-fallback-key'
         })
       );
@@ -152,12 +160,12 @@ describe('AgentNode Fallback Tests', () => {
         fallbackApiKey: 'mock-primary-key',
         fallbackModel: 'claude-mock'
       });
-      
+
       // Mock to verify identical check
       mockCoreLLM.getModelId.mockReturnValueOnce('claude-mock');
-      
+
       const node = new AgentNode('test3', config);
-      
+
       expect(node).toBeDefined();
       // createLLM should be called only once (for primary)
       expect(require('../../llm').createLLM).toHaveBeenCalledTimes(1);
@@ -177,20 +185,20 @@ describe('AgentNode Fallback Tests', () => {
     it('should use primary LLM by default', async () => {
       const config = makeNodeConfig();
       const node = new AgentNode('test4', config);
-      
+
       await node.handleMessage({
         messages: testMessages,
         sessionId: 'test-session',
         orchestrationManager: mockOrchestrationManager
       });
-      
+
       // LLMOrchestrationService should be initialized with primary LLM
       expect(require('../../llm').LLMOrchestrationService).toHaveBeenCalledWith(
         mockCoreLLM,
         expect.anything(),
         expect.anything()
       );
-      
+
       // streamWithOrchestration should be called
       expect(mockStreamWithOrchestration).toHaveBeenCalledTimes(1);
     });
@@ -198,56 +206,56 @@ describe('AgentNode Fallback Tests', () => {
     it('should use fallback LLM when useFallback is true', async () => {
       const config = makeNodeConfig();
       const node = new AgentNode('test5', config);
-      
+
       await node.handleMessage({
         messages: testMessages,
         sessionId: 'test-session',
         orchestrationManager: mockOrchestrationManager,
         useFallback: true
       });
-      
+
       // LLMOrchestrationService should be initialized with fallback LLM
       expect(require('../../llm').LLMOrchestrationService).toHaveBeenCalledWith(
         mockFallbackLLM,
         expect.anything(),
         expect.anything()
       );
-      
+
       expect(mockStreamWithOrchestration).toHaveBeenCalledTimes(1);
     });
 
     it('should use primary LLM when useFallback is true but no fallback exists', async () => {
       const config = makeNodeConfig({ fallbackApiKey: undefined });
       const node = new AgentNode('test6', config);
-      
+
       await node.handleMessage({
         messages: testMessages,
         sessionId: 'test-session',
         orchestrationManager: mockOrchestrationManager,
         useFallback: true
       });
-      
+
       // LLMOrchestrationService should be initialized with primary LLM
       expect(require('../../llm').LLMOrchestrationService).toHaveBeenCalledWith(
         mockCoreLLM,
         expect.anything(),
         expect.anything()
       );
-      
+
       expect(mockStreamWithOrchestration).toHaveBeenCalledTimes(1);
     });
 
     it('should apply system override to prompt', async () => {
       const config = makeNodeConfig();
       const node = new AgentNode('test7', config);
-      
+
       await node.handleMessage({
         messages: testMessages,
         sessionId: 'test-session',
         orchestrationManager: mockOrchestrationManager,
         systemOverride: 'Custom system prompt'
       });
-      
+
       expect(mockStreamWithOrchestration).toHaveBeenCalledWith(
         expect.objectContaining({
           system: expect.stringContaining('Custom system prompt')
@@ -258,14 +266,14 @@ describe('AgentNode Fallback Tests', () => {
     it('should apply runtime config overrides', async () => {
       const config = makeNodeConfig();
       const node = new AgentNode('test8', config);
-      
+
       await node.handleMessage({
         messages: testMessages,
         sessionId: 'test-session',
         orchestrationManager: mockOrchestrationManager,
         config: { temperature: 0.2, maxTokens: 500 }
       });
-      
+
       expect(mockStreamWithOrchestration).toHaveBeenCalledWith(
         expect.objectContaining({
           temperature: 0.2,
@@ -274,4 +282,4 @@ describe('AgentNode Fallback Tests', () => {
       );
     });
   });
-}); 
+});

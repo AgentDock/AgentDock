@@ -2,10 +2,10 @@ import { Message } from 'agentdock-core';
 import fetch, { Headers, Response } from 'node-fetch';
 
 const TEST_SIZES = {
-  small: 100,    // 100 chars
-  medium: 1000,  // 1KB
-  large: 10000,  // 10KB
-  huge: 100000   // 100KB
+  small: 100, // 100 chars
+  medium: 1000, // 1KB
+  large: 10000, // 10KB
+  huge: 100000 // 100KB
 };
 
 const TEST_ITERATIONS = 3;
@@ -51,7 +51,9 @@ async function measureStreamingResponse(size: number): Promise<{
       headers: Object.fromEntries(response.headers.entries()),
       body: errorText
     });
-    throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
+    throw new Error(
+      `HTTP error! status: ${response.status}, body: ${errorText}`
+    );
   }
 
   if (!response.body) {
@@ -94,15 +96,15 @@ async function runTests() {
 
   for (const [sizeName, size] of Object.entries(TEST_SIZES)) {
     console.log(`\nTesting ${sizeName} payload (${size} chars):`);
-    
+
     const results = [];
-    
+
     for (let i = 0; i < TEST_ITERATIONS; i++) {
       try {
         console.log(`  Iteration ${i + 1}/${TEST_ITERATIONS}...`);
         const result = await measureStreamingResponse(size);
         results.push(result);
-        
+
         console.log(`    First chunk: ${result.firstChunkTime}ms`);
         console.log(`    Total time: ${result.totalTime}ms`);
         console.log(`    Chunks: ${result.chunkCount}`);
@@ -113,10 +115,13 @@ async function runTests() {
     }
 
     if (results.length > 0) {
-      const avgFirstChunk = results.reduce((sum, r) => sum + r.firstChunkTime, 0) / results.length;
-      const avgTotalTime = results.reduce((sum, r) => sum + r.totalTime, 0) / results.length;
-      const avgChunks = results.reduce((sum, r) => sum + r.chunkCount, 0) / results.length;
-      
+      const avgFirstChunk =
+        results.reduce((sum, r) => sum + r.firstChunkTime, 0) / results.length;
+      const avgTotalTime =
+        results.reduce((sum, r) => sum + r.totalTime, 0) / results.length;
+      const avgChunks =
+        results.reduce((sum, r) => sum + r.chunkCount, 0) / results.length;
+
       console.log(`  Averages for ${sizeName}:`);
       console.log(`    First chunk: ${avgFirstChunk.toFixed(2)}ms`);
       console.log(`    Total time: ${avgTotalTime.toFixed(2)}ms`);
@@ -125,4 +130,4 @@ async function runTests() {
   }
 }
 
-runTests().catch(console.error); 
+runTests().catch(console.error);

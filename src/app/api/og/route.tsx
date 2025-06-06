@@ -1,5 +1,6 @@
 import { ImageResponse } from 'next/og';
 import { NextRequest } from 'next/server';
+
 import { siteConfig } from '@/lib/config';
 
 export const runtime = 'edge';
@@ -11,17 +12,17 @@ const HEIGHT = 630;
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    
+
     // Get title from search params or use description as default instead of name
     const title = searchParams.get('title') || siteConfig.description;
     // Get gradient colors or use defaults
     const gradientFrom = searchParams.get('from') || '0062F0';
     const gradientTo = searchParams.get('to') || '091E3B';
-    
+
     // Use the existing favicon.svg as the logo
     const logoUrl = new URL('../../../../public/favicon.svg', import.meta.url);
-    const logo = await fetch(logoUrl).then(res => res.text());
-    
+    const logo = await fetch(logoUrl).then((res) => res.text());
+
     return new ImageResponse(
       (
         <div
@@ -34,7 +35,7 @@ export async function GET(req: NextRequest) {
             justifyContent: 'center',
             backgroundColor: '#fff',
             backgroundImage: `linear-gradient(135deg, #${gradientFrom}, #${gradientTo})`,
-            position: 'relative',
+            position: 'relative'
           }}
         >
           {/* Main content box */}
@@ -55,7 +56,7 @@ export async function GET(req: NextRequest) {
               width: '90%',
               maxWidth: '1000px',
               overflowWrap: 'break-word',
-              wordWrap: 'break-word',
+              wordWrap: 'break-word'
             }}
           >
             <div
@@ -65,13 +66,13 @@ export async function GET(req: NextRequest) {
                 lineHeight: 1.2,
                 maxWidth: '100%',
                 wordBreak: 'break-word',
-                textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+                textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
               }}
             >
               {title}
             </div>
           </div>
-          
+
           {/* Logo and brand at the bottom */}
           <div
             style={{
@@ -85,10 +86,10 @@ export async function GET(req: NextRequest) {
               boxShadow: '0 2px 15px rgba(0, 0, 0, 0.1)',
               gap: '16px',
               position: 'absolute',
-              bottom: '30px',
+              bottom: '30px'
             }}
           >
-            <img 
+            <img
               src={`data:image/svg+xml;base64,${Buffer.from(logo).toString('base64')}`}
               width="50"
               height="50"
@@ -101,7 +102,7 @@ export async function GET(req: NextRequest) {
                 color: '#000',
                 letterSpacing: '-0.02em',
                 textShadow: '0 0 1px #000',
-                WebkitTextStroke: '0.5px black',
+                WebkitTextStroke: '0.5px black'
               }}
             >
               AgentDock Hub
@@ -111,11 +112,14 @@ export async function GET(req: NextRequest) {
       ),
       {
         width: WIDTH,
-        height: HEIGHT,
+        height: HEIGHT
       }
     );
   } catch (error) {
     console.error('Error generating OG image:', error);
-    return new Response(`Failed to generate OG image: ${error instanceof Error ? error.message : 'Unknown error'}`, { status: 500 });
+    return new Response(
+      `Failed to generate OG image: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      { status: 500 }
+    );
   }
-} 
+}

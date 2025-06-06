@@ -7,4 +7,4 @@ export const NodeCategory = Object.freeze({
   CUSTOM: 'custom'
 } as const);
 
-export type NodeCategory = typeof NodeCategory[keyof typeof NodeCategory]; 
+export type NodeCategory = (typeof NodeCategory)[keyof typeof NodeCategory];

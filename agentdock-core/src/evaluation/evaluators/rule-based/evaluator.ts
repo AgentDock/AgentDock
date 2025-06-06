@@ -1,4 +1,9 @@
-import type { EvaluationCriteria, EvaluationInput, EvaluationResult, Evaluator } from '../../types';
+import type {
+  EvaluationCriteria,
+  EvaluationInput,
+  EvaluationResult,
+  Evaluator
+} from '../../types';
 import { getInputText } from '../../utils/input-text-extractor';
 
 // --- Rule Definitions ---
@@ -46,7 +51,11 @@ interface JsonParseRuleConfig extends BaseRuleConfig {
 }
 
 // Union type for all supported rule configurations
-export type RuleConfig = RegexRuleConfig | LengthRuleConfig | IncludesRuleConfig | JsonParseRuleConfig;
+export type RuleConfig =
+  | RegexRuleConfig
+  | LengthRuleConfig
+  | IncludesRuleConfig
+  | JsonParseRuleConfig;
 
 /** Represents a single evaluation rule linked to a criterion */
 export interface EvaluationRule {
@@ -55,7 +64,13 @@ export interface EvaluationRule {
   /** The configuration defining the rule's logic and parameters */
   config: RuleConfig;
   /** Optional: Field in EvaluationInput to use as the text source for this rule. Defaults to 'response'. */
-  sourceTextField?: 'response' | 'prompt' | 'groundTruth' | `response.${string}` | `groundTruth.${string}` | `context.${string}`;
+  sourceTextField?:
+    | 'response'
+    | 'prompt'
+    | 'groundTruth'
+    | `response.${string}`
+    | `groundTruth.${string}`
+    | `context.${string}`;
 }
 
 // --- Evaluator Implementation ---
@@ -78,8 +93,11 @@ export class RuleBasedEvaluator implements Evaluator {
     this.rules = rules;
   }
 
-  async evaluate(input: EvaluationInput, criteria: EvaluationCriteria[]): Promise<EvaluationResult[]> {
-    const applicableCriteriaNames = new Set(criteria.map(c => c.name));
+  async evaluate(
+    input: EvaluationInput,
+    criteria: EvaluationCriteria[]
+  ): Promise<EvaluationResult[]> {
+    const applicableCriteriaNames = new Set(criteria.map((c) => c.name));
     const results: EvaluationResult[] = [];
 
     for (const rule of this.rules) {
@@ -87,9 +105,11 @@ export class RuleBasedEvaluator implements Evaluator {
         continue;
       }
 
-      const criterion = criteria.find(c => c.name === rule.criterionName);
+      const criterion = criteria.find((c) => c.name === rule.criterionName);
       if (!criterion) {
-        console.error(`[${this.type}] Criterion ${rule.criterionName} not found in provided criteria list.`);
+        console.error(
+          `[${this.type}] Criterion ${rule.criterionName} not found in provided criteria list.`
+        );
         continue;
       }
 
@@ -110,7 +130,7 @@ export class RuleBasedEvaluator implements Evaluator {
             results.push({
               criterionName: rule.criterionName,
               score: this.mapPassFailToScore(false, criterion.scale),
-              reasoning: `Cannot evaluate rule '${rule.config.type}': input from '${fieldToUse}' is not a simple string or extractable text.`, 
+              reasoning: `Cannot evaluate rule '${rule.config.type}': input from '${fieldToUse}' is not a simple string or extractable text.`,
               evaluatorType: this.type,
               error: `Source field '${fieldToUse}' did not yield a string.`
             });
@@ -135,7 +155,7 @@ export class RuleBasedEvaluator implements Evaluator {
               typeof input.response === 'string'
                 ? input.response
                 : JSON.stringify(input.response, (_k, v) =>
-                    typeof v === 'function' ? undefined : v,
+                    typeof v === 'function' ? undefined : v
                   );
             rulePassed = this.evaluateJsonParse(stringToParse);
             break;
@@ -143,7 +163,9 @@ export class RuleBasedEvaluator implements Evaluator {
           default:
             // Add a check here for exhaustive switch, although TS might catch it
             // const _exhaustiveCheck: never = rule.config;
-            throw new Error(`Unsupported rule type: ${(rule.config as any).type}`);
+            throw new Error(
+              `Unsupported rule type: ${(rule.config as any).type}`
+            );
         }
 
         score = this.mapPassFailToScore(rulePassed, criterion.scale);
@@ -152,11 +174,13 @@ export class RuleBasedEvaluator implements Evaluator {
           criterionName: rule.criterionName,
           score: score,
           reasoning: `Rule ${rule.config.type} on field '${fieldToUse}' ${rulePassed ? 'passed' : 'failed'}.`, // Updated reasoning
-          evaluatorType: this.type,
+          evaluatorType: this.type
         };
-
       } catch (error: any) {
-        console.error(`[${this.type}] Error evaluating rule for criterion ${rule.criterionName}:`, error);
+        console.error(
+          `[${this.type}] Error evaluating rule for criterion ${rule.criterionName}:`,
+          error
+        );
         result = {
           criterionName: rule.criterionName,
           score: this.mapPassFailToScore(false, criterion.scale), // Map error to a failed score
@@ -192,8 +216,10 @@ export class RuleBasedEvaluator implements Evaluator {
 
   private evaluateIncludes(text: string, config: IncludesRuleConfig): boolean {
     const checkText = config.caseSensitive ? text : text.toLowerCase();
-    const keywords = config.keywords.map(k => config.caseSensitive ? k : k.toLowerCase());
-    
+    const keywords = config.keywords.map((k) =>
+      config.caseSensitive ? k : k.toLowerCase()
+    );
+
     let foundCount = 0;
     for (const keyword of keywords) {
       if (checkText.includes(keyword)) {
@@ -214,16 +240,19 @@ export class RuleBasedEvaluator implements Evaluator {
   }
 
   private evaluateJsonParse(text: string): boolean {
-      try {
-          JSON.parse(text);
-          return true;
-      } catch (e) {
-          return false;
-      }
+    try {
+      JSON.parse(text);
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   /** Maps a boolean pass/fail outcome to a score based on the criterion's scale */
-  private mapPassFailToScore(passed: boolean, scale: EvaluationCriteria['scale']): EvaluationResult['score'] {
+  private mapPassFailToScore(
+    passed: boolean,
+    scale: EvaluationCriteria['scale']
+  ): EvaluationResult['score'] {
     switch (scale) {
       case 'binary':
       case 'pass/fail':
@@ -239,8 +268,10 @@ export class RuleBasedEvaluator implements Evaluator {
         return passed ? 'pass' : 'fail';
       default:
         // If scale is a custom string or unknown, default to boolean
-        console.warn(`[${this.type}] Unknown scale '${scale}' for mapping pass/fail score. Defaulting to boolean.`);
+        console.warn(
+          `[${this.type}] Unknown scale '${scale}' for mapping pass/fail score. Defaulting to boolean.`
+        );
         return passed;
     }
   }
-} 
+}

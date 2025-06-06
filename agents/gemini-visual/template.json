@@ -19,10 +19,7 @@
     "You can read text content when requested to provide information.",
     "Do not use web search for information - rely on your built-in knowledge."
   ],
-  "nodes": [
-    "llm.gemini",
-    "generate_image"
-  ],
+  "nodes": ["llm.gemini", "generate_image"],
   "nodeConfigurations": {
     "llm.gemini": {
       "model": "gemini-2.0-flash-exp",
@@ -53,4 +50,4 @@
   "options": {
     "maxSteps": 5
   }
-} 
+}

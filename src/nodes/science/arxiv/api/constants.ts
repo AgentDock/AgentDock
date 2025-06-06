@@ -18,8 +18,8 @@ export const ARXIV_CATEGORIES = {
   EESS: 'Electrical Engineering and Systems Science',
   QUANT_BIO: 'Quantitative Biology',
   QUANT_FIN: 'Quantitative Finance',
-  STAT: 'Statistics',
+  STAT: 'Statistics'
 };
 
 // Rate limits (arXiv requests max 1 request per 3 seconds)
-export const RATE_LIMIT_MS = 3100; // Add a little buffer (3.1 seconds) 
+export const RATE_LIMIT_MS = 3100; // Add a little buffer (3.1 seconds)

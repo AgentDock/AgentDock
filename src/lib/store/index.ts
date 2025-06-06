@@ -3,7 +3,7 @@
 /**
  * @fileoverview Core state management implementation for AgentDock.
  * Uses Zustand for state management.
- * 
+ *
  * OPTIMIZATION OPPORTUNITIES:
  * 1. Move template validation to server components instead of client-side
  * 2. Use Zustand middleware for storage persistence instead of manual operations
@@ -11,15 +11,16 @@
  * 4. Implement proper hydration pattern for server/client consistency
  * 5. Add selectors for more granular component updates
  */
-
-import { create } from 'zustand';
-import { logger, LogCategory } from 'agentdock-core';
-import { SecureStorage } from 'agentdock-core/storage/secure-storage';
-import { templates } from '@/generated/templates';
-import { Store, Agent, AgentState, AgentRuntimeSettings } from './types';
+import { LogCategory, logger } from 'agentdock-core';
 import { toast } from 'sonner';
+import { create } from 'zustand';
+
+import { SecureStorage } from 'agentdock-core/storage/secure-storage';
 import { PersonalitySchema } from 'agentdock-core/types/agent-config';
+
+import { templates } from '@/generated/templates';
 import { getLLMInfo } from '@/lib/utils';
+import { Agent, AgentRuntimeSettings, AgentState, Store } from './types';
 
 // Create a single instance for the store
 const storage = SecureStorage.getInstance('agentdock');
@@ -55,7 +56,10 @@ export const useAgents = create<Store>((set) => ({
 
       // OPTIMIZATION: Use middleware for storage operations
       // 3. Load runtime settings from storage
-      const storedSettings = await storage.get<Record<string, AgentRuntimeSettings>>('agent_runtime_settings') || {};
+      const storedSettings =
+        (await storage.get<Record<string, AgentRuntimeSettings>>(
+          'agent_runtime_settings'
+        )) || {};
 
       // 4. Create agents from validated templates
       const agents = templateArray.map((template) => {
@@ -70,11 +74,17 @@ export const useAgents = create<Store>((set) => ({
           historyLength: 50
         };
 
-        const chatSettings = template.chatSettings ? {
-          initialMessages: [...template.chatSettings.initialMessages] as string[],
-          historyPolicy: template.chatSettings.historyPolicy as 'lastN' | 'all',
-          historyLength: (template.chatSettings as any).historyLength ?? 50
-        } : defaultChatSettings;
+        const chatSettings = template.chatSettings
+          ? {
+              initialMessages: [
+                ...template.chatSettings.initialMessages
+              ] as string[],
+              historyPolicy: template.chatSettings.historyPolicy as
+                | 'lastN'
+                | 'all',
+              historyLength: (template.chatSettings as any).historyLength ?? 50
+            }
+          : defaultChatSettings;
 
         return {
           agentId: template.agentId,
@@ -97,8 +107,8 @@ export const useAgents = create<Store>((set) => ({
         };
       });
 
-      set({ 
-        agents, 
+      set({
+        agents,
         isInitialized: true,
         templatesValidated: true,
         templatesError: null
@@ -111,14 +121,12 @@ export const useAgents = create<Store>((set) => ({
         { agentCount: agents.length }
       );
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to initialize store';
-      logger.error(
-        LogCategory.SYSTEM,
-        'Store',
-        'Failed to initialize store',
-        { error: message }
-      );
-      set({ 
+      const message =
+        error instanceof Error ? error.message : 'Failed to initialize store';
+      logger.error(LogCategory.SYSTEM, 'Store', 'Failed to initialize store', {
+        error: message
+      });
+      set({
         isInitialized: true,
         templatesValidated: false,
         templatesError: message
@@ -140,8 +148,11 @@ export const useAgents = create<Store>((set) => ({
   updateAgentRuntime: async (agentId, settings) => {
     try {
       // 1. Load current settings
-      const storedSettings = await storage.get<Record<string, AgentRuntimeSettings>>('agent_runtime_settings') || {};
-      
+      const storedSettings =
+        (await storage.get<Record<string, AgentRuntimeSettings>>(
+          'agent_runtime_settings'
+        )) || {};
+
       // 2. Update settings for this agent
       const updatedSettings = {
         ...storedSettings,
@@ -187,4 +198,4 @@ export const useAgents = create<Store>((set) => ({
   }
 }));
 
-export type { Store, Agent, AgentState, AgentRuntimeSettings }; 
+export type { Store, Agent, AgentState, AgentRuntimeSettings };

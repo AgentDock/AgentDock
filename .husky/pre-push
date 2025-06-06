@@ -1,2 +1,4 @@
- # Run git hooks validation
+# Run git hooks validation
 pnpm tsx scripts/git-hooks-validate.ts
+# Full format check before push
+pnpm format

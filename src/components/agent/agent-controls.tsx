@@ -1,23 +1,24 @@
-"use client"
+'use client';
 
-import * as React from "react"
-import { Button } from "@/components/ui/button"
-import { Settings, MessageSquare } from "lucide-react"
-import { cn } from "@/lib/utils"
+import * as React from 'react';
+import { MessageSquare, Settings } from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface AgentControlsProps {
-  className?: string
-  onChat?: () => void
-  onSettings?: () => void
+  className?: string;
+  onChat?: () => void;
+  onSettings?: () => void;
 }
 
 export function AgentControls({
   className,
   onChat,
-  onSettings,
+  onSettings
 }: AgentControlsProps) {
   return (
-    <div className={cn("flex items-center gap-2", className)}>
+    <div className={cn('flex items-center gap-2', className)}>
       <Button
         variant="outline"
         size="sm"
@@ -38,5 +39,5 @@ export function AgentControls({
         Configure
       </Button>
     </div>
-  )
-} 
+  );
+}

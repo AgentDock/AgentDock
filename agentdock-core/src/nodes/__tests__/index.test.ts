@@ -1,7 +1,7 @@
-import { NodeRegistry } from '../node-registry';
 import { AgentNode } from '../agent-node';
+import { NodeRegistry } from '../node-registry';
 // Import the function but don't rely on side-effects from importing index
-import { registerCoreNodes } from '../register-core-nodes'; 
+import { registerCoreNodes } from '../register-core-nodes';
 
 // Assuming the main index file or an init function handles registration
 // import '../index'; // This import should trigger the registration side effect - REMOVED
@@ -24,4 +24,4 @@ describe('Core Node Registration', () => {
 
   // Add similar tests for other core nodes expected to be registered by default
   // it('should have registered OtherCoreNode after initialization', () => { ... });
-}); 
+});

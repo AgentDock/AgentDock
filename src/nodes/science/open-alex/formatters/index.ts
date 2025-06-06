@@ -3,4 +3,4 @@
  */
 
 export * from './search-formatter';
-export * from './work-formatter'; 
+export * from './work-formatter';

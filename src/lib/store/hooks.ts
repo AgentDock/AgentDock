@@ -1,7 +1,7 @@
 /**
  * @fileoverview Custom hooks for accessing the AgentDock store.
  * Provides type-safe hooks for accessing store slices and actions.
- * 
+ *
  * @module lib/store/hooks
  */
 
@@ -22,5 +22,5 @@ export const useAgents = () => useStore((state: Store) => state.agents);
  */
 export const useAppState = () => ({
   isInitialized: useStore((state: Store) => state.isInitialized),
-  initialize: useStore((state: Store) => state.initialize),
-}); 
+  initialize: useStore((state: Store) => state.initialize)
+});

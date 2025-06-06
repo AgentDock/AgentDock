@@ -1,18 +1,22 @@
-import { logger, LogCategory } from 'agentdock-core';
 import { put } from '@vercel/blob';
+import { LogCategory, logger } from 'agentdock-core';
 
 // Define interface for stored images
 export interface StoredImage {
-  imageData: string;  // base64 image data without the prefix
-  mimeType: string;   // image MIME type (e.g., 'image/png')
-  prompt: string;     // original prompt
+  imageData: string; // base64 image data without the prefix
+  mimeType: string; // image MIME type (e.g., 'image/png')
+  prompt: string; // original prompt
   description: string | null; // optional description
 }
 
 // --- Environment Check ---
 // Use DEPLOYMENT_ENV === 'hub' to determine production environment for Blob storage
 const USE_BLOB_STORAGE = process.env.DEPLOYMENT_ENV === 'hub';
-logger.info(LogCategory.SYSTEM, 'ImageStore', `Blob storage configured: ${USE_BLOB_STORAGE}`);
+logger.info(
+  LogCategory.SYSTEM,
+  'ImageStore',
+  `Blob storage configured: ${USE_BLOB_STORAGE}`
+);
 
 // Create a more durable store by using Node.js global object
 // This ensures the store persists across API invocations in production
@@ -45,11 +49,11 @@ export function generateImageId(): string {
  */
 export function storeImage(id: string, image: StoredImage): void {
   imageStore.set(id, image);
-  
+
   logger.debug(
-    LogCategory.SYSTEM, 
-    'ImageStore', 
-    `Image stored with ID: ${id}`, 
+    LogCategory.SYSTEM,
+    'ImageStore',
+    `Image stored with ID: ${id}`,
     { storeSize: imageStore.size }
   );
 }
@@ -59,14 +63,14 @@ export function storeImage(id: string, image: StoredImage): void {
  */
 export function getStoredImage(id: string): StoredImage | undefined {
   const image = imageStore.get(id);
-  
+
   logger.debug(
-    LogCategory.SYSTEM, 
-    'ImageStore', 
-    `Retrieving image with ID: ${id}`, 
+    LogCategory.SYSTEM,
+    'ImageStore',
+    `Retrieving image with ID: ${id}`,
     { found: !!image, storeSize: imageStore.size }
   );
-  
+
   return image;
 }
 
@@ -98,55 +102,69 @@ export function clearMemoryStore(): void {
  * Locally ('oss' or other), stores in memory and returns relative API path.
  */
 export async function storeAndGetImageUrl(
-  base64Data: string, 
+  base64Data: string,
   mimeType: string,
   prompt: string,
   description: string | null,
   origin: string = ''
 ): Promise<string> {
-
-  const base64Content = base64Data.startsWith('data:') 
-    ? base64Data.split(',')[1] 
+  const base64Content = base64Data.startsWith('data:')
+    ? base64Data.split(',')[1]
     : base64Data;
-    
+
   const imageId = generateImageId();
   const fileExtension = mimeType.split('/')[1] || 'png';
   const blobFilename = `images/${imageId}.${fileExtension}`;
 
   if (USE_BLOB_STORAGE) {
-    // --- Production/Hub: Use Vercel Blob --- 
+    // --- Production/Hub: Use Vercel Blob ---
     try {
-      logger.info(LogCategory.SYSTEM, 'ImageStore', `Uploading to Vercel Blob: ${blobFilename}`);
+      logger.info(
+        LogCategory.SYSTEM,
+        'ImageStore',
+        `Uploading to Vercel Blob: ${blobFilename}`
+      );
       const imageBuffer = Buffer.from(base64Content, 'base64');
 
-      const blobResult = await put(
-        blobFilename, 
-        imageBuffer,
-        {
-          access: 'public',
-          contentType: mimeType,
-          // Consider adding cache control headers?
-          // cacheControlMaxAge: 60 * 60 * 24 * 365 // 1 year
-        }
+      const blobResult = await put(blobFilename, imageBuffer, {
+        access: 'public',
+        contentType: mimeType
+        // Consider adding cache control headers?
+        // cacheControlMaxAge: 60 * 60 * 24 * 365 // 1 year
+      });
+
+      logger.info(
+        LogCategory.SYSTEM,
+        'ImageStore',
+        `Vercel Blob upload successful`,
+        { url: blobResult.url }
       );
-      
-      logger.info(LogCategory.SYSTEM, 'ImageStore', `Vercel Blob upload successful`, { url: blobResult.url });
-      
+
       // Optional: Store metadata (like prompt/description/imageId) in KV here
       // await storeBlobMetadata(imageId, blobResult.url, prompt, description);
-      
-      return blobResult.url; // Return the permanent Blob URL
 
+      return blobResult.url; // Return the permanent Blob URL
     } catch (error) {
-      logger.error(LogCategory.SYSTEM, 'ImageStore', 'Vercel Blob upload failed', { 
-        filename: blobFilename,
-        error: error instanceof Error ? error.message : String(error) 
-      });
-      throw new Error(`Failed to upload image to Vercel Blob: ${error instanceof Error ? error.message : String(error)}`);
+      logger.error(
+        LogCategory.SYSTEM,
+        'ImageStore',
+        'Vercel Blob upload failed',
+        {
+          filename: blobFilename,
+          error: error instanceof Error ? error.message : String(error)
+        }
+      );
+      throw new Error(
+        `Failed to upload image to Vercel Blob: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   } else {
-    // --- Local/OSS: Use In-Memory Store --- 
-    logger.debug(LogCategory.SYSTEM, 'ImageStore', `Storing image in memory: ${imageId}`);
+    // --- Local/OSS: Use In-Memory Store ---
+    logger.debug(
+      LogCategory.SYSTEM,
+      'ImageStore',
+      `Storing image in memory: ${imageId}`
+    );
     storeImage(imageId, {
       imageData: base64Content,
       mimeType,
@@ -170,7 +188,7 @@ export function isImageStoreUrl(url: string): boolean {
  */
 export function getImageIdFromUrl(url: string): string | null {
   if (!isImageStoreUrl(url)) return null;
-  
+
   const parts = url.split('/');
   return parts[parts.length - 1];
 }
@@ -183,11 +201,12 @@ export function getImageIdFromUrl(url: string): string | null {
 export async function getImageDataFromUrl(url: string): Promise<string | null> {
   try {
     // Handle absolute URLs from different origins
-    const isAbsoluteUrl = url.startsWith('http://') || url.startsWith('https://');
-    
+    const isAbsoluteUrl =
+      url.startsWith('http://') || url.startsWith('https://');
+
     // Extract the image ID
     let imageId: string | null = null;
-    
+
     if (isAbsoluteUrl) {
       // For absolute URLs, extract the path and get the ID
       const parsedUrl = new URL(url);
@@ -197,7 +216,7 @@ export async function getImageDataFromUrl(url: string): Promise<string | null> {
       // For relative URLs, get the ID directly
       imageId = getImageIdFromUrl(url);
     }
-    
+
     // If we couldn't extract an ID, or it's not an image store URL, return null
     if (!imageId) {
       logger.warn(
@@ -207,7 +226,7 @@ export async function getImageDataFromUrl(url: string): Promise<string | null> {
       );
       return null;
     }
-    
+
     // Try to get the image directly from memory first (most efficient)
     const storedImage = getStoredImage(imageId);
     if (storedImage) {
@@ -216,19 +235,19 @@ export async function getImageDataFromUrl(url: string): Promise<string | null> {
         'ImageStore',
         `Retrieved image data from memory for ID: ${imageId}`
       );
-      
+
       // Reconstruct the data URL from the stored image
       return `data:${storedImage.mimeType};base64,${storedImage.imageData}`;
     }
-    
-    // If not in memory (unlikely in our setup, but for robustness), 
+
+    // If not in memory (unlikely in our setup, but for robustness),
     // fetch it from the API endpoint
     logger.debug(
       LogCategory.SYSTEM,
       'ImageStore',
       `Image not found in memory, fetching from API: ${imageId}`
     );
-    
+
     // Determine the API URL based on whether we're on client or server
     // and whether the original URL was absolute
     let apiUrl: string;
@@ -249,7 +268,7 @@ export async function getImageDataFromUrl(url: string): Promise<string | null> {
       );
       return null;
     }
-    
+
     // Fetch the image from the API
     const response = await fetch(apiUrl);
     if (!response.ok) {
@@ -261,14 +280,14 @@ export async function getImageDataFromUrl(url: string): Promise<string | null> {
       );
       return null;
     }
-    
+
     // Get the image data and MIME type
     const imageData = await response.arrayBuffer();
     const mimeType = response.headers.get('Content-Type') || 'image/png';
-    
+
     // Convert to base64
     const base64 = Buffer.from(imageData).toString('base64');
-    
+
     // Return as data URL
     return `data:${mimeType};base64,${base64}`;
   } catch (error) {
@@ -280,4 +299,4 @@ export async function getImageDataFromUrl(url: string): Promise<string | null> {
     );
     return null;
   }
-} 
+}

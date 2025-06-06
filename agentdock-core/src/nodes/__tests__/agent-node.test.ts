@@ -2,12 +2,16 @@
  * @fileoverview Tests for the AgentNode implementation.
  */
 
-import { AgentNode } from '../agent-node';
-import { logger } from '../../logging';
 import { CoreMessage } from 'ai';
-import { Message } from '../../types/messages';
+
+import { logger } from '../../logging';
 import { OrchestrationManager } from '../../orchestration/index';
-import { createAgentConfig, ValidatedPersonality } from '../../types/agent-config';
+import {
+  createAgentConfig,
+  ValidatedPersonality
+} from '../../types/agent-config';
+import { Message } from '../../types/messages';
+import { AgentNode } from '../agent-node';
 
 // Define mock variables first
 let mockCoreLLMInstance: any;
@@ -17,7 +21,7 @@ let mockStreamWithOrchestration: jest.Mock;
 // Mock the service implementation
 jest.mock('../../llm/llm-orchestration-service', () => ({
   LLMOrchestrationService: jest.fn().mockImplementation(() => ({
-    streamWithOrchestration: mockStreamWithOrchestration,
+    streamWithOrchestration: mockStreamWithOrchestration
   }))
 }));
 
@@ -41,7 +45,12 @@ const mockOrchestrationManager = {
   updateState: jest.fn().mockResolvedValue({}),
   clearState: jest.fn().mockResolvedValue({}),
   ensureStateExists: jest.fn().mockResolvedValue({}),
-  stateManager: { get: jest.fn(), set: jest.fn(), update: jest.fn(), delete: jest.fn() },
+  stateManager: {
+    get: jest.fn(),
+    set: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn()
+  },
   sequencer: { getStepId: jest.fn() },
   getActiveStep: jest.fn(),
   checkCondition: jest.fn(),
@@ -49,11 +58,10 @@ const mockOrchestrationManager = {
   switchFlow: jest.fn(),
   switchStep: jest.fn(),
   startOrchestration: jest.fn(),
-  stopOrchestration: jest.fn(),
+  stopOrchestration: jest.fn()
 } as unknown as OrchestrationManager;
 
 describe('AgentNode', () => {
-
   // Configure mocks inside beforeEach using doMock
   beforeEach(() => {
     // Reset mocks
@@ -63,23 +71,32 @@ describe('AgentNode', () => {
     mockCoreLLMInstance = {
       getProvider: jest.fn().mockReturnValue('anthropic'),
       getModelId: jest.fn().mockReturnValue('claude-3-opus-20240229'),
-      getModel: jest.fn().mockReturnValue({ provider: 'anthropic', modelId: 'claude-3-opus-20240229' }),
-      streamText: jest.fn().mockResolvedValue({ /* ... */ })
+      getModel: jest.fn().mockReturnValue({
+        provider: 'anthropic',
+        modelId: 'claude-3-opus-20240229'
+      }),
+      streamText: jest.fn().mockResolvedValue({
+        /* ... */
+      })
     };
     mockCreateLLMInternal = jest.fn(() => mockCoreLLMInstance);
-    mockStreamWithOrchestration = jest.fn().mockResolvedValue({ /* ... */ });
+    mockStreamWithOrchestration = jest.fn().mockResolvedValue({
+      /* ... */
+    });
 
     // Use doMock to ensure it runs after variables are defined
     jest.doMock('../../llm', () => ({
       createLLM: mockCreateLLMInternal,
       // Ensure the actual service is exported alongside the mock createLLM
-      LLMOrchestrationService: jest.requireActual('../../llm/llm-orchestration-service').LLMOrchestrationService,
+      LLMOrchestrationService: jest.requireActual(
+        '../../llm/llm-orchestration-service'
+      ).LLMOrchestrationService
     }));
 
     // Refresh the OrchestrationService mock implementation to use the new mockStreamWithOrchestration
     jest.mock('../../llm/llm-orchestration-service', () => ({
       LLMOrchestrationService: jest.fn().mockImplementation(() => ({
-        streamWithOrchestration: mockStreamWithOrchestration,
+        streamWithOrchestration: mockStreamWithOrchestration
       }))
     }));
   });
@@ -108,27 +125,27 @@ describe('AgentNode', () => {
 
     // Create mock messages with proper type
     const messages: Message[] = [
-      { 
+      {
         id: 'test-message-id',
-        role: 'user', 
+        role: 'user',
         content: 'Hello',
         createdAt: new Date()
       }
     ];
 
     // Call handleMessage
-    await agentNode.handleMessage({ 
+    await agentNode.handleMessage({
       messages,
       sessionId: 'test-session-123',
-      orchestrationManager: mockOrchestrationManager 
+      orchestrationManager: mockOrchestrationManager
     });
 
     // Verify that streamText was called
     expect(mockStreamWithOrchestration).toHaveBeenCalled();
-    
+
     // Get the streamText call arguments
     const streamTextArgs = mockStreamWithOrchestration.mock.calls[0][0];
-    
+
     // Check if system is passed directly as an option
     if (streamTextArgs.system) {
       // Verify system option contains the expected content
@@ -139,8 +156,10 @@ describe('AgentNode', () => {
       expect(streamTextArgs.system).toContain('ISO timestamp:');
     } else {
       // Extract the system message from messages array if present
-      const systemMessage = streamTextArgs.messages.find((msg: any) => msg.role === 'system');
-      
+      const systemMessage = streamTextArgs.messages.find(
+        (msg: any) => msg.role === 'system'
+      );
+
       // Verify that the system message contains date and time information
       expect(systemMessage).toBeDefined();
       expect(systemMessage.content).toContain('I am a helpful assistant');
@@ -175,9 +194,9 @@ describe('AgentNode', () => {
 
     // Create mock messages with proper type
     const messages: Message[] = [
-      { 
+      {
         id: 'test-message-id',
-        role: 'user', 
+        role: 'user',
         content: 'Hello',
         createdAt: new Date()
       }
@@ -187,7 +206,7 @@ describe('AgentNode', () => {
     const customSystem = 'Custom system message';
 
     // Call handleMessage with custom system
-    await agentNode.handleMessage({ 
+    await agentNode.handleMessage({
       messages,
       systemOverride: customSystem,
       sessionId: 'test-session-123',
@@ -196,10 +215,10 @@ describe('AgentNode', () => {
 
     // Verify that streamText was called
     expect(mockStreamWithOrchestration).toHaveBeenCalled();
-    
+
     // Get the streamText call arguments
     const streamTextArgs = mockStreamWithOrchestration.mock.calls[0][0];
-    
+
     // Check if system is passed directly as an option
     if (streamTextArgs.system) {
       // Verify system option contains the expected content
@@ -209,8 +228,10 @@ describe('AgentNode', () => {
       expect(streamTextArgs.system).not.toContain('Default personality');
     } else {
       // Extract the system message from messages array if present
-      const systemMessage = streamTextArgs.messages.find((msg: any) => msg.role === 'system');
-      
+      const systemMessage = streamTextArgs.messages.find(
+        (msg: any) => msg.role === 'system'
+      );
+
       // Verify that the system message contains the custom message and date/time
       expect(systemMessage).toBeDefined();
       expect(systemMessage.content).toContain('Custom system message');
@@ -219,4 +240,4 @@ describe('AgentNode', () => {
       expect(systemMessage.content).not.toContain('Default personality');
     }
   });
-}); 
+});

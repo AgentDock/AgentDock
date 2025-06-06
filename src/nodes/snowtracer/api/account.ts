@@ -79,18 +79,21 @@ export interface TokenTransferData {
  * @param apiKey Snowtrace API key (optional)
  * @returns Promise with balance data
  */
-export async function getBalance(address: string, apiKey?: string): Promise<BalanceData> {
+export async function getBalance(
+  address: string,
+  apiKey?: string
+): Promise<BalanceData> {
   const response = await makeRequest<BalanceResponse>(
     'account',
     'balance',
     { address, tag: 'latest' },
     apiKey
   );
-  
+
   // Convert wei to AVAX (18 decimals)
   const balanceInWei = response.result;
   const balanceInAVAX = parseFloat(balanceInWei) / 1e18;
-  
+
   return {
     address,
     balance: balanceInWei,
@@ -131,7 +134,7 @@ export async function getTransactions(
     },
     apiKey
   );
-  
+
   return response.result;
 }
 
@@ -168,7 +171,7 @@ export async function getInternalTransactions(
     },
     apiKey
   );
-  
+
   return response.result;
 }
 
@@ -202,19 +205,19 @@ export async function getTokenTransfers(
     offset: offset.toString(),
     sort
   };
-  
+
   // Add contract address if provided
   if (contractAddress) {
     params.contractaddress = contractAddress;
   }
-  
+
   const response = await makeRequest<SnowtraceResponse<TokenTransferData[]>>(
     'account',
     'tokentx',
     params,
     apiKey
   );
-  
+
   return response.result;
 }
 
@@ -248,19 +251,19 @@ export async function getNFTTransfers(
     offset: offset.toString(),
     sort
   };
-  
+
   // Add contract address if provided
   if (contractAddress) {
     params.contractaddress = contractAddress;
   }
-  
+
   const response = await makeRequest<SnowtraceResponse<TokenTransferData[]>>(
     'account',
     'tokennfttx',
     params,
     apiKey
   );
-  
+
   return response.result;
 }
 
@@ -286,6 +289,6 @@ export async function getTokenBalance(
     },
     apiKey
   );
-  
+
   return response.result;
-} 
+}

@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from 'react';
 
 /**
  * Custom hook for responsive design that detects if a media query matches
@@ -11,7 +11,7 @@ export function useMediaQuery(query: string): boolean {
   // Initialize with the match state, or false if SSR
   const [matches, setMatches] = useState<boolean>(() => {
     // Check if window is defined (for SSR)
-    if (typeof window !== "undefined") {
+    if (typeof window !== 'undefined') {
       return window.matchMedia(query).matches;
     }
     return false;
@@ -19,7 +19,7 @@ export function useMediaQuery(query: string): boolean {
 
   useEffect(() => {
     // Ensure we're in a browser environment
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return;
 
     // Create media query list
     const mediaQueryList = window.matchMedia(query);
@@ -35,7 +35,7 @@ export function useMediaQuery(query: string): boolean {
     // Add listener for changes
     if (mediaQueryList.addEventListener) {
       // Modern browsers
-      mediaQueryList.addEventListener("change", handler);
+      mediaQueryList.addEventListener('change', handler);
     } else {
       // Older browsers
       mediaQueryList.addListener(handler);
@@ -44,7 +44,7 @@ export function useMediaQuery(query: string): boolean {
     // Clean up
     return () => {
       if (mediaQueryList.removeEventListener) {
-        mediaQueryList.removeEventListener("change", handler);
+        mediaQueryList.removeEventListener('change', handler);
       } else {
         mediaQueryList.removeListener(handler);
       }
@@ -52,4 +52,4 @@ export function useMediaQuery(query: string): boolean {
   }, [query]); // Re-run effect if query changes
 
   return matches;
-} 
+}

@@ -1,12 +1,13 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { usePathname } from 'next/navigation';
-import { Separator } from '@/components/ui/separator';
-import { ChevronDown, ChevronRight } from 'lucide-react';
-import { DocSearch } from './doc-search';
-import { SidebarSection } from '@/lib/docs-utils';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { ChevronDown, ChevronRight } from 'lucide-react';
+
+import { Separator } from '@/components/ui/separator';
+import { SidebarSection } from '@/lib/docs-utils';
+import { DocSearch } from './doc-search';
 
 interface DocsSidebarProps {
   sidebarSections: SidebarSection[];
@@ -16,7 +17,9 @@ interface DocsSidebarProps {
 export function closeMobileSidebar() {
   // Find and uncheck the sidebar toggle checkbox
   if (typeof window !== 'undefined') {
-    const sidebarToggle = document.getElementById('sidebar-mobile-toggle') as HTMLInputElement;
+    const sidebarToggle = document.getElementById(
+      'sidebar-mobile-toggle'
+    ) as HTMLInputElement;
     if (sidebarToggle) {
       sidebarToggle.checked = false;
     }
@@ -27,50 +30,59 @@ export function DocsSidebar({ sidebarSections }: DocsSidebarProps) {
   const pathname = usePathname();
   const isMainDocsPage = pathname === '/docs' || pathname === '/docs/';
   const initialized = useRef(false);
-  
+
   // Check if a link should be considered active
-  const isLinkActive = useCallback((linkHref: string): boolean => {
-    // Special case for the Introduction link which maps to the main docs page
-    if (isMainDocsPage && linkHref === '/docs/') {
-      return true;
-    }
-    
-    // Normalize paths for comparison
-    const normalizedHref = linkHref.endsWith('/') ? linkHref.slice(0, -1) : linkHref;
-    const normalizedPathname = pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
-    
-    return normalizedPathname === normalizedHref;
-  }, [isMainDocsPage, pathname]);
-  
+  const isLinkActive = useCallback(
+    (linkHref: string): boolean => {
+      // Special case for the Introduction link which maps to the main docs page
+      if (isMainDocsPage && linkHref === '/docs/') {
+        return true;
+      }
+
+      // Normalize paths for comparison
+      const normalizedHref = linkHref.endsWith('/')
+        ? linkHref.slice(0, -1)
+        : linkHref;
+      const normalizedPathname = pathname.endsWith('/')
+        ? pathname.slice(0, -1)
+        : pathname;
+
+      return normalizedPathname === normalizedHref;
+    },
+    [isMainDocsPage, pathname]
+  );
+
   // Calculate which section contains the active link
   const activeSectionTitle = useMemo(() => {
-    if (isMainDocsPage) return "Overview";
-    
+    if (isMainDocsPage) return 'Overview';
+
     for (const section of sidebarSections) {
-      if (section.items.some(item => isLinkActive(item.href))) {
+      if (section.items.some((item) => isLinkActive(item.href))) {
         return section.title;
       }
     }
-    
+
     return null;
   }, [sidebarSections, isMainDocsPage, isLinkActive]);
-  
+
   // State for expanded sections
-  const [expandedSections, setExpandedSections] = useState<{[key: string]: boolean}>({});
+  const [expandedSections, setExpandedSections] = useState<{
+    [key: string]: boolean;
+  }>({});
 
   // Initialize expanded state ONLY ONCE on mount
   useEffect(() => {
     if (!initialized.current) {
-      const initialState: {[key: string]: boolean} = {};
-      
+      const initialState: { [key: string]: boolean } = {};
+
       // Always expand Overview section
-      initialState["Overview"] = true;
-      
+      initialState['Overview'] = true;
+
       // Expand the section containing the active page
-      if (activeSectionTitle && activeSectionTitle !== "Overview") {
+      if (activeSectionTitle && activeSectionTitle !== 'Overview') {
         initialState[activeSectionTitle] = true;
       }
-      
+
       setExpandedSections(initialState);
       initialized.current = true;
     }
@@ -78,7 +90,7 @@ export function DocsSidebar({ sidebarSections }: DocsSidebarProps) {
 
   // Toggle section expansion
   const toggleSection = (sectionTitle: string) => {
-    setExpandedSections(prev => ({
+    setExpandedSections((prev) => ({
       ...prev,
       [sectionTitle]: !prev[sectionTitle]
     }));
@@ -97,20 +109,21 @@ export function DocsSidebar({ sidebarSections }: DocsSidebarProps) {
       <div className="px-6 space-y-6">
         <div>
           <h2 className="text-xl font-semibold mb-2">Documentation</h2>
-          <p className="text-sm text-muted-foreground mb-6">
-            AgentDock Core
-          </p>
+          <p className="text-sm text-muted-foreground mb-6">AgentDock Core</p>
         </div>
-        
+
         <div className="mb-4">
           <DocSearch />
         </div>
-        
+
         <Separator className="my-6" />
-        
+
         <nav className="space-y-6">
           {sidebarSections.map((section) => (
-            <div key={section.title} className="space-y-1">
+            <div
+              key={section.title}
+              className="space-y-1"
+            >
               <button
                 onClick={() => toggleSection(section.title)}
                 className="flex items-center justify-between w-full py-1.5 text-left text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
@@ -127,23 +140,24 @@ export function DocsSidebar({ sidebarSections }: DocsSidebarProps) {
                   )}
                 </span>
               </button>
-              
+
               {expandedSections[section.title] && (
                 <div className="mt-1 space-y-1">
                   {section.items.map((item) => {
                     // For the Introduction link, check if we're on the main docs page
-                    const isActive = item.title === "Introduction" && isMainDocsPage
-                      ? true 
-                      : isLinkActive(item.href);
-                    
+                    const isActive =
+                      item.title === 'Introduction' && isMainDocsPage
+                        ? true
+                        : isLinkActive(item.href);
+
                     return (
                       <Link
                         key={item.href}
                         href={item.href as any}
                         onClick={handleLinkClick}
                         className={`block text-sm py-2 px-3 rounded-md transition-colors ${
-                          isActive 
-                            ? 'bg-primary/10 text-primary font-medium' 
+                          isActive
+                            ? 'bg-primary/10 text-primary font-medium'
                             : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                         }`}
                       >
@@ -159,4 +173,4 @@ export function DocsSidebar({ sidebarSections }: DocsSidebarProps) {
       </div>
     </div>
   );
-} 
+}

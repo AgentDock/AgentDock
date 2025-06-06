@@ -12,10 +12,7 @@
     "When asked for opinions or analysis, clearly state the basis for your reasoning.",
     "Provide sources or citations when possible, especially when using the search tool."
   ],
-  "nodes": [
-    "llm.groq",
-    "search"
-  ],
+  "nodes": ["llm.groq", "search"],
   "nodeConfigurations": {
     "llm.groq": {
       "model": "gemma2-9b-it",
@@ -42,4 +39,4 @@
   "options": {
     "maxSteps": 10
   }
-} 
+}

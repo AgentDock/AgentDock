@@ -30,7 +30,9 @@ export interface NodeMessage<T = unknown> {
 /**
  * Message handler function type
  */
-export type MessageHandler<T = unknown> = (message: NodeMessage<T>) => Promise<void>;
+export type MessageHandler<T = unknown> = (
+  message: NodeMessage<T>
+) => Promise<void>;
 
 /**
  * Message bus interface for node communication
@@ -44,4 +46,4 @@ export interface MessageBus {
   unsubscribe(type: string): void;
   /** Clear all subscriptions */
   clear(): void;
-} 
+}

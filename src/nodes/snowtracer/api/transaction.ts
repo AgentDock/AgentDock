@@ -21,14 +21,17 @@ export interface TxReceiptStatusResponse {
  * @param apiKey Snowtrace API key (optional)
  * @returns Promise with transaction receipt status
  */
-export async function getTransactionStatus(txhash: string, apiKey?: string): Promise<string> {
+export async function getTransactionStatus(
+  txhash: string,
+  apiKey?: string
+): Promise<string> {
   const response = await makeRequest<TxReceiptStatusResponse>(
     'transaction',
     'gettxreceiptstatus',
     { txhash },
     apiKey
   );
-  
+
   return response.result.status;
 }
 
@@ -38,13 +41,16 @@ export async function getTransactionStatus(txhash: string, apiKey?: string): Pro
  * @param apiKey Snowtrace API key (optional)
  * @returns Promise with transaction execution status
  */
-export async function getTransactionExecutionStatus(txhash: string, apiKey?: string): Promise<any> {
+export async function getTransactionExecutionStatus(
+  txhash: string,
+  apiKey?: string
+): Promise<any> {
   const response = await makeRequest<SnowtraceResponse<any>>(
     'transaction',
     'getstatus',
     { txhash },
     apiKey
   );
-  
+
   return response.result;
-} 
+}

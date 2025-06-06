@@ -39,9 +39,9 @@ export async function getAVAXPrice(apiKey?: string): Promise<AVAXPriceData> {
     {},
     apiKey
   );
-  
+
   const timestamp = parseInt(response.result.ethbtc_timestamp) * 1000;
-  
+
   return {
     avaxBTC: parseFloat(response.result.ethbtc),
     avaxUSD: parseFloat(response.result.ethusd),
@@ -61,7 +61,7 @@ export async function getAVAXSupply(apiKey?: string): Promise<string> {
     {},
     apiKey
   );
-  
+
   return response.result;
 }
 
@@ -77,6 +77,6 @@ export async function getNodeCount(apiKey?: string): Promise<any> {
     {},
     apiKey
   );
-  
+
   return response.result;
-} 
+}

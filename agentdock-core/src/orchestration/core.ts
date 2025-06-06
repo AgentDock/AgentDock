@@ -1,12 +1,14 @@
 /**
  * @fileoverview Simplified orchestration exports for AgentDock.
- * 
+ *
  * This file provides the core orchestration functionality with
  * environment-aware configuration for optimal performance.
  */
 
-import { createOrchestrationManager } from './index';
-import { OrchestrationManagerOptions } from './index';
+import {
+  createOrchestrationManager,
+  OrchestrationManagerOptions
+} from './index';
 import { CleanupOptions } from './state';
 
 /**
@@ -28,18 +30,18 @@ function isServerless(): boolean {
 export function getOrchestrationManager(options?: OrchestrationManagerOptions) {
   // Detect environment
   const serverlessEnv = isServerless();
-  
+
   // Configure manager based on environment
   const defaultOptions: OrchestrationManagerOptions = {
     // lightweight: serverlessEnv, // REMOVED: Obsolete option
     cleanup: {
       enabled: !serverlessEnv,
-      ttlMs: 30 * 60 * 1000,        // 30 minutes
-      intervalMs: 5 * 60 * 1000,     // 5 minutes
-      maxSessions: 100               // Limit total sessions
+      ttlMs: 30 * 60 * 1000, // 30 minutes
+      intervalMs: 5 * 60 * 1000, // 5 minutes
+      maxSessions: 100 // Limit total sessions
     }
   };
-  
+
   // Create with provided options merged with defaults
   return createOrchestrationManager({
     ...defaultOptions,
@@ -54,4 +56,4 @@ export function getOrchestrationManager(options?: OrchestrationManagerOptions) {
 /**
  * Default export for direct importing
  */
-export default getOrchestrationManager; 
+export default getOrchestrationManager;

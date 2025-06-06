@@ -1,1 +1,4 @@
-export { NLPAccuracyEvaluator, type NLPAccuracyEvaluatorConfig } from './accuracy'; 
+export {
+  NLPAccuracyEvaluator,
+  type NLPAccuracyEvaluatorConfig
+} from './accuracy';

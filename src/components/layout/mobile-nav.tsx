@@ -1,13 +1,22 @@
-"use client"
+'use client';
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
-import { Bot, Settings, Image, ChevronRight, ChevronDown, LucideIcon, FileText } from "lucide-react"
-import { Logo } from "@/components/ui/logo"
-import { AGENT_TAGS } from "@/config/agent-tags"
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
+import { useState } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import {
+  Bot,
+  ChevronDown,
+  ChevronRight,
+  FileText,
+  Image,
+  LucideIcon,
+  Settings
+} from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
+import { Logo } from '@/components/ui/logo';
+import { AGENT_TAGS } from '@/config/agent-tags';
+import { cn } from '@/lib/utils';
 
 interface NavigationItemData {
   name: string;
@@ -20,42 +29,41 @@ interface NavigationItemData {
 // Core navigation items (main platform features)
 const coreNavigationItems: NavigationItemData[] = [
   {
-    name: "Agents",
-    href: "/agents",
+    name: 'Agents',
+    href: '/agents',
     icon: Bot,
     children: [
       {
-        name: "Featured",
-        href: "/agents",
+        name: 'Featured',
+        href: '/agents'
       },
       {
-        name: "All Agents",
-        href: "/agents/all",
+        name: 'All Agents',
+        href: '/agents/all'
       }
       // Main categories will be added here
     ]
   },
   {
-    name: "Settings",
-    href: "/settings",
+    name: 'Settings',
+    href: '/settings',
     icon: Settings
   },
   {
-    name: "Docs",
-    href: "/docs",
+    name: 'Docs',
+    href: '/docs',
     icon: FileText
   }
 ];
 
 // Populate only the main categories (from AGENT_TAGS)
-AGENT_TAGS
-  .sort((a, b) => a.order - b.order)
-  .filter(tag => tag.id !== 'featured') // Skip featured since we added it manually
-  .forEach(tag => {
+AGENT_TAGS.sort((a, b) => a.order - b.order)
+  .filter((tag) => tag.id !== 'featured') // Skip featured since we added it manually
+  .forEach((tag) => {
     if (coreNavigationItems[0].children) {
       coreNavigationItems[0].children.push({
         name: tag.name,
-        href: `/agents/${tag.id}`,
+        href: `/agents/${tag.id}`
       });
     }
   });
@@ -63,20 +71,20 @@ AGENT_TAGS
 // Additional platform features
 const additionalNavigationItems: NavigationItemData[] = [
   {
-    name: "Image Generation",
-    href: "/image-generation",
+    name: 'Image Generation',
+    href: '/image-generation',
     icon: Image
   }
 ];
 
 export function MobileNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
-  const [expandedItems, setExpandedItems] = useState<string[]>(["Agents"]);
+  const [expandedItems, setExpandedItems] = useState<string[]>(['Agents']);
 
   const toggleExpanded = (name: string) => {
-    setExpandedItems(prev =>
+    setExpandedItems((prev) =>
       prev.includes(name)
-        ? prev.filter(item => item !== name)
+        ? prev.filter((item) => item !== name)
         : [...prev, name]
     );
   };
@@ -84,28 +92,35 @@ export function MobileNav({ onNavigate }: { onNavigate?: () => void }) {
   // Simplified isActive check directly using pathname
   const isActive = (itemPath: string, itemName?: string): boolean => {
     // Special case for Featured
-    if (itemName === "Featured" && itemPath === "/agents") {
-      return pathname === "/agents";
+    if (itemName === 'Featured' && itemPath === '/agents') {
+      return pathname === '/agents';
     }
     // Exact match
     if (pathname === itemPath) {
       return true;
     }
     // Child path match (handles /agents/category correctly)
-    if (itemPath !== '/' && pathname.startsWith(itemPath + (itemPath.endsWith('/') ? '' : '/')) && itemPath.length > 1) {
+    if (
+      itemPath !== '/' &&
+      pathname.startsWith(itemPath + (itemPath.endsWith('/') ? '' : '/')) &&
+      itemPath.length > 1
+    ) {
       // Ensure it's not just a partial match for non-category paths
-       if (!itemPath.startsWith('/agents/')) {
-         const pathSegments = pathname.split('/');
-         const itemSegments = itemPath.split('/');
-         // Only active if the segment count matches or the next segment starts the child path
-         return pathSegments.length === itemSegments.length || (pathSegments.length > itemSegments.length)
-       }
-       return true
+      if (!itemPath.startsWith('/agents/')) {
+        const pathSegments = pathname.split('/');
+        const itemSegments = itemPath.split('/');
+        // Only active if the segment count matches or the next segment starts the child path
+        return (
+          pathSegments.length === itemSegments.length ||
+          pathSegments.length > itemSegments.length
+        );
+      }
+      return true;
     }
-     // Handle /agents/all specifically
-     if (itemPath === '/agents/all' && pathname === '/agents/all'){
-       return true
-     }
+    // Handle /agents/all specifically
+    if (itemPath === '/agents/all' && pathname === '/agents/all') {
+      return true;
+    }
 
     return false;
   };
@@ -116,13 +131,16 @@ export function MobileNav({ onNavigate }: { onNavigate?: () => void }) {
 
     if (item.children) {
       return (
-        <div key={item.name} className="space-y-1">
+        <div
+          key={item.name}
+          className="space-y-1"
+        >
           <div
             className={cn(
-              "flex w-full items-center justify-between rounded-lg px-3 py-2",
-              isItemActive 
-                ? "bg-primary/10 text-primary" 
-                : "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground"
+              'flex w-full items-center justify-between rounded-lg px-3 py-2',
+              isItemActive
+                ? 'bg-primary/10 text-primary'
+                : 'text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground'
             )}
           >
             <Link
@@ -140,35 +158,38 @@ export function MobileNav({ onNavigate }: { onNavigate?: () => void }) {
               {item.icon && <item.icon className="h-5 w-5 flex-shrink-0" />}
               <span className="text-sm font-medium">{item.name}</span>
             </Link>
-            
+
             <Button
               variant="ghost"
               size="sm"
-              onClick={(e) => { 
+              onClick={(e) => {
                 e.stopPropagation();
-                toggleExpanded(item.name); 
+                toggleExpanded(item.name);
               }}
               className="h-auto p-1 opacity-70 hover:opacity-100 bg-transparent hover:bg-transparent"
-              aria-label={isExpanded ? `Collapse ${item.name}` : `Expand ${item.name}`}
-            >
-              {isExpanded ?
-                <ChevronDown className="h-4 w-4" /> :
-                <ChevronRight className="h-4 w-4" />
+              aria-label={
+                isExpanded ? `Collapse ${item.name}` : `Expand ${item.name}`
               }
+            >
+              {isExpanded ? (
+                <ChevronDown className="h-4 w-4" />
+              ) : (
+                <ChevronRight className="h-4 w-4" />
+              )}
             </Button>
           </div>
-          
+
           {isExpanded && (
             <div className="mt-1 space-y-1 pl-5 border-l border-border/40 ml-5">
-              {item.children.map(child => (
+              {item.children.map((child) => (
                 <Link
                   key={child.name}
                   href={{ pathname: child.href }}
                   className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                    'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                     isActive(child.href, child.name)
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground"
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground'
                   )}
                   onClick={() => {
                     if (onNavigate) {
@@ -190,10 +211,10 @@ export function MobileNav({ onNavigate }: { onNavigate?: () => void }) {
         key={item.name}
         href={{ pathname: item.href }}
         className={cn(
-          "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+          'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
           isItemActive
-            ? "bg-primary/10 text-primary"
-            : "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground"
+            ? 'bg-primary/10 text-primary'
+            : 'text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground'
         )}
         onClick={() => {
           if (onNavigate) {
@@ -206,7 +227,7 @@ export function MobileNav({ onNavigate }: { onNavigate?: () => void }) {
       </Link>
     );
   };
-  
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex h-14 items-center border-b border-border/40 px-4">
@@ -236,7 +257,5 @@ export function MobileNav({ onNavigate }: { onNavigate?: () => void }) {
         </div>
       </div>
     </div>
-  )
-} 
-
-
+  );
+}

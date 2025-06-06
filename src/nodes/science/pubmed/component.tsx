@@ -44,11 +44,17 @@ function formatDate(date: Date): string {
 /**
  * Component to display PubMed search results
  */
-export function PubMedSearchResult({ articles, query, total }: PubMedSearchResultProps) {
+export function PubMedSearchResult({
+  articles,
+  query,
+  total
+}: PubMedSearchResultProps) {
   if (!articles || articles.length === 0) {
     return (
       <div className="p-4 bg-muted/30 rounded-md">
-        <h3 className="font-semibold mb-2">PubMed Search: &quot;{query}&quot;</h3>
+        <h3 className="font-semibold mb-2">
+          PubMed Search: &quot;{query}&quot;
+        </h3>
         <p>No results found.</p>
       </div>
     );
@@ -57,19 +63,27 @@ export function PubMedSearchResult({ articles, query, total }: PubMedSearchResul
   return (
     <div className="p-4 bg-muted/30 rounded-md">
       <h3 className="font-semibold mb-2">
-        PubMed Search: &quot;{query}&quot; ({total ? `${articles.length} of ${total}` : articles.length} results)
+        PubMed Search: &quot;{query}&quot; (
+        {total ? `${articles.length} of ${total}` : articles.length} results)
       </h3>
       <div className="space-y-4 mt-3">
         {articles.map((article) => (
-          <div key={article.pmid} className="border border-border p-3 rounded-md bg-white dark:bg-zinc-900">
+          <div
+            key={article.pmid}
+            className="border border-border p-3 rounded-md bg-white dark:bg-zinc-900"
+          >
             <h4 className="font-medium text-md">{article.title}</h4>
             <p className="mt-1 text-sm text-muted-foreground">
               {article.authors.slice(0, 3).join(', ')}
-              {article.authors.length > 3 ? ` and ${article.authors.length - 3} more` : ''}
+              {article.authors.length > 3
+                ? ` and ${article.authors.length - 3} more`
+                : ''}
             </p>
             {article.journal && (
               <p className="mt-1 text-xs text-muted-foreground">
-                {article.journal} {article.pubDate && `(${formatDate(new Date(article.pubDate))})`}
+                {article.journal}{' '}
+                {article.pubDate &&
+                  `(${formatDate(new Date(article.pubDate))})`}
               </p>
             )}
             {article.abstract && (
@@ -98,7 +112,9 @@ export function PubMedSearchResult({ articles, query, total }: PubMedSearchResul
                   DOI: {article.doi}
                 </a>
               )}
-              <span className="text-xs text-muted-foreground">PMID: {article.pmid}</span>
+              <span className="text-xs text-muted-foreground">
+                PMID: {article.pmid}
+              </span>
             </div>
           </div>
         ))}
@@ -129,12 +145,11 @@ export function PubMedArticleDetail({ article }: PubMedArticleDetailProps) {
   return (
     <div className="p-4 bg-muted/30 rounded-md">
       <h3 className="font-semibold mb-2">{article.title}</h3>
-      <p className="mt-1 text-sm">
-        {article.authors.join(', ')}
-      </p>
+      <p className="mt-1 text-sm">{article.authors.join(', ')}</p>
       {article.journal && (
         <p className="mt-1 text-sm text-muted-foreground">
-          {article.journal} {article.pubDate && `(${formatDate(new Date(article.pubDate))})`}
+          {article.journal}{' '}
+          {article.pubDate && `(${formatDate(new Date(article.pubDate))})`}
         </p>
       )}
       {article.abstract && (
@@ -179,8 +194,10 @@ export function PubMedArticleDetail({ article }: PubMedArticleDetailProps) {
             DOI: {article.doi}
           </a>
         )}
-        <span className="text-sm text-muted-foreground">PMID: {article.pmid}</span>
+        <span className="text-sm text-muted-foreground">
+          PMID: {article.pmid}
+        </span>
       </div>
     </div>
   );
-} 
+}

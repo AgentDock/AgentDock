@@ -2,29 +2,34 @@
  * @fileoverview Semantic Scholar API tool implementation for searching and retrieving scientific papers
  */
 
+import { LogCategory, logger } from 'agentdock-core';
 import { z } from 'zod';
+
 import { Tool, ToolExecutionOptions } from '../../types';
-import { logger, LogCategory } from 'agentdock-core';
-import { 
-  SemanticScholarSearchSchema, 
-  SemanticScholarPaperFetchSchema, 
-  SemanticScholarAuthorFetchSchema 
-} from './schema';
-import { 
-  searchSemanticScholar, 
-  fetchSemanticScholarPaper, 
-  fetchSemanticScholarAuthor 
+import {
+  fetchSemanticScholarAuthor,
+  fetchSemanticScholarPaper,
+  searchSemanticScholar
 } from './api';
-import { 
-  formatSearchResultsAsMarkdown, 
-  formatPaperAsMarkdown, 
-  formatAuthorAsMarkdown 
+import {
+  formatAuthorAsMarkdown,
+  formatPaperAsMarkdown,
+  formatSearchResultsAsMarkdown
 } from './formatters';
+import {
+  SemanticScholarAuthorFetchSchema,
+  SemanticScholarPaperFetchSchema,
+  SemanticScholarSearchSchema
+} from './schema';
 
 // Type inference from schemas
 type SemanticScholarSearchParams = z.infer<typeof SemanticScholarSearchSchema>;
-type SemanticScholarPaperFetchParams = z.infer<typeof SemanticScholarPaperFetchSchema>;
-type SemanticScholarAuthorFetchParams = z.infer<typeof SemanticScholarAuthorFetchSchema>;
+type SemanticScholarPaperFetchParams = z.infer<
+  typeof SemanticScholarPaperFetchSchema
+>;
+type SemanticScholarAuthorFetchParams = z.infer<
+  typeof SemanticScholarAuthorFetchSchema
+>;
 
 /**
  * Tool implementation for Semantic Scholar Search
@@ -51,16 +56,24 @@ The tool requires:
 This tool accesses Semantic Scholar, a free, AI-powered research tool for scientific literature from the Allen Institute for AI.
 `,
   parameters: SemanticScholarSearchSchema,
-  execute: async (params: SemanticScholarSearchParams, options: ToolExecutionOptions) => {
+  execute: async (
+    params: SemanticScholarSearchParams,
+    options: ToolExecutionOptions
+  ) => {
     try {
-      logger.debug(LogCategory.NODE, '[SemanticScholarAPI]', 'Starting Semantic Scholar search', { 
-        query: params.query,
-        toolCallId: options.toolCallId,
-      });
-      
+      logger.debug(
+        LogCategory.NODE,
+        '[SemanticScholarAPI]',
+        'Starting Semantic Scholar search',
+        {
+          query: params.query,
+          toolCallId: options.toolCallId
+        }
+      );
+
       const results = await searchSemanticScholar(params);
       const markdown = formatSearchResultsAsMarkdown(params.query, results);
-      
+
       return {
         type: 'semantic_scholar_search_result',
         content: markdown,
@@ -71,13 +84,19 @@ This tool accesses Semantic Scholar, a free, AI-powered research tool for scient
         }
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      
-      logger.error(LogCategory.NODE, '[SemanticScholarAPI]', 'Error in semantic_scholar_search tool', {
-        error: errorMessage,
-        params,
-      });
-      
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+
+      logger.error(
+        LogCategory.NODE,
+        '[SemanticScholarAPI]',
+        'Error in semantic_scholar_search tool',
+        {
+          error: errorMessage,
+          params
+        }
+      );
+
       return {
         type: 'semantic_scholar_search_result',
         content: `## Semantic Scholar Search Error\n\nUnable to search Semantic Scholar for "${params.query}": ${errorMessage}`,
@@ -112,16 +131,24 @@ The tool requires:
 This tool accesses Semantic Scholar, a free, AI-powered research tool for scientific literature from the Allen Institute for AI.
 `,
   parameters: SemanticScholarPaperFetchSchema,
-  execute: async (params: SemanticScholarPaperFetchParams, options: ToolExecutionOptions) => {
+  execute: async (
+    params: SemanticScholarPaperFetchParams,
+    options: ToolExecutionOptions
+  ) => {
     try {
-      logger.debug(LogCategory.NODE, '[SemanticScholarAPI]', 'Starting Semantic Scholar paper fetch', { 
-        paperId: params.paperId,
-        toolCallId: options.toolCallId,
-      });
-      
+      logger.debug(
+        LogCategory.NODE,
+        '[SemanticScholarAPI]',
+        'Starting Semantic Scholar paper fetch',
+        {
+          paperId: params.paperId,
+          toolCallId: options.toolCallId
+        }
+      );
+
       const paper = await fetchSemanticScholarPaper(params);
       const markdown = formatPaperAsMarkdown(paper);
-      
+
       return {
         type: 'semantic_scholar_paper_result',
         content: markdown,
@@ -130,13 +157,19 @@ This tool accesses Semantic Scholar, a free, AI-powered research tool for scient
         }
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      
-      logger.error(LogCategory.NODE, '[SemanticScholarAPI]', 'Error in semantic_scholar_paper tool', {
-        error: errorMessage,
-        params,
-      });
-      
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+
+      logger.error(
+        LogCategory.NODE,
+        '[SemanticScholarAPI]',
+        'Error in semantic_scholar_paper tool',
+        {
+          error: errorMessage,
+          params
+        }
+      );
+
       return {
         type: 'semantic_scholar_paper_result',
         content: `## Semantic Scholar Paper Fetch Error\n\nUnable to retrieve paper with ID "${params.paperId}": ${errorMessage}`,
@@ -171,17 +204,25 @@ The tool requires:
 This tool accesses Semantic Scholar, a free, AI-powered research tool for scientific literature from the Allen Institute for AI.
 `,
   parameters: SemanticScholarAuthorFetchSchema,
-  execute: async (params: SemanticScholarAuthorFetchParams, options: ToolExecutionOptions) => {
+  execute: async (
+    params: SemanticScholarAuthorFetchParams,
+    options: ToolExecutionOptions
+  ) => {
     try {
-      logger.debug(LogCategory.NODE, '[SemanticScholarAPI]', 'Starting Semantic Scholar author fetch', { 
-        authorId: params.authorId,
-        includePapers: params.includePapers,
-        toolCallId: options.toolCallId,
-      });
-      
+      logger.debug(
+        LogCategory.NODE,
+        '[SemanticScholarAPI]',
+        'Starting Semantic Scholar author fetch',
+        {
+          authorId: params.authorId,
+          includePapers: params.includePapers,
+          toolCallId: options.toolCallId
+        }
+      );
+
       const { author, papers } = await fetchSemanticScholarAuthor(params);
       const markdown = formatAuthorAsMarkdown(author, papers);
-      
+
       return {
         type: 'semantic_scholar_author_result',
         content: markdown,
@@ -191,13 +232,19 @@ This tool accesses Semantic Scholar, a free, AI-powered research tool for scient
         }
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      
-      logger.error(LogCategory.NODE, '[SemanticScholarAPI]', 'Error in semantic_scholar_author tool', {
-        error: errorMessage,
-        params,
-      });
-      
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+
+      logger.error(
+        LogCategory.NODE,
+        '[SemanticScholarAPI]',
+        'Error in semantic_scholar_author tool',
+        {
+          error: errorMessage,
+          params
+        }
+      );
+
       return {
         type: 'semantic_scholar_author_result',
         content: `## Semantic Scholar Author Fetch Error\n\nUnable to retrieve author with ID "${params.authorId}": ${errorMessage}`,
@@ -217,4 +264,4 @@ export const tools = {
   semantic_scholar_search: semanticScholarSearchTool,
   semantic_scholar_paper: semanticScholarPaperFetchTool,
   semantic_scholar_author: semanticScholarAuthorFetchTool
-}; 
+};

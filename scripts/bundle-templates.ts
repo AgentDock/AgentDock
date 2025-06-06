@@ -1,6 +1,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
-import { logger, LogCategory } from 'agentdock-core';
+import { LogCategory, logger } from 'agentdock-core';
+
 import { PersonalitySchema } from 'agentdock-core/types/agent-config';
 
 async function bundleTemplates() {
@@ -21,12 +22,12 @@ async function bundleTemplates() {
     // Load each template
     for (const agentId of agentDirs) {
       const templatePath = path.join(templatesDir, agentId, 'template.json');
-      
+
       try {
         const templateContent = await fs.readFile(templatePath, 'utf-8');
         const template = JSON.parse(templateContent);
         templates[agentId] = template;
-        
+
         logger.info(
           LogCategory.CONFIG,
           'Bundled template',
@@ -36,7 +37,10 @@ async function bundleTemplates() {
         logger.warn(
           LogCategory.CONFIG,
           'Failed to bundle template',
-          JSON.stringify({ agentId, error: error instanceof Error ? error.message : 'Unknown error' })
+          JSON.stringify({
+            agentId,
+            error: error instanceof Error ? error.message : 'Unknown error'
+          })
         );
       }
     }
@@ -85,10 +89,12 @@ export function getTemplate(id: TemplateId): AgentConfig {
     logger.error(
       LogCategory.CONFIG,
       'Failed to bundle templates',
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' })
+      JSON.stringify({
+        error: error instanceof Error ? error.message : 'Unknown error'
+      })
     );
     process.exit(1);
   }
 }
 
-bundleTemplates(); 
+bundleTemplates();

@@ -9,15 +9,12 @@ import { useChat, useCompletion } from 'ai/react';
 export { useChat, useCompletion };
 
 // Re-export types
-export type { 
+export type {
   UseChatOptions,
   UseChatHelpers,
   Message,
   CreateMessage
-} from 'ai/react'; 
+} from 'ai/react';
 
 // Re-export message utilities
-export { 
-  isSystemMessage, 
-  isToolMessage 
-} from '../types/messages'; 
+export { isSystemMessage, isToolMessage } from '../types/messages';

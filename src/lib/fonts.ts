@@ -1,12 +1,12 @@
 import { Inter } from 'next/font/google';
-import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
+import { GeistSans } from 'geist/font/sans';
 
 // Load Inter font
-export const inter = Inter({ 
+export const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-inter',
+  variable: '--font-inter'
 });
 
 // Define font types
@@ -43,4 +43,4 @@ export const monoFonts = {
     fontFamily: GeistMono.style.fontFamily,
     variable: GeistMono.variable
   }
-}; 
+};

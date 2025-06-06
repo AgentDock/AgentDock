@@ -5,4 +5,4 @@
 export * from './constants';
 export * from './search';
 export * from './paper';
-export * from './author'; 
+export * from './author';

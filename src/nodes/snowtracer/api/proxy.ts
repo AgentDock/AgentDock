@@ -16,7 +16,7 @@ export async function getBlockNumber(apiKey?: string): Promise<string> {
     {},
     apiKey
   );
-  
+
   return response.result;
 }
 
@@ -34,7 +34,7 @@ export async function getBlockByNumber(
 ): Promise<any> {
   // Convert number to hex if needed
   const blockTag = typeof tag === 'number' ? `0x${tag.toString(16)}` : tag;
-  
+
   const response = await makeRequest<SnowtraceResponse<any>>(
     'proxy',
     'eth_getBlockByNumber',
@@ -44,7 +44,7 @@ export async function getBlockByNumber(
     },
     apiKey
   );
-  
+
   return response.result;
 }
 
@@ -54,14 +54,17 @@ export async function getBlockByNumber(
  * @param apiKey Snowtrace API key (optional)
  * @returns Promise with transaction data
  */
-export async function getTransactionByHash(txhash: string, apiKey?: string): Promise<any> {
+export async function getTransactionByHash(
+  txhash: string,
+  apiKey?: string
+): Promise<any> {
   const response = await makeRequest<SnowtraceResponse<any>>(
     'proxy',
     'eth_getTransactionByHash',
     { txhash },
     apiKey
   );
-  
+
   return response.result;
 }
 
@@ -71,14 +74,17 @@ export async function getTransactionByHash(txhash: string, apiKey?: string): Pro
  * @param apiKey Snowtrace API key (optional)
  * @returns Promise with transaction receipt
  */
-export async function getTransactionReceipt(txhash: string, apiKey?: string): Promise<any> {
+export async function getTransactionReceipt(
+  txhash: string,
+  apiKey?: string
+): Promise<any> {
   const response = await makeRequest<SnowtraceResponse<any>>(
     'proxy',
     'eth_getTransactionReceipt',
     { txhash },
     apiKey
   );
-  
+
   return response.result;
 }
 
@@ -106,7 +112,7 @@ export async function call(
     },
     apiKey
   );
-  
+
   return response.result;
 }
 
@@ -131,6 +137,6 @@ export async function getCode(
     },
     apiKey
   );
-  
+
   return response.result;
-} 
+}

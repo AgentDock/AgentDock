@@ -3,19 +3,27 @@
  * Provides web search functionality using the Serper API.
  */
 
+import { LogCategory, logger } from 'agentdock-core';
 import { z } from 'zod';
+
+import {
+  createToolResult,
+  formatErrorMessage
+} from '@/lib/utils/markdown-utils';
 import { Tool } from '../types';
 import { SearchResults } from './components';
 import { searchWeb } from './utils';
-import { logger, LogCategory } from 'agentdock-core';
-import { formatErrorMessage, createToolResult } from '@/lib/utils/markdown-utils';
 
 /**
  * Schema for search tool parameters
  */
 const searchSchema = z.object({
   query: z.string().describe('Search query to look up'),
-  limit: z.coerce.number().optional().default(8).describe('Maximum number of results to return')
+  limit: z.coerce
+    .number()
+    .optional()
+    .default(8)
+    .describe('Maximum number of results to return')
 });
 
 /**
@@ -31,33 +39,48 @@ export const searchTool: Tool = {
   description: 'Search the web for information on any topic',
   parameters: searchSchema,
   async execute({ query, limit = 5 }, options) {
-    logger.debug(LogCategory.NODE, '[Search]', `Executing search for query: ${query}`, { toolCallId: options.toolCallId });
-    
+    logger.debug(
+      LogCategory.NODE,
+      '[Search]',
+      `Executing search for query: ${query}`,
+      { toolCallId: options.toolCallId }
+    );
+
     try {
       // Validate input
       if (!query.trim()) {
-        logger.warn(LogCategory.NODE, '[Search]', 'Empty search query provided');
+        logger.warn(
+          LogCategory.NODE,
+          '[Search]',
+          'Empty search query provided'
+        );
         return createToolResult(
           'search_error',
-          formatErrorMessage('Error', 'Please provide a non-empty search query.')
+          formatErrorMessage(
+            'Error',
+            'Please provide a non-empty search query.'
+          )
         );
       }
-      
+
       // Get actual search results from the API
       const results = await searchWeb(query, limit);
-      
+
       // Use our SearchResults component to format the output
       return SearchResults({
         query,
         results
       });
     } catch (error: unknown) {
-      logger.error(LogCategory.NODE, '[Search]', 'Search execution error:', { error });
-      
+      logger.error(LogCategory.NODE, '[Search]', 'Search execution error:', {
+        error
+      });
+
       // Return a formatted error message
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       let errorContent: string;
-      
+
       // Check for specific error types
       if (errorMessage.includes('SERPER_API_KEY not found')) {
         errorContent = formatErrorMessage(
@@ -68,7 +91,8 @@ export const searchTool: Tool = {
       } else if (errorMessage.includes('API error')) {
         errorContent = formatErrorMessage(
           'API Error',
-          'The search service encountered an error: ' + errorMessage.split(' - ')[0],
+          'The search service encountered an error: ' +
+            errorMessage.split(' - ')[0],
           'This might be due to:\n- Rate limiting\n- Invalid API key\n- Service outage\n\nPlease try again later or with a different query.'
         );
       } else {
@@ -79,7 +103,7 @@ export const searchTool: Tool = {
           'Please try again with a different query.'
         );
       }
-      
+
       return createToolResult('search_error', errorContent);
     }
   }
@@ -89,5 +113,5 @@ export const searchTool: Tool = {
  * Export tools for registry
  */
 export const tools = {
-  'search': searchTool
-}; 
+  search: searchTool
+};

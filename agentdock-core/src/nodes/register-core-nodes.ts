@@ -3,8 +3,8 @@
  * This file registers all core nodes with the NodeRegistry.
  */
 
-import { NodeRegistry } from './node-registry';
 import { AgentNode } from './agent-node';
+import { NodeRegistry } from './node-registry';
 
 /**
  * Register all core nodes with the registry
@@ -15,5 +15,4 @@ export function registerCoreNodes(): void {
 }
 
 // Auto-registration removed to prevent duplicate registrations
-// registerCoreNodes(); 
- 
+// registerCoreNodes();

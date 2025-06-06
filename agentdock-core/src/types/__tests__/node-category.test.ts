@@ -21,12 +21,12 @@ describe('NodeCategory', () => {
 
   it('should be usable as a type', () => {
     const testFunction = (category: NodeCategory): NodeCategory => category;
-    
+
     // Should compile
     expect(testFunction(NodeCategory.CORE)).toBe('core');
     expect(testFunction(NodeCategory.CUSTOM)).toBe('custom');
-    
+
     // @ts-expect-error - This should fail type checking
     testFunction('other');
   });
-}); 
+});

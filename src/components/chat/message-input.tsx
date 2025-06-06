@@ -1,42 +1,42 @@
-"use client"
+'use client';
 
-import React, { useRef, useState } from "react"
-import { AnimatePresence, motion } from "framer-motion"
-import { ArrowUp, Paperclip, Square } from "lucide-react"
-import { omit } from "remeda"
+import React, { useRef, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ArrowUp, Paperclip, Square } from 'lucide-react';
+import { omit } from 'remeda';
 
-import { cn } from "@/lib/utils"
-import { useAutosizeTextArea } from "@/hooks/use-autosize-textarea"
-import { Button } from "@/components/ui/button"
-import { FilePreview } from "@/components/chat/file-preview"
+import { FilePreview } from '@/components/chat/file-preview';
+import { Button } from '@/components/ui/button';
+import { useAutosizeTextArea } from '@/hooks/use-autosize-textarea';
+import { cn } from '@/lib/utils';
 
 interface MessageInputProps {
-  value: string
-  onChange: (value: string) => void
-  allowAttachments?: boolean
-  files?: File[] | null
-  setFiles?: React.Dispatch<React.SetStateAction<File[] | null>>
-  stop?: () => void
-  isGenerating?: boolean
-  submitOnEnter?: boolean
-  placeholder?: string
-  className?: string
-  disabled?: boolean
-  onKeyDown?: (event: React.KeyboardEvent<HTMLTextAreaElement>) => void
+  value: string;
+  onChange: (value: string) => void;
+  allowAttachments?: boolean;
+  files?: File[] | null;
+  setFiles?: React.Dispatch<React.SetStateAction<File[] | null>>;
+  stop?: () => void;
+  isGenerating?: boolean;
+  submitOnEnter?: boolean;
+  placeholder?: string;
+  className?: string;
+  disabled?: boolean;
+  onKeyDown?: (event: React.KeyboardEvent<HTMLTextAreaElement>) => void;
 }
 
 // Supported file types
 const SUPPORTED_FILE_TYPES = [
-  "image/*",
-  "application/pdf",
-  "text/plain",
-  "text/markdown",
-  "text/csv",
-  "application/json"
-].join(",");
+  'image/*',
+  'application/pdf',
+  'text/plain',
+  'text/markdown',
+  'text/csv',
+  'application/json'
+].join(',');
 
 export function MessageInput({
-  placeholder = "Ask Anything...",
+  placeholder = 'Ask Anything...',
   className,
   onKeyDown: onKeyDownProp,
   submitOnEnter = true,
@@ -47,106 +47,106 @@ export function MessageInput({
   disabled,
   allowAttachments,
   files,
-  setFiles,
+  setFiles
 }: MessageInputProps) {
-  const [isDragging, setIsDragging] = useState(false)
-  const textAreaRef = useRef<HTMLTextAreaElement | null>(null)
-  const showFileList = allowAttachments && files && files.length > 0
+  const [isDragging, setIsDragging] = useState(false);
+  const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
+  const showFileList = allowAttachments && files && files.length > 0;
 
   useAutosizeTextArea({
     ref: textAreaRef as React.RefObject<HTMLTextAreaElement>,
     maxHeight: 240,
     borderWidth: 1,
-    dependencies: [value, showFileList],
-  })
+    dependencies: [value, showFileList]
+  });
 
   const addFiles = (files: File[] | null) => {
     if (allowAttachments && setFiles) {
       setFiles((currentFiles) => {
-        if (currentFiles === null) return files
-        if (files === null) return currentFiles
-        return [...currentFiles, ...files]
-      })
+        if (currentFiles === null) return files;
+        if (files === null) return currentFiles;
+        return [...currentFiles, ...files];
+      });
     }
-  }
+  };
 
   const onDragOver = (event: React.DragEvent) => {
-    if (allowAttachments !== true) return
-    event.preventDefault()
-    setIsDragging(true)
-  }
+    if (allowAttachments !== true) return;
+    event.preventDefault();
+    setIsDragging(true);
+  };
 
   const onDragLeave = (event: React.DragEvent) => {
-    if (allowAttachments !== true) return
-    event.preventDefault()
-    setIsDragging(false)
-  }
+    if (allowAttachments !== true) return;
+    event.preventDefault();
+    setIsDragging(false);
+  };
 
   const onDrop = (event: React.DragEvent) => {
-    setIsDragging(false)
-    if (allowAttachments !== true) return
-    event.preventDefault()
-    const dataTransfer = event.dataTransfer
+    setIsDragging(false);
+    if (allowAttachments !== true) return;
+    event.preventDefault();
+    const dataTransfer = event.dataTransfer;
     if (dataTransfer.files.length) {
-      addFiles(Array.from(dataTransfer.files))
+      addFiles(Array.from(dataTransfer.files));
     }
-  }
+  };
 
   const onPaste = (event: React.ClipboardEvent<HTMLTextAreaElement>) => {
-    if (allowAttachments !== true) return
-    
-    const clipboardData = event.clipboardData
-    
+    if (allowAttachments !== true) return;
+
+    const clipboardData = event.clipboardData;
+
     // Check if there are files in the clipboard (images)
     if (clipboardData.files.length > 0) {
-      event.preventDefault()
-      
+      event.preventDefault();
+
       // Get all files from clipboard
-      const pastedFiles = Array.from(clipboardData.files)
-      
+      const pastedFiles = Array.from(clipboardData.files);
+
       // Filter for supported file types
-      const supportedFiles = pastedFiles.filter(file => {
-        const fileType = file.type
-        return fileType.startsWith('image/') || 
-               fileType === 'application/pdf' || 
-               fileType === 'text/plain' ||
-               fileType === 'text/markdown' ||
-               fileType === 'text/csv' ||
-               fileType === 'application/json'
-      })
-      
+      const supportedFiles = pastedFiles.filter((file) => {
+        const fileType = file.type;
+        return (
+          fileType.startsWith('image/') ||
+          fileType === 'application/pdf' ||
+          fileType === 'text/plain' ||
+          fileType === 'text/markdown' ||
+          fileType === 'text/csv' ||
+          fileType === 'application/json'
+        );
+      });
+
       if (supportedFiles.length > 0) {
-        addFiles(supportedFiles)
+        addFiles(supportedFiles);
       }
     } else {
       // Handle long text pastes
-      const pastedText = clipboardData.getData('text/plain')
-      const TEXT_LENGTH_THRESHOLD = 1000 // Text longer than 1000 chars becomes a file
-      
+      const pastedText = clipboardData.getData('text/plain');
+      const TEXT_LENGTH_THRESHOLD = 1000; // Text longer than 1000 chars becomes a file
+
       if (pastedText && pastedText.length > TEXT_LENGTH_THRESHOLD) {
         // Prevent default paste to avoid text appearing in textarea
-        event.preventDefault()
-        
+        event.preventDefault();
+
         // Create a new file from the pasted text
-        const textFile = new File(
-          [pastedText], 
-          `pasted.txt`, 
-          { type: 'text/plain' }
-        )
-        
+        const textFile = new File([pastedText], `pasted.txt`, {
+          type: 'text/plain'
+        });
+
         // Add the text file to the files
-        addFiles([textFile])
+        addFiles([textFile]);
       }
     }
-  }
+  };
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (submitOnEnter && event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault()
-      event.currentTarget.form?.requestSubmit()
+    if (submitOnEnter && event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      event.currentTarget.form?.requestSubmit();
     }
-    onKeyDownProp?.(event)
-  }
+    onKeyDownProp?.(event);
+  };
 
   // Handle onChange to convert from event to string value
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -154,7 +154,7 @@ export function MessageInput({
   };
 
   return (
-    <div 
+    <div
       className="relative flex w-full grow flex-col overflow-hidden bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95 rounded-lg"
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
@@ -168,8 +168,8 @@ export function MessageInput({
         onPaste={onPaste}
         onChange={handleChange}
         className={cn(
-          "w-full grow resize-none rounded-2xl border border-input bg-transparent p-3 pr-28 text-sm ring-offset-background transition-[border] placeholder:text-muted-foreground focus-visible:border-primary focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50",
-          showFileList && "pb-16",
+          'w-full grow resize-none rounded-2xl border border-input bg-transparent p-3 pr-28 text-sm ring-offset-background transition-[border] placeholder:text-muted-foreground focus-visible:border-primary focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
+          showFileList && 'pb-16',
           className
         )}
         value={value}
@@ -187,11 +187,13 @@ export function MessageInput({
                   onRemove={() => {
                     if (setFiles) {
                       setFiles((files) => {
-                        if (!files) return null
-                        const filtered = Array.from(files).filter(f => f !== file)
-                        if (filtered.length === 0) return null
-                        return filtered
-                      })
+                        if (!files) return null;
+                        const filtered = Array.from(files).filter(
+                          (f) => f !== file
+                        );
+                        if (filtered.length === 0) return null;
+                        return filtered;
+                      });
                     }
                   }}
                 />
@@ -210,8 +212,8 @@ export function MessageInput({
             className="h-8 w-8"
             aria-label="Attach a file"
             onClick={async () => {
-              const files = await showFileUploadDialog()
-              addFiles(files)
+              const files = await showFileUploadDialog();
+              addFiles(files);
             }}
           >
             <Paperclip className="h-4 w-4" />
@@ -225,7 +227,10 @@ export function MessageInput({
             aria-label="Stop generating"
             onClick={stop}
           >
-            <Square className="h-3 w-3 animate-pulse" fill="currentColor" />
+            <Square
+              className="h-3 w-3 animate-pulse"
+              fill="currentColor"
+            />
           </Button>
         ) : (
           <Button
@@ -233,7 +238,7 @@ export function MessageInput({
             size="icon"
             className="h-8 w-8 transition-opacity"
             aria-label="Send message"
-            disabled={value === "" || isGenerating}
+            disabled={value === '' || isGenerating}
           >
             <ArrowUp className="h-5 w-5" />
           </Button>
@@ -242,23 +247,23 @@ export function MessageInput({
 
       {allowAttachments && <FileUploadOverlay isDragging={isDragging} />}
     </div>
-  )
+  );
 }
-MessageInput.displayName = "MessageInput"
+MessageInput.displayName = 'MessageInput';
 
 // File upload dialog
 const showFileUploadDialog = async (): Promise<File[] | null> => {
   return new Promise((resolve) => {
-    const input = document.createElement("input");
-    input.type = "file";
+    const input = document.createElement('input');
+    input.type = 'file';
     input.multiple = true;
     input.accept = SUPPORTED_FILE_TYPES;
-    
+
     input.onchange = () => {
       const files = input.files;
       resolve(files ? Array.from(files) : null);
     };
-    
+
     input.click();
   });
 };
@@ -268,7 +273,7 @@ function FileUploadOverlay({ isDragging }: { isDragging: boolean }) {
   if (!isDragging) {
     return null;
   }
-  
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -285,4 +290,4 @@ function FileUploadOverlay({ isDragging }: { isDragging: boolean }) {
       </div>
     </motion.div>
   );
-} 
+}

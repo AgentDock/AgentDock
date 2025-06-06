@@ -3,32 +3,40 @@
  * Provides web search, scraping, crawling, mapping, and extraction functionality using the Firecrawl API.
  */
 
+import { LogCategory, logger } from 'agentdock-core';
 import { z } from 'zod';
+
+import {
+  createToolResult,
+  formatErrorMessage
+} from '@/lib/utils/markdown-utils';
 import { Tool } from '../types';
-import { 
-  FirecrawlResults, 
-  FirecrawlScrapeResults, 
-  FirecrawlCrawlResults, 
-  FirecrawlMapResults, 
-  FirecrawlExtractResults 
+import {
+  FirecrawlCrawlResults,
+  FirecrawlExtractResults,
+  FirecrawlMapResults,
+  FirecrawlResults,
+  FirecrawlScrapeResults
 } from './components';
-import { 
-  searchFirecrawl, 
-  scrapeFirecrawl, 
-  crawlFirecrawl, 
-  checkCrawlStatus, 
-  mapFirecrawl, 
-  extractFirecrawl 
+import {
+  checkCrawlStatus,
+  crawlFirecrawl,
+  extractFirecrawl,
+  mapFirecrawl,
+  scrapeFirecrawl,
+  searchFirecrawl
 } from './utils';
-import { logger, LogCategory } from 'agentdock-core';
-import { formatErrorMessage, createToolResult } from '@/lib/utils/markdown-utils';
 
 /**
  * Schema for firecrawl search tool parameters
  */
 const firecrawlSearchSchema = z.object({
   query: z.string().describe('Search query to look up'),
-  limit: z.number().optional().default(5).describe('Maximum number of results to return')
+  limit: z
+    .number()
+    .optional()
+    .default(5)
+    .describe('Maximum number of results to return')
 });
 
 /**
@@ -36,7 +44,11 @@ const firecrawlSearchSchema = z.object({
  */
 const firecrawlScrapeSchema = z.object({
   url: z.string().url().describe('URL to scrape'),
-  formats: z.array(z.string()).optional().default(['markdown']).describe('Formats to return (markdown, html, etc.)')
+  formats: z
+    .array(z.string())
+    .optional()
+    .default(['markdown'])
+    .describe('Formats to return (markdown, html, etc.)')
 });
 
 /**
@@ -44,7 +56,11 @@ const firecrawlScrapeSchema = z.object({
  */
 const firecrawlCrawlSchema = z.object({
   url: z.string().url().describe('URL to crawl'),
-  limit: z.number().optional().default(10).describe('Maximum number of pages to crawl'),
+  limit: z
+    .number()
+    .optional()
+    .default(10)
+    .describe('Maximum number of pages to crawl'),
   maxDepth: z.number().optional().default(2).describe('Maximum crawl depth')
 });
 
@@ -89,33 +105,48 @@ export const firecrawlSearchTool: Tool = {
   description: 'Search the web for information on any topic using Firecrawl',
   parameters: firecrawlSearchSchema,
   async execute({ query, limit = 5 }, options) {
-    logger.debug(LogCategory.NODE, '[Firecrawl]', `Executing search for query: ${query}`, { toolCallId: options.toolCallId });
-    
+    logger.debug(
+      LogCategory.NODE,
+      '[Firecrawl]',
+      `Executing search for query: ${query}`,
+      { toolCallId: options.toolCallId }
+    );
+
     try {
       // Validate input
       if (!query.trim()) {
-        logger.warn(LogCategory.NODE, '[Firecrawl]', 'Empty search query provided');
+        logger.warn(
+          LogCategory.NODE,
+          '[Firecrawl]',
+          'Empty search query provided'
+        );
         return createToolResult(
           'firecrawl_error',
-          formatErrorMessage('Error', 'Please provide a non-empty search query.')
+          formatErrorMessage(
+            'Error',
+            'Please provide a non-empty search query.'
+          )
         );
       }
-      
+
       // Get actual search results from the API
       const results = await searchFirecrawl(query, limit);
-      
+
       // Use our FirecrawlResults component to format the output
       return FirecrawlResults({
         query,
         results
       });
     } catch (error: unknown) {
-      logger.error(LogCategory.NODE, '[Firecrawl]', 'Search execution error:', { error });
-      
+      logger.error(LogCategory.NODE, '[Firecrawl]', 'Search execution error:', {
+        error
+      });
+
       // Return a formatted error message
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       let errorContent: string;
-      
+
       // Check for specific error types
       if (errorMessage.includes('API key not found')) {
         errorContent = formatErrorMessage(
@@ -126,7 +157,8 @@ export const firecrawlSearchTool: Tool = {
       } else if (errorMessage.includes('API error')) {
         errorContent = formatErrorMessage(
           'API Error',
-          'The Firecrawl service encountered an error: ' + errorMessage.split(' - ')[0],
+          'The Firecrawl service encountered an error: ' +
+            errorMessage.split(' - ')[0],
           'This might be due to:\n- Service unavailable\n- Invalid request\n- Service outage\n\nPlease try again later or with a different query.'
         );
       } else {
@@ -137,7 +169,7 @@ export const firecrawlSearchTool: Tool = {
           'Please try again with a different query.'
         );
       }
-      
+
       return createToolResult('firecrawl_error', errorContent);
     }
   }
@@ -151,8 +183,13 @@ export const firecrawlScrapeTool: Tool = {
   description: 'Scrape a webpage and extract its content using Firecrawl',
   parameters: firecrawlScrapeSchema,
   async execute({ url, formats = ['markdown'] }, options) {
-    logger.debug(LogCategory.NODE, '[Firecrawl]', `Executing scrape for URL: ${url}`, { toolCallId: options.toolCallId });
-    
+    logger.debug(
+      LogCategory.NODE,
+      '[Firecrawl]',
+      `Executing scrape for URL: ${url}`,
+      { toolCallId: options.toolCallId }
+    );
+
     try {
       // Validate input
       if (!url.trim()) {
@@ -162,22 +199,25 @@ export const firecrawlScrapeTool: Tool = {
           formatErrorMessage('Error', 'Please provide a non-empty URL.')
         );
       }
-      
+
       // Get actual scrape results from the API
       const result = await scrapeFirecrawl(url, formats);
-      
+
       // Use our FirecrawlScrapeResults component to format the output
       return FirecrawlScrapeResults({
         url,
         result
       });
     } catch (error: unknown) {
-      logger.error(LogCategory.NODE, '[Firecrawl]', 'Scrape execution error:', { error });
-      
+      logger.error(LogCategory.NODE, '[Firecrawl]', 'Scrape execution error:', {
+        error
+      });
+
       // Return a formatted error message
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       let errorContent: string;
-      
+
       // Check for specific error types
       if (errorMessage.includes('API key not found')) {
         errorContent = formatErrorMessage(
@@ -188,7 +228,8 @@ export const firecrawlScrapeTool: Tool = {
       } else if (errorMessage.includes('API error')) {
         errorContent = formatErrorMessage(
           'API Error',
-          'The Firecrawl service encountered an error: ' + errorMessage.split(' - ')[0],
+          'The Firecrawl service encountered an error: ' +
+            errorMessage.split(' - ')[0],
           'This might be due to:\n- Service unavailable\n- Invalid request\n- Service outage\n\nPlease try again later or with a different URL.'
         );
       } else {
@@ -199,7 +240,7 @@ export const firecrawlScrapeTool: Tool = {
           'Please try again with a different URL.'
         );
       }
-      
+
       return createToolResult('firecrawl_error', errorContent);
     }
   }
@@ -210,11 +251,17 @@ export const firecrawlScrapeTool: Tool = {
  */
 export const firecrawlCrawlTool: Tool = {
   name: 'firecrawl_crawl',
-  description: 'Crawl a website and extract content from multiple pages using Firecrawl',
+  description:
+    'Crawl a website and extract content from multiple pages using Firecrawl',
   parameters: firecrawlCrawlSchema,
   async execute({ url, limit = 10, maxDepth = 2 }, options) {
-    logger.debug(LogCategory.NODE, '[Firecrawl]', `Executing crawl for URL: ${url}`, { toolCallId: options.toolCallId });
-    
+    logger.debug(
+      LogCategory.NODE,
+      '[Firecrawl]',
+      `Executing crawl for URL: ${url}`,
+      { toolCallId: options.toolCallId }
+    );
+
     try {
       // Validate input
       if (!url.trim()) {
@@ -224,22 +271,25 @@ export const firecrawlCrawlTool: Tool = {
           formatErrorMessage('Error', 'Please provide a non-empty URL.')
         );
       }
-      
+
       // Get actual crawl results from the API
       const result = await crawlFirecrawl(url, limit, maxDepth);
-      
+
       // Use our FirecrawlCrawlResults component to format the output
       return FirecrawlCrawlResults({
         url,
         result
       });
     } catch (error: unknown) {
-      logger.error(LogCategory.NODE, '[Firecrawl]', 'Crawl execution error:', { error });
-      
+      logger.error(LogCategory.NODE, '[Firecrawl]', 'Crawl execution error:', {
+        error
+      });
+
       // Return a formatted error message
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       let errorContent: string;
-      
+
       // Check for specific error types
       if (errorMessage.includes('API key not found')) {
         errorContent = formatErrorMessage(
@@ -250,7 +300,8 @@ export const firecrawlCrawlTool: Tool = {
       } else if (errorMessage.includes('API error')) {
         errorContent = formatErrorMessage(
           'API Error',
-          'The Firecrawl service encountered an error: ' + errorMessage.split(' - ')[0],
+          'The Firecrawl service encountered an error: ' +
+            errorMessage.split(' - ')[0],
           'This might be due to:\n- Service unavailable\n- Invalid request\n- Service outage\n\nPlease try again later or with a different URL.'
         );
       } else {
@@ -261,7 +312,7 @@ export const firecrawlCrawlTool: Tool = {
           'Please try again with a different URL.'
         );
       }
-      
+
       return createToolResult('firecrawl_error', errorContent);
     }
   }
@@ -275,8 +326,13 @@ export const firecrawlCrawlStatusTool: Tool = {
   description: 'Check the status of a crawl job using Firecrawl',
   parameters: firecrawlCrawlStatusSchema,
   async execute({ crawlId }, options) {
-    logger.debug(LogCategory.NODE, '[Firecrawl]', `Checking crawl status for ID: ${crawlId}`, { toolCallId: options.toolCallId });
-    
+    logger.debug(
+      LogCategory.NODE,
+      '[Firecrawl]',
+      `Checking crawl status for ID: ${crawlId}`,
+      { toolCallId: options.toolCallId }
+    );
+
     try {
       // Validate input
       if (!crawlId.trim()) {
@@ -286,22 +342,28 @@ export const firecrawlCrawlStatusTool: Tool = {
           formatErrorMessage('Error', 'Please provide a non-empty crawl ID.')
         );
       }
-      
+
       // Get actual crawl status from the API
       const result = await checkCrawlStatus(crawlId);
-      
+
       // Use our FirecrawlCrawlResults component to format the output
       return FirecrawlCrawlResults({
         url: '',
         result
       });
     } catch (error: unknown) {
-      logger.error(LogCategory.NODE, '[Firecrawl]', 'Crawl status check error:', { error });
-      
+      logger.error(
+        LogCategory.NODE,
+        '[Firecrawl]',
+        'Crawl status check error:',
+        { error }
+      );
+
       // Return a formatted error message
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       let errorContent: string;
-      
+
       // Check for specific error types
       if (errorMessage.includes('API key not found')) {
         errorContent = formatErrorMessage(
@@ -312,7 +374,8 @@ export const firecrawlCrawlStatusTool: Tool = {
       } else if (errorMessage.includes('API error')) {
         errorContent = formatErrorMessage(
           'API Error',
-          'The Firecrawl service encountered an error: ' + errorMessage.split(' - ')[0],
+          'The Firecrawl service encountered an error: ' +
+            errorMessage.split(' - ')[0],
           'This might be due to:\n- Service unavailable\n- Invalid request\n- Service outage\n\nPlease try again later or with a different crawl ID.'
         );
       } else {
@@ -323,7 +386,7 @@ export const firecrawlCrawlStatusTool: Tool = {
           'Please try again with a different crawl ID.'
         );
       }
-      
+
       return createToolResult('firecrawl_error', errorContent);
     }
   }
@@ -337,8 +400,13 @@ export const firecrawlMapTool: Tool = {
   description: 'Map a website and get a list of all URLs using Firecrawl',
   parameters: firecrawlMapSchema,
   async execute({ url, maxDepth = 2 }, options) {
-    logger.debug(LogCategory.NODE, '[Firecrawl]', `Executing map for URL: ${url}`, { toolCallId: options.toolCallId });
-    
+    logger.debug(
+      LogCategory.NODE,
+      '[Firecrawl]',
+      `Executing map for URL: ${url}`,
+      { toolCallId: options.toolCallId }
+    );
+
     try {
       // Validate input
       if (!url.trim()) {
@@ -348,22 +416,25 @@ export const firecrawlMapTool: Tool = {
           formatErrorMessage('Error', 'Please provide a non-empty URL.')
         );
       }
-      
+
       // Get actual map results from the API
       const result = await mapFirecrawl(url, maxDepth);
-      
+
       // Use our FirecrawlMapResults component to format the output
       return FirecrawlMapResults({
         url,
         result
       });
     } catch (error: unknown) {
-      logger.error(LogCategory.NODE, '[Firecrawl]', 'Map execution error:', { error });
-      
+      logger.error(LogCategory.NODE, '[Firecrawl]', 'Map execution error:', {
+        error
+      });
+
       // Return a formatted error message
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       let errorContent: string;
-      
+
       // Check for specific error types
       if (errorMessage.includes('API key not found')) {
         errorContent = formatErrorMessage(
@@ -374,7 +445,8 @@ export const firecrawlMapTool: Tool = {
       } else if (errorMessage.includes('API error')) {
         errorContent = formatErrorMessage(
           'API Error',
-          'The Firecrawl service encountered an error: ' + errorMessage.split(' - ')[0],
+          'The Firecrawl service encountered an error: ' +
+            errorMessage.split(' - ')[0],
           'This might be due to:\n- Service unavailable\n- Invalid request\n- Service outage\n\nPlease try again later or with a different URL.'
         );
       } else {
@@ -385,7 +457,7 @@ export const firecrawlMapTool: Tool = {
           'Please try again with a different URL.'
         );
       }
-      
+
       return createToolResult('firecrawl_error', errorContent);
     }
   }
@@ -399,8 +471,13 @@ export const firecrawlExtractTool: Tool = {
   description: 'Extract structured data from a webpage using Firecrawl',
   parameters: firecrawlExtractSchema,
   async execute({ url, prompt }, options) {
-    logger.debug(LogCategory.NODE, '[Firecrawl]', `Executing extract for URL: ${url}`, { toolCallId: options.toolCallId });
-    
+    logger.debug(
+      LogCategory.NODE,
+      '[Firecrawl]',
+      `Executing extract for URL: ${url}`,
+      { toolCallId: options.toolCallId }
+    );
+
     try {
       // Validate input
       if (!url.trim()) {
@@ -410,22 +487,28 @@ export const firecrawlExtractTool: Tool = {
           formatErrorMessage('Error', 'Please provide a non-empty URL.')
         );
       }
-      
+
       // Get actual extract results from the API
       const result = await extractFirecrawl(url, undefined, prompt);
-      
+
       // Use our FirecrawlExtractResults component to format the output
       return FirecrawlExtractResults({
         url,
         result
       });
     } catch (error: unknown) {
-      logger.error(LogCategory.NODE, '[Firecrawl]', 'Extract execution error:', { error });
-      
+      logger.error(
+        LogCategory.NODE,
+        '[Firecrawl]',
+        'Extract execution error:',
+        { error }
+      );
+
       // Return a formatted error message
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       let errorContent: string;
-      
+
       // Check for specific error types
       if (errorMessage.includes('API key not found')) {
         errorContent = formatErrorMessage(
@@ -436,7 +519,8 @@ export const firecrawlExtractTool: Tool = {
       } else if (errorMessage.includes('API error')) {
         errorContent = formatErrorMessage(
           'API Error',
-          'The Firecrawl service encountered an error: ' + errorMessage.split(' - ')[0],
+          'The Firecrawl service encountered an error: ' +
+            errorMessage.split(' - ')[0],
           'This might be due to:\n- Service unavailable\n- Invalid request\n- Service outage\n\nPlease try again later or with a different URL.'
         );
       } else {
@@ -447,7 +531,7 @@ export const firecrawlExtractTool: Tool = {
           'Please try again with a different URL.'
         );
       }
-      
+
       return createToolResult('firecrawl_error', errorContent);
     }
   }
@@ -457,10 +541,10 @@ export const firecrawlExtractTool: Tool = {
  * Export tools for registry
  */
 export const tools = {
-  'firecrawl_search': firecrawlSearchTool,
-  'firecrawl_scrape': firecrawlScrapeTool,
-  'firecrawl_crawl': firecrawlCrawlTool,
-  'firecrawl_crawl_status': firecrawlCrawlStatusTool,
-  'firecrawl_map': firecrawlMapTool,
-  'firecrawl_extract': firecrawlExtractTool
-}; 
+  firecrawl_search: firecrawlSearchTool,
+  firecrawl_scrape: firecrawlScrapeTool,
+  firecrawl_crawl: firecrawlCrawlTool,
+  firecrawl_crawl_status: firecrawlCrawlStatusTool,
+  firecrawl_map: firecrawlMapTool,
+  firecrawl_extract: firecrawlExtractTool
+};

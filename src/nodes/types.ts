@@ -1,14 +1,14 @@
 /**
  * @fileoverview Tool types that match both Core and Vercel AI SDK requirements
- * 
+ *
  * In AgentDock, tools are a specialized type of node that can be used by AI agents.
  * This file defines the types for these custom tools, ensuring compatibility with
  * both the AgentDock Core framework and the Vercel AI SDK.
  */
 
-import { z } from 'zod';
 // Import the proper ToolRegistry interface from agentdock-core
 import type { ToolRegistry } from 'agentdock-core';
+import { z } from 'zod';
 
 /**
  * LLM context for tool execution
@@ -39,7 +39,9 @@ export interface ToolExecutionOptions {
   /** LLM context for tool execution (optional) */
   llmContext?: LLMContext;
   /** Optional handler from AgentNode to update cumulative token usage */
-  updateUsageHandler?: (usage: import('agentdock-core').TokenUsage) => Promise<void>;
+  updateUsageHandler?: (
+    usage: import('agentdock-core').TokenUsage
+  ) => Promise<void>;
 }
 
 /**
@@ -77,4 +79,4 @@ export const DEFAULT_TOOL_CONFIG = {
   maxSteps: 5,
   toolCallStreaming: true,
   getErrorMessage: errorHandler
-}; 
+};

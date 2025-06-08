@@ -1,7 +1,6 @@
 'use client';
 
 import { memo, useCallback, useEffect, useState } from 'react';
-import Image from 'next/image';
 import { LogCategory, logger, ModelMetadata } from 'agentdock-core';
 import { Database, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
@@ -10,9 +9,7 @@ import { SecureStorage } from 'agentdock-core/storage/secure-storage';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Switch } from '@/components/ui/switch';
 import { ModelService } from '@/lib/services/model-service';
 
 // Create a single instance for settings
@@ -145,7 +142,13 @@ const ModelsTable = memo(
 );
 
 interface ModelDisplayProps {
-  provider: 'anthropic' | 'openai' | 'gemini' | 'deepseek' | 'groq';
+  provider:
+    | 'anthropic'
+    | 'cerebras'
+    | 'deepseek'
+    | 'gemini'
+    | 'groq'
+    | 'openai';
   refreshTrigger: number;
   onRefreshComplete?: () => void;
 }

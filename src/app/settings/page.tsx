@@ -42,6 +42,13 @@ const API_KEY_PROVIDERS: ApiKeyProvider[] = [
     description: 'Used for Anthropic Claude models'
   },
   {
+    key: 'cerebras',
+    label: 'Cerebras API Key',
+    icon: KeyRound,
+    description:
+      'Used for models hosted by Cerebras, such as LLaMA 3.3, and Qwen 3'
+  },
+  {
     key: 'gemini',
     label: 'Google Gemini API Key',
     icon: KeyRound,
@@ -549,6 +556,15 @@ function SettingsPage() {
                         <div className="pt-2">
                           <ModelDisplay
                             provider="groq"
+                            refreshTrigger={modelsRefreshTrigger}
+                            onRefreshComplete={handleRefreshTrigger}
+                          />
+                        </div>
+                      )}
+                      {key === 'cerebras' && (
+                        <div className="pt-2">
+                          <ModelDisplay
+                            provider="cerebras"
                             refreshTrigger={modelsRefreshTrigger}
                             onRefreshComplete={handleRefreshTrigger}
                           />

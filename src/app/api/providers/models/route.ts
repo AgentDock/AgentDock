@@ -19,15 +19,16 @@ export async function GET(req: NextRequest) {
     if (
       !provider ||
       (provider !== 'anthropic' &&
-        provider !== 'openai' &&
-        provider !== 'gemini' &&
+        provider !== 'cerebras' &&
         provider !== 'deepseek' &&
-        provider !== 'groq')
+        provider !== 'gemini' &&
+        provider !== 'groq' &&
+        provider !== 'openai')
     ) {
       return new NextResponse(
         JSON.stringify({
           error:
-            'Invalid provider. Must be "anthropic", "openai", "gemini", "deepseek", or "groq".'
+            'Invalid provider. Must be "anthropic", "cerebras", "deepseek", "gemini", "groq", or "openai".'
         }),
         {
           status: 400,

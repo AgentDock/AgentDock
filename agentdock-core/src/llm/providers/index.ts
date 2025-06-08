@@ -1,10 +1,12 @@
 import {
   fetchAnthropicModels,
+  fetchCerebrasModels,
   fetchDeepSeekModels,
   fetchGeminiModels,
   fetchGroqModels,
   fetchOpenAIModels,
   validateAnthropicApiKey,
+  validateCerebrasApiKey,
   validateDeepSeekApiKey,
   validateGeminiApiKey,
   validateGroqApiKey,
@@ -20,10 +22,11 @@ import { LLMProvider, ModelMetadata } from '../types';
 
 // Re-export all provider adapters
 export * from './anthropic-adapter';
+export * from './cerebras-adapter';
+export * from './deepseek-adapter';
 export * from './openai-adapter';
 export * from './gemini-adapter';
 export * from './groq-adapter';
-export * from './deepseek-adapter';
 
 /**
  * Validate an API key for the specified provider
@@ -50,6 +53,8 @@ export async function validateProviderApiKey(
         return validateDeepSeekApiKey(apiKey);
       case 'groq':
         return validateGroqApiKey(apiKey);
+      case 'cerebras':
+        return validateCerebrasApiKey(apiKey);
       default:
         logger.warn(
           LogCategory.LLM,
@@ -94,6 +99,8 @@ export async function fetchProviderModels(
         return fetchDeepSeekModels(apiKey);
       case 'groq':
         return fetchGroqModels(apiKey);
+      case 'cerebras':
+        return fetchCerebrasModels(apiKey);
       default:
         logger.warn(
           LogCategory.LLM,

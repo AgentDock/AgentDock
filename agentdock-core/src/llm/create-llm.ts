@@ -7,6 +7,7 @@ import { LogCategory, logger } from '../logging';
 import { CoreLLM } from './core-llm';
 import {
   createAnthropicModel,
+  createCerebrasModel,
   createDeepSeekModel,
   createGeminiModel,
   createGroqModel,
@@ -40,6 +41,9 @@ export function createLLM(config: LLMConfig): CoreLLM {
       break;
     case 'groq':
       model = createGroqModel(config);
+      break;
+    case 'cerebras':
+      model = createCerebrasModel(config);
       break;
     default:
       throw createError(

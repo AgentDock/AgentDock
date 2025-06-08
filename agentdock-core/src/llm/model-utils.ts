@@ -6,8 +6,13 @@ import { LanguageModel } from 'ai';
 
 import { createError, ErrorCode } from '../errors';
 import { LogCategory, logger } from '../logging';
-import { ProviderRegistry } from './provider-registry';
-import { DeepSeekConfig, GeminiConfig, GroqConfig, LLMConfig } from './types';
+import {
+  CerebrasConfig,
+  DeepSeekConfig,
+  GeminiConfig,
+  GroqConfig,
+  LLMConfig
+} from './types';
 
 // Add structuredClone polyfill if it doesn't exist
 if (typeof globalThis.structuredClone === 'undefined') {
@@ -212,6 +217,55 @@ export function createGroqModel(config: LLMConfig): LanguageModel {
     throw createError(
       'llm',
       `Error creating Groq model: ${(error as Error).message}`,
+      ErrorCode.LLM_EXECUTION
+    );
+  }
+}
+/**
+ * Create a Cerebras model
+ * Uses OpenAI compatibility mode until Vercel AI SDK adds Cerebras support
+ */
+export function createCerebrasModel(config: LLMConfig): LanguageModel {
+  if (!config.apiKey) {
+    throw createError('llm', 'API key is required', ErrorCode.LLM_API_KEY);
+  }
+
+  const cerebrasConfig = config as CerebrasConfig;
+  try {
+    const provider = createOpenAI({
+      apiKey: config.apiKey,
+      baseURL: 'https://api.cerebras.ai/v1',
+      compatibility: 'strict'
+    });
+
+    const modelOptions: any = {};
+
+    if (cerebrasConfig.extractReasoning) {
+      logger.debug(
+        LogCategory.LLM,
+        'createCerebrasModel',
+        'Enabling reasoning extraction for Cerebras model',
+        {
+          model: config.model
+        }
+      );
+      modelOptions.extractReasoning = true;
+    }
+
+    return provider(config.model, modelOptions);
+  } catch (error) {
+    logger.error(
+      LogCategory.LLM,
+      'createCerebrasModel',
+      'Error creating Cerebras model',
+      {
+        error: (error as Error).message,
+        model: config.model
+      }
+    );
+    throw createError(
+      'llm',
+      `Error creating Cerebras model: ${(error as Error).message}`,
       ErrorCode.LLM_EXECUTION
     );
   }

@@ -183,7 +183,8 @@ async function resolveApiKey(
       openai: process.env.OPENAI_API_KEY,
       gemini: process.env.GEMINI_API_KEY,
       deepseek: process.env.DEEPSEEK_API_KEY,
-      groq: process.env.GROQ_API_KEY
+      groq: process.env.GROQ_API_KEY,
+      cerebras: process.env.CEREBRAS_API_KEY
     };
 
     apiKey = envVarMap[providerName] || null;

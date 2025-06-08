@@ -37,54 +37,112 @@ export class VercelKVProvider implements StorageProvider {
 
   async get<T>(key: string, options?: StorageOptions): Promise<T | null> {
     const fullKey = this.getKey(key, options);
-    try {
-      const value = await this.client.get<T>(fullKey);
 
-      logger.debug(LogCategory.STORAGE, 'VercelKVProvider', '[GET]', {
-        key: fullKey,
-        found: value !== null
-      });
+    // Retry logic for network failures
+    const maxRetries = 2;
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const value = await this.client.get<T>(fullKey);
 
-      return value;
-    } catch (error) {
-      logger.error(
-        LogCategory.STORAGE,
-        'VercelKVProvider',
-        'Error getting value',
-        {
+        logger.debug(LogCategory.STORAGE, 'VercelKVProvider', '[GET]', {
           key: fullKey,
-          error: error instanceof Error ? error.message : String(error)
+          found: value !== null,
+          attempt: attempt + 1
+        });
+
+        return value;
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        const isNetworkError =
+          errorMessage.includes('fetch failed') ||
+          errorMessage.includes('ECONNRESET') ||
+          errorMessage.includes('timeout');
+
+        if (isNetworkError && attempt < maxRetries) {
+          logger.warn(
+            LogCategory.STORAGE,
+            'VercelKVProvider',
+            `Network error on attempt ${attempt + 1}, retrying...`,
+            { key: fullKey, error: errorMessage }
+          );
+          // Wait briefly before retry
+          await new Promise((resolve) =>
+            setTimeout(resolve, 100 * (attempt + 1))
+          );
+          continue;
         }
-      );
-      return null; // Return null on error
+
+        logger.error(
+          LogCategory.STORAGE,
+          'VercelKVProvider',
+          'Error getting value',
+          {
+            key: fullKey,
+            error: errorMessage,
+            attempts: attempt + 1
+          }
+        );
+        return null; // Return null on error
+      }
     }
+    return null; // Fallback
   }
 
   async set<T>(key: string, value: T, options?: StorageOptions): Promise<void> {
     const fullKey = this.getKey(key, options);
-    try {
-      if (options?.ttlSeconds !== undefined && options.ttlSeconds > 0) {
-        const ttlInSeconds: number = options.ttlSeconds;
-        await this.client.set(fullKey, value, { ex: ttlInSeconds });
-      } else {
-        await this.client.set(fullKey, value);
-      }
 
-      logger.debug(LogCategory.STORAGE, 'VercelKVProvider', '[SET]', {
-        key: fullKey,
-        ttl: options?.ttlSeconds
-      });
-    } catch (error) {
-      logger.error(
-        LogCategory.STORAGE,
-        'VercelKVProvider',
-        'Error setting value',
-        {
-          key: fullKey,
-          error: error instanceof Error ? error.message : String(error)
+    // Retry logic for network failures
+    const maxRetries = 2;
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        if (options?.ttlSeconds !== undefined && options.ttlSeconds > 0) {
+          const ttlInSeconds: number = options.ttlSeconds;
+          await this.client.set(fullKey, value, { ex: ttlInSeconds });
+        } else {
+          await this.client.set(fullKey, value);
         }
-      );
-      return; // Complete without throwing on error
+
+        logger.debug(LogCategory.STORAGE, 'VercelKVProvider', '[SET]', {
+          key: fullKey,
+          ttl: options?.ttlSeconds,
+          attempt: attempt + 1
+        });
+        return; // Success
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        const isNetworkError =
+          errorMessage.includes('fetch failed') ||
+          errorMessage.includes('ECONNRESET') ||
+          errorMessage.includes('timeout');
+
+        if (isNetworkError && attempt < maxRetries) {
+          logger.warn(
+            LogCategory.STORAGE,
+            'VercelKVProvider',
+            `Network error on attempt ${attempt + 1}, retrying...`,
+            { key: fullKey, error: errorMessage }
+          );
+          // Wait briefly before retry
+          await new Promise((resolve) =>
+            setTimeout(resolve, 100 * (attempt + 1))
+          );
+          continue;
+        }
+
+        logger.error(
+          LogCategory.STORAGE,
+          'VercelKVProvider',
+          'Error setting value',
+          {
+            key: fullKey,
+            error: errorMessage,
+            attempts: attempt + 1
+          }
+        );
+        return; // Complete without throwing on error
+      }
     }
   }
 

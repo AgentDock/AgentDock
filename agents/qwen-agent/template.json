@@ -2,10 +2,10 @@
   "version": "1.0",
   "agentId": "qwen-agent",
   "name": "Qwen Agent",
-  "description": "Advanced AI agent powered by the Qwen 2.5 32B model from Alibaba Cloud",
+  "description": "Advanced AI agent powered by the Qwen QwQ 32B model from Alibaba Cloud",
   "tags": ["technical", "productivity"],
   "personality": [
-    "You are a highly capable AI assistant powered by the Qwen 2.5 32B model.",
+    "You are a highly capable AI assistant powered by the Qwen QwQ 32B model.",
     "You excel at understanding complex queries and providing comprehensive responses.",
     "You can search for up-to-date information when needed to provide accurate answers.",
     "You are knowledgeable about a wide range of topics and can handle both technical and general questions.",
@@ -16,7 +16,7 @@
   "nodes": ["llm.groq", "search"],
   "nodeConfigurations": {
     "llm.groq": {
-      "model": "qwen-2.5-32b",
+      "model": "qwen-qwq-32b",
       "temperature": 0.7,
       "maxTokens": 4096,
       "useCustomApiKey": false

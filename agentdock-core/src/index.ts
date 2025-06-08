@@ -1,3 +1,44 @@
+// LLM error utilities are imported directly to avoid circular dependencies
+
+// Re-export the orchestration types
+// export * from './orchestration/index'; // This might be redundant or cause issues if index also exports types
+
+//=============================================================================
+// Provider-specific imports for re-export
+//=============================================================================
+
+/**
+ * Re-export provider-specific classes and types
+ */
+import { GoogleGenerativeAI } from '@google/generative-ai';
+// Also re-export from ai core for server components
+import type { CoreMessage, LanguageModel } from 'ai';
+//=============================================================================
+// Client components (Re-exported from AI SDK)
+//=============================================================================
+
+/**
+ * Re-export client-side components and AI SDK types for React applications
+ * These are used in both client and server components
+ */
+import type { CreateMessage, UseChatHelpers, UseChatOptions } from 'ai/react';
+
+import { normalizeError, parseProviderError } from './errors/llm-errors';
+//=============================================================================
+// Orchestration system
+//=============================================================================
+
+/**
+ * Orchestration system
+ * For controlling agent behavior in a step-based workflow
+ */
+import {
+  createOrchestrationManager,
+  OrchestrationManager,
+  OrchestrationStateManager,
+  StepSequencer
+} from './orchestration/index';
+
 /**
  * @fileoverview Core exports for the AgentDock framework
  * This is the main entry point for the AgentDock Core library.
@@ -10,11 +51,11 @@
 /**
  * Basic type definitions used throughout the framework
  */
-export * from './types/agent-config';  // Agent configuration
-export * from './types/messages';      // Message types
+export * from './types/agent-config'; // Agent configuration
+export * from './types/messages'; // Message types
 export * from './types/node-category';
 export * from './types/orchestration'; // Orchestration system
-export * from './types/session';       // Session management
+export * from './types/session'; // Session management
 export type {
   ToolState,
   BaseToolInvocation,
@@ -45,8 +86,6 @@ export * from './nodes';
  */
 export * from './errors';
 
-// LLM error utilities are imported directly to avoid circular dependencies
-import { parseProviderError, normalizeError } from './errors/llm-errors';
 export { parseProviderError, normalizeError };
 
 //=============================================================================
@@ -97,42 +136,15 @@ export * from './llm';
  */
 export * from './session';
 
-//=============================================================================
-// Orchestration system
-//=============================================================================
-
-/**
- * Orchestration system
- * For controlling agent behavior in a step-based workflow
- */
-import { 
-  OrchestrationManager,
-  createOrchestrationManager,
-  OrchestrationStateManager,
-  StepSequencer
-} from './orchestration/index';
-
 // Export all orchestration components explicitly
 export {
   // From orchestration/index.ts
   OrchestrationManager,
   createOrchestrationManager,
-  
   OrchestrationStateManager,
   StepSequencer
 };
 
-// Re-export the orchestration types
-// export * from './orchestration/index'; // This might be redundant or cause issues if index also exports types
-
-//=============================================================================
-// Provider-specific imports for re-export
-//=============================================================================
-
-/**
- * Re-export provider-specific classes and types
- */
-import { GoogleGenerativeAI } from '@google/generative-ai';
 export { GoogleGenerativeAI };
 
 //=============================================================================
@@ -143,7 +155,7 @@ export { GoogleGenerativeAI };
  * Message utility functions
  * For converting, processing, and managing messages
  */
-export { 
+export {
   convertCoreToLLMMessage,
   convertCoreToLLMMessages,
   applyHistoryPolicy
@@ -158,37 +170,10 @@ export {
   addOrchestrationToPrompt
 } from './utils/prompt-utils';
 
-//=============================================================================
-// Client components (Re-exported from AI SDK)
-//=============================================================================
-
-/**
- * Re-export client-side components and AI SDK types for React applications
- * These are used in both client and server components
- */
-import type {
-  UseChatOptions,
-  UseChatHelpers,
-  CreateMessage
-} from 'ai/react';
-
 // Re-export AI SDK base types
-export type { 
-  UseChatOptions,
-  UseChatHelpers,
-  CreateMessage
-};
+export type { UseChatOptions, UseChatHelpers, CreateMessage };
 
-// Also re-export from ai core for server components
-import type {
-  LanguageModel,
-  CoreMessage
-} from 'ai';
-
-export type {
-  LanguageModel,
-  CoreMessage
-};
+export type { LanguageModel, CoreMessage };
 
 //=============================================================================
 // Evaluation System
@@ -216,15 +201,21 @@ export {
   type TextContent,
   type ImageContent,
   type ToolCallContent,
-  type ToolResultContent,
+  type ToolResultContent
 } from './evaluation';
 
 // Explicit direct re-exports for problematic types
 export type { EvaluationRunConfig } from './evaluation/runner';
 export type { LLMJudgeConfig } from './evaluation/evaluators/llm'; // Assumes LLMJudgeConfig is exported by evaluators/llm/index.ts
-export type { EvaluationRule, RuleConfig } from './evaluation/evaluators/rule-based'; // Assumes these are exported by evaluators/rule-based/index.ts
+export type {
+  EvaluationRule,
+  RuleConfig
+} from './evaluation/evaluators/rule-based'; // Assumes these are exported by evaluators/rule-based/index.ts
 export type { NLPAccuracyEvaluatorConfig } from './evaluation/evaluators/nlp'; // Added export for NLPAccuracyEvaluatorConfig
-export type { ToolUsageEvaluatorConfig, ToolUsageRule } from './evaluation/evaluators/tool';
+export type {
+  ToolUsageEvaluatorConfig,
+  ToolUsageRule
+} from './evaluation/evaluators/tool';
 export type { LexicalSimilarityEvaluatorConfig } from './evaluation/evaluators/lexical';
 export type { KeywordCoverageEvaluatorConfig } from './evaluation/evaluators/lexical';
 export type { SentimentEvaluatorConfig } from './evaluation/evaluators/lexical';

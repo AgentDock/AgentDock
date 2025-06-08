@@ -1,23 +1,29 @@
-"use client"
+'use client';
 
-import * as React from "react"
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { AgentControls } from "./agent-controls"
-import { cn } from "@/lib/utils"
-import { Bot } from "lucide-react"
-import { Skeleton } from "@/components/ui/skeleton"
-import { ErrorBoundary } from "@/components/error-boundary"
-import { ErrorInfo } from "react"
+import * as React from 'react';
+import { ErrorInfo } from 'react';
+import { Bot } from 'lucide-react';
+
+import { ErrorBoundary } from '@/components/error-boundary';
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle
+} from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
+import { AgentControls } from './agent-controls';
 
 interface AgentCardProps {
-  className?: string
-  name: string
-  description: string
-  model: string
-  tools: number
-  lastUpdated: string
-  onChat?: () => void
-  onSettings?: () => void
+  className?: string;
+  name: string;
+  description: string;
+  model: string;
+  tools: number;
+  lastUpdated: string;
+  onChat?: () => void;
+  onSettings?: () => void;
 }
 
 export function AgentCardSkeleton() {
@@ -65,10 +71,10 @@ function BaseAgentCard({
   tools,
   lastUpdated,
   onChat,
-  onSettings,
+  onSettings
 }: AgentCardProps) {
   return (
-    <Card className={cn("relative overflow-hidden", className)}>
+    <Card className={cn('relative overflow-hidden', className)}>
       <CardHeader>
         <div className="flex items-start justify-between">
           <div className="space-y-1.5">
@@ -100,18 +106,22 @@ function BaseAgentCard({
         </div>
       </CardHeader>
     </Card>
-  )
+  );
 }
 
 export function AgentCard(props: AgentCardProps) {
   return (
     <ErrorBoundary
       onError={(error: Error, errorInfo: ErrorInfo) => {
-        console.error(`Error in AgentCard for agent ${props.name}:`, error, errorInfo);
+        console.error(
+          `Error in AgentCard for agent ${props.name}:`,
+          error,
+          errorInfo
+        );
       }}
       resetOnPropsChange
     >
       <BaseAgentCard {...props} />
     </ErrorBoundary>
   );
-} 
+}

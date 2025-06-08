@@ -1,5 +1,11 @@
-import type { EvaluationCriteria, EvaluationInput, EvaluationResult, Evaluator } from '../../types';
 import Sentiment from 'sentiment'; // Capital S for constructor
+
+import type {
+  EvaluationCriteria,
+  EvaluationInput,
+  EvaluationResult,
+  Evaluator
+} from '../../types';
 import { getInputText } from '../../utils/input-text-extractor';
 
 /**
@@ -8,14 +14,20 @@ import { getInputText } from '../../utils/input-text-extractor';
 export interface SentimentEvaluatorConfig {
   /** The name of the criterion this evaluator assesses (e.g., "ResponseSentiment"). */
   criterionName: string;
-  /** 
-   * Field in EvaluationInput to use as the text to analyze. 
-   * Can be a top-level field like 'response', 'prompt', 'groundTruth', 
+  /**
+   * Field in EvaluationInput to use as the text to analyze.
+   * Can be a top-level field like 'response', 'prompt', 'groundTruth',
    * or a dot-notation path e.g., 'response.content[0].text', 'context.someKey.value'.
    * Defaults to 'response'.
    */
-  sourceTextField?: 'response' | 'prompt' | 'groundTruth' | `response.${string}` | `groundTruth.${string}` | `context.${string}`;
-  /** 
+  sourceTextField?:
+    | 'response'
+    | 'prompt'
+    | 'groundTruth'
+    | `response.${string}`
+    | `groundTruth.${string}`
+    | `context.${string}`;
+  /**
    * Specifies the type of output score to generate.
    * 'comparativeNormalized': The sentiment library's comparative score, normalized to a 0-1 range (default).
    *    (Original comparative is typically -5 to +5, so normalized: (score + 5) / 10)
@@ -43,49 +55,76 @@ export class SentimentEvaluator implements Evaluator {
 
   constructor(config: SentimentEvaluatorConfig) {
     if (!config.criterionName || config.criterionName.trim() === '') {
-      throw new Error('[SentimentEvaluator] criterionName must be provided and non-empty.');
+      throw new Error(
+        '[SentimentEvaluator] criterionName must be provided and non-empty.'
+      );
     }
 
     this.config = {
       criterionName: config.criterionName,
       sourceTextField: config.sourceTextField || 'response',
       outputType: config.outputType || 'comparativeNormalized',
-      positiveThreshold: config.positiveThreshold === undefined ? 0.2 : config.positiveThreshold,
-      negativeThreshold: config.negativeThreshold === undefined ? -0.2 : config.negativeThreshold,
+      positiveThreshold:
+        config.positiveThreshold === undefined ? 0.2 : config.positiveThreshold,
+      negativeThreshold:
+        config.negativeThreshold === undefined ? -0.2 : config.negativeThreshold
     };
 
-    if (this.config.negativeThreshold >= this.config.positiveThreshold && this.config.outputType === 'category') {
-        throw new Error('[SentimentEvaluator] negativeThreshold must be less than positiveThreshold for category output.');
+    if (
+      this.config.negativeThreshold >= this.config.positiveThreshold &&
+      this.config.outputType === 'category'
+    ) {
+      throw new Error(
+        '[SentimentEvaluator] negativeThreshold must be less than positiveThreshold for category output.'
+      );
     }
 
     this.sentimentAnalyzer = new Sentiment();
   }
 
-  async evaluate(input: EvaluationInput, criteria: EvaluationCriteria[]): Promise<EvaluationResult[]> {
-    const targetCriterion = criteria.find(c => c.name === this.config.criterionName);
+  async evaluate(
+    input: EvaluationInput,
+    criteria: EvaluationCriteria[]
+  ): Promise<EvaluationResult[]> {
+    const targetCriterion = criteria.find(
+      (c) => c.name === this.config.criterionName
+    );
     if (!targetCriterion) {
       return [];
     }
 
-    const sourceText = getInputText(input, this.config.sourceTextField as string | undefined);
+    const sourceText = getInputText(
+      input,
+      this.config.sourceTextField as string | undefined
+    );
 
     if (sourceText === undefined) {
-      return [{
-        criterionName: this.config.criterionName,
-        score: this.config.outputType === 'category' ? 'neutral' : 0, 
-        reasoning: `Evaluation failed: Source text field '${this.config.sourceTextField}' did not yield a string.`,
-        evaluatorType: this.type,
-        error: 'Invalid input type for sentiment analysis.',
-      }];
+      return [
+        {
+          criterionName: this.config.criterionName,
+          score: this.config.outputType === 'category' ? 'neutral' : 0,
+          reasoning: `Evaluation failed: Source text field '${this.config.sourceTextField}' did not yield a string.`,
+          evaluatorType: this.type,
+          error: 'Invalid input type for sentiment analysis.'
+        }
+      ];
     }
-    
+
     if (sourceText.trim() === '') {
-        return [{
-            criterionName: this.config.criterionName,
-            score: this.config.outputType === 'category' ? 'neutral' : (this.config.outputType === 'comparativeNormalized' ? 0.5 : 0),
-            reasoning: 'Source text is empty. Sentiment is considered neutral or baseline.',
-            evaluatorType: this.type,
-        }];
+      return [
+        {
+          criterionName: this.config.criterionName,
+          score:
+            this.config.outputType === 'category'
+              ? 'neutral'
+              : this.config.outputType === 'comparativeNormalized'
+                ? 0.5
+                : 0,
+          reasoning:
+            'Source text is empty. Sentiment is considered neutral or baseline.',
+          evaluatorType: this.type
+        }
+      ];
     }
 
     try {
@@ -101,7 +140,9 @@ export class SentimentEvaluator implements Evaluator {
         case 'category':
           if (analysisResult.comparative > this.config.positiveThreshold) {
             finalScore = 'positive';
-          } else if (analysisResult.comparative < this.config.negativeThreshold) {
+          } else if (
+            analysisResult.comparative < this.config.negativeThreshold
+          ) {
             finalScore = 'negative';
           } else {
             finalScore = 'neutral';
@@ -120,27 +161,31 @@ export class SentimentEvaluator implements Evaluator {
           break;
       }
 
-      return [{
-        criterionName: this.config.criterionName,
-        score: finalScore,
-        reasoning: reasoning,
-        evaluatorType: this.type,
-        metadata: { // Include detailed sentiment breakdown in metadata
+      return [
+        {
+          criterionName: this.config.criterionName,
+          score: finalScore,
+          reasoning: reasoning,
+          evaluatorType: this.type,
+          metadata: {
+            // Include detailed sentiment breakdown in metadata
             rawScore: analysisResult.score,
             comparativeScore: analysisResult.comparative,
             positiveWords: analysisResult.positive,
-            negativeWords: analysisResult.negative,
+            negativeWords: analysisResult.negative
+          }
         }
-      }];
-
+      ];
     } catch (e: any) {
-      return [{
-        criterionName: this.config.criterionName,
-        score: this.config.outputType === 'category' ? 'neutral' : 0,
-        reasoning: `Error during sentiment analysis: ${e.message}`,
-        evaluatorType: this.type,
-        error: e.message,
-      }];
+      return [
+        {
+          criterionName: this.config.criterionName,
+          score: this.config.outputType === 'category' ? 'neutral' : 0,
+          reasoning: `Error during sentiment analysis: ${e.message}`,
+          evaluatorType: this.type,
+          error: e.message
+        }
+      ];
     }
   }
-} 
+}

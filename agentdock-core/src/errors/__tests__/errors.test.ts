@@ -4,8 +4,8 @@
 
 import fetch, { Request, Response } from 'node-fetch';
 
-import { AgentError, ErrorCode, createError } from '../index';
 import { MockResponse } from '../../test/setup';
+import { AgentError, createError, ErrorCode } from '../index';
 
 // Assign fetch to the global object with the correct type
 (global as any).fetch = fetch;
@@ -50,7 +50,9 @@ describe('Error Handling System', () => {
     });
 
     it('should convert to JSON correctly', () => {
-      const error = new AgentError('Test error', ErrorCode.UNKNOWN, { foo: 'bar' });
+      const error = new AgentError('Test error', ErrorCode.UNKNOWN, {
+        foo: 'bar'
+      });
       const json = error.toJSON();
       expect(json).toHaveProperty('name', 'AgentError');
       expect(json).toHaveProperty('message', 'Test error');
@@ -95,18 +97,36 @@ describe('Error Handling System', () => {
 
     it.skip('should create error with custom details', () => {
       const details = { foo: 'bar' };
-      const error = createError('generic', 'Test error', ErrorCode.UNKNOWN, details);
+      const error = createError(
+        'generic',
+        'Test error',
+        ErrorCode.UNKNOWN,
+        details
+      );
       expect(error.details).toEqual(details);
     });
 
     it('should create error with custom HTTP status', () => {
-      const error = createError('generic', 'Test error', ErrorCode.UNKNOWN, {}, 400);
+      const error = createError(
+        'generic',
+        'Test error',
+        ErrorCode.UNKNOWN,
+        {},
+        400
+      );
       expect(error.httpStatus).toBe(400);
     });
 
     it('should handle all error types', () => {
-      const types = ['node', 'config', 'llm', 'api', 'storage', 'generic'] as const;
-      types.forEach(type => {
+      const types = [
+        'node',
+        'config',
+        'llm',
+        'api',
+        'storage',
+        'generic'
+      ] as const;
+      types.forEach((type) => {
         const error = createError(type, 'Test error', ErrorCode.UNKNOWN);
         expect(error).toBeInstanceOf(AgentError);
       });
@@ -121,8 +141,15 @@ describe('Error Handling System', () => {
     });
 
     it.skip('should have descriptive error codes', () => {
-      Object.values(ErrorCode).forEach(code => {
-        expect(code.endsWith('_ERROR') || code === 'NOT_IMPLEMENTED' || code === 'TAMPERING_DETECTED' || code === 'MAX_RETRIES_EXCEEDED' || code === 'NODE_NOT_FOUND' || code === 'CONFIG_NOT_FOUND').toBeTruthy();
+      Object.values(ErrorCode).forEach((code) => {
+        expect(
+          code.endsWith('_ERROR') ||
+            code === 'NOT_IMPLEMENTED' ||
+            code === 'TAMPERING_DETECTED' ||
+            code === 'MAX_RETRIES_EXCEEDED' ||
+            code === 'NODE_NOT_FOUND' ||
+            code === 'CONFIG_NOT_FOUND'
+        ).toBeTruthy();
         expect(code.length).toBeGreaterThan(6); // Ensure meaningful names
       });
     });
@@ -150,4 +177,4 @@ describe('Error Handling System', () => {
       expect(ErrorCode.MAX_RETRIES_EXCEEDED).toBeDefined();
     });
   });
-}); 
+});

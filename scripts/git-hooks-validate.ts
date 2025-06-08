@@ -1,5 +1,5 @@
 import { execSync } from 'child_process';
-import { logger, LogCategory } from 'agentdock-core';
+import { LogCategory, logger } from 'agentdock-core';
 import chalk from 'chalk';
 
 interface ValidationResult {
@@ -55,16 +55,13 @@ async function main() {
     console.log(chalk.green('✅ All pre-push checks passed!'));
     process.exit(0);
   } catch (error) {
-    logger.error(
-      LogCategory.SYSTEM,
-      'GitHooks',
-      'Pre-push validation failed',
-      { error }
-    );
+    logger.error(LogCategory.SYSTEM, 'GitHooks', 'Pre-push validation failed', {
+      error
+    });
     console.error(chalk.red('❌ Pre-push checks failed'));
     console.error(error instanceof Error ? error.message : 'Unknown error');
     process.exit(1);
   }
 }
 
-main(); 
+main();

@@ -4,10 +4,10 @@
  */
 
 import { CryptoData } from './api';
-import { 
-  formatCurrency, 
-  formatNumber, 
-  formatPercent, 
+import {
+  formatCurrency,
+  formatNumber,
+  formatPercent,
   formatTimestamp,
   getPriceChangeEmoji,
   getPriceChangeSymbol
@@ -28,14 +28,19 @@ export function CryptoPrice(props: CryptoPriceProps) {
   const formattedVolume = formatCurrency(props.total_volume, props.currency);
   const formattedHigh = formatCurrency(props.high_24h, props.currency);
   const formattedLow = formatCurrency(props.low_24h, props.currency);
-  const formattedChange = formatCurrency(Math.abs(props.price_change_24h), props.currency);
-  const formattedChangePercent = formatPercent(props.price_change_percentage_24h);
+  const formattedChange = formatCurrency(
+    Math.abs(props.price_change_24h),
+    props.currency
+  );
+  const formattedChangePercent = formatPercent(
+    props.price_change_percentage_24h
+  );
   const formattedDate = formatTimestamp(props.last_updated);
-  
+
   // Determine price change direction
   const priceDirection = getPriceChangeEmoji(props.price_change_percentage_24h);
   const changeSymbol = getPriceChangeSymbol(props.price_change_percentage_24h);
-  
+
   return {
     type: 'crypto_price',
     content: `${priceDirection} **${props.name}** (${props.symbol.toUpperCase()})
@@ -63,13 +68,15 @@ export function TrendingCryptos(coins: any[]) {
       content: 'No trending cryptocurrencies found.'
     };
   }
-  
+
   // Format each trending coin
-  const trendingList = coins.map((coin, index) => {
-    const item = coin.item || coin;
-    return `${index + 1}. **${item.name}** (${item.symbol}) - Rank #${item.market_cap_rank || 'N/A'}`;
-  }).join('\n');
-  
+  const trendingList = coins
+    .map((coin, index) => {
+      const item = coin.item || coin;
+      return `${index + 1}. **${item.name}** (${item.symbol}) - Rank #${item.market_cap_rank || 'N/A'}`;
+    })
+    .join('\n');
+
   return {
     type: 'crypto_trending',
     content: `## 🔥 Trending Cryptocurrencies
@@ -97,4 +104,4 @@ export function CryptoPriceError(error: string, id: string) {
 Please check that you've entered a valid cryptocurrency ID or symbol.
 You can search for valid IDs using the CoinGecko API.`
   };
-} 
+}

@@ -3,13 +3,13 @@
  * Provides tools for searching and retrieving scientific papers and medical information.
  */
 
-import { Tool, ToolCollection } from '../types';
-import { logger, LogCategory } from 'agentdock-core';
+import { LogCategory, logger } from 'agentdock-core';
 
+import { Tool, ToolCollection } from '../types';
+import { tools as arxivTools } from './arxiv';
+import { tools as openAlexTools } from './open-alex';
 // Import tools from each science API implementation
 import { tools as pubmedTools } from './pubmed';
-import { tools as openAlexTools } from './open-alex';
-import { tools as arxivTools } from './arxiv';
 import { tools as semanticScholarTools } from './semantic-scholar';
 
 // Export tools for registry
@@ -18,7 +18,7 @@ export const tools: ToolCollection = {
   ...pubmedTools,
   ...openAlexTools,
   ...arxivTools,
-  ...semanticScholarTools,
+  ...semanticScholarTools
 };
 
 // Log initialization
@@ -30,4 +30,4 @@ logger.info(
     toolCount: Object.keys(tools).length,
     availableTools: Object.keys(tools).join(', ')
   }
-); 
+);

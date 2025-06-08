@@ -70,13 +70,21 @@ export const OpenAlexSearchResultComponent: React.FC<{
               )}
               {work.is_open_access && (
                 <p>
-                  <a href={work.open_access_url || work.url} target="_blank" rel="noopener noreferrer">
+                  <a
+                    href={work.open_access_url || work.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     Open Access
                   </a>
                 </p>
               )}
               <p>
-                <a href={work.url} target="_blank" rel="noopener noreferrer">
+                <a
+                  href={work.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   View on OpenAlex
                 </a>
               </p>
@@ -102,11 +110,25 @@ export const OpenAlexWorkComponent: React.FC<{
           <strong>Authors:</strong> {work.authors.join(', ')}
         </p>
       )}
-      {work.venue && <p><strong>Published in:</strong> {work.venue}</p>}
-      {work.publication_date && <p><strong>Publication Date:</strong> {work.publication_date}</p>}
-      {work.type && <p><strong>Type:</strong> {work.type}</p>}
+      {work.venue && (
+        <p>
+          <strong>Published in:</strong> {work.venue}
+        </p>
+      )}
+      {work.publication_date && (
+        <p>
+          <strong>Publication Date:</strong> {work.publication_date}
+        </p>
+      )}
+      {work.type && (
+        <p>
+          <strong>Type:</strong> {work.type}
+        </p>
+      )}
       {work.cited_by_count !== undefined && (
-        <p><strong>Citations:</strong> {work.cited_by_count}</p>
+        <p>
+          <strong>Citations:</strong> {work.cited_by_count}
+        </p>
       )}
       {work.abstract && (
         <div>
@@ -119,7 +141,9 @@ export const OpenAlexWorkComponent: React.FC<{
           <h4>Concepts</h4>
           <ul>
             {work.concepts.map((concept, index) => (
-              <li key={concept.id || index}>{concept.display_name} (Score: {concept.score})</li>
+              <li key={concept.id || index}>
+                {concept.display_name} (Score: {concept.score})
+              </li>
             ))}
           </ul>
         </div>
@@ -132,23 +156,35 @@ export const OpenAlexWorkComponent: React.FC<{
       )}
       {work.is_open_access && work.open_access_url && (
         <p>
-          <a href={work.open_access_url} target="_blank" rel="noopener noreferrer">
+          <a
+            href={work.open_access_url}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             Access Full Text
           </a>
         </p>
       )}
       <p>
-        <a href={work.url} target="_blank" rel="noopener noreferrer">
+        <a
+          href={work.url}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           View on OpenAlex
         </a>
       </p>
       {work.doi && (
         <p>
-          <a href={`https://doi.org/${work.doi}`} target="_blank" rel="noopener noreferrer">
+          <a
+            href={`https://doi.org/${work.doi}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             DOI: {work.doi}
           </a>
         </p>
       )}
     </div>
   );
-}; 
+};

@@ -3,18 +3,23 @@
  * Follows Vercel AI SDK patterns for generative UI.
  */
 
+import { LogCategory, logger } from 'agentdock-core';
 import { z } from 'zod';
+
 import { Tool } from '../types';
-import type { WeatherForecast } from './types';
 import { Weather } from './components';
-import { getCoordinates, parseCoordinates, getWeatherForecast } from './utils';
-import { logger, LogCategory } from 'agentdock-core';
+import type { WeatherForecast } from './types';
+import { getCoordinates, getWeatherForecast, parseCoordinates } from './utils';
 
 /**
  * Schema for weather tool parameters
  */
 const weatherSchema = z.object({
-  location: z.string().describe('City name or coordinates (e.g. "New York" or "40.7128,-74.0060")')
+  location: z
+    .string()
+    .describe(
+      'City name or coordinates (e.g. "New York" or "40.7128,-74.0060")'
+    )
 });
 
 type WeatherParams = z.infer<typeof weatherSchema>;
@@ -24,25 +29,47 @@ type WeatherParams = z.infer<typeof weatherSchema>;
  */
 export const weatherTool: Tool = {
   name: 'weather',
-  description: 'Get weather forecast for any location worldwide. You can provide either a city name (e.g. "New York") or coordinates (e.g. "40.7128,-74.0060")',
+  description:
+    'Get weather forecast for any location worldwide. You can provide either a city name (e.g. "New York") or coordinates (e.g. "40.7128,-74.0060")',
   parameters: weatherSchema,
   async execute({ location }) {
-    logger.info(LogCategory.NODE, 'WeatherTool', `Executing weather tool with location: ${location}`);
+    logger.info(
+      LogCategory.NODE,
+      'WeatherTool',
+      `Executing weather tool with location: ${location}`
+    );
     try {
       // Parse coordinates or geocode the location
       const coords = parseCoordinates(location);
-      let latitude: number, longitude: number, name: string, country: string, region: string;
+      let latitude: number,
+        longitude: number,
+        name: string,
+        country: string,
+        region: string;
 
       if (coords) {
         [latitude, longitude] = coords;
         name = `${latitude},${longitude}`;
         country = 'Coordinates';
         region = '';
-        logger.info(LogCategory.NODE, 'WeatherTool', `Using provided coordinates: ${latitude},${longitude}`);
+        logger.info(
+          LogCategory.NODE,
+          'WeatherTool',
+          `Using provided coordinates: ${latitude},${longitude}`
+        );
       } else {
-        logger.info(LogCategory.NODE, 'WeatherTool', `Geocoding location: ${location}`);
-        [latitude, longitude, name, country, region] = await getCoordinates(location);
-        logger.info(LogCategory.NODE, 'WeatherTool', `Geocoded to: ${name}, ${country} (${latitude},${longitude})`);
+        logger.info(
+          LogCategory.NODE,
+          'WeatherTool',
+          `Geocoding location: ${location}`
+        );
+        [latitude, longitude, name, country, region] =
+          await getCoordinates(location);
+        logger.info(
+          LogCategory.NODE,
+          'WeatherTool',
+          `Geocoded to: ${name}, ${country} (${latitude},${longitude})`
+        );
       }
 
       // Get weather forecast from Open-Meteo
@@ -71,7 +98,8 @@ export const weatherTool: Tool = {
           weatherCode: apiResponse.daily.weather_code[i],
           windSpeed: apiResponse.daily.wind_speed_10m_max[i],
           windDirection: apiResponse.daily.wind_direction_10m_dominant[i],
-          precipitationProbability: apiResponse.daily.precipitation_probability_max[i]
+          precipitationProbability:
+            apiResponse.daily.precipitation_probability_max[i]
         }))
       };
 
@@ -129,4 +157,4 @@ export const weatherTool: Tool = {
  */
 export const tools = {
   weather: weatherTool
-}; 
+};

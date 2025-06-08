@@ -30,14 +30,17 @@ export interface BlockRewardResponse {
  * @param apiKey Snowtrace API key (optional)
  * @returns Promise with block reward data
  */
-export async function getBlockReward(blockno: number, apiKey?: string): Promise<BlockRewardResponse['result']> {
+export async function getBlockReward(
+  blockno: number,
+  apiKey?: string
+): Promise<BlockRewardResponse['result']> {
   const response = await makeRequest<BlockRewardResponse>(
     'block',
     'getblockreward',
     { blockno: blockno.toString() },
     apiKey
   );
-  
+
   return response.result;
 }
 
@@ -47,14 +50,17 @@ export async function getBlockReward(blockno: number, apiKey?: string): Promise<
  * @param apiKey Snowtrace API key (optional)
  * @returns Promise with block countdown data
  */
-export async function getBlockCountdown(blockno: number, apiKey?: string): Promise<any> {
+export async function getBlockCountdown(
+  blockno: number,
+  apiKey?: string
+): Promise<any> {
   const response = await makeRequest<SnowtraceResponse<any>>(
     'block',
     'getblockcountdown',
     { blockno: blockno.toString() },
     apiKey
   );
-  
+
   return response.result;
 }
 
@@ -79,6 +85,6 @@ export async function getBlockNumberByTimestamp(
     },
     apiKey
   );
-  
+
   return response.result;
-} 
+}

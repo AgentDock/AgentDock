@@ -1,3 +1,20 @@
+import {
+  fetchAnthropicModels,
+  fetchCerebrasModels,
+  fetchDeepSeekModels,
+  fetchGeminiModels,
+  fetchGroqModels,
+  fetchOpenAIModels,
+  validateAnthropicApiKey,
+  validateCerebrasApiKey,
+  validateDeepSeekApiKey,
+  validateGeminiApiKey,
+  validateGroqApiKey,
+  validateOpenAIApiKey
+} from '.';
+import { LogCategory, logger } from '../../logging';
+import { LLMProvider, ModelMetadata } from '../types';
+
 /**
  * @fileoverview Provider adapters for LLM providers
  * These adapters abstract the provider-specific logic for validation and model fetching
@@ -5,33 +22,26 @@
 
 // Re-export all provider adapters
 export * from './anthropic-adapter';
+export * from './cerebras-adapter';
+export * from './deepseek-adapter';
 export * from './openai-adapter';
 export * from './gemini-adapter';
 export * from './groq-adapter';
-export * from './deepseek-adapter'; 
-export * from './cerebras-adapter';
-
-import { LLMProvider, ModelMetadata } from '../types';
-import { logger, LogCategory } from '../../logging';
-import { 
-  validateAnthropicApiKey, fetchAnthropicModels,
-  validateOpenAIApiKey, fetchOpenAIModels,
-  validateGeminiApiKey, fetchGeminiModels,
-  validateDeepSeekApiKey, fetchDeepSeekModels,
-  validateGroqApiKey, fetchGroqModels,
-  validateCerebrasApiKey, fetchCerebrasModels
-} from '.';
 
 /**
  * Validate an API key for the specified provider
  */
 export async function validateProviderApiKey(
-  providerId: LLMProvider, 
+  providerId: LLMProvider,
   apiKey: string
 ): Promise<boolean> {
   try {
-    logger.debug(LogCategory.LLM, 'ProviderAdapter', `Validating API key for provider: ${providerId}`);
-    
+    logger.debug(
+      LogCategory.LLM,
+      'ProviderAdapter',
+      `Validating API key for provider: ${providerId}`
+    );
+
     switch (providerId) {
       case 'anthropic':
         return validateAnthropicApiKey(apiKey);
@@ -46,14 +56,18 @@ export async function validateProviderApiKey(
       case 'cerebras':
         return validateCerebrasApiKey(apiKey);
       default:
-        logger.warn(LogCategory.LLM, 'ProviderAdapter', `Unsupported provider: ${providerId}`);
+        logger.warn(
+          LogCategory.LLM,
+          'ProviderAdapter',
+          `Unsupported provider: ${providerId}`
+        );
         return false;
     }
   } catch (error) {
     logger.error(
-      LogCategory.LLM, 
-      'ProviderAdapter', 
-      `Error validating API key for ${providerId}:`, 
+      LogCategory.LLM,
+      'ProviderAdapter',
+      `Error validating API key for ${providerId}:`,
       { error: error instanceof Error ? error.message : String(error) }
     );
     return false;
@@ -64,12 +78,16 @@ export async function validateProviderApiKey(
  * Fetch models for the specified provider
  */
 export async function fetchProviderModels(
-  providerId: LLMProvider, 
+  providerId: LLMProvider,
   apiKey: string
 ): Promise<ModelMetadata[]> {
   try {
-    logger.debug(LogCategory.LLM, 'ProviderAdapter', `Fetching models for provider: ${providerId}`);
-    
+    logger.debug(
+      LogCategory.LLM,
+      'ProviderAdapter',
+      `Fetching models for provider: ${providerId}`
+    );
+
     switch (providerId) {
       case 'anthropic':
         return fetchAnthropicModels(apiKey);
@@ -84,16 +102,20 @@ export async function fetchProviderModels(
       case 'cerebras':
         return fetchCerebrasModels(apiKey);
       default:
-        logger.warn(LogCategory.LLM, 'ProviderAdapter', `Unsupported provider: ${providerId}`);
+        logger.warn(
+          LogCategory.LLM,
+          'ProviderAdapter',
+          `Unsupported provider: ${providerId}`
+        );
         return [];
     }
   } catch (error) {
     logger.error(
-      LogCategory.LLM, 
-      'ProviderAdapter', 
-      `Error fetching models for ${providerId}:`, 
+      LogCategory.LLM,
+      'ProviderAdapter',
+      `Error fetching models for ${providerId}:`,
       { error: error instanceof Error ? error.message : String(error) }
     );
     throw error;
   }
-} 
+}

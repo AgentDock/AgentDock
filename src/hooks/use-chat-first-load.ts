@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 // Check if this is the very first load of the chat page in this session
 const isVeryFirstLoad = (): boolean => {
@@ -31,7 +31,7 @@ export function useChatFirstLoad() {
     // Check if this is the very first load
     const firstLoad = isVeryFirstLoad();
     setIsFirstLoad(firstLoad);
-    
+
     // If this is the first load, mark it as complete
     if (firstLoad) {
       markFirstLoadComplete();
@@ -41,4 +41,4 @@ export function useChatFirstLoad() {
   return {
     isFirstLoad
   };
-} 
+}

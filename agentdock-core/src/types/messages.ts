@@ -1,6 +1,6 @@
 /**
  * @fileoverview Core message type definitions for AgentDock
- * 
+ *
  * This module defines a unified message type that extends the Vercel AI SDK
  * message type while adding our rendering properties. This eliminates the need
  * for conversion functions that could cause property loss.
@@ -14,7 +14,7 @@ export const MessageRole = {
   USER: 'user',
   ASSISTANT: 'assistant',
   SYSTEM: 'system',
-  DATA: 'data',
+  DATA: 'data'
 } as const;
 
 // The role type must match AI SDK exactly for type compatibility
@@ -46,7 +46,11 @@ export interface ToolResultContent {
 }
 
 // Union type for all content types
-export type MessageContent = TextContent | ImageContent | ToolCallContent | ToolResultContent;
+export type MessageContent =
+  | TextContent
+  | ImageContent
+  | ToolCallContent
+  | ToolResultContent;
 
 // Additional rendering properties that extend the AI SDK message
 export interface MessageRenderingProps {
@@ -76,7 +80,7 @@ export interface Message extends Omit<AIMessage, 'role'> {
   isLoading?: boolean;
   isError?: boolean;
   isTyping?: boolean;
-  isPending?: boolean; 
+  isPending?: boolean;
   isComplete?: boolean;
   showToolCall?: boolean;
   contentParts?: MessageContent[];
@@ -87,16 +91,16 @@ export interface Message extends Omit<AIMessage, 'role'> {
 }
 
 // Specific message type guards that check role property
-export const isUserMessage = (message: Message): boolean => 
+export const isUserMessage = (message: Message): boolean =>
   message.role === 'user';
 
-export const isAssistantMessage = (message: Message): boolean => 
+export const isAssistantMessage = (message: Message): boolean =>
   message.role === 'assistant';
 
-export const isSystemMessage = (message: Message): boolean => 
+export const isSystemMessage = (message: Message): boolean =>
   message.role === 'system';
 
-export const isToolMessage = (message: Message): boolean => 
+export const isToolMessage = (message: Message): boolean =>
   message.role === 'data' && message.isToolMessage === true;
 
 // Content utility function
@@ -118,9 +122,12 @@ export function formatContentForDisplay(content: MessageContent): string {
 /**
  * Create a standard message
  */
-export function createMessage(params: Partial<Message> & Pick<Message, 'content'> & {
-  role: MessageRole;
-}): Message {
+export function createMessage(
+  params: Partial<Message> &
+    Pick<Message, 'content'> & {
+      role: MessageRole;
+    }
+): Message {
   return {
     id: params.id || crypto.randomUUID(),
     createdAt: params.createdAt || new Date(),
@@ -131,10 +138,13 @@ export function createMessage(params: Partial<Message> & Pick<Message, 'content'
 /**
  * Create a tool message (represented as 'data' role for AI SDK compatibility)
  */
-export function createToolMessage(params: Partial<Message> & Pick<Message, 'content'> & {
-  toolCallId: string;
-  toolName: string;
-}): Message {
+export function createToolMessage(
+  params: Partial<Message> &
+    Pick<Message, 'content'> & {
+      toolCallId: string;
+      toolName: string;
+    }
+): Message {
   return {
     id: params.id || crypto.randomUUID(),
     createdAt: params.createdAt || new Date(),
@@ -147,9 +157,10 @@ export function createToolMessage(params: Partial<Message> & Pick<Message, 'cont
 // AI SDK compatibility - define explicit map functions
 export function toAIMessage(message: Message): AIMessage {
   // Convert content to string if needed
-  const content = typeof message.content === 'string' 
-    ? message.content 
-    : JSON.stringify(message.content);
+  const content =
+    typeof message.content === 'string'
+      ? message.content
+      : JSON.stringify(message.content);
 
   return {
     id: message.id,
@@ -166,4 +177,4 @@ export function fromAIMessage(aiMessage: AIMessage): Message {
     role: aiMessage.role as MessageRole,
     content: aiMessage.content
   };
-} 
+}

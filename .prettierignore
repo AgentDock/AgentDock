@@ -1,0 +1,58 @@
+# Build outputs
+.next/
+**/dist/
+coverage/
+agentdock-core/dist/
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Generated files
+src/generated/
+**/generated/
+next-env.d.ts
+tsconfig.tsbuildinfo
+
+# TypeScript declaration files
+**/*.d.ts
+
+# Lock files
+pnpm-lock.yaml
+pnpm-workspace.yaml
+
+# Public assets
+public/
+**/public/
+
+# IDE/Tool directories
+.vscode/
+.cursor/
+.history/
+.husky/
+.swc/
+
+# Documentation with specific formatting (optional)
+docs/**/*.md
+docs/**/*.mdx
+*.md
+*.mdx
+
+# Search index (generated)
+public/search-index.json
+public/llms.txt
+public/llms-full.txt
+
+# Agent templates (might have specific formatting)
+agents/**/template.yaml
+agents/**/config.yaml
+
+# Test coverage reports
+coverage/
+
+# Configuration files (preserve specific formatting)
+prettier.config.mjs
+eslint.config.mjs
+
+# Cursor rules (specific formatting)
+.cursor/rules/**/*.mdc

@@ -83,13 +83,13 @@ export async function fetchCryptoPrice(
 ): Promise<CryptoData> {
   // Format the ID
   const formattedId = formatCryptoId(id);
-  
+
   // Use provided API key or fall back to environment variable
   const key = apiKey || process.env.COINGECKO_API_KEY || '';
-  
+
   // Build API URL - for free tier we don't need to include the API key
   let url = `${COINGECKO_API_BASE_URL}/coins/markets?vs_currency=${currency}&ids=${formattedId}&order=market_cap_desc&per_page=1&page=1&sparkline=false&price_change_percentage=24h`;
-  
+
   // If API key is provided, use it (for Pro tier)
   if (key) {
     // For Pro tier, the base URL and authentication method would be different
@@ -97,19 +97,21 @@ export async function fetchCryptoPrice(
     // url = `https://pro-api.coingecko.com/api/v3/coins/markets?vs_currency=${currency}&ids=${formattedId}&order=market_cap_desc&per_page=1&page=1&sparkline=false&price_change_percentage=24h`;
     // headers = { 'x-cg-pro-api-key': key };
   }
-  
+
   try {
     // Fetch data from API
     const response = await fetch(url);
-    
+
     // Check if response is OK
     if (!response.ok) {
-      throw new Error(`CoinGecko API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `CoinGecko API error: ${response.status} ${response.statusText}`
+      );
     }
-    
+
     // Parse response as JSON
     const data = await response.json();
-    
+
     // Check for API error responses
     if (isErrorResponse(data)) {
       if (data.status?.error_message) {
@@ -119,15 +121,15 @@ export async function fetchCryptoPrice(
         throw new Error(`API error: ${data.error}`);
       }
     }
-    
+
     // Check if data is an array and has at least one item
     if (!Array.isArray(data) || data.length === 0) {
       throw new Error(`No data found for cryptocurrency: ${formattedId}`);
     }
-    
+
     // Extract the first item (should be the only one since we used per_page=1)
     const cryptoData = data[0];
-    
+
     // Process and return cryptocurrency data
     return {
       id: cryptoData.id,
@@ -161,22 +163,24 @@ export async function fetchCryptoPrice(
 export async function searchCryptos(query: string, apiKey?: string) {
   // Use provided API key or fall back to environment variable
   const key = apiKey || process.env.COINGECKO_API_KEY || '';
-  
+
   // Build API URL
   let url = `${COINGECKO_API_BASE_URL}/search?query=${encodeURIComponent(query)}`;
-  
+
   try {
     // Fetch data from API
     const response = await fetch(url);
-    
+
     // Check if response is OK
     if (!response.ok) {
-      throw new Error(`CoinGecko API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `CoinGecko API error: ${response.status} ${response.statusText}`
+      );
     }
-    
+
     // Parse response as JSON
     const data = await response.json();
-    
+
     // Check for API error responses
     if (isErrorResponse(data)) {
       if (data.status?.error_message) {
@@ -186,12 +190,12 @@ export async function searchCryptos(query: string, apiKey?: string) {
         throw new Error(`API error: ${data.error}`);
       }
     }
-    
+
     // Check if data contains coins
     if (!data.coins || !Array.isArray(data.coins)) {
       return [];
     }
-    
+
     // Return the matches
     return data.coins;
   } catch (error) {
@@ -211,22 +215,24 @@ export async function searchCryptos(query: string, apiKey?: string) {
 export async function getTrendingCryptos(apiKey?: string) {
   // Use provided API key or fall back to environment variable
   const key = apiKey || process.env.COINGECKO_API_KEY || '';
-  
+
   // Build API URL
   let url = `${COINGECKO_API_BASE_URL}/search/trending`;
-  
+
   try {
     // Fetch data from API
     const response = await fetch(url);
-    
+
     // Check if response is OK
     if (!response.ok) {
-      throw new Error(`CoinGecko API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `CoinGecko API error: ${response.status} ${response.statusText}`
+      );
     }
-    
+
     // Parse response as JSON
     const data = await response.json();
-    
+
     // Check for API error responses
     if (isErrorResponse(data)) {
       if (data.status?.error_message) {
@@ -236,19 +242,21 @@ export async function getTrendingCryptos(apiKey?: string) {
         throw new Error(`API error: ${data.error}`);
       }
     }
-    
+
     // Check if data contains coins
     if (!data.coins || !Array.isArray(data.coins)) {
       return [];
     }
-    
+
     // Return the trending coins
     return data.coins;
   } catch (error) {
     // Handle fetch errors
     if (error instanceof Error) {
-      throw new Error(`Failed to get trending cryptocurrencies: ${error.message}`);
+      throw new Error(
+        `Failed to get trending cryptocurrencies: ${error.message}`
+      );
     }
     throw new Error('Failed to get trending cryptocurrencies: Unknown error');
   }
-} 
+}

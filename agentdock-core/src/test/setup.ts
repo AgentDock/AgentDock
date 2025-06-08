@@ -3,13 +3,13 @@
  */
 
 import { CoreLLM } from '../llm/core-llm';
-import { LLMConfig } from '../llm/types';
 import { LLMOrchestrationService } from '../llm/llm-orchestration-service';
-import { OrchestrationManager } from '../orchestration';
-import { SessionId } from '../types/session';
+import { LLMConfig } from '../llm/types';
 import { BaseNode, NodeMetadata, NodePort } from '../nodes/base-node';
-import { NodeCategory } from '../types/node-category';
+import { OrchestrationManager } from '../orchestration';
 import { StorageProvider } from '../storage/types';
+import { NodeCategory } from '../types/node-category';
+import { SessionId } from '../types/session';
 
 // Mock Web Crypto API
 const mockCrypto = {
@@ -77,7 +77,7 @@ beforeAll(() => {
   Object.defineProperty(global, 'TextEncoder', {
     value: class {
       encode(str: string) {
-        return new Uint8Array([...str].map(c => c.charCodeAt(0)));
+        return new Uint8Array([...str].map((c) => c.charCodeAt(0)));
       }
     },
     writable: true
@@ -100,19 +100,18 @@ beforeEach(() => {
 });
 
 // Export mocks for direct use in tests
-export {
-  mockCrypto,
-  mockLocalStorage,
-  MockResponse
-};
+export { mockCrypto, mockLocalStorage, MockResponse };
 
 // Export test utilities
-export function createMockStream(chunks: string[], options?: { delay?: number }) {
+export function createMockStream(
+  chunks: string[],
+  options?: { delay?: number }
+) {
   return new ReadableStream({
     async start(controller) {
       for (const chunk of chunks) {
         if (options?.delay) {
-          await new Promise(resolve => setTimeout(resolve, options.delay));
+          await new Promise((resolve) => setTimeout(resolve, options.delay));
         }
         controller.enqueue(chunk);
       }
@@ -137,32 +136,34 @@ export function arrayBufferToBase64(buffer: ArrayBuffer): string {
     binary += String.fromCharCode(bytes[i]);
   }
   return btoa(binary);
-} 
+}
 
 /**
  * LLM Mocking Utilities
- * 
+ *
  * These functions create standardized mock objects for LLM-related components,
  * ensuring consistent behavior across tests.
  */
 
 /**
  * Creates a mock CoreLLM instance with pre-configured responses
- * 
+ *
  * @param options Configuration options for the mock
  * @returns A mocked CoreLLM instance
  */
-export function createMockCoreLLM(options: {
-  provider?: string;
-  modelId?: string;
-  tokenUsage?: {
-    promptTokens: number;
-    completionTokens: number;
-    totalTokens: number;
-  };
-  streamText?: jest.Mock;
-  generateText?: jest.Mock;
-} = {}): jest.Mocked<CoreLLM> {
+export function createMockCoreLLM(
+  options: {
+    provider?: string;
+    modelId?: string;
+    tokenUsage?: {
+      promptTokens: number;
+      completionTokens: number;
+      totalTokens: number;
+    };
+    streamText?: jest.Mock;
+    generateText?: jest.Mock;
+  } = {}
+): jest.Mocked<CoreLLM> {
   const defaultProvider = 'openai';
   const defaultModelId = 'gpt-3.5-turbo';
 
@@ -174,45 +175,49 @@ export function createMockCoreLLM(options: {
       modelId: options.modelId || defaultModelId
     }),
     getLastTokenUsage: jest.fn().mockReturnValue(options.tokenUsage || null),
-    streamText: options.streamText || jest.fn().mockImplementation(async (opts) => {
-      if (opts?.onFinish) {
-        await opts.onFinish({
-          finishReason: 'stop',
-          usage: {
+    streamText:
+      options.streamText ||
+      jest.fn().mockImplementation(async (opts) => {
+        if (opts?.onFinish) {
+          await opts.onFinish({
+            finishReason: 'stop',
+            usage: {
+              promptTokens: options.tokenUsage?.promptTokens || 100,
+              completionTokens: options.tokenUsage?.completionTokens || 50,
+              totalTokens: options.tokenUsage?.totalTokens || 150
+            },
+            response: { messages: [] }
+          });
+        }
+        return {
+          usage: Promise.resolve({
             promptTokens: options.tokenUsage?.promptTokens || 100,
             completionTokens: options.tokenUsage?.completionTokens || 50,
             totalTokens: options.tokenUsage?.totalTokens || 150
-          },
-          response: { messages: [] }
-        });
-      }
-      return {
-        usage: Promise.resolve({
+          }),
+          response: Promise.resolve({
+            provider: options.provider || defaultProvider,
+            id: 'mock-id',
+            timestamp: new Date(),
+            modelId: options.modelId || defaultModelId,
+            messages: []
+          }),
+          finishReason: Promise.resolve('stop'),
+          text: Promise.resolve(''),
+          toolCalls: Promise.resolve([]),
+          toolResults: Promise.resolve([])
+        };
+      }),
+    generateText:
+      options.generateText ||
+      jest.fn().mockResolvedValue({
+        text: '',
+        usage: {
           promptTokens: options.tokenUsage?.promptTokens || 100,
           completionTokens: options.tokenUsage?.completionTokens || 50,
           totalTokens: options.tokenUsage?.totalTokens || 150
-        }),
-        response: Promise.resolve({
-          provider: options.provider || defaultProvider,
-          id: 'mock-id',
-          timestamp: new Date(),
-          modelId: options.modelId || defaultModelId,
-          messages: []
-        }),
-        finishReason: Promise.resolve('stop'),
-        text: Promise.resolve(''),
-        toolCalls: Promise.resolve([]),
-        toolResults: Promise.resolve([]),
-      };
-    }),
-    generateText: options.generateText || jest.fn().mockResolvedValue({
-      text: '',
-      usage: {
-        promptTokens: options.tokenUsage?.promptTokens || 100,
-        completionTokens: options.tokenUsage?.completionTokens || 50,
-        totalTokens: options.tokenUsage?.totalTokens || 150
-      }
-    }),
+        }
+      }),
     generateObject: jest.fn().mockResolvedValue({
       object: {},
       usage: {
@@ -236,39 +241,43 @@ export function createMockCoreLLM(options: {
 
 /**
  * Creates a mock LLMOrchestrationService instance
- * 
+ *
  * @param options Configuration options for the mock
  * @returns A mocked LLMOrchestrationService instance
  */
-export function createMockLLMOrchestrationService(options: {
-  coreLLM?: jest.Mocked<CoreLLM>;
-  orchestrationManager?: jest.Mocked<OrchestrationManager>;
-  sessionId?: SessionId;
-  streamWithOrchestration?: jest.Mock;
-} = {}): jest.Mocked<LLMOrchestrationService> {
+export function createMockLLMOrchestrationService(
+  options: {
+    coreLLM?: jest.Mocked<CoreLLM>;
+    orchestrationManager?: jest.Mocked<OrchestrationManager>;
+    sessionId?: SessionId;
+    streamWithOrchestration?: jest.Mock;
+  } = {}
+): jest.Mocked<LLMOrchestrationService> {
   const mockCoreLLM = options.coreLLM || createMockCoreLLM();
-  
+
   const mockService = {
-    streamWithOrchestration: options.streamWithOrchestration || jest.fn().mockImplementation(async () => {
-      return {
-        usage: Promise.resolve({
-          promptTokens: 100,
-          completionTokens: 50,
-          totalTokens: 150
-        }),
-        response: Promise.resolve({
-          provider: mockCoreLLM.getProvider(),
-          id: 'mock-id',
-          timestamp: new Date(),
-          modelId: mockCoreLLM.getModelId(),
-          messages: []
-        }),
-        finishReason: Promise.resolve('stop'),
-        text: Promise.resolve(''),
-        toolCalls: Promise.resolve([]),
-        toolResults: Promise.resolve([]),
-      };
-    })
+    streamWithOrchestration:
+      options.streamWithOrchestration ||
+      jest.fn().mockImplementation(async () => {
+        return {
+          usage: Promise.resolve({
+            promptTokens: 100,
+            completionTokens: 50,
+            totalTokens: 150
+          }),
+          response: Promise.resolve({
+            provider: mockCoreLLM.getProvider(),
+            id: 'mock-id',
+            timestamp: new Date(),
+            modelId: mockCoreLLM.getModelId(),
+            messages: []
+          }),
+          finishReason: Promise.resolve('stop'),
+          text: Promise.resolve(''),
+          toolCalls: Promise.resolve([]),
+          toolResults: Promise.resolve([])
+        };
+      })
   } as unknown as jest.Mocked<LLMOrchestrationService>;
 
   return mockService;
@@ -276,42 +285,51 @@ export function createMockLLMOrchestrationService(options: {
 
 /**
  * Creates a mock OrchestrationManager instance with pre-configured responses
- * 
+ *
  * @param options Configuration options for the mock
  * @returns A mocked OrchestrationManager instance
  */
-export function createMockOrchestrationManager(options: {
-  getState?: jest.Mock;
-  setState?: jest.Mock;
-  updateState?: jest.Mock;
-  clearState?: jest.Mock;
-  ensureStateExists?: jest.Mock;
-  stateManager?: {
-    get?: jest.Mock;
-    set?: jest.Mock;
-    update?: jest.Mock;
-    delete?: jest.Mock;
-  };
-  sequencer?: {
-    getStepId?: jest.Mock;
-  };
-  getActiveStep?: jest.Mock;
-  checkCondition?: jest.Mock;
-  registerTools?: jest.Mock;
-  switchFlow?: jest.Mock;
-  switchStep?: jest.Mock;
-  startOrchestration?: jest.Mock;
-  stopOrchestration?: jest.Mock;
-} = {}): jest.Mocked<OrchestrationManager> {
+export function createMockOrchestrationManager(
+  options: {
+    getState?: jest.Mock;
+    setState?: jest.Mock;
+    updateState?: jest.Mock;
+    clearState?: jest.Mock;
+    ensureStateExists?: jest.Mock;
+    stateManager?: {
+      get?: jest.Mock;
+      set?: jest.Mock;
+      update?: jest.Mock;
+      delete?: jest.Mock;
+    };
+    sequencer?: {
+      getStepId?: jest.Mock;
+    };
+    getActiveStep?: jest.Mock;
+    checkCondition?: jest.Mock;
+    registerTools?: jest.Mock;
+    switchFlow?: jest.Mock;
+    switchStep?: jest.Mock;
+    startOrchestration?: jest.Mock;
+    stopOrchestration?: jest.Mock;
+  } = {}
+): jest.Mocked<OrchestrationManager> {
   const mockManager = {
-    getState: options.getState || jest.fn().mockResolvedValue({ 
-      cumulativeTokenUsage: { promptTokens: 10, completionTokens: 5, totalTokens: 15 }, 
-      recentlyUsedTools: [] 
-    }),
+    getState:
+      options.getState ||
+      jest.fn().mockResolvedValue({
+        cumulativeTokenUsage: {
+          promptTokens: 10,
+          completionTokens: 5,
+          totalTokens: 15
+        },
+        recentlyUsedTools: []
+      }),
     setState: options.setState || jest.fn().mockResolvedValue({}),
     updateState: options.updateState || jest.fn().mockResolvedValue({}),
     clearState: options.clearState || jest.fn().mockResolvedValue({}),
-    ensureStateExists: options.ensureStateExists || jest.fn().mockResolvedValue({}),
+    ensureStateExists:
+      options.ensureStateExists || jest.fn().mockResolvedValue({}),
     stateManager: {
       get: options.stateManager?.get || jest.fn(),
       set: options.stateManager?.set || jest.fn(),
@@ -327,7 +345,7 @@ export function createMockOrchestrationManager(options: {
     switchFlow: options.switchFlow || jest.fn(),
     switchStep: options.switchStep || jest.fn(),
     startOrchestration: options.startOrchestration || jest.fn(),
-    stopOrchestration: options.stopOrchestration || jest.fn(),
+    stopOrchestration: options.stopOrchestration || jest.fn()
   } as unknown as jest.Mocked<OrchestrationManager>;
 
   return mockManager;
@@ -335,59 +353,81 @@ export function createMockOrchestrationManager(options: {
 
 /**
  * Creates a mock StorageProvider instance with pre-configured responses
- * 
+ *
  * @param options Configuration options for the mock
  * @returns A mocked StorageProvider instance
  */
-export function createMockStorageProvider(options: {
-  get?: jest.Mock;
-  set?: jest.Mock;
-  update?: jest.Mock;
-  delete?: jest.Mock;
-  deleteByPrefix?: jest.Mock;
-  list?: jest.Mock;
-} = {}): jest.Mocked<StorageProvider> {
-  const mockProvider = {
-    get: options.get || jest.fn().mockResolvedValue(null),
-    set: options.set || jest.fn().mockResolvedValue(undefined),
-    update: options.update || jest.fn().mockResolvedValue(undefined),
-    delete: options.delete || jest.fn().mockResolvedValue(undefined),
-    deleteByPrefix: options.deleteByPrefix || jest.fn().mockResolvedValue(undefined),
-    list: options.list || jest.fn().mockResolvedValue([]),
-  } as unknown as jest.Mocked<StorageProvider>;
-
-  return mockProvider;
+export function createMockStorageProvider(
+  options: {
+    get?: jest.Mock;
+    set?: jest.Mock;
+    delete?: jest.Mock;
+    exists?: jest.Mock;
+    getMany?: jest.Mock;
+    setMany?: jest.Mock;
+    deleteMany?: jest.Mock;
+    list?: jest.Mock;
+    clear?: jest.Mock;
+    getList?: jest.Mock;
+    saveList?: jest.Mock;
+    deleteList?: jest.Mock;
+    destroy?: jest.Mock;
+  } = {}
+): jest.Mocked<StorageProvider> {
+  return {
+    get: options.get || jest.fn(),
+    set: options.set || jest.fn(),
+    delete: options.delete || jest.fn(),
+    exists: options.exists || jest.fn(),
+    getMany: options.getMany || jest.fn(),
+    setMany: options.setMany || jest.fn(),
+    deleteMany: options.deleteMany || jest.fn(),
+    list: options.list || jest.fn(),
+    clear: options.clear || jest.fn(),
+    getList: options.getList || jest.fn(),
+    saveList: options.saveList || jest.fn(),
+    deleteList: options.deleteList || jest.fn(),
+    destroy: options.destroy || jest.fn()
+  };
 }
 
 /**
  * Creates a mock BaseNode instance with pre-configured responses
- * 
+ *
  * @param options Configuration options for the mock
  * @returns A mocked BaseNode instance
  */
-export function createMockBaseNode(options: {
-  type?: string;
-  category?: NodeCategory;
-  label?: string;
-  description?: string;
-  version?: string;
-  compatibility?: NodeMetadata['compatibility'];
-  inputs?: readonly NodePort[];
-  outputs?: readonly NodePort[];
-  execute?: jest.Mock;
-  cleanup?: jest.Mock;
-} = {}): jest.Mocked<BaseNode> {
+export function createMockBaseNode(
+  options: {
+    type?: string;
+    category?: NodeCategory;
+    label?: string;
+    description?: string;
+    version?: string;
+    compatibility?: NodeMetadata['compatibility'];
+    inputs?: readonly NodePort[];
+    outputs?: readonly NodePort[];
+    execute?: jest.Mock;
+    cleanup?: jest.Mock;
+  } = {}
+): jest.Mocked<BaseNode> {
   const mockNode = {
     type: options.type || 'mock-node',
-    getCategory: jest.fn().mockReturnValue(options.category || NodeCategory.CORE),
+    getCategory: jest
+      .fn()
+      .mockReturnValue(options.category || NodeCategory.CORE),
     getLabel: jest.fn().mockReturnValue(options.label || 'Mock Node'),
-    getDescription: jest.fn().mockReturnValue(options.description || 'Mock node for testing'),
+    getDescription: jest
+      .fn()
+      .mockReturnValue(options.description || 'Mock node for testing'),
     getVersion: jest.fn().mockReturnValue(options.version || '1.0.0'),
-    getCompatibility: jest.fn().mockReturnValue(options.compatibility || {
-      core: true,
-      pro: false,
-      custom: false
-    }),
+    getCompatibility: jest.fn().mockReturnValue(
+      options.compatibility || {
+        core: true,
+        pro: false,
+        custom: false
+      }
+    ),
     getInputs: jest.fn().mockReturnValue(options.inputs || []),
     getOutputs: jest.fn().mockReturnValue(options.outputs || []),
     getMetadata: jest.fn().mockReturnValue({
@@ -401,11 +441,13 @@ export function createMockBaseNode(options: {
         core: true,
         pro: false,
         custom: false
-      },
+      }
     }),
-    execute: options.execute || jest.fn().mockImplementation(input => Promise.resolve(input)),
-    cleanup: options.cleanup || jest.fn().mockResolvedValue(undefined),
+    execute:
+      options.execute ||
+      jest.fn().mockImplementation((input) => Promise.resolve(input)),
+    cleanup: options.cleanup || jest.fn().mockResolvedValue(undefined)
   } as unknown as jest.Mocked<BaseNode>;
 
   return mockNode;
-}   
+}

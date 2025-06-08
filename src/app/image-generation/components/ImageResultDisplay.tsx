@@ -1,12 +1,20 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
-import { Download, RotateCcw, MessageCircle, ExternalLink, Sparkles, ImageIcon } from "lucide-react";
-import { useState, useEffect } from "react";
-import { cn } from "@/lib/utils";
+import { useEffect, useState } from 'react';
+import {
+  Download,
+  ExternalLink,
+  ImageIcon,
+  MessageCircle,
+  RotateCcw,
+  Sparkles
+} from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface HistoryItem {
-  role: "user" | "model";
+  role: 'user' | 'model';
   parts: HistoryPart[];
 }
 
@@ -26,7 +34,7 @@ export function ImageResultDisplay({
   imageUrl,
   description,
   onReset,
-  conversationHistory = [],
+  conversationHistory = []
 }: ImageResultDisplayProps) {
   const [showHistory, setShowHistory] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -50,7 +58,7 @@ export function ImageResultDisplay({
 
   const handleDownload = () => {
     // Create a temporary link element
-    const link = document.createElement("a");
+    const link = document.createElement('a');
     link.href = absoluteImageUrl;
     link.download = `agentdock-image-${Date.now()}.png`;
     document.body.appendChild(link);
@@ -72,18 +80,18 @@ export function ImageResultDisplay({
           <h2 className="text-lg font-semibold">Generated Image</h2>
         </div>
         <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             onClick={handleDownload}
             className="border-primary/20 hover:bg-primary/5 hover:text-primary"
           >
             <Download className="w-4 h-4 mr-1.5" />
             Download
           </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => window.open(absoluteImageUrl, '_blank')}
             className="border-primary/20 hover:bg-primary/5 hover:text-primary"
           >
@@ -91,22 +99,24 @@ export function ImageResultDisplay({
             Full Size
           </Button>
           {conversationHistory.length > 0 && (
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               onClick={toggleHistory}
               className={cn(
-                "border-primary/20 hover:bg-primary/5",
-                showHistory ? "bg-primary/10 text-primary" : "hover:text-primary"
+                'border-primary/20 hover:bg-primary/5',
+                showHistory
+                  ? 'bg-primary/10 text-primary'
+                  : 'hover:text-primary'
               )}
             >
               <MessageCircle className="w-4 h-4 mr-1.5" />
-              {showHistory ? "Hide History" : "History"}
+              {showHistory ? 'Hide History' : 'History'}
             </Button>
           )}
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             onClick={onReset}
             className="border-primary/20 hover:bg-destructive/10 hover:text-destructive"
           >
@@ -125,18 +135,22 @@ export function ImageResultDisplay({
                   <div className="absolute inset-0 rounded-full border-4 border-primary/30 border-t-primary animate-spin"></div>
                   <ImageIcon className="w-5 h-5 text-primary/70" />
                 </div>
-                <p className="text-sm font-medium text-muted-foreground">Loading image...</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Loading image...
+                </p>
               </div>
             </div>
           )}
-          
+
           {imageError && (
             <div className="flex flex-col items-center justify-center h-80 bg-muted/20 text-muted-foreground">
               <div className="p-4 rounded-lg bg-card/80 backdrop-blur-sm border border-destructive/20 shadow-sm">
-                <p className="mb-3 text-sm font-medium text-destructive/80">Failed to load image</p>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <p className="mb-3 text-sm font-medium text-destructive/80">
+                  Failed to load image
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => window.open(absoluteImageUrl, '_blank')}
                   className="w-full"
                 >
@@ -146,7 +160,7 @@ export function ImageResultDisplay({
               </div>
             </div>
           )}
-          
+
           <img
             src={absoluteImageUrl}
             alt="Generated image"
@@ -183,21 +197,21 @@ export function ImageResultDisplay({
           </h3>
           <div className="space-y-4">
             {conversationHistory.map((item, index) => (
-              <div 
-                key={index} 
+              <div
+                key={index}
                 className={cn(
-                  "p-4 rounded-lg",
-                  item.role === "user" 
-                    ? "bg-muted border border-muted-foreground/20" 
-                    : "bg-primary/5 border border-primary/20"
+                  'p-4 rounded-lg',
+                  item.role === 'user'
+                    ? 'bg-muted border border-muted-foreground/20'
+                    : 'bg-primary/5 border border-primary/20'
                 )}
               >
                 <p
                   className={`text-sm font-medium mb-2 ${
-                    item.role === "user" ? "text-foreground" : "text-primary"
+                    item.role === 'user' ? 'text-foreground' : 'text-primary'
                   }`}
                 >
-                  {item.role === "user" ? "Your Request" : "Generated Result"}
+                  {item.role === 'user' ? 'Your Request' : 'Generated Result'}
                 </p>
                 <div className="space-y-3">
                   {item.parts.map((part, partIndex) => (
@@ -223,4 +237,4 @@ export function ImageResultDisplay({
       )}
     </div>
   );
-} 
+}

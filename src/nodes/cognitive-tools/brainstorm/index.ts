@@ -3,11 +3,12 @@
  * Provides creative ideation with structured categorization for various topics.
  */
 
+import { LogCategory, logger } from 'agentdock-core';
 import { z } from 'zod';
+
+import { createToolResult, ToolResult } from '@/lib/utils/markdown-utils';
 import { Tool, ToolExecutionOptions } from '../../types';
-import { ToolResult, createToolResult } from '@/lib/utils/markdown-utils';
-import { logger, LogCategory } from 'agentdock-core';
-import { BrainstormSchema, BrainstormParameters } from './schema';
+import { BrainstormParameters, BrainstormSchema } from './schema';
 
 /**
  * Handle tool errors by throwing a standard Error.
@@ -15,7 +16,7 @@ import { BrainstormSchema, BrainstormParameters } from './schema';
 function safelyHandleError(error: unknown, challenge: string): never {
   // Ensure error is properly converted to string in all cases
   let errorMessage: string;
-  
+
   if (error instanceof Error) {
     errorMessage = error.message;
   } else if (typeof error === 'string') {
@@ -29,9 +30,14 @@ function safelyHandleError(error: unknown, challenge: string): never {
       errorMessage = 'Error: Could not format error details';
     }
   }
-  
-  logger.error(LogCategory.NODE, '[Brainstorm]', 'Execution error (throwing):', { error: errorMessage });
-  
+
+  logger.error(
+    LogCategory.NODE,
+    '[Brainstorm]',
+    'Execution error (throwing):',
+    { error: errorMessage }
+  );
+
   // Throw a standard Error instead of returning a ToolResult
   throw new Error(`Error during brainstorm on "${challenge}": ${errorMessage}`);
 }
@@ -73,39 +79,65 @@ export const brainstormTool: Tool = {
   name: 'brainstorm',
   description: brainstormToolDescription,
   parameters: BrainstormSchema,
-  execute: async (params: BrainstormParameters, options: ToolExecutionOptions): Promise<ToolResult> => {
+  execute: async (
+    params: BrainstormParameters,
+    options: ToolExecutionOptions
+  ): Promise<ToolResult> => {
     try {
       const validation = BrainstormSchema.safeParse(params);
       if (!validation.success) {
-        const errorMsg = validation.error.errors.map(e => `${e.path.join('.')} - ${e.message}`).join(', ');
-        logger.warn(LogCategory.NODE, '[Brainstorm]', 'Invalid parameters received (throwing)', { errors: errorMsg });
+        const errorMsg = validation.error.errors
+          .map((e) => `${e.path.join('.')} - ${e.message}`)
+          .join(', ');
+        logger.warn(
+          LogCategory.NODE,
+          '[Brainstorm]',
+          'Invalid parameters received (throwing)',
+          { errors: errorMsg }
+        );
         // Throw the validation error using the helper
-        safelyHandleError(`Invalid parameters: ${errorMsg}`, params.challenge || 'Unknown Challenge');
+        safelyHandleError(
+          `Invalid parameters: ${errorMsg}`,
+          params.challenge || 'Unknown Challenge'
+        );
       }
-      
+
       const { challenge, ideas } = validation.data;
-      
-      logger.debug(LogCategory.NODE, '[Brainstorm]', `Formatting brainstorming for: "${challenge}"`, { 
-        toolCallId: options.toolCallId,
-        ideasLength: ideas.length,
-        timestamp: new Date().toISOString()
-      });
-      
+
+      logger.debug(
+        LogCategory.NODE,
+        '[Brainstorm]',
+        `Formatting brainstorming for: "${challenge}"`,
+        {
+          toolCallId: options.toolCallId,
+          ideasLength: ideas.length,
+          timestamp: new Date().toISOString()
+        }
+      );
+
       // Format success result directly using createToolResult
       const trimmedIdeas = ideas.trim();
       const title = `## 💡 Brainstorm: ${challenge}`;
       const markdownContent = `${title}\n\n${trimmedIdeas}`;
       const result = createToolResult('brainstorm_result', markdownContent);
-      
-      logger.debug(LogCategory.NODE, '[Brainstorm]', 'Returning formatted brainstorming session', {
-        challenge,
-        ideasLength: ideas.length, // Log original length
-        timestamp: new Date().toISOString()
-      });
-      
+
+      logger.debug(
+        LogCategory.NODE,
+        '[Brainstorm]',
+        'Returning formatted brainstorming session',
+        {
+          challenge,
+          ideasLength: ideas.length, // Log original length
+          timestamp: new Date().toISOString()
+        }
+      );
+
       return result;
     } catch (error) {
-      const challenge = typeof params?.challenge === 'string' ? params.challenge : 'Unknown Challenge';
+      const challenge =
+        typeof params?.challenge === 'string'
+          ? params.challenge
+          : 'Unknown Challenge';
       // Use the helper to throw the error consistently
       safelyHandleError(error, challenge);
     }

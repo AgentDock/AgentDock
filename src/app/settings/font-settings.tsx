@@ -1,28 +1,35 @@
-"use client"
+'use client';
 
-import { memo } from "react"
-import { Card } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Separator } from "@/components/ui/separator"
-import { Type } from "lucide-react"
-import { fontOptions, FontFamily, monoFonts } from "@/lib/fonts"
+import { memo } from 'react';
+import { Type } from 'lucide-react';
+
+import { Card } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { FontFamily, fontOptions, monoFonts } from '@/lib/fonts';
 
 interface FontSettingsProps {
   settings: {
     fonts: {
-      primary: FontFamily
-      mono: string
-    }
-  }
-  onPrimaryFontChange: (value: FontFamily) => void
-  onMonoFontChange: (value: string) => void
+      primary: FontFamily;
+      mono: string;
+    };
+  };
+  onPrimaryFontChange: (value: FontFamily) => void;
+  onMonoFontChange: (value: string) => void;
 }
 
-function FontSettingsComponent({ 
-  settings, 
-  onPrimaryFontChange, 
-  onMonoFontChange 
+function FontSettingsComponent({
+  settings,
+  onPrimaryFontChange,
+  onMonoFontChange
 }: FontSettingsProps) {
   return (
     <Card>
@@ -34,7 +41,7 @@ function FontSettingsComponent({
         <p className="text-sm text-muted-foreground mb-4">
           Customize the application typography
         </p>
-        
+
         <div className="grid gap-6">
           {/* Primary Font Selection */}
           <div className="grid gap-2">
@@ -43,8 +50,8 @@ function FontSettingsComponent({
               <p className="text-sm text-muted-foreground">
                 The main font used throughout the application
               </p>
-              <Select 
-                value={settings.fonts.primary} 
+              <Select
+                value={settings.fonts.primary}
                 onValueChange={onPrimaryFontChange as any}
               >
                 <SelectTrigger className="w-full">
@@ -52,7 +59,10 @@ function FontSettingsComponent({
                 </SelectTrigger>
                 <SelectContent>
                   {Object.entries(fontOptions).map(([key, font]) => (
-                    <SelectItem key={key} value={key}>
+                    <SelectItem
+                      key={key}
+                      value={key}
+                    >
                       <span>{font.name}</span>
                     </SelectItem>
                   ))}
@@ -63,9 +73,9 @@ function FontSettingsComponent({
               </p>
             </div>
           </div>
-          
+
           <Separator />
-          
+
           {/* Monospace Font Selection */}
           <div className="grid gap-2">
             <div className="space-y-2">
@@ -73,8 +83,8 @@ function FontSettingsComponent({
               <p className="text-sm text-muted-foreground">
                 Font used for code blocks and monospace content
               </p>
-              <Select 
-                value={settings.fonts.mono} 
+              <Select
+                value={settings.fonts.mono}
                 onValueChange={onMonoFontChange}
               >
                 <SelectTrigger className="w-full">
@@ -85,23 +95,29 @@ function FontSettingsComponent({
                     <span>Default Monospace</span>
                   </SelectItem>
                   {Object.entries(monoFonts).map(([key, font]) => (
-                    <SelectItem key={key} value={key}>
+                    <SelectItem
+                      key={key}
+                      value={key}
+                    >
                       <span>{font.name}</span>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
               <p className="text-xs text-primary mt-2">
-                Current font: {settings.fonts.mono === 'default' ? 'Default Monospace' : 
-                  monoFonts[settings.fonts.mono as keyof typeof monoFonts]?.name || 'Default'}
+                Current font:{' '}
+                {settings.fonts.mono === 'default'
+                  ? 'Default Monospace'
+                  : monoFonts[settings.fonts.mono as keyof typeof monoFonts]
+                      ?.name || 'Default'}
               </p>
             </div>
           </div>
         </div>
       </div>
     </Card>
-  )
+  );
 }
 
 // Memoize the component to prevent unnecessary re-renders
-export const FontSettings = memo(FontSettingsComponent); 
+export const FontSettings = memo(FontSettingsComponent);

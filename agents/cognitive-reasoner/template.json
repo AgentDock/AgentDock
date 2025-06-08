@@ -2,7 +2,7 @@
   "version": "1.0",
   "agentId": "cognitive-reasoner",
   "name": "Cognitive Reasoner",
-  "description": "An advanced reasoning agent that uses structured thinking, reflection, comparison, critique, brainstorming, and debate to solve complex problems",
+  "description": "An advanced reasoning agent that uses structured thinking, reflection, conjecture, brainstorming, and search to solve complex problems.",
   "tags": ["research", "technical", "productivity", "featured"],
   "priority": 4,
   "personality": [
@@ -30,14 +30,8 @@
       {
         "name": "ResearchMode",
         "description": "Research-based cognitive flow",
-        "sequence": [
-          "search",
-          "think",
-          "reflect"
-        ],
-        "conditions": [
-          { "type": "sequence_match" }
-        ],
+        "sequence": ["search", "think", "reflect"],
+        "conditions": [{ "type": "sequence_match" }],
         "availableTools": {
           "allowed": ["search", "think", "reflect"]
         }
@@ -45,14 +39,8 @@
       {
         "name": "ProblemSolvingMode",
         "description": "Structured problem-solving sequence",
-        "sequence": [
-          "think",
-          "brainstorm",
-          "compare"
-        ],
-        "conditions": [
-          { "type": "sequence_match" }
-        ],
+        "sequence": ["think", "brainstorm", "compare"],
+        "conditions": [{ "type": "sequence_match" }],
         "availableTools": {
           "allowed": ["think", "brainstorm", "compare", "search"]
         }
@@ -60,14 +48,8 @@
       {
         "name": "EvaluationMode",
         "description": "Critical evaluation sequence",
-        "sequence": [
-          "critique",
-          "debate",
-          "reflect"
-        ],
-        "conditions": [
-          { "type": "sequence_match" }
-        ],
+        "sequence": ["critique", "debate", "reflect"],
+        "conditions": [{ "type": "sequence_match" }],
         "availableTools": {
           "allowed": ["critique", "debate", "reflect", "search"]
         }
@@ -75,14 +57,8 @@
       {
         "name": "ComparisonMode",
         "description": "Comparative analysis sequence",
-        "sequence": [
-          "search",
-          "compare",
-          "reflect"
-        ],
-        "conditions": [
-          { "type": "sequence_match" }
-        ],
+        "sequence": ["search", "compare", "reflect"],
+        "conditions": [{ "type": "sequence_match" }],
         "availableTools": {
           "allowed": ["search", "compare", "reflect"]
         }
@@ -90,14 +66,8 @@
       {
         "name": "IdeationMode",
         "description": "Creative ideation sequence",
-        "sequence": [
-          "think",
-          "brainstorm",
-          "critique"
-        ],
-        "conditions": [
-          { "type": "sequence_match" }
-        ],
+        "sequence": ["think", "brainstorm", "critique"],
+        "conditions": [{ "type": "sequence_match" }],
         "availableTools": {
           "allowed": ["think", "brainstorm", "critique"]
         }
@@ -105,14 +75,8 @@
       {
         "name": "DebateMode",
         "description": "Structured debate sequence",
-        "sequence": [
-          "search",
-          "debate",
-          "reflect"
-        ],
-        "conditions": [
-          { "type": "sequence_match" }
-        ],
+        "sequence": ["search", "debate", "reflect"],
+        "conditions": [{ "type": "sequence_match" }],
         "availableTools": {
           "allowed": ["search", "debate", "reflect"]
         }
@@ -136,7 +100,7 @@
   ],
   "nodeConfigurations": {
     "llm.anthropic": {
-      "model": "claude-3-7-sonnet-20250219",
+      "model": "claude-sonnet-4-20250514",
       "temperature": 0.7,
       "maxTokens": 4096,
       "useCustomApiKey": false
@@ -160,4 +124,4 @@
   "options": {
     "maxSteps": 10
   }
-} 
+}

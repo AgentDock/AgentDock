@@ -1,19 +1,25 @@
 'use client';
 
-import { useEffect, createContext, useContext, ReactNode, Suspense } from 'react';
-import posthog from 'posthog-js';
+import {
+  createContext,
+  ReactNode,
+  Suspense,
+  useContext,
+  useEffect
+} from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
+import posthog from 'posthog-js';
 
 // Define options directly in the provider
 const posthogOptions = {
   api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com',
   // Critical settings to prevent interference with tool calling
-  capture_pageview: false,     // We'll track pageviews manually
-  autocapture: false,          // Disable automatic event capture
-  capture_pageleave: false,    // Don't track page leave events
+  capture_pageview: false, // We'll track pageviews manually
+  autocapture: false, // Disable automatic event capture
+  capture_pageleave: false, // Don't track page leave events
   disable_session_recording: true, // Disable session recording
-  disable_persistence: false,  // Keep persistence for user identification
-  disable_cookie: false,       // Allow cookies for identification
+  disable_persistence: false, // Keep persistence for user identification
+  disable_cookie: false, // Allow cookies for identification
   persistence: 'localStorage' as const, // Use localStorage for persistence
   loaded: (posthogInstance: any) => {
     if (process.env.NODE_ENV === 'development') {
@@ -21,7 +27,7 @@ const posthogOptions = {
       // @ts-ignore
       window.posthog = posthogInstance;
     }
-  },
+  }
 };
 
 // Create a PostHog context
@@ -32,7 +38,7 @@ type PostHogContextType = {
 
 const PostHogContext = createContext<PostHogContextType>({
   posthog: null,
-  capture: () => {}, // Noop function for when PostHog isn't initialized
+  capture: () => {} // Noop function for when PostHog isn't initialized
 });
 
 // Hook for consuming the PostHog context
@@ -41,7 +47,7 @@ export const usePostHog = () => useContext(PostHogContext);
 // PageView tracker component that uses useSearchParams
 function PageViewTracker({
   enabled,
-  apiKey,
+  apiKey
 }: {
   enabled: boolean;
   apiKey: string;
@@ -54,14 +60,16 @@ function PageViewTracker({
     if (!enabled || !apiKey || !posthog) return;
 
     // Construct the URL from pathname and search params
-    const url = pathname + (searchParams?.toString() ? `?${searchParams.toString()}` : '');
+    const url =
+      pathname +
+      (searchParams?.toString() ? `?${searchParams.toString()}` : '');
 
     // Use a timeout to ensure this doesn't interfere with initial page rendering and tool calling
     const timer = setTimeout(() => {
       posthog.capture('$pageview', {
-        current_url: url,
+        current_url: url
       });
-      
+
       if (process.env.NODE_ENV === 'development') {
         console.log('[PostHog] Pageview captured:', url);
       }
@@ -78,7 +86,7 @@ export function PostHogProvider({
   children,
   apiKey,
   apiHost = 'https://app.posthog.com',
-  enabled = process.env.NODE_ENV === 'production',
+  enabled = process.env.NODE_ENV === 'production'
 }: {
   children: ReactNode;
   apiKey: string;
@@ -91,19 +99,19 @@ export function PostHogProvider({
       console.log('[PostHog] Initialization started');
       console.log('[PostHog] API Key exists:', !!apiKey);
     }
-    
+
     // Check if we have an API key before attempting to initialize
     if (enabled && apiKey) {
       // Initialize posthog with the options defined at the top
       posthog.init(apiKey, posthogOptions);
-      
+
       // Enable debug in development
       if (process.env.NODE_ENV === 'development') {
         posthog.debug();
         console.log('[PostHog] Successfully initialized');
       }
     }
-    
+
     return () => {
       // Clean up if needed
     };
@@ -113,7 +121,7 @@ export function PostHogProvider({
   const capture = (event: string, properties?: Record<string, any>) => {
     if (enabled && apiKey && posthog) {
       posthog.capture(event, properties);
-      
+
       if (process.env.NODE_ENV === 'development') {
         console.log('[PostHog] Event captured:', event, properties);
       }
@@ -124,14 +132,17 @@ export function PostHogProvider({
     <PostHogContext.Provider
       value={{
         posthog: enabled && apiKey ? posthog : null,
-        capture,
+        capture
       }}
     >
       {children}
       {/* Wrap the page view tracker in Suspense */}
       <Suspense fallback={null}>
-        <PageViewTracker enabled={enabled} apiKey={apiKey} />
+        <PageViewTracker
+          enabled={enabled}
+          apiKey={apiKey}
+        />
       </Suspense>
     </PostHogContext.Provider>
   );
-} 
+}

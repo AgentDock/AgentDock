@@ -54,16 +54,19 @@ export function StockPrice(props: StockPriceProps) {
   const formattedOpen = formatCurrency(props.open, props.currency);
   const formattedHigh = formatCurrency(props.high, props.currency);
   const formattedLow = formatCurrency(props.low, props.currency);
-  const formattedPrevClose = formatCurrency(props.previousClose, props.currency);
+  const formattedPrevClose = formatCurrency(
+    props.previousClose,
+    props.currency
+  );
   const formattedChange = formatCurrency(props.change, props.currency);
   const formattedChangePercent = formatPercent(props.changePercent);
   const formattedVolume = formatNumber(props.volume);
   const formattedDate = formatTimestamp(props.latestTradingDay);
-  
+
   // Determine if price is up or down
   const priceDirection = props.change >= 0 ? '📈' : '📉';
   const changeSymbol = props.change >= 0 ? '▲' : '▼';
-  
+
   return {
     type: 'stock_price',
     content: `${priceDirection} **${props.symbol}** Stock Price
@@ -78,4 +81,4 @@ export function StockPrice(props: StockPriceProps) {
 
 _Data provided by Alpha Vantage_`
   };
-} 
+}

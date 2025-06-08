@@ -1,1 +1,2 @@
 pnpm test
+pnpm format:staged

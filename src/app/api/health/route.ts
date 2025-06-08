@@ -7,4 +7,4 @@ export async function GET() {
     status: 'ok',
     timestamp: new Date().toISOString()
   });
-} 
+}

@@ -1,16 +1,17 @@
-import { type AgentTemplate } from "@/lib/store/types"
-import { AgentCard } from "./AgentCard"
-import { memo } from "react"
+import { memo } from 'react';
+
+import { type AgentTemplate } from '@/lib/store/types';
+import { AgentCard } from './AgentCard';
 
 interface AgentGridProps {
-  templates: AgentTemplate[]
-  searchTerm: string
-  onChat: (agentId: string) => void
-  onSettings: (agentId: string) => void
-  onGithub?: (agentId: string) => void
-  currentCategory?: string
-  categoryName?: string
-  isLoading?: boolean
+  templates: AgentTemplate[];
+  searchTerm: string;
+  onChat: (agentId: string) => void;
+  onSettings: (agentId: string) => void;
+  onGithub?: (agentId: string) => void;
+  currentCategory?: string;
+  categoryName?: string;
+  isLoading?: boolean;
 }
 
 /**
@@ -32,13 +33,12 @@ export const AgentGrid = memo(function AgentGrid({
       <div className="text-center py-12">
         <h3 className="text-xl font-medium mb-2">No agents found</h3>
         <p className="text-muted-foreground">
-          {searchTerm 
+          {searchTerm
             ? `No agents matching "${searchTerm}"${categoryName ? ` in ${categoryName}` : ''}`
-            : `No agents${categoryName ? ` in ${categoryName}` : ''} yet.`
-          }
+            : `No agents${categoryName ? ` in ${categoryName}` : ''} yet.`}
         </p>
       </div>
-    )
+    );
   }
 
   return (
@@ -55,5 +55,5 @@ export const AgentGrid = memo(function AgentGrid({
         />
       ))}
     </div>
-  )
-}) 
+  );
+});

@@ -2,8 +2,8 @@
  * @fileoverview Server-side analytics module using PostHog
  */
 
+import { LogCategory, logger } from 'agentdock-core';
 import { PostHog } from 'posthog-node';
-import { logger, LogCategory } from 'agentdock-core';
 
 // Singleton instance of PostHog
 let posthogInstance: PostHog | null = null;
@@ -17,7 +17,8 @@ function getPostHogInstance(): PostHog | null {
 
   // Get configuration from environment
   const apiKey = process.env.NEXT_PUBLIC_POSTHOG_API_KEY;
-  const host = process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com';
+  const host =
+    process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com';
   const analyticsEnabled = process.env.NEXT_PUBLIC_ANALYTICS_ENABLED === 'true';
 
   // If not enabled or no API key, return null
@@ -32,12 +33,12 @@ function getPostHogInstance(): PostHog | null {
       // Set small batch size to avoid memory issues
       flushAt: 10,
       // Flush at most every 30 seconds to avoid overwhelming the network
-      flushInterval: 30000,
+      flushInterval: 30000
     });
 
     logger.info(
-      LogCategory.SYSTEM, 
-      'Analytics', 
+      LogCategory.SYSTEM,
+      'Analytics',
       'PostHog analytics initialized on server'
     );
 
@@ -84,19 +85,14 @@ export function captureEvent(
       client.capture({
         distinctId,
         event: eventName,
-        properties: propsWithTimestamp,
+        properties: propsWithTimestamp
       });
     } catch (error) {
       // Just log and continue - never block or throw
-      logger.warn(
-        LogCategory.SYSTEM,
-        'Analytics',
-        'Failed to capture event',
-        {
-          event: eventName,
-          error: error instanceof Error ? error.message : String(error),
-        }
-      );
+      logger.warn(LogCategory.SYSTEM, 'Analytics', 'Failed to capture event', {
+        event: eventName,
+        error: error instanceof Error ? error.message : String(error)
+      });
     }
   });
 }
@@ -118,19 +114,14 @@ export function identifyUser(
 
       client.identify({
         distinctId,
-        properties,
+        properties
       });
     } catch (error) {
       // Just log and continue - never block or throw
-      logger.warn(
-        LogCategory.SYSTEM,
-        'Analytics',
-        'Failed to identify user',
-        {
-          userId: distinctId,
-          error: error instanceof Error ? error.message : String(error),
-        }
-      );
+      logger.warn(LogCategory.SYSTEM, 'Analytics', 'Failed to identify user', {
+        userId: distinctId,
+        error: error instanceof Error ? error.message : String(error)
+      });
     }
   });
 }
@@ -148,9 +139,14 @@ export async function flushAnalytics(): Promise<void> {
         return;
       }
 
-      client.flush()
+      client
+        .flush()
         .then(() => {
-          logger.debug(LogCategory.SYSTEM, 'Analytics', 'Flushed analytics events');
+          logger.debug(
+            LogCategory.SYSTEM,
+            'Analytics',
+            'Flushed analytics events'
+          );
           resolve();
         })
         .catch((error) => {
@@ -163,13 +159,10 @@ export async function flushAnalytics(): Promise<void> {
           resolve(); // Still resolve even on error
         });
     } catch (error) {
-      logger.warn(
-        LogCategory.SYSTEM,
-        'Analytics',
-        'Error in flush analytics',
-        { error: error instanceof Error ? error.message : String(error) }
-      );
+      logger.warn(LogCategory.SYSTEM, 'Analytics', 'Error in flush analytics', {
+        error: error instanceof Error ? error.message : String(error)
+      });
       resolve(); // Always resolve
     }
   });
-} 
+}

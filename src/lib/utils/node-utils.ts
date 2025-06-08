@@ -37,7 +37,9 @@ export function createPortSchema(ports: readonly NodePort[]): z.ZodObject<any> {
 /**
  * Create default values from node ports
  */
-export function createPortDefaults(ports: readonly NodePort[]): Record<string, unknown> {
+export function createPortDefaults(
+  ports: readonly NodePort[]
+): Record<string, unknown> {
   const defaults: Record<string, unknown> = {};
 
   ports.forEach((port) => {
@@ -53,7 +55,11 @@ export function createPortDefaults(ports: readonly NodePort[]): Record<string, u
  * Get display type for a port
  */
 export function getPortDisplayType(port: NodePort): string {
-  if (port.schema && typeof port.schema === 'object' && 'multiline' in port.schema) {
+  if (
+    port.schema &&
+    typeof port.schema === 'object' &&
+    'multiline' in port.schema
+  ) {
     return 'textarea';
   }
   return port.type;
@@ -64,4 +70,4 @@ export function getPortDisplayType(port: NodePort): string {
  */
 export function getPortLabel(port: NodePort): string {
   return `${port.label}${port.required ? ' *' : ''}`;
-} 
+}

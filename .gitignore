@@ -76,3 +76,6 @@ agentdock-core/dist/
 
 # Evaluation results
 evaluation_results.log
+
+# Windsurf IDE
+.windsurfrules

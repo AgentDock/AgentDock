@@ -1,5 +1,5 @@
-import { BaseNode, NodeMetadata, NodePort } from '../base-node';
 import { NodeCategory } from '../../types/node-category';
+import { BaseNode, NodeMetadata, NodePort } from '../base-node';
 
 // Simple concrete implementation for testing BaseNode contract
 class TestNode extends BaseNode<{ configParam: string }> {
@@ -81,7 +81,11 @@ describe('BaseNode Contract Validation (via TestNode)', () => {
   });
 
   it('should return correct compatibility from getCompatibility()', () => {
-    expect((testNode as any).getCompatibility()).toEqual({ core: true, pro: true, custom: true });
+    expect((testNode as any).getCompatibility()).toEqual({
+      core: true,
+      pro: true,
+      custom: true
+    });
   });
 
   it('should return correct inputs from getInputs()', () => {
@@ -104,8 +108,8 @@ describe('BaseNode Contract Validation (via TestNode)', () => {
     const result = await testNode.execute(inputData);
     expect(result).toEqual({ received: inputData });
   });
-  
+
   it('should call cleanup without error', async () => {
-      await expect(testNode.cleanup()).resolves.toBeUndefined();
+    await expect(testNode.cleanup()).resolves.toBeUndefined();
   });
-}); 
+});

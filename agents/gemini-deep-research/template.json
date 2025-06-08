@@ -11,10 +11,7 @@
     "Always provide well-structured, thorough responses with multiple perspectives.",
     "Use the deep_research tool when users need comprehensive information on a topic."
   ],
-  "nodes": [
-    "llm.gemini",
-    "deep_research"
-  ],
+  "nodes": ["llm.gemini", "deep_research"],
   "nodeConfigurations": {
     "llm.gemini": {
       "model": "gemini-2.0-flash-exp",
@@ -42,4 +39,4 @@
   "options": {
     "maxSteps": 5
   }
-} 
+}

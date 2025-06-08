@@ -1,6 +1,6 @@
 /**
  * @fileoverview Tests for DeepSeek LLM integration.
- * 
+ *
  * Note: DeepSeek's API is compatible with OpenAI's format, so we use the OpenAI client
  * with a custom baseURL to access DeepSeek's API.
  */
@@ -116,4 +116,4 @@ describe('DeepSeek LLM Integration', () => {
     expect(result.usage?.completionTokens).toBe(20);
     expect(result.usage?.totalTokens).toBe(30);
   });
-}); 
+});

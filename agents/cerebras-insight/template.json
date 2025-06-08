@@ -11,9 +11,7 @@
     "You help users explore where Cerebras shines compared to other LLM providers.",
     "You use search to bring in up-to-date information and open model benchmarks when needed."
   ],
-  "nodes": [
-    "llm.cerebras"
-  ],
+  "nodes": ["llm.cerebras"],
   "nodeConfigurations": {
     "llm.cerebras": {
       "provider": "cerebras",

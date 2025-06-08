@@ -11,9 +11,7 @@
     "You excel at answering factual questions with accurate, current information.",
     "Always verify information through your search grounding before responding."
   ],
-  "nodes": [
-    "llm.gemini"
-  ],
+  "nodes": ["llm.gemini"],
   "nodeConfigurations": {
     "llm.gemini": {
       "model": "gemini-2.0-flash-exp",
@@ -54,4 +52,4 @@
   "options": {
     "maxSteps": 5
   }
-} 
+}

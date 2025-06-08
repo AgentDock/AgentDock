@@ -31,11 +31,7 @@ export interface SnowtraceErrorResponse {
  * @returns Boolean indicating if response is an error
  */
 export function isErrorResponse(data: any): data is SnowtraceErrorResponse {
-  return (
-    data &&
-    typeof data.status === 'string' &&
-    data.status === '0'
-  );
+  return data && typeof data.status === 'string' && data.status === '0';
 }
 
 /**
@@ -64,7 +60,7 @@ export async function makeRequest<T>(
 ): Promise<T> {
   // Use provided API key or fall back to environment variable
   const key = apiKey || process.env.SNOWTRACE_API_KEY || 'YourApiKeyToken';
-  
+
   // Build query parameters
   const queryParams = new URLSearchParams({
     module,
@@ -72,33 +68,39 @@ export async function makeRequest<T>(
     apikey: key,
     ...params
   });
-  
+
   // Build API URL
   const url = `${BASE_URL}?${queryParams.toString()}`;
-  
+
   try {
     // Fetch data from API
     const response = await fetch(url);
-    
+
     // Check if response is OK
     if (!response.ok) {
-      throw new Error(`Snowtrace API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Snowtrace API error: ${response.status} ${response.statusText}`
+      );
     }
-    
+
     // Parse response as JSON
     const data = await response.json();
-    
+
     // Check for API error responses
     if (isErrorResponse(data)) {
-      throw new Error(`API error: ${sanitizeErrorMessage(data.message || 'Unknown error')}`);
+      throw new Error(
+        `API error: ${sanitizeErrorMessage(data.message || 'Unknown error')}`
+      );
     }
-    
+
     return data as T;
   } catch (error) {
     // Handle fetch errors
     if (error instanceof Error) {
-      throw new Error(`Failed to fetch data from Snowtrace: ${sanitizeErrorMessage(error.message)}`);
+      throw new Error(
+        `Failed to fetch data from Snowtrace: ${sanitizeErrorMessage(error.message)}`
+      );
     }
     throw new Error('Failed to fetch data from Snowtrace: Unknown error');
   }
-} 
+}

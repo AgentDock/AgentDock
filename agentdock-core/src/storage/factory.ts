@@ -1,21 +1,21 @@
 /**
  * @fileoverview Storage factory for creating and managing storage providers.
- * 
+ *
  * This file implements a factory pattern for creating storage providers,
  * allowing for central configuration and provider management.
  */
 
-import { logger, LogCategory } from '../logging';
-import { 
-  StorageProvider, 
-  StorageProviderFactory, 
-  StorageProviderOptions 
-} from './types';
-import { 
+import { LogCategory, logger } from '../logging';
+import {
   MemoryStorageProvider,
   RedisStorageProvider,
   VercelKVProvider
 } from './providers';
+import {
+  StorageProvider,
+  StorageProviderFactory,
+  StorageProviderOptions
+} from './types';
 
 /**
  * Registry of provider factories
@@ -39,10 +39,10 @@ export class StorageFactory {
   private providers: ProviderRegistry = {};
   private providerCache: ProviderCache = {};
   private defaultType: string = 'memory';
-  
+
   /**
    * Creates a new storage factory
-   * 
+   *
    * @private Use StorageFactory.getInstance() instead
    */
   private constructor() {
@@ -54,9 +54,11 @@ export class StorageFactory {
     this.registerProvider('redis', (options = {}) => {
       const url = process.env.REDIS_URL;
       if (!url) {
-        throw new Error('REDIS_URL environment variable is required for Redis provider');
+        throw new Error(
+          'REDIS_URL environment variable is required for Redis provider'
+        );
       }
-      
+
       return new RedisStorageProvider({
         namespace: options.namespace || 'default',
         url,
@@ -69,7 +71,7 @@ export class StorageFactory {
         namespace: options.namespace
       });
     });
-    
+
     logger.debug(
       LogCategory.STORAGE,
       'StorageFactory',
@@ -77,7 +79,7 @@ export class StorageFactory {
       { defaultType: this.defaultType }
     );
   }
-  
+
   /**
    * Gets the singleton instance of the storage factory
    */
@@ -87,36 +89,33 @@ export class StorageFactory {
     }
     return StorageFactory.instance;
   }
-  
+
   /**
    * Registers a new provider factory
-   * 
+   *
    * @param type - Provider type identifier
    * @param factory - Factory function for creating providers
    */
   public registerProvider(type: string, factory: StorageProviderFactory): void {
     this.providers[type] = factory;
-    
-    logger.debug(
-      LogCategory.STORAGE,
-      'StorageFactory',
-      'Registered provider',
-      { type }
-    );
+
+    logger.debug(LogCategory.STORAGE, 'StorageFactory', 'Registered provider', {
+      type
+    });
   }
-  
+
   /**
    * Sets the default provider type
-   * 
+   *
    * @param type - Provider type to use as default
    */
   public setDefaultType(type: string): void {
     if (!this.providers[type]) {
       throw new Error(`Provider type '${type}' is not registered`);
     }
-    
+
     this.defaultType = type;
-    
+
     logger.debug(
       LogCategory.STORAGE,
       'StorageFactory',
@@ -124,14 +123,14 @@ export class StorageFactory {
       { type }
     );
   }
-  
+
   /**
    * Gets the default provider type
    */
   public getDefaultType(): string {
     return this.defaultType;
   }
-  
+
   /**
    * Creates a cache key for a provider instance
    */
@@ -139,69 +138,76 @@ export class StorageFactory {
     const { type, namespace = 'default' } = options;
     return `${type}:${namespace}`;
   }
-  
+
   /**
    * Creates a new provider instance
-   * 
+   *
    * @param options - Provider options
    * @returns A storage provider instance
+   *
+   * @breaking-change Since v2.0: Factory functions now receive the entire StorageProviderOptions
+   * object (including 'type' and 'config' properties) instead of just the config object.
+   * Built-in providers ignore extra properties, but third-party providers may need updates.
    */
   public createProvider(options: StorageProviderOptions): StorageProvider {
     const type = options.type || this.defaultType;
     const factory = this.providers[type];
-    
+
     if (!factory) {
       throw new Error(`Provider type '${type}' is not registered`);
     }
-    
+
     // Create a new instance
-    return factory(options.config || {});
+    // Pass the full options object so the factory function can access namespace etc.
+    return factory(options);
   }
-  
+
   /**
    * Gets or creates a provider instance
-   * 
+   *
    * This will return an existing instance if one exists with the same
    * type and namespace, or create a new one if not.
-   * 
+   *
    * @param options - Provider options
    * @returns A storage provider instance
    */
-  public getProvider(options: Partial<StorageProviderOptions> = {}): StorageProvider {
+  public getProvider(
+    options: Partial<StorageProviderOptions> = {}
+  ): StorageProvider {
     const fullOptions: StorageProviderOptions = {
       type: options.type || this.defaultType,
       namespace: options.namespace || 'default',
       config: options.config || {}
     };
-    
+
     const cacheKey = this.getCacheKey(fullOptions);
-    
+
     // Check if we already have an instance
     if (this.providerCache[cacheKey]) {
       return this.providerCache[cacheKey];
     }
-    
+
     // Create a new instance
     const provider = this.createProvider(fullOptions);
-    
+
     // Cache the instance
     this.providerCache[cacheKey] = provider;
-    
+
     return provider;
   }
-  
+
   /**
    * Gets the default provider
-   * 
+   *
    * @returns The default storage provider
    */
   public getDefaultProvider(): StorageProvider {
     return this.getProvider({ type: this.defaultType });
   }
-  
+
   /**
    * Clears the provider cache
-   * 
+   *
    * This will destroy all cached providers and remove them from the cache.
    */
   public async clearCache(): Promise<void> {
@@ -216,17 +222,17 @@ export class StorageFactory {
           LogCategory.STORAGE,
           'StorageFactory',
           'Error destroying provider',
-          { 
+          {
             cacheKey,
             error: error instanceof Error ? error.message : String(error)
           }
         );
       }
     }
-    
+
     // Clear the cache
     this.providerCache = {};
-    
+
     logger.debug(
       LogCategory.STORAGE,
       'StorageFactory',
@@ -247,7 +253,7 @@ const GLOBAL_STORAGE = new Map<string, any>();
 
 /**
  * Creates a storage provider based on configuration
- * 
+ *
  * @param config - Provider configuration
  * @returns The storage provider instance
  */
@@ -258,7 +264,7 @@ export function createStorageProvider(config: {
 }): StorageProvider {
   // Use the storage factory to get the provider
   const factory = getStorageFactory();
-  
+
   // Special handling for memory provider with persistence flag to support serverless
   if (config.type === 'memory' && config.config?.isPersistent) {
     logger.debug(
@@ -267,7 +273,7 @@ export function createStorageProvider(config: {
       'Creating persistent memory storage provider',
       { namespace: config.namespace }
     );
-    
+
     // Create a memory provider with the global storage
     return new MemoryStorageProvider({
       namespace: config.namespace,
@@ -275,7 +281,7 @@ export function createStorageProvider(config: {
       store: GLOBAL_STORAGE
     });
   }
-  
+
   // Use the standard provider creation path
   return factory.getProvider({
     type: config.type,
@@ -286,9 +292,9 @@ export function createStorageProvider(config: {
 
 /**
  * Gets the default storage provider
- * 
+ *
  * @returns The default storage provider
  */
 export function getDefaultStorageProvider(): StorageProvider {
   return getStorageFactory().getDefaultProvider();
-} 
+}

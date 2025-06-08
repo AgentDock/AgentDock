@@ -26,13 +26,13 @@
     "historyPolicy": "lastN",
     "historyLength": 50,
     "initialMessages": [
-      "Hello! I'm the Qwen Agent, powered by Qwen 2.5 32B. I can help you with a wide range of topics, from answering questions to providing insights on complex subjects. I have search capabilities to ensure I give you the most up-to-date information. What can I assist you with today?"
+      "Hello! I'm the Qwen Agent, powered by Qwen QwQ 32B. I can help you with a wide range of topics, from answering questions to providing insights on complex subjects. I have search capabilities to ensure I give you the most up-to-date information. What can I assist you with today?"
     ],
     "chatPrompts": [
       "What can you help me with?",
       "Tell me about the latest advances in AI",
       "Search for information about renewable energy",
-      "Explain the difference between Qwen 2.5 and other models.",
+      "Explain the difference between Qwen QwQ and other models.",
       "Write a short story about a futuristic city.",
       "Help me debug this Python code snippet."
     ]

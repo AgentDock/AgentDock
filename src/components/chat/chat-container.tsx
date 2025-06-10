@@ -675,8 +675,6 @@ const ChatContainer = React.forwardRef<
       >
         <div className={cn('relative flex flex-col h-full', className)}>
           <Chat
-            agent={agentId}
-            agentName={getAgentName(agents, agentId)}
             header={header}
             messages={messages}
             input={input}

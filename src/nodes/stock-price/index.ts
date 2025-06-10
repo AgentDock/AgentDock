@@ -6,10 +6,10 @@
 import { LogCategory, logger } from 'agentdock-core';
 import { z } from 'zod';
 
-import { Tool } from '../types';
+import { Tool, ToolExecutionOptions } from '../types';
 import { fetchStockPrice } from './api';
 import { StockPrice } from './components';
-import { formatStockSymbol } from './utils';
+import { formatStockSymbol, isValidSymbolFormat } from './utils';
 
 /**
  * Stock price tool result interface
@@ -48,7 +48,10 @@ export const stockPriceTool: Tool = {
   name: 'stock_price',
   description: 'Get the current stock price and market data for a given symbol',
   parameters: stockPriceSchema,
-  async execute({ symbol, apiKey }: StockPriceParams) {
+  async execute(
+    { symbol, apiKey }: StockPriceParams,
+    _options: ToolExecutionOptions
+  ) {
     try {
       // Format and validate the symbol
       const formattedSymbol = formatStockSymbol(symbol);
@@ -56,6 +59,13 @@ export const stockPriceTool: Tool = {
       // Basic validation
       if (!formattedSymbol) {
         throw new Error('Stock symbol is required');
+      }
+
+      // Strict symbol format validation
+      if (!isValidSymbolFormat(formattedSymbol)) {
+        throw new Error(
+          `Invalid stock symbol: ${formattedSymbol} is not a valid stock symbol`
+        );
       }
 
       logger.debug(

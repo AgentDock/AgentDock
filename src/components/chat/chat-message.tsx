@@ -52,7 +52,7 @@ function dataUrlToUint8Array(data: string) {
 
 // Subcomponent for the timestamp display
 const MessageTimestamp = React.memo(
-  ({ createdAt }: { createdAt?: Date | number | string; isUser: boolean }) => {
+  ({ createdAt }: { createdAt?: Date | number | string }) => {
     // Skip rendering if no createdAt value
     if (!createdAt) return null;
 
@@ -215,12 +215,7 @@ export const ChatMessage = React.memo(
           return (
             <motion.div {...motionProps}>
               <ToolCall toolInvocations={toolInvocations} />
-              {showTimeStamp && (
-                <MessageTimestamp
-                  createdAt={createdAt}
-                  isUser={isUser}
-                />
-              )}
+              {showTimeStamp && <MessageTimestamp createdAt={createdAt} />}
               {actions && (
                 <div className="mr-2 flex justify-end">{actions}</div>
               )}
@@ -252,12 +247,7 @@ export const ChatMessage = React.memo(
               </MessageBubble>
             </div>
 
-            {showTimeStamp && (
-              <MessageTimestamp
-                createdAt={createdAt}
-                isUser={isUser}
-              />
-            )}
+            {showTimeStamp && <MessageTimestamp createdAt={createdAt} />}
             {actions && <div className="mr-2 flex justify-end">{actions}</div>}
           </motion.div>
         );
@@ -312,12 +302,7 @@ export const ChatMessage = React.memo(
             </ChatMarkdown>
           </MessageBubble>
 
-          {showTimeStamp && (
-            <MessageTimestamp
-              createdAt={createdAt}
-              isUser={isUser}
-            />
-          )}
+          {showTimeStamp && <MessageTimestamp createdAt={createdAt} />}
           {actions && <div className="mr-2 flex justify-end">{actions}</div>}
         </motion.div>
       );

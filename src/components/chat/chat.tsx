@@ -35,8 +35,6 @@ export interface ChatProps {
   suggestions?: string[];
   className?: string;
   header?: React.ReactNode;
-  agentName: string;
-  agent: string;
 }
 
 export function Chat({

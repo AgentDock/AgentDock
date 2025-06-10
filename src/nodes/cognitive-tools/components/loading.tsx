@@ -2,14 +2,7 @@
 
 import * as React from 'react';
 import { LogCategory, logger } from 'agentdock-core';
-import {
-  Brain,
-  Lightbulb,
-  RefreshCcw,
-  Scale,
-  Sparkles,
-  Zap
-} from 'lucide-react';
+import { Brain, Lightbulb, Scale, Sparkles, Zap } from 'lucide-react';
 
 import { heartbeatGradientProps, useElapsedTime } from '@/lib/heartbeat';
 import { cn } from '@/lib/utils';

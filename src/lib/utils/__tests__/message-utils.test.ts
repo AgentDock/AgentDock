@@ -6,7 +6,6 @@ import {
   isToolMessage,
   isUserMessage,
   Message,
-  MessageRole,
   toAIMessage, // Use core toAIMessage
   ToolResultContent
 } from 'agentdock-core';

@@ -18,8 +18,6 @@
 import { LLMProvider } from 'agentdock-core';
 import { z } from 'zod';
 
-import { SecureStorage } from 'agentdock-core/storage/secure-storage';
-
 // Define schema for validating environment variables
 const envSchema = z.object({
   // LLM Provider API Keys - make all optional but validate format when present
@@ -76,7 +74,7 @@ export function getEnvConfig(): EnvConfig {
     });
 
     return env;
-  } catch (error) {
+  } catch {
     // Always return raw environment variables when validation fails
     // This ensures keys are accessible even if they don't match expected format
     return {
@@ -142,7 +140,7 @@ export function getProviderApiKey(
         }
       }
     }
-  } catch (error) {
+  } catch {
     // localStorage not available
   }
 

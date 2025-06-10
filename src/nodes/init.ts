@@ -6,15 +6,10 @@
  * This file initializes the registry for these custom tools.
  */
 
-import {
-  getToolRegistry,
-  LogCategory,
-  logger,
-  ToolRegistry
-} from 'agentdock-core';
+import { getToolRegistry, LogCategory, logger } from 'agentdock-core';
 
 // Import the registry file that registers all the tools
-import { allTools, getToolsForAgent } from './registry';
+import { allTools } from './registry';
 
 // Global flag to persist across hot reloads
 declare global {

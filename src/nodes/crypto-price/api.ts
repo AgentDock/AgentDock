@@ -162,10 +162,10 @@ export async function fetchCryptoPrice(
  */
 export async function searchCryptos(query: string, apiKey?: string) {
   // Use provided API key or fall back to environment variable
-  const key = apiKey || process.env.COINGECKO_API_KEY || '';
+  const _key = apiKey || process.env.COINGECKO_API_KEY || '';
 
   // Build API URL
-  let url = `${COINGECKO_API_BASE_URL}/search?query=${encodeURIComponent(query)}`;
+  const url = `${COINGECKO_API_BASE_URL}/search?query=${encodeURIComponent(query)}`;
 
   try {
     // Fetch data from API
@@ -214,10 +214,10 @@ export async function searchCryptos(query: string, apiKey?: string) {
  */
 export async function getTrendingCryptos(apiKey?: string) {
   // Use provided API key or fall back to environment variable
-  const key = apiKey || process.env.COINGECKO_API_KEY || '';
+  const _key = apiKey || process.env.COINGECKO_API_KEY || '';
 
   // Build API URL
-  let url = `${COINGECKO_API_BASE_URL}/search/trending`;
+  const url = `${COINGECKO_API_BASE_URL}/search/trending`;
 
   try {
     // Fetch data from API

@@ -3,12 +3,7 @@
 import * as React from 'react';
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
-import {
-  APIError,
-  applyHistoryPolicy,
-  ErrorCode,
-  Message
-} from 'agentdock-core';
+import { applyHistoryPolicy } from 'agentdock-core';
 import { toast } from 'sonner';
 
 import { useChat } from 'agentdock-core/client';
@@ -18,7 +13,7 @@ import { ErrorBoundary } from '@/components/error-boundary';
 import { useChatInitialization } from '@/hooks/use-chat-initialization';
 import { useChatSettings } from '@/hooks/use-chat-settings';
 import { useChatStorage } from '@/hooks/use-chat-storage';
-import { Agent, useAgents } from '@/lib/store';
+import { useAgents } from '@/lib/store';
 import { cn } from '@/lib/utils';
 import { logDebug, logError, logInfo } from '@/lib/utils/logger-utils';
 import { ChatError, ChatLoading } from './chat-status';
@@ -383,7 +378,7 @@ const ChatContainer = React.forwardRef<
     });
 
     // Only show typing indicator when we're loading but no streaming has started yet
-    const showTypingIndicator = React.useMemo(() => {
+    React.useMemo(() => {
       const lastMessageIsUser =
         messages.length > 0 && messages[messages.length - 1]?.role === 'user';
       return isLoading && lastMessageIsUser;

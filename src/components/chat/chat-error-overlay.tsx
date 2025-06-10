@@ -50,8 +50,7 @@ export function ChatErrorOverlay({
   error,
   onRetry,
   onDismiss,
-  open,
-  agentId
+  open
 }: ChatErrorOverlayProps) {
   const router = useRouter();
   const extendedError = error as ExtendedError;

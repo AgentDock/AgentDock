@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { ChatMarkdown } from '@/components/chat/chat-markdown';
 import { FilePreview } from '@/components/chat/file-preview';
 import { ToolCall } from '@/components/chat/tool-call';
-import type { Animation, ChatMessageProps } from '@/components/chat/types';
+import type { ChatMessageProps } from '@/components/chat/types';
 import { CopyButton } from '@/components/ui/copy-button';
 import { cn } from '@/lib/utils';
 
@@ -52,13 +52,7 @@ function dataUrlToUint8Array(data: string) {
 
 // Subcomponent for the timestamp display
 const MessageTimestamp = React.memo(
-  ({
-    createdAt,
-    isUser
-  }: {
-    createdAt?: Date | number | string;
-    isUser: boolean;
-  }) => {
+  ({ createdAt }: { createdAt?: Date | number | string; isUser: boolean }) => {
     // Skip rendering if no createdAt value
     if (!createdAt) return null;
 
@@ -90,7 +84,6 @@ MessageTimestamp.displayName = 'MessageTimestamp';
 // Message Bubble component to avoid duplication
 const MessageBubble = React.memo(
   ({
-    children,
     isUser,
     isStreaming,
     messageId,

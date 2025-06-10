@@ -1,9 +1,9 @@
 'use client';
 
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { LogCategory, logger } from 'agentdock-core';
-import { Info, Loader2, RefreshCw } from 'lucide-react';
+import { Info, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { ChatContainer } from '@/components/chat';
@@ -14,20 +14,9 @@ import {
   TokenWarning,
   TokenWarningDialog
 } from '@/components/chat/token-warning-dialog';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger
-} from '@/components/ui/dialog';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import {
   Tooltip,
   TooltipContent,
@@ -50,7 +39,6 @@ interface ChatContainerState {
 }
 
 function ChatPageContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const rawAgentId = searchParams?.get('agent')?.split('?')[0]; // Clean agentId
   const agentId = rawAgentId || null; // Keep as null for type compatibility
@@ -118,7 +106,7 @@ function ChatPageContent() {
   }, [debugMode, searchParams]);
 
   // State for debug information only
-  const [orchestrationDebug, setOrchestrationDebug] = useState<{
+  const [_orchestrationDebug, setOrchestrationDebug] = useState<{
     sessionId?: string;
     activeStep?: string;
     recentlyUsedTools?: string[];

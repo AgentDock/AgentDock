@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import type { ToolState } from 'agentdock-core';
 import {
   ChevronDown,
   ChevronUp,

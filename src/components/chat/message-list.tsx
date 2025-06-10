@@ -6,7 +6,6 @@ import type { Message } from 'agentdock-core/client';
 
 import { ChatMessage } from '@/components/chat/chat-message';
 import { TypingIndicator } from '@/components/chat/typing-indicator';
-import { cn } from '@/lib/utils';
 
 // TODO: Improve streaming text animation
 // Current implementation relies on server-side smoothStream transform (configured in agentdock-core)

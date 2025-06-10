@@ -1,4 +1,4 @@
-import { LLMConfig, LLMProvider, ProviderRegistry } from 'agentdock-core';
+import { LLMProvider, ProviderRegistry } from 'agentdock-core';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 

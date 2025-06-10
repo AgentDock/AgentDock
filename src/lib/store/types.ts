@@ -9,8 +9,6 @@ import type { BaseNode } from 'agentdock-core';
 
 import type { ValidatedPersonality } from 'agentdock-core/types/agent-config';
 
-import type { ChatSettings, TemplateChatSettings } from '@/lib/types/chat';
-
 export type { BaseNode };
 
 export interface AgentTemplate {

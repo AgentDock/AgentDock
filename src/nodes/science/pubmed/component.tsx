@@ -36,7 +36,7 @@ function formatDate(date: Date): string {
       month: 'short',
       day: 'numeric'
     }).format(date);
-  } catch (e) {
+  } catch {
     return date.toISOString().split('T')[0];
   }
 }

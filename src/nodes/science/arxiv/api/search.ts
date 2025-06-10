@@ -10,7 +10,6 @@ import { handleApiError } from '../utils/error-helpers';
 import { getElements, parseArxivEntry, parseXML } from '../utils/xml-helpers';
 import {
   ARXIV_API_URL,
-  ARXIV_CATEGORIES,
   DEFAULT_SEARCH_RESULTS,
   MAX_SEARCH_RESULTS,
   RATE_LIMIT_MS

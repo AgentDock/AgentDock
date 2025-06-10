@@ -36,7 +36,7 @@ export async function generateImageAction(
           const url = new URL(referer);
           origin = url.origin;
         }
-      } catch (e) {
+      } catch {
         logger.warn(
           LogCategory.API,
           'ImageGenerationAPI',

@@ -2,7 +2,7 @@
  * @fileoverview Contract module for Snowtrace API
  */
 
-import { makeRequest, SnowtraceResponse } from './core';
+import { makeRequest } from './core';
 
 /**
  * Contract ABI response interface

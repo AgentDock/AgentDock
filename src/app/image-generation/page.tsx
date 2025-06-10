@@ -1,20 +1,12 @@
 'use client';
 
 import { Suspense, useCallback, useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { LogCategory, logger, StorageProvider } from 'agentdock-core';
-import {
-  ChevronUp,
-  Edit,
-  ImageIcon,
-  PencilLine,
-  Trash2,
-  Wand2
-} from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { LogCategory, logger } from 'agentdock-core';
+import { ChevronUp, ImageIcon, PencilLine, Trash2 } from 'lucide-react';
 
 import { generateImageAction } from '@/app/api/images/gemini/actions';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Tooltip,
   TooltipContent,
@@ -22,21 +14,12 @@ import {
   TooltipTrigger
 } from '@/components/ui/tooltip';
 import { HistoryItem } from '@/lib/image-gen-storage';
-import {
-  getStoredImage,
-  isImageStoreUrl,
-  listStoredImages
-} from '@/lib/image-store';
 import { cn } from '@/lib/utils';
 import { ImageGallerySkeleton } from './components/ImageGallerySkeleton';
 import { ImagePromptInput } from './components/ImagePromptInput';
 import { ImageResultDisplay } from './components/ImageResultDisplay';
 import { ImageUpload } from './components/ImageUpload';
-import {
-  clearHistoryAction,
-  loadHistoryAction,
-  saveHistoryAction
-} from './history-actions';
+import { clearHistoryAction, saveHistoryAction } from './history-actions';
 
 // Helper function to get image data from URL
 const fetchImageDataFromUrl = async (url: string): Promise<string | null> => {
@@ -70,9 +53,6 @@ function ImageGenerationWithParams(props: { editIdFromUrl?: string | null }) {
   const [scrollToGallery, setScrollToGallery] = useState(false);
   const [galleryLoading, setGalleryLoading] = useState(true);
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [isHistoryLoading, setIsHistoryLoading] = useState(false);
-
-  const router = useRouter();
 
   // Effect to manage session ID ONLY
   useEffect(() => {

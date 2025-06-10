@@ -6,11 +6,7 @@
 import { LogCategory, logger } from 'agentdock-core';
 import { z } from 'zod';
 
-import {
-  createToolResult,
-  formatErrorMessage,
-  ToolResult
-} from '@/lib/utils/markdown-utils';
+import { ToolResult } from '@/lib/utils/markdown-utils';
 import { Tool, ToolExecutionOptions } from '../../types';
 import { CompareComponent } from './components';
 

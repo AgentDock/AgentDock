@@ -3,7 +3,6 @@
  */
 
 import type { BaseToolInvocation, ToolState } from 'agentdock-core';
-import { type VariantProps } from 'class-variance-authority';
 
 import type { Message } from 'agentdock-core/client';
 

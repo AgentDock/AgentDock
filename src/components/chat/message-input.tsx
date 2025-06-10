@@ -3,7 +3,6 @@
 import React, { useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowUp, Paperclip, Square } from 'lucide-react';
-import { omit } from 'remeda';
 
 import { FilePreview } from '@/components/chat/file-preview';
 import { Button } from '@/components/ui/button';

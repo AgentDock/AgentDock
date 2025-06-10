@@ -196,7 +196,7 @@ ${functions}
 
 _Data provided by Snowtrace_`
     };
-  } catch (error) {
+  } catch {
     return {
       type: 'contract_abi',
       content: `## Contract ABI: ${truncateAddress(address)}

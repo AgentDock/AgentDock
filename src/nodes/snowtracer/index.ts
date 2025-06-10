@@ -82,37 +82,36 @@ export const snowtracerTool: Tool = {
         `Executing action: ${action}`
       );
 
-      // Validate address for address-specific actions
-      if (
-        [
-          'address_balance',
-          'transactions',
-          'token_transfers',
-          'contract_abi'
-        ].includes(action) &&
-        !address
-      ) {
-        throw new Error(`Address is required for action: ${action}`);
-      }
-
       // Execute the requested action
       switch (action) {
         case 'address_balance':
-          return await getAddressBalance(address!, apiKey);
+          if (!address) {
+            throw new Error(`Address is required for action: ${action}`);
+          }
+          return await getAddressBalance(address, apiKey);
 
         case 'transactions':
-          return await getTransactions(address!, limit, apiKey);
+          if (!address) {
+            throw new Error(`Address is required for action: ${action}`);
+          }
+          return await getTransactions(address, limit, apiKey);
 
         case 'token_transfers':
+          if (!address) {
+            throw new Error(`Address is required for action: ${action}`);
+          }
           return await getTokenTransfers(
-            address!,
+            address,
             contractAddress,
             limit,
             apiKey
           );
 
         case 'contract_abi':
-          return await getContractABI(address!, apiKey);
+          if (!address) {
+            throw new Error(`Address is required for action: ${action}`);
+          }
+          return await getContractABI(address, apiKey);
 
         case 'avax_price':
           return await getAVAXPrice(apiKey);

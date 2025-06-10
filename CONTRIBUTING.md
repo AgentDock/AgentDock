@@ -56,7 +56,9 @@ Before submitting a PR:
 1. Ensure all tests pass: `pnpm test`
 2. Run type checking: `pnpm tsc --noEmit`
 3. Check linting: `pnpm lint`
-4. Run validation: `pnpm run validate`
+4. Check formating: `pnpm format`
+5. Auto-fix formating: `pnpm format:fix`
+6. Run validation: `pnpm run validate`
 
 For testing guidelines, refer to the [Testing Strategy](docs/testing.md) document, which outlines the mocking strategy and best practices for unit testing, particularly for the `agentdock-core` module.
 

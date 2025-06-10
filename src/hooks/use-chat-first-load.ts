@@ -5,7 +5,7 @@ const isVeryFirstLoad = (): boolean => {
   if (typeof window === 'undefined') return true;
   try {
     return sessionStorage.getItem('chat-first-load-complete') !== 'true';
-  } catch (e) {
+  } catch {
     return true;
   }
 };
@@ -15,7 +15,7 @@ const markFirstLoadComplete = (): void => {
   if (typeof window === 'undefined') return;
   try {
     sessionStorage.setItem('chat-first-load-complete', 'true');
-  } catch (e) {
+  } catch {
     // Ignore errors with sessionStorage
   }
 };

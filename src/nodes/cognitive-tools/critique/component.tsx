@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import { Sparkles } from 'lucide-react';
 
 import '../components/styles.css';
 

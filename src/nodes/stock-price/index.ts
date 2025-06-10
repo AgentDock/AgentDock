@@ -50,7 +50,7 @@ export const stockPriceTool: Tool = {
   parameters: stockPriceSchema,
   async execute(
     { symbol, apiKey }: StockPriceParams,
-    options: ToolExecutionOptions
+    _options: ToolExecutionOptions
   ) {
     try {
       // Format and validate the symbol
@@ -59,6 +59,13 @@ export const stockPriceTool: Tool = {
       // Basic validation
       if (!formattedSymbol) {
         throw new Error('Stock symbol is required');
+      }
+
+      // Strict symbol format validation
+      if (!isValidSymbolFormat(formattedSymbol)) {
+        throw new Error(
+          `Invalid stock symbol: ${formattedSymbol} is not a valid stock symbol`
+        );
       }
 
       logger.debug(

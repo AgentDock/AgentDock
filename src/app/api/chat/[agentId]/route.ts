@@ -34,21 +34,16 @@ import {
   parseProviderError,
   ProviderRegistry
 } from 'agentdock-core';
-import { streamText } from 'ai';
 
 import { TemplateId, templates } from '@/generated/templates';
 // Import and initialize the agent adapter - this ensures all components are properly set up
 import { processAgentMessage } from '@/lib/agent-adapter';
 import { captureEvent } from '@/lib/analytics';
 // Import helpers and adapter from orchestration adapter
-import {
-  OrchestrationAdapter,
-  toMutableConfig
-} from '@/lib/orchestration-adapter';
+import { toMutableConfig } from '@/lib/orchestration-adapter';
 // Import the lazy initialization utility instead
 import { ensureToolsInitialized } from '@/lib/tools';
 import { getLLMInfo } from '@/lib/utils';
-import { getProviderApiKey } from '@/types/env';
 
 // Initialize a simple storage for API keys
 const storage = {
@@ -263,7 +258,7 @@ async function createAgentResponse(
   try {
     const durationMs = Date.now() - requestStartTime;
     // Attempt to get token usage from result.usage (common pattern)
-    const tokenUsage = result.usage;
+    // const tokenUsage = result.usage;
 
     const properties = {
       agentId,
@@ -779,7 +774,7 @@ export async function POST(
             );
           }
         }
-      } catch (parseError) {
+      } catch {
         // Just continue with original error if parsing fails
       }
     }

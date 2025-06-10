@@ -3,11 +3,7 @@
  * Component now takes raw findings and formats them directly.
  */
 
-import {
-  createToolResult,
-  formatBold,
-  formatHeader
-} from '@/lib/utils/markdown-utils';
+import { createToolResult, formatHeader } from '@/lib/utils/markdown-utils';
 
 /**
  * Deep Research result interface
@@ -129,7 +125,7 @@ function extractDomain(url: string): string {
   try {
     const urlObj = new URL(url);
     return urlObj.hostname.replace(/^www\./, '');
-  } catch (e) {
+  } catch {
     return '';
   }
 }

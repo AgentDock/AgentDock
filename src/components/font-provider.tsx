@@ -1,7 +1,6 @@
 'use client';
 
-import { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
-import { Inter } from 'next/font/google';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { GeistMono } from 'geist/font/mono';
 import { GeistSans } from 'geist/font/sans';
 
@@ -9,7 +8,6 @@ import { SecureStorage } from 'agentdock-core/storage/secure-storage';
 
 import { GlobalSettings } from '@/app/settings/types';
 import { FontFamily, fontOptions, monoFonts } from '@/lib/fonts';
-import { cn } from '@/lib/utils';
 
 export function FontProvider({ children }: { children: React.ReactNode }) {
   const [fontSettings, setFontSettings] = useState<{
@@ -127,7 +125,7 @@ export function FontProvider({ children }: { children: React.ReactNode }) {
             }
           }, 300);
         }
-      } catch (error) {
+      } catch {
         // Remove prevent-transition in case of error
         if (typeof document !== 'undefined') {
           document.documentElement.classList.remove('prevent-transition');

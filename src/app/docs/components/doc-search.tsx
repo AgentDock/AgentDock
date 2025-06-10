@@ -136,8 +136,8 @@ export function DocSearch() {
           score: hasMatch ? score : 0
         };
       })
-        .filter((item) => item.score! > 0)
-        .sort((a, b) => b.score! - a.score!)
+        .filter((item) => (item.score ?? 0) > 0)
+        .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
         .slice(0, MAX_RESULTS);
 
       setResults(scoredResults);

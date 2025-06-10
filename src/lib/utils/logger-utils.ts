@@ -20,7 +20,7 @@ export async function logError(
       error: errorMessage,
       ...additionalInfo
     });
-  } catch (e) {
+  } catch {
     // Fallback if logger fails
     console.error(`[${component}] ${action}: ${errorMessage}`, additionalInfo);
   }
@@ -41,7 +41,7 @@ export async function logInfo(
 ) {
   try {
     await logger.info(LogCategory.SYSTEM, component, message || action, data);
-  } catch (e) {
+  } catch {
     // Fallback if logger fails
     console.info(`[${component}] ${message || action}`, data);
   }
@@ -62,7 +62,7 @@ export async function logDebug(
 ) {
   try {
     await logger.debug(LogCategory.SYSTEM, component, message || action, data);
-  } catch (e) {
+  } catch {
     // Fallback if logger fails
     console.debug(`[${component}] ${message || action}`, data);
   }

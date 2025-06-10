@@ -6,13 +6,11 @@ import type { Components } from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
 import remarkGfm from 'remark-gfm';
 
-import { CopyButton } from '@/components/ui/copy-button';
 import {
   childrenTakeAllStringContents,
   CodeBlock
 } from '@/components/ui/markdown-renderer';
 import { MermaidDiagram } from '@/components/ui/mermaid-diagram';
-import { cn } from '@/lib/utils';
 import { MermaidSkeleton } from './ChatSkeleton';
 
 interface ChatMarkdownProps {

@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 import { useCallback, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { LLMProvider, LogCategory, logger } from 'agentdock-core';
 import { toast } from 'sonner';
 

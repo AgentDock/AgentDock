@@ -6,10 +6,6 @@
 import { CoreMessage, LogCategory, logger } from 'agentdock-core';
 import { z } from 'zod';
 
-import {
-  createToolResult,
-  formatErrorMessage
-} from '@/lib/utils/markdown-utils';
 // Import tool LLM utilities
 import { ToolExecutionOptions } from '../../../agentdock-core/src/types/tools';
 // Import Firecrawl tools

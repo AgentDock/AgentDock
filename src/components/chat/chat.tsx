@@ -35,8 +35,6 @@ export interface ChatProps {
   suggestions?: string[];
   className?: string;
   header?: React.ReactNode;
-  agentName: string;
-  agent: string;
 }
 
 export function Chat({
@@ -50,9 +48,7 @@ export function Chat({
   append,
   suggestions,
   className,
-  header,
-  agentName,
-  agent
+  header
 }: ChatProps) {
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
   const [isNearBottom, setIsNearBottom] = React.useState(true);
@@ -155,7 +151,7 @@ export function Chat({
             <div className="flex flex-grow items-center justify-center">
               <PromptSuggestions
                 label="Try these prompts ✨"
-                suggestions={suggestions!}
+                suggestions={suggestions ?? []}
                 append={append}
               />
             </div>

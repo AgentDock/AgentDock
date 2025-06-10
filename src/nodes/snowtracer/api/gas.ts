@@ -2,7 +2,7 @@
  * @fileoverview Gas tracker module for Snowtrace API
  */
 
-import { makeRequest, SnowtraceResponse } from './core';
+import { makeRequest } from './core';
 
 /**
  * Gas price response interface for RPC endpoint

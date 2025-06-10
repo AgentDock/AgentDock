@@ -1,11 +1,10 @@
 import * as React from 'react';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BugIcon, Loader2, RefreshCwIcon } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import {
   Sheet,
   SheetContent,
@@ -15,7 +14,7 @@ import {
 } from '@/components/ui/sheet';
 import { templates } from '@/generated/templates';
 import { useMediaQuery } from '@/hooks/use-media-query';
-import { SessionInfoData, useSessionInfo } from '@/hooks/use-session-info';
+import { useSessionInfo } from '@/hooks/use-session-info';
 import { cn } from '@/lib/utils';
 
 interface OrchestrationStep {
@@ -62,9 +61,6 @@ export const ChatDebug = React.memo<ChatDebugProps>(
     temperature = 0,
     maxTokens = 0,
     agentId = '',
-    promptTokens,
-    completionTokens,
-    totalTokens,
     provider,
     activeStep,
     currentStepIndex,

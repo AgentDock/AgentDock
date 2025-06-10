@@ -6,7 +6,6 @@
 import { CryptoData } from './api';
 import {
   formatCurrency,
-  formatNumber,
   formatPercent,
   formatTimestamp,
   getPriceChangeEmoji,

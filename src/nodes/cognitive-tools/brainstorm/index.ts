@@ -4,7 +4,6 @@
  */
 
 import { LogCategory, logger } from 'agentdock-core';
-import { z } from 'zod';
 
 import { createToolResult, ToolResult } from '@/lib/utils/markdown-utils';
 import { Tool, ToolExecutionOptions } from '../../types';

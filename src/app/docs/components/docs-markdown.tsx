@@ -3,7 +3,6 @@
 import React, { useEffect, useRef } from 'react';
 
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
-import { cn } from '@/lib/utils';
 
 interface DocsMarkdownProps {
   content: string;
@@ -92,7 +91,7 @@ export function DocsMarkdown({ content }: DocsMarkdownProps) {
           heading.appendChild(linkWrapper);
 
           // Add click handler to copy URL to clipboard
-          linkWrapper.addEventListener('click', (e) => {
+          linkWrapper.addEventListener('click', () => {
             // Don't prevent default to allow normal anchor navigation
 
             // Get the full URL with the hash

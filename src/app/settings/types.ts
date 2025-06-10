@@ -1,5 +1,3 @@
-import { LLMProvider } from 'agentdock-core';
-
 import { FontFamily } from '@/lib/fonts';
 
 export interface GlobalSettings {

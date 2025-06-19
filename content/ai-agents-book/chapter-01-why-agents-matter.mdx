@@ -165,7 +165,10 @@ Understanding what makes an agent "agentic" helps us design systems that actuall
 
 Agents must sense their environment continuously, not just respond to queries. This requires architectural support for:
 
-**Event-Driven Architecture**: Agents need to react to changes without polling
+- **Event-Driven Architecture**: Agents need to react to changes without polling
+- **Multi-Modal Sensing**: Modern agents often need to perceive across different data types - text, structured data, images, even video.
+- **Selective Attention**: Not all changes matter. Agents need filtering mechanisms to avoid information overload.
+
 ```typescript
 // Example: Event-driven perception in a monitoring agent
 const monitoringAgent = new AgentNode('monitoring-agent', {
@@ -194,15 +197,15 @@ const monitoringAgent = new AgentNode('monitoring-agent', {
 });
 ```
 
-**Multi-Modal Sensing**: Modern agents often need to perceive across different data types - text, structured data, images, even video.
-
-**Selective Attention**: Not all changes matter. Agents need filtering mechanisms to avoid information overload.
-
 ### Pillar 2: Reasoning
 
 Reasoning transforms perception into understanding. This isn't just about LLM inference - it's about structured thinking:
 
-**Contextual Understanding**: Agents must maintain and update their understanding of the world
+- **Contextual Understanding**: Agents must maintain and update their understanding of the world
+- **Causal Reasoning**: Understanding not just what happened, but why
+- **Counterfactual Thinking**: Considering what might happen under different actions
+- **Uncertainty Handling**: Real-world reasoning involves probabilities, not certainties
+
 ```typescript
 // Example: Contextual reasoning in a diagnostic agent
 const diagnosticProtocol = {
@@ -213,15 +216,17 @@ const diagnosticProtocol = {
 };
 ```
 
-**Causal Reasoning**: Understanding not just what happened, but why
-**Counterfactual Thinking**: Considering what might happen under different actions
-**Uncertainty Handling**: Real-world reasoning involves probabilities, not certainties
+
 
 ### Pillar 3: Planning
 
 Planning transforms understanding into actionable sequences. Production planning requires:
 
-**Hierarchical Decomposition**: Breaking complex goals into manageable subgoals
+- **Hierarchical Decomposition**: Breaking complex goals into manageable subgoals
+- **Resource Optimization**: Plans must consider API rate limits, cost constraints, time budgets
+- **Contingency Planning**: Every plan needs failure modes and recovery strategies
+- **Plan Monitoring**: Detecting when plans go off-track and need adjustment
+
 ```typescript
 // Example: Hierarchical planning in a deployment agent
 const deploymentPlan = {
@@ -246,15 +251,15 @@ const deploymentPlan = {
 };
 ```
 
-**Resource Optimization**: Plans must consider API rate limits, cost constraints, time budgets
-**Contingency Planning**: Every plan needs failure modes and recovery strategies
-**Plan Monitoring**: Detecting when plans go off-track and need adjustment
-
 ### Pillar 4: Action
 
 Action is where agents interface with the real world. This requires careful design:
 
-**Tool Design**: Tools should be atomic, idempotent, and well-documented
+- **Tool Design**: Tools should be atomic, idempotent, and well-documented
+- **Effect Verification**: Actions should return clear success/failure signals
+- **Reversibility**: When possible, actions should be undoable
+- **Audit Trails**: Every action needs logging for debugging and compliance
+
 ```typescript
 // Example: Well-designed tool interface
 interface DatabaseTool {
@@ -278,10 +283,6 @@ interface DatabaseTool {
   };
 }
 ```
-
-**Effect Verification**: Actions should return clear success/failure signals
-**Reversibility**: When possible, actions should be undoable
-**Audit Trails**: Every action needs logging for debugging and compliance
 
 These pillars work together. Perception without action is just monitoring. Action without reasoning is just automation. It's the integration that creates agency.
 
@@ -1145,8 +1146,4 @@ The organizations succeeding with agents aren't the ones with the smartest model
 
 The future belongs to systems that augment human capability rather than replace it. Build agents that make people more effective, not obsolete.
 
-**Ready to dive deeper?** Continue to [Chapter 2: The Technical Reality of Production AI Agents](https://agentdock.ai/docs/ai-agents-book/chapter-02-technical-reality) →
-
----
-
-*[View Examples](https://github.com/AgentDock/AgentDock/tree/main/agents) | [Join Discussion](https://github.com/AgentDock/AgentDock/discussions) | [Next Chapter →](https://agentdock.ai/docs/ai-agents-book/chapter-02-technical-reality)*
+Ready to dive deeper? **Chapter 2: The Technical Reality of Production AI Agents** will be available next Wednesday. Come back then to continue your journey into the world of AI agents.

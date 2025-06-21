@@ -18,53 +18,113 @@
 import { LogCategory, logger } from '../../../logging';
 import { BaseStorageAdapter } from '../../base-adapter';
 import { ListOptions, StorageOptions } from '../../types';
+import { KeyManager } from '../../utils/key-manager';
+import { TTLManager } from '../../utils/ttl-manager';
 import type { MongoConnectionManager } from './connection';
-import { BatchOperations } from './operations/batch';
-import { KVOperations } from './operations/kv';
-import { ListOperations } from './operations/list';
+import { MongoBatchOperations } from './operations/batch';
+import { MongoKVOperations } from './operations/kv';
+import { MongoListOperations } from './operations/list';
 import { MongoConnection, MongoDBConfig } from './types';
 
+export interface MongoDBAdapterOptions extends StorageOptions {
+  config: MongoDBConfig;
+}
+
 export class MongoDBAdapter extends BaseStorageAdapter {
-  private connectionManager?: MongoConnectionManager;
-  private connection?: MongoConnection;
+  private config: MongoDBConfig;
+  private connectionManager!: MongoConnectionManager;
+  private connection!: MongoConnection;
+  private kvOps!: MongoKVOperations;
+  private listOps!: MongoListOperations;
+  private batchOps!: MongoBatchOperations;
+  private initPromise: Promise<void> | null = null;
 
-  // Operation handlers
-  private kvOps!: KVOperations;
-  private listOps!: ListOperations;
-  private batchOps!: BatchOperations;
+  // Utility instances
+  private keyManager: KeyManager;
+  private ttlManager: TTLManager;
+  private namespace?: string;
 
-  constructor(private config: MongoDBConfig) {
+  constructor(options: MongoDBAdapterOptions) {
     super();
+    this.config = options.config;
+    this.namespace = options.namespace;
+
+    // Initialize utilities
+    this.keyManager = new KeyManager();
+    this.ttlManager = new TTLManager();
   }
 
   /**
-   * Initialize the adapter
+   * Initialize the MongoDB connection
    */
   async initialize(): Promise<void> {
-    try {
-      // Lazy load MongoDB connection manager
-      const { MongoConnectionManager: ConnManager } = await import(
-        './connection'
-      );
-      this.connectionManager = new ConnManager(this.config);
-    } catch (error) {
-      throw new Error(
-        'MongoDB driver not found. Please install it with: npm install mongodb'
-      );
+    if (this.initPromise) {
+      return this.initPromise;
     }
 
-    this.connection = await this.connectionManager.getConnection();
+    this.initPromise = this._initialize();
+    return this.initPromise;
+  }
 
-    // Initialize operation handlers
-    this.kvOps = new KVOperations(this.connection);
-    this.listOps = new ListOperations(this.connection);
-    this.batchOps = new BatchOperations(this.connection);
+  private async _initialize(): Promise<void> {
+    try {
+      // Lazy load connection manager
+      const { MongoConnectionManager } = await import('./connection');
 
-    logger.info(LogCategory.STORAGE, 'MongoDBAdapter', 'Adapter initialized', {
-      database: this.config.database,
-      collection: this.config.collection || 'agentdock_kv',
-      namespace: this.config.namespace
-    });
+      this.connectionManager = new MongoConnectionManager({
+        uri: this.config.uri,
+        database: this.config.database,
+        collection: this.config.collection,
+        options: this.config.options,
+        indexes: this.config.indexes
+      });
+
+      this.connection = await this.connectionManager.getConnection();
+
+      // Initialize operations
+      this.kvOps = new MongoKVOperations(
+        this.connection.kvCollection,
+        this.keyManager,
+        this.ttlManager,
+        this.namespace
+      );
+
+      this.listOps = new MongoListOperations(
+        this.connection.listCollection,
+        this.keyManager,
+        this.namespace
+      );
+
+      this.batchOps = new MongoBatchOperations(
+        this.connection,
+        this.keyManager,
+        this.ttlManager,
+        this.namespace
+      );
+
+      // MongoDB handles TTL automatically with expireAfterSeconds index
+      // The TTL manager is already set up with automatic cleanup in its constructor
+
+      await logger.info(
+        LogCategory.STORAGE,
+        'MongoDBAdapter',
+        'MongoDB adapter initialized',
+        {
+          database: this.config.database,
+          collection: this.config.collection || 'agentdock'
+        }
+      );
+    } catch (error) {
+      await logger.error(
+        LogCategory.STORAGE,
+        'MongoDBAdapter',
+        'Failed to initialize MongoDB adapter',
+        {
+          error
+        }
+      );
+      throw error;
+    }
   }
 
   /**
@@ -74,13 +134,14 @@ export class MongoDBAdapter extends BaseStorageAdapter {
     if (this.connectionManager) {
       await this.connectionManager.close();
     }
-    logger.info(LogCategory.STORAGE, 'MongoDBAdapter', 'Adapter closed');
+    await logger.info(LogCategory.STORAGE, 'MongoDBAdapter', 'Adapter closed');
   }
 
   /**
    * Clean up resources
    */
   async destroy(): Promise<void> {
+    this.ttlManager.stopCleanupTimer();
     await this.close();
   }
 
@@ -89,7 +150,19 @@ export class MongoDBAdapter extends BaseStorageAdapter {
    */
   async get<T>(key: string, options?: StorageOptions): Promise<T | null> {
     await this.ensureInitialized();
-    return this.kvOps.get<T>(key, options);
+    // MongoDB operations don't accept options parameter, handle namespace separately
+    const actualNamespace = options?.namespace || this.namespace;
+    if (actualNamespace !== this.namespace) {
+      // Create a new operation instance with the different namespace
+      const kvOps = new MongoKVOperations(
+        this.connection.kvCollection,
+        this.keyManager,
+        this.ttlManager,
+        actualNamespace
+      );
+      return kvOps.get(key);
+    }
+    return this.kvOps.get(key);
   }
 
   /**
@@ -97,7 +170,21 @@ export class MongoDBAdapter extends BaseStorageAdapter {
    */
   async set<T>(key: string, value: T, options?: StorageOptions): Promise<void> {
     await this.ensureInitialized();
-    return this.kvOps.set<T>(key, value, options);
+    // Convert ttlSeconds to milliseconds
+    const ttlMs = options?.ttlSeconds ? options.ttlSeconds * 1000 : undefined;
+
+    const actualNamespace = options?.namespace || this.namespace;
+    if (actualNamespace !== this.namespace) {
+      // Create a new operation instance with the different namespace
+      const kvOps = new MongoKVOperations(
+        this.connection.kvCollection,
+        this.keyManager,
+        this.ttlManager,
+        actualNamespace
+      );
+      return kvOps.set(key, value, ttlMs);
+    }
+    return this.kvOps.set(key, value, ttlMs);
   }
 
   /**
@@ -105,7 +192,20 @@ export class MongoDBAdapter extends BaseStorageAdapter {
    */
   async delete(key: string, options?: StorageOptions): Promise<boolean> {
     await this.ensureInitialized();
-    return this.kvOps.delete(key, options);
+    const actualNamespace = options?.namespace || this.namespace;
+    if (actualNamespace !== this.namespace) {
+      // Create a new operation instance with the different namespace
+      const kvOps = new MongoKVOperations(
+        this.connection.kvCollection,
+        this.keyManager,
+        this.ttlManager,
+        actualNamespace
+      );
+      await kvOps.delete(key);
+    } else {
+      await this.kvOps.delete(key);
+    }
+    return true;
   }
 
   /**
@@ -113,7 +213,18 @@ export class MongoDBAdapter extends BaseStorageAdapter {
    */
   async exists(key: string, options?: StorageOptions): Promise<boolean> {
     await this.ensureInitialized();
-    return this.kvOps.exists(key, options);
+    const actualNamespace = options?.namespace || this.namespace;
+    if (actualNamespace !== this.namespace) {
+      // Create a new operation instance with the different namespace
+      const kvOps = new MongoKVOperations(
+        this.connection.kvCollection,
+        this.keyManager,
+        this.ttlManager,
+        actualNamespace
+      );
+      return kvOps.exists(key);
+    }
+    return this.kvOps.exists(key);
   }
 
   /**
@@ -124,7 +235,27 @@ export class MongoDBAdapter extends BaseStorageAdapter {
     options?: StorageOptions
   ): Promise<Record<string, T | null>> {
     await this.ensureInitialized();
-    return this.batchOps.getMany<T>(keys, options);
+    const actualNamespace = options?.namespace || this.namespace;
+
+    let batchOps = this.batchOps;
+    if (actualNamespace !== this.namespace) {
+      // Create a new operation instance with the different namespace
+      batchOps = new MongoBatchOperations(
+        this.connection,
+        this.keyManager,
+        this.ttlManager,
+        actualNamespace
+      );
+    }
+
+    const values = await batchOps.mget(keys);
+    const result: Record<string, T | null> = {};
+
+    keys.forEach((key, index) => {
+      result[key] = values[index] as T | null;
+    });
+
+    return result;
   }
 
   /**
@@ -135,7 +266,27 @@ export class MongoDBAdapter extends BaseStorageAdapter {
     options?: StorageOptions
   ): Promise<void> {
     await this.ensureInitialized();
-    return this.batchOps.setMany<T>(items, options);
+    const actualNamespace = options?.namespace || this.namespace;
+    const ttlMs = options?.ttlSeconds ? options.ttlSeconds * 1000 : undefined;
+
+    let batchOps = this.batchOps;
+    if (actualNamespace !== this.namespace) {
+      // Create a new operation instance with the different namespace
+      batchOps = new MongoBatchOperations(
+        this.connection,
+        this.keyManager,
+        this.ttlManager,
+        actualNamespace
+      );
+    }
+
+    const pairs = Object.entries(items).map(([key, value]) => ({
+      key,
+      value,
+      ttl: ttlMs
+    }));
+
+    await batchOps.mset(pairs);
   }
 
   /**
@@ -143,7 +294,7 @@ export class MongoDBAdapter extends BaseStorageAdapter {
    */
   async deleteMany(keys: string[], options?: StorageOptions): Promise<number> {
     await this.ensureInitialized();
-    return this.batchOps.deleteMany(keys, options);
+    return this.batchOps.mdel(keys);
   }
 
   /**
@@ -151,7 +302,7 @@ export class MongoDBAdapter extends BaseStorageAdapter {
    */
   async list(prefix: string, options?: ListOptions): Promise<string[]> {
     await this.ensureInitialized();
-    return this.kvOps.list(prefix, options);
+    return this.kvOps.keys(prefix);
   }
 
   /**
@@ -161,11 +312,12 @@ export class MongoDBAdapter extends BaseStorageAdapter {
     await this.ensureInitialized();
 
     // Clear KV data
-    await this.kvOps.clear(prefix);
+    await this.kvOps.clear();
 
     // Clear list data if no prefix (clear everything)
     if (!prefix) {
-      await this.listOps.clear();
+      // MongoDB doesn't have a specific list clear method
+      // It's handled by the clear method in KV operations
     }
   }
 
@@ -179,7 +331,14 @@ export class MongoDBAdapter extends BaseStorageAdapter {
     options?: StorageOptions
   ): Promise<T[] | null> {
     await this.ensureInitialized();
-    return this.listOps.getList<T>(key, start, end, options);
+    if (start === undefined) {
+      start = 0;
+    }
+    if (end === undefined) {
+      end = -1;
+    }
+    const range = await this.listOps.lrange(key, start, end);
+    return range.length > 0 ? (range as T[]) : null;
   }
 
   /**
@@ -191,7 +350,14 @@ export class MongoDBAdapter extends BaseStorageAdapter {
     options?: StorageOptions
   ): Promise<void> {
     await this.ensureInitialized();
-    return this.listOps.saveList<T>(key, values, options);
+    // Clear existing list
+    const fullKey = this.keyManager.createKey(key, this.namespace);
+    await this.connection.listCollection.deleteOne({ _id: fullKey });
+
+    // Add new values
+    if (values.length > 0) {
+      await this.listOps.rpush(key, ...values);
+    }
   }
 
   /**
@@ -199,7 +365,11 @@ export class MongoDBAdapter extends BaseStorageAdapter {
    */
   async deleteList(key: string, options?: StorageOptions): Promise<boolean> {
     await this.ensureInitialized();
-    return this.listOps.deleteList(key, options);
+    const fullKey = this.keyManager.createKey(key, this.namespace);
+    const result = await this.connection.listCollection.deleteOne({
+      _id: fullKey
+    });
+    return result.deletedCount > 0;
   }
 
   /**

@@ -111,14 +111,17 @@ export class StorageFactory {
     // Register MongoDB provider
     this.registerProvider('mongodb', (options = {}) => {
       return new MongoDBAdapter({
-        uri:
-          options.config?.uri ||
-          process.env.MONGODB_URI ||
-          'mongodb://localhost:27017',
-        database: options.config?.database || 'agentdock',
-        collection: options.config?.collection,
-        options: options.config?.options,
-        indexes: options.config?.indexes
+        namespace: options.namespace,
+        config: {
+          uri:
+            options.config?.uri ||
+            process.env.MONGODB_URI ||
+            'mongodb://localhost:27017',
+          database: options.config?.database || 'agentdock',
+          collection: options.config?.collection,
+          options: options.config?.options,
+          indexes: options.config?.indexes
+        }
       });
     });
 

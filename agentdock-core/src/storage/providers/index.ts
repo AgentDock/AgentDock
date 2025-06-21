@@ -2,6 +2,6 @@
  * @fileoverview Storage provider exports
  */
 
-export * from './memory-provider';
-export * from './redis-provider';
-export * from './vercel-kv-provider';
+export { MemoryStorageProvider } from './memory-provider';
+export { RedisStorageProvider } from './redis-provider';
+export { VercelKVProvider } from './vercel-kv-provider';

@@ -4,18 +4,18 @@ The Storage Abstraction Layer provides a flexible system for storing and retriev
 
 ## Current Status
 
-**Status: Key-Value Core Complete, Expanding for Other Types**
+**Status: Complete (Production Testing TBD)**
 
-The core infrastructure for Key-Value storage is stable and supports multiple backends. We are actively extending the abstraction to incorporate distinct configurations and providers for other storage types like Vector Storage.
+The storage abstraction layer has been fully implemented with 14 total adapters covering key-value, document, object, and vector storage needs. All planned adapters are complete, but production validation is ongoing for newer adapters.
 
 ## Feature Overview
 
-The Storage Abstraction Layer aims to provide:
+The Storage Abstraction Layer provides:
 
 - **Multiple Storage Types**: Distinct handling and configuration for Key-Value, Vector, and potentially Relational storage needs.
 - **Purpose-Specific Configuration**: Environment variables (e.g., `KV_STORE_PROVIDER`, `VECTOR_STORE_PROVIDER`) allow selecting the right backend for each storage type.
-- **Standard Provider Interfaces**: Consistent interfaces for different storage types (e.g., `KeyValueStorageProvider`, `VectorStorageProvider`).
-- **Pluggable Backends**: Support for various storage systems (Memory, Redis, Vercel KV for Key-Value; others planned for Vector/Relational).
+- **Standard Provider Interfaces**: Consistent interfaces for different storage types (e.g., `StorageProvider`, `VectorStorageProvider`).
+- **Pluggable Backends**: Support for various storage systems (Memory, Redis, Vercel KV, SQLite, PostgreSQL, and more).
 - **Data Serialization**: Consistent handling of data.
 - **Namespace Support**: Isolated storage spaces.
 - **TTL Support**: For key-value stores requiring data expiration.
@@ -30,19 +30,25 @@ graph TD
     A[Application] --> B(Storage Factory)
     B --> C{Provider Interface}
     
-    C --> D[Memory Provider]
-    C -- Optional --> E[File Provider]
-    C --> F[Redis Provider]
-    C --> G[Vercel KV Provider]
-    C --> H[... Future Providers]
+    C --> D[Memory Provider ✓]
+    C --> E[SQLite Provider ✓ - Default]
+    C --> F[Redis Provider ✓]
+    C --> G[Vercel KV Provider ✓]
+    C --> H[PostgreSQL Provider ✓]
+    C --> I[MongoDB Provider ✓]
+    C --> J[S3 Provider ✓]
+    C --> K[DynamoDB Provider ✓]
+    C --> L[Cloudflare KV/D1 ✓]
+    C --> M[Vector DBs ✓]
 
     subgraph ClientSide [Client-Side]
-        I[Secure Storage]
+        N[Secure Storage ✓]
     end
 
     style B fill:#0066cc,color:#ffffff,stroke:#0033cc
     style C fill:#0066cc,color:#ffffff,stroke:#0033cc
-    style I fill:#e6f2ff,stroke:#99ccff
+    style E fill:#66cc66,color:#ffffff,stroke:#339933
+    style N fill:#e6f2ff,stroke:#99ccff
 ```
 
 ### Storage Types Managed
@@ -51,49 +57,81 @@ graph TD
 graph TD
     A(Storage Factory) --> KV[Key-Value Data]
     A --> VEC(Vector Data)
-    A --> REL(Relational Data)
+    A --> OBJ(Object Storage)
 
     KV --> KVSess[(Sessions)]
     KV --> KVConf[(Configuration)]
+    KV --> KVMem[(Agent Memory)]
     
-    VEC -- Planned --> VECEmb[(Embeddings / Knowledge)]
-    REL -- Planned --> RELStruct[(Structured Records)]
+    VEC --> VECEmb[(Embeddings / Knowledge)]
+    OBJ --> OBJFiles[(Large Files / Backups)]
 
     style A fill:#0066cc,color:#ffffff,stroke:#0033cc
     style VEC fill:#f0f8ff,stroke:#99ccff
-    style REL fill:#fff8f0,stroke:#ffcc99
+    style OBJ fill:#fff8f0,stroke:#ffcc99
 ```
 
 ## Configuration
 
 Storage providers are configured via environment variables specific to their purpose:
 
-- **`KV_STORE_PROVIDER`**: Selects the backend for general key-value storage (sessions, config). Options: `memory`, `redis`, `vercel-kv`.
-- **`VECTOR_STORE_PROVIDER`**: Selects the backend for vector embeddings. Options: `memory` (initially), planned: `pgvector`, `qdrant`, etc.
-- **Provider-Specific Variables**: Additional variables like `REDIS_URL`, `POSTGRES_URL`, `PINECONE_API_KEY` are used based on the selected providers.
+- **`KV_STORE_PROVIDER`**: Selects the backend for general key-value storage (sessions, config). Options: `memory`, `sqlite` (default), `redis`, `vercel-kv`, `postgresql`, `mongodb`.
+- **`VECTOR_STORE_PROVIDER`**: Selects the backend for vector embeddings. Options: `memory`, `pgvector`, `mongodb-atlas`, `pinecone`, `qdrant`, etc.
+- **Provider-Specific Variables**: Additional variables like `REDIS_URL`, `POSTGRES_URL`, `MONGODB_URI` are used based on the selected providers.
 
-This allows mixing backends, e.g., using Redis for KV and a different system for Vectors.
+This allows mixing backends, e.g., using SQLite for local development and PostgreSQL for production.
 
-## Implemented Components (Key-Value Focus)
+## Implemented Components
 
-The following components related primarily to Key-Value storage are available:
+The following components are currently implemented:
 
-- **Key-Value Provider Interface**: The `StorageProvider` interface for KV operations.
-- **Memory KV Provider**: In-memory KV store.
-- **Redis KV Provider**: Redis/Upstash KV store.
-- **Vercel KV Provider**: Vercel KV store.
-- **Secure Storage**: Client-side encrypted storage using Web Crypto API. See `agentdock-core/src/storage/secure-storage.ts`. 
-  - See [Open Source Client Implementation Notes](../oss-client/nextjs-implementation.md#client-side-storage--api-keys-byok) for security considerations regarding its use for API keys.
-- **Storage Factory**: Handles instantiation of configured KV providers.
-- **Namespace & TTL Support**: For KV stores.
+- **Storage Provider Interface**: The `StorageProvider` interface for KV operations.
+- **Base Storage Adapter**: Abstract class with common utilities (key management, serialization, TTL).
+- **Memory Provider**: In-memory store for development and testing.
+- **SQLite Provider**: Default zero-config local storage with file persistence.
+- **PostgreSQL Provider**: Production-ready with connection pooling and transactions.
+- **MongoDB Provider**: Document storage with native TTL support.
+- **Redis Provider**: High-performance distributed caching.
+- **Vercel KV Provider**: Serverless Redis-compatible storage.
+- **S3 Provider**: Large object storage with presigned URLs.
+- **Cloudflare KV Provider**: Edge key-value storage.
+- **Cloudflare D1 Provider**: Edge SQL database.
+- **Vector Providers**: PostgreSQL Vector, Pinecone, Qdrant, ChromaDB.
+- **Secure Storage**: Client-side encrypted storage using Web Crypto API.
+- **Storage Factory**: Handles instantiation of configured providers.
+- **Common Utilities**: Shared components for all adapters:
+  - Key management (namespaces, transformers)
+  - Serialization (JSON, type-safe)
+  - Error handling (unified error types)
+  - Connection pooling
+  - Transaction management
+  - TTL management with cleanup
+  - Validation utilities
+  - Retry logic with exponential backoff
 
-## Available Key-Value Providers
+## Available Providers
 
-The current version includes the following providers specifically for Key-Value storage:
+### Key-Value Storage
+| Provider | Status | Notes |
+|----------|--------|-------|
+| Memory | ✅ Complete | In-memory storage for testing |
+| Redis | ✅ Complete | Using ioredis |
+| Vercel KV | ✅ Complete | Serverless Redis |
+| SQLite | ✅ Complete | Default for OSS, zero-config |
+| PostgreSQL | ✅ Complete | Production-ready with pooling |
+| MongoDB | ✅ Complete | Document storage with TTL |
+| S3 | ✅ Complete | Large object storage |
+| DynamoDB | ✅ Complete | AWS serverless NoSQL database |
+| Cloudflare KV | ✅ Complete | Edge computing |
+| Cloudflare D1 | ✅ Complete | Edge SQL |
 
-1.  **Memory**: In-memory (Complete)
-2.  **Redis**: Redis/Upstash (Complete)
-3.  **Vercel KV**: Vercel KV (Complete)
+### Vector Storage
+| Provider | Status | Notes |
+|----------|--------|-------|
+| PostgreSQL Vector | ✅ Complete | pgvector extension |
+| Pinecone | ✅ Complete | Managed vector search |
+| Qdrant | ✅ Complete | Open-source vector DB |
+| ChromaDB | ✅ Complete | Open-source embeddings DB |
 
 ## Integration Points
 
@@ -103,6 +141,7 @@ The Storage Abstraction Layer integrates with several key components:
 - **Configuration Service**: For storing and retrieving API keys and user preferences
 - **Tool Context**: For maintaining tool-specific state between calls
 - **Memory Systems**: For storing long-term memory and context
+- **RAG Systems**: For vector storage and retrieval
 
 ## Benefits
 
@@ -113,30 +152,98 @@ This abstraction layer delivers several important benefits:
 3. **Simplicity**: Consistent interface regardless of the underlying storage
 4. **Security**: Proper handling of sensitive data with encryption
 5. **Performance**: Optimize storage based on access patterns and requirements
+6. **Zero Configuration**: SQLite as default means no setup required for local development
 
-## Future Enhancements & Planned Providers
+## Usage Example
 
-We plan to add support for:
+```typescript
+import { getStorageFactory } from '@agentdock/core';
 
-- **Vector Storage Providers**: `pgvector`, `Qdrant`, `Pinecone`, `Chroma`.
-- **Relational Storage Providers**: Including **SQLite** for local/development use cases and PostgreSQL.
-- **Document/Blob Storage**: MongoDB, S3.
-- **Caching Layer**
+// Default (SQLite) - Zero configuration needed
+const storage = getStorageFactory().getDefaultProvider();
+
+// Or specify a provider
+const pgStorage = getStorageFactory().getProvider({
+  type: 'postgresql',
+  namespace: 'my-app',
+  config: {
+    connectionString: process.env.DATABASE_URL
+  }
+});
+
+// Basic operations
+await storage.set('key', { data: 'value' });
+const value = await storage.get('key');
+await storage.delete('key');
+
+// With TTL
+await storage.set('session', { user: 'alice' }, { ttlSeconds: 3600 });
+
+// Batch operations
+await storage.setMany({
+  'user:1': { name: 'Alice' },
+  'user:2': { name: 'Bob' }
+});
+
+// List operations
+await storage.saveList('messages', ['Hello', 'World']);
+const messages = await storage.getList('messages', 0, 10);
+```
+
+## Testing
+
+A comprehensive test suite validates all adapters against real-world scenarios:
+
+```bash
+# Test default adapters (Memory, SQLite)
+npx tsx test-storage.ts
+
+# Test with PostgreSQL
+export DATABASE_URL="postgresql://..."
+npx tsx test-storage.ts
+```
+
+Tests cover:
+- Basic KV operations
+- Thread/conversation storage
+- Multi-tenant namespace isolation
+- Session management with TTL
+- User agent/character listings
+- Batch operations
+- Concurrent access patterns
+
+## Production Considerations
+
+- **SQLite**: Excellent for single-server deployments, can handle thousands of requests/second
+- **PostgreSQL**: Recommended for multi-server deployments requiring consistency
+- **MongoDB**: Good for flexible schemas and native TTL support
+- **Vector DBs**: Currently experimental, need production validation
+- **S3**: Great for large files but higher latency than KV stores
+- **Edge providers**: Cloudflare KV/D1 ideal for global distribution
+
+**Note**: While core functionality is complete, production testing for newer adapters (S3, MongoDB, Vector DBs, Cloudflare) is ongoing. We recommend thorough testing in your specific use case before production deployment.
 
 ## Timeline
 
 | Phase                     | Status      | Description                                      |
 | :------------------------ | :---------- | :----------------------------------------------- |
-| KV Provider Interface     | Complete    | Base interface for Key-Value operations defined  |
-| Memory KV Provider        | Complete    | In-memory KV implementation                      |
-| Redis KV Provider         | Complete    | Distributed KV storage with Redis/Upstash        |
-| Vercel KV Provider        | Complete    | Native Vercel KV integration                     |
-| Secure Storage            | Complete    | Client-side secure storage implementation        |
-| Vector Provider Interface | Planned     | Interface definition for Vector operations       |
-| Initial Vector Providers  | Planned     | Memory, pgvector integrations                    |
-| Relational Providers      | Planned     | SQLite, PostgreSQL integrations                  |
-| Production Testing        | In Progress | Performance testing and optimization (KV focus)  |
-| Additional Providers      | Planned     | MongoDB, S3, other Vector DBs                    |
+| Core Interface            | ✅ Complete | Base interface for storage operations defined    |
+| Base Adapter             | ✅ Complete | Abstract class with common utilities             |
+| Memory Provider           | ✅ Complete | In-memory implementation                         |
+| Redis Provider            | ✅ Complete | Distributed storage with Redis/Upstash           |
+| Vercel KV Provider        | ✅ Complete | Native Vercel KV integration                     |
+| Secure Storage            | ✅ Complete | Client-side secure storage implementation        |
+| SQLite Provider           | ✅ Complete | Default local storage provider                   |
+| PostgreSQL Provider       | ✅ Complete | Production database integration                  |
+| MongoDB Provider          | ✅ Complete | Document store integration                       |
+| S3 Provider              | ✅ Complete | Large object storage                             |
+| Cloudflare Providers     | ✅ Complete | KV and D1 edge storage                          |
+| Vector Interface          | ✅ Complete | Interface definition for Vector operations       |
+| Vector Providers          | ✅ Complete | pgvector, Pinecone, Qdrant, ChromaDB           |
+| Common Utilities         | ✅ Complete | Shared components for all adapters              |
+| Comprehensive Testing    | ✅ Complete | Test suite for all adapters                     |
+| DynamoDB Provider        | ✅ Complete | AWS serverless storage                          |
+| Production Testing       | 🚧 Ongoing  | Real-world validation                           |
 
 ## Connection to Other Roadmap Items
 
@@ -145,13 +252,14 @@ The Storage Abstraction Layer is a foundation for several other roadmap items:
 - **Advanced Memory Systems**: Relies on storage for persistent memory
 - **Vector Storage Integration**: Uses the storage abstraction for vector data
 - **Multi-Agent Collaboration**: Requires shared storage for coordination
-- **AgentDock Pro**: Leverages advanced storage options for scaling
+- **Platform Integration**: Storage for platform-specific data
 
 ## Documentation
 
-Once completed, we will provide comprehensive documentation on:
+Comprehensive documentation is available:
 
-- How to configure and use the storage system
-- How to implement custom storage providers
+- Implementation Guide: `agentdock-core/src/storage/README.md`
+- API Reference: See TypeScript definitions in `agentdock-core/src/storage/types.ts`
+- Testing Guide: Run `npx tsx test-storage.ts` for examples
 - Best practices for different deployment scenarios
-- Performance considerations and optimization 
+- Migration guides for upgrading from older versions 

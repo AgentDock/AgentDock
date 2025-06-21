@@ -1,0 +1,236 @@
+# Storage Adapters
+
+## Overview
+
+Storage adapters provide database-specific implementations of the storage abstraction layer. Each adapter follows a consistent architecture pattern for maintainability and extensibility.
+
+## Architecture Pattern
+
+Each adapter is organized into focused modules:
+
+```
+adapter-name/
+├── index.ts              # Main adapter class (delegates to operations)
+├── connection.ts         # Connection/pool management
+├── operations/
+│   ├── kv.ts            # Key-value operations
+│   ├── list.ts          # List operations
+│   └── batch.ts         # Batch operations
+├── schema.ts            # Schema initialization & migrations
+└── types.ts             # Adapter-specific types
+```
+
+## File Size Guidelines
+
+Following best practices, each file should be:
+- **Under 400 lines** maximum
+- **Ideally 100-300 lines** for optimal maintainability
+- Focused on a single responsibility
+
+## Module Responsibilities
+
+### `index.ts` (Main Adapter)
+- Extends `BaseStorageAdapter`
+- Coordinates all operations
+- Delegates to operation modules
+- ~150 lines
+
+### `connection.ts`
+- Database connection/pool management
+- Connection lifecycle (create, close)
+- Resource cleanup
+- ~100-150 lines
+
+### `operations/kv.ts`
+- Key-value CRUD operations
+- Namespace management
+- Serialization/deserialization
+- ~250 lines
+
+### `operations/list.ts`
+- List-specific operations
+- Range queries
+- ~150 lines
+
+### `operations/batch.ts`
+- Batch operations with transactions
+- Bulk optimizations
+- ~150-200 lines
+
+### `schema.ts`
+- Table/collection creation
+- Index management
+- Schema migrations
+- ~100-150 lines
+
+### `types.ts`
+- Adapter configuration interfaces
+- Internal types
+- Row/document types
+- ~50-100 lines
+
+## Implementation Example
+
+```typescript
+// Main adapter delegates to operations
+export class SQLiteAdapter extends BaseStorageAdapter {
+  private connection: SQLiteConnection;
+  private kv: KVOperations;
+  private listOps: ListOperations;
+  private batch: BatchOperations;
+
+  constructor(options: SQLiteAdapterOptions) {
+    super();
+    this.connection = createConnection(options);
+    this.kv = new KVOperations(this.connection);
+    this.listOps = new ListOperations(this.connection);
+    this.batch = new BatchOperations(this.connection);
+  }
+
+  async get<T>(key: string, options?: StorageOptions): Promise<T | null> {
+    return this.kv.get<T>(key, options);
+  }
+  // ... other delegated methods
+}
+```
+
+## Creating a New Adapter
+
+1. **Create folder structure**
+   ```bash
+   mkdir -p adapters/your-adapter/operations
+   ```
+
+2. **Define types** (`types.ts`)
+   - Configuration options interface
+   - Connection wrapper interface
+   - Internal types
+
+3. **Implement connection** (`connection.ts`)
+   - Connection creation
+   - Resource management
+   - Cleanup logic
+
+4. **Implement schema** (`schema.ts`)
+   - Initial setup
+   - Table/collection creation
+   - Indexes
+
+5. **Implement operations**
+   - `operations/kv.ts` - Basic CRUD
+   - `operations/list.ts` - List operations
+   - `operations/batch.ts` - Batch operations
+
+6. **Create main adapter** (`index.ts`)
+   - Extend `BaseStorageAdapter`
+   - Initialize operations
+   - Delegate method calls
+
+## Testing
+
+Each module should have corresponding tests:
+
+```
+adapter-name/
+├── __tests__/
+│   ├── connection.test.ts
+│   ├── operations/
+│   │   ├── kv.test.ts
+│   │   ├── list.test.ts
+│   │   └── batch.test.ts
+│   └── schema.test.ts
+```
+
+## Common Patterns
+
+### Key Management
+```typescript
+private getFullKey(key: string, namespace?: string): string {
+  const ns = namespace || this.connection.defaultNamespace;
+  return ns ? `${ns}:${key}` : key;
+}
+```
+
+### Serialization
+```typescript
+private serializeValue<T>(value: T): string {
+  return JSON.stringify(value);
+}
+
+private deserializeValue<T>(value: string): T {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return value as unknown as T;
+  }
+}
+```
+
+### Error Handling
+```typescript
+try {
+  // operation
+} catch (error) {
+  logger.error(LogCategory.STORAGE, 'AdapterName', 'Operation failed', {
+    key,
+    error: error instanceof Error ? error.message : String(error)
+  });
+  throw error;
+}
+```
+
+## Performance Considerations
+
+1. **Connection Pooling**: Reuse connections where possible
+2. **Batch Operations**: Use transactions for multiple operations
+3. **Prepared Statements**: Use parameterized queries
+4. **Cleanup**: Implement TTL cleanup efficiently
+5. **Indexes**: Create appropriate indexes for common queries
+
+## Current Adapters
+
+- **SQLite** ✅: Default adapter for OSS, zero-config persistent storage
+  - In-memory and file-based storage
+  - Automatic cleanup for expired items
+  - Full namespace support
+  - Batch operations with transactions
+  
+- **PostgreSQL** ✅: Production-ready with ACID compliance
+  - Connection pooling with configurable limits
+  - JSONB storage for complex data types
+  - Schema support for multi-tenant applications
+  - Prepared statements for performance
+
+## Planned Adapters
+
+- **MongoDB**: Document-based storage
+- **S3**: Object storage for large values
+- **DynamoDB**: Serverless key-value storage
+- **Cloudflare KV/D1**: Edge storage solutions
+- **Vector Databases**: For AI/ML workloads
+
+## Available Adapters
+
+### SQLite Adapter
+- **Module**: `sqlite/`
+- **Use Case**: Default storage for open-source, local development
+- **Features**: Zero-config, file-based persistence, in-memory option
+- **External Dependency**: `better-sqlite3`
+
+### PostgreSQL Adapter  
+- **Module**: `postgresql/`
+- **Use Case**: Production deployments, ACID compliance
+- **Features**: Connection pooling, transactions, JSON/JSONB support
+- **External Dependency**: `pg`
+
+### MongoDB Adapter
+- **Module**: `mongodb/`
+- **Use Case**: Document storage, flexible schemas
+- **Features**: Native TTL indexes, change streams, text search
+- **External Dependency**: `mongodb`
+
+### S3 Adapter
+- **Module**: `s3/`
+- **Use Case**: Large object storage, blob storage
+- **Features**: Presigned URLs, metadata-based TTL, S3-compatible services
+- **External Dependencies**: `@aws-sdk/client-s3`, `@aws-sdk/lib-storage`, `@aws-sdk/s3-request-presigner` 

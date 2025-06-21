@@ -7,7 +7,7 @@ import { Search } from 'lucide-react';
 import { CommandDialog } from '@/components/ui/command';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { closeMobileSidebar } from './docs-sidebar';
+import { closeMobileSidebar } from './mobile-sidebar-utils';
 
 type SearchResult = {
   id: string;

@@ -8,22 +8,10 @@ import { ChevronDown, ChevronRight } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { SidebarSection } from '@/lib/docs-utils';
 import { DocSearch } from './doc-search';
+import { closeMobileSidebar } from './mobile-sidebar-utils';
 
 interface DocsSidebarProps {
   sidebarSections: SidebarSection[];
-}
-
-// Function to close the mobile sidebar - exported for use in other components
-export function closeMobileSidebar() {
-  // Find and uncheck the sidebar toggle checkbox
-  if (typeof window !== 'undefined') {
-    const sidebarToggle = document.getElementById(
-      'sidebar-mobile-toggle'
-    ) as HTMLInputElement;
-    if (sidebarToggle) {
-      sidebarToggle.checked = false;
-    }
-  }
 }
 
 export function DocsSidebar({ sidebarSections }: DocsSidebarProps) {

@@ -6,8 +6,8 @@ import { ModelRegistry } from './models/registry';
 import { ModelService } from './services/model-service';
 import type { AgentTemplate } from './store/types';
 
-// Re-export AgentTemplate type
-export type { AgentTemplate };
+// AgentTemplate type is exported from ./store/types.ts via lib/index.ts re-exports
+// No need to re-export here to avoid ESLint import/export conflicts
 
 /**
  * Combines class names with Tailwind CSS optimizations.

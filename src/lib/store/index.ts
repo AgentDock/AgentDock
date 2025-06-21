@@ -198,4 +198,5 @@ export const useAgents = create<Store>((set) => ({
   }
 }));
 
-export type { Store, Agent, AgentState, AgentRuntimeSettings };
+// Types are exported from ./types.ts via lib/index.ts re-exports
+// No need to re-export here to avoid ESLint import/export conflicts

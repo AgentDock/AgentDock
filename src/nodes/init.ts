@@ -13,7 +13,6 @@ import { allTools } from './registry';
 
 // Global flag to persist across hot reloads
 declare global {
-  // eslint-disable-next-line no-var
   var __toolRegistryInitialized: boolean;
 }
 

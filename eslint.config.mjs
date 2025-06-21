@@ -72,7 +72,13 @@ export default [
         version: 'detect'
       },
       'import/resolver': {
-        typescript: {}
+        typescript: {
+          alwaysTryTypes: true,
+          project: './tsconfig.json'
+        }
+      },
+      'import/parsers': {
+        '@typescript-eslint/parser': ['.ts', '.tsx']
       }
     },
     rules: {
@@ -81,6 +87,9 @@ export default [
       ...reactHooksPlugin.configs.recommended.rules,
       ...nextPlugin.configs.recommended.rules,
       ...nextPlugin.configs['core-web-vitals'].rules,
+
+      // Import plugin recommended rules
+      ...importPlugin.configs.recommended.rules,
 
       // TypeScript specific rules
       '@typescript-eslint/explicit-module-boundary-types': 'off',

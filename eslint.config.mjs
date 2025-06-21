@@ -109,7 +109,8 @@ export default [
 
       // Import rules
       'import/no-anonymous-default-export': 'warn',
-      'import/no-duplicates': 'error'
+      'import/no-duplicates': 'error',
+      'import/no-cycle': 'error'
     }
   },
 

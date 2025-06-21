@@ -41,6 +41,7 @@
     "@types/better-sqlite3": "^7.6.13",
     "@types/pg": "^8.11.10",
     "@types/sentiment": "^5.0.4",
+    "mongodb": "^6.10.0",
     "pg": "^8.13.1",
     "tsup": "^8.0.2",
     "typescript": "^5.8.3"

@@ -36,6 +36,13 @@ export class BatchOperations {
   }
 
   /**
+   * Escape SQL wildcard characters in a string
+   */
+  private escapeSqlWildcards(str: string): string {
+    return str.replace(/[_%]/g, '\\$&');
+  }
+
+  /**
    * Get multiple values from storage
    */
   async getMany<T>(
@@ -74,7 +81,21 @@ export class BatchOperations {
         for (const row of result.results) {
           // Check expiration
           if (!row.expires_at || row.expires_at > now) {
-            resultMap[row.key] = JSON.parse(row.value) as T;
+            try {
+              resultMap[row.key] = JSON.parse(row.value) as T;
+            } catch (error) {
+              logger.warn(
+                LogCategory.STORAGE,
+                'CloudflareD1',
+                'Failed to parse value',
+                {
+                  key: row.key,
+                  namespace,
+                  error: error instanceof Error ? error.message : String(error)
+                }
+              );
+              // Keep the value as null for corrupted data
+            }
           }
         }
       }
@@ -227,6 +248,7 @@ export class BatchOperations {
   ): Promise<Record<string, T>> {
     const namespace = this.getNamespace(options);
     const now = Date.now();
+    const escapedPrefix = this.escapeSqlWildcards(prefix);
 
     try {
       const result = await this.connection.db
@@ -240,14 +262,28 @@ export class BatchOperations {
         ORDER BY key
       `
         )
-        .bind(namespace, `${prefix}%`, now)
+        .bind(namespace, `${escapedPrefix}%`, now)
         .all<D1KVRow>();
 
       const resultMap: Record<string, T> = {};
 
       if (result.results) {
         for (const row of result.results) {
-          resultMap[row.key] = JSON.parse(row.value) as T;
+          try {
+            resultMap[row.key] = JSON.parse(row.value) as T;
+          } catch (error) {
+            logger.warn(
+              LogCategory.STORAGE,
+              'CloudflareD1',
+              'Failed to parse value',
+              {
+                key: row.key,
+                namespace,
+                error: error instanceof Error ? error.message : String(error)
+              }
+            );
+            // Skip corrupted values
+          }
         }
       }
 

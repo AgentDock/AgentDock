@@ -13,7 +13,8 @@ import { SessionId } from 'agentdock-core/types/session';
 
 import { getOrchestrationManagerInstance } from '@/lib/orchestration-adapter'; // Use adapter's instance getter
 
-export const runtime = 'edge';
+// Remove Edge Runtime to allow Node.js modules
+// export const runtime = 'edge';
 export const maxDuration = 60; // Shorter duration for simple state fetch
 
 export async function GET(

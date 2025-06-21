@@ -233,7 +233,7 @@ export async function searchVectors(
     if (options.includeVector && row.embedding) {
       // Parse vector from PostgreSQL format
       const vectorStr = row.embedding.slice(1, -1); // Remove [ and ]
-      searchResult.vector = vectorStr.split(',').map(Number);
+      searchResult.vector = vectorStr ? vectorStr.split(',').map(Number) : [];
     }
 
     return searchResult;
@@ -267,7 +267,7 @@ export async function getVectorById(
 
   // Parse vector from PostgreSQL format
   const vectorStr = row.embedding.slice(1, -1); // Remove [ and ]
-  const vector = vectorStr.split(',').map(Number);
+  const vector = vectorStr ? vectorStr.split(',').map(Number) : [];
 
   return {
     id: row.id,

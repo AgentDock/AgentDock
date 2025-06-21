@@ -23,6 +23,18 @@ AgentDock is a framework for building sophisticated AI agents that deliver compl
 
 Built with TypeScript, AgentDock emphasizes *simplicity*, *extensibility*, and ***configurable determinism*** - making it ideal for building reliable and predictable AI systems that can operate with minimal supervision.
 
+<br>
+
+[![AgentDock](https://github.com/user-attachments/assets/d8037f82-4091-4323-b7d2-4c1935777505)](https://agentdock.ai?utm_source=github&utm_medium=readme&utm_campaign=main)
+
+<br>
+
+🌐 **AgentDock Pro Coming Soon**: Experience the future of AI automation with our comprehensive cloud platform featuring visual workflow builders, advanced orchestration, and enterprise-grade infrastructure. [Sign up at AgentDock.ai](https://agentdock.ai?utm_source=github&utm_medium=readme&utm_campaign=main) to secure early access and earn free platform credits when we launch.
+
+📖 **AI Agents Book**: Master the complete methodology for building production-ready AI agents with our comprehensive guide at **[AI Agents Book](https://agentdock.ai/docs/ai-agents-book?utm_source=github&utm_medium=readme&utm_campaign=main)** - covering everything from fundamentals to enterprise deployment patterns.
+
+🎯 **Comprehensive Prompt Library**: We're building the most extensive prompt library covering everyday automation needs and highly specialized vertical requirements. From general productivity to industry-specific workflows, our curated collection empowers agents with battle-tested prompts for any scenario.
+
 ## Demos
 
 **[Dr. Gregory House](https://github.com/AgentDock/AgentDock/tree/main/agents/dr-house):** A diagnostic reasoning powerhouse that orchestrates **`search`**, **`deep_research`**, and **`pubmed`** tools in a multi-stage workflow to tackle complex medical cases using methodical investigation techniques that rival expert diagnosticians.
@@ -249,6 +261,8 @@ Documentation for the AgentDock framework is available at [hub.agentdock.ai/docs
 - Node creation tutorials
 - Integration examples
 
+For comprehensive ecosystem documentation and guides, visit [agentdock.ai/docs](https://agentdock.ai/docs).
+
 ## 📂 Repository Structure
 
 This repository contains:
@@ -256,6 +270,7 @@ This repository contains:
 1.  **AgentDock Core**: The core framework located in `agentdock-core/`
 2.  **Open Source Client**: A complete reference implementation built with Next.js, serving as a consumer of the AgentDock Core framework.
 3.  **Example Agents**: Ready-to-use agent configurations in the `agents/` directory
+4.  **AI Agents Book**: Comprehensive guide content in the `content/ai-agents-book/` directory
 
 You can use AgentDock Core independently in your own applications, or use this repository as a starting point for building your own agent-powered applications.
 

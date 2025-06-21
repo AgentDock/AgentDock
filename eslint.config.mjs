@@ -72,7 +72,16 @@ export default [
         version: 'detect'
       },
       'import/resolver': {
-        typescript: {}
+        typescript: {
+          alwaysTryTypes: true,
+          project: './tsconfig.json'
+        },
+        node: {
+          extensions: ['.js', '.jsx', '.ts', '.tsx']
+        }
+      },
+      'import/parsers': {
+        '@typescript-eslint/parser': ['.ts', '.tsx']
       }
     },
     rules: {
@@ -81,6 +90,9 @@ export default [
       ...reactHooksPlugin.configs.recommended.rules,
       ...nextPlugin.configs.recommended.rules,
       ...nextPlugin.configs['core-web-vitals'].rules,
+
+      // Import plugin recommended rules
+      ...importPlugin.configs.recommended.rules,
 
       // TypeScript specific rules
       '@typescript-eslint/explicit-module-boundary-types': 'off',
@@ -109,7 +121,11 @@ export default [
 
       // Import rules
       'import/no-anonymous-default-export': 'warn',
-      'import/no-duplicates': 'error'
+      'import/no-duplicates': 'error',
+      'import/no-cycle': 'error',
+      'import/no-unresolved': ['error', { 
+        ignore: ['geist/font/mono', 'geist/font/sans'] 
+      }]
     }
   },
 

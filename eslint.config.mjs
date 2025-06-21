@@ -75,6 +75,9 @@ export default [
         typescript: {
           alwaysTryTypes: true,
           project: './tsconfig.json'
+        },
+        node: {
+          extensions: ['.js', '.jsx', '.ts', '.tsx']
         }
       },
       'import/parsers': {
@@ -119,7 +122,10 @@ export default [
       // Import rules
       'import/no-anonymous-default-export': 'warn',
       'import/no-duplicates': 'error',
-      'import/no-cycle': 'error'
+      'import/no-cycle': 'error',
+      'import/no-unresolved': ['error', { 
+        ignore: ['geist/font/mono', 'geist/font/sans'] 
+      }]
     }
   },
 

@@ -1,7 +1,7 @@
 /**
  * SQLite Adapter Tests
  *
- * Production-style tests similar to Mastra's approach
+ * Production-style tests for SQLite storage adapter
  */
 
 import { afterEach, beforeEach, describe, expect, it } from '@jest/globals';

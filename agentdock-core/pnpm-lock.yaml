@@ -44,6 +44,9 @@ importers:
       string-comparisons:
         specifier: ^0.0.20
         version: 0.0.20
+      zod:
+        specifier: ^3.24.1
+        version: 3.25.67
     devDependencies:
       '@types/sentiment':
         specifier: ^5.0.4

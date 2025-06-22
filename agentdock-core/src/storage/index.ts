@@ -2,6 +2,9 @@
  * @fileoverview Storage abstraction layer exports.
  *
  * This file exports all public APIs for the storage abstraction layer.
+ *
+ * NOTE: Node.js-dependent adapters (SQLite, PostgreSQL, MongoDB, etc.) are NOT exported here
+ * to prevent client-side bundling issues. Use registerNodeAdapters() server-side instead.
  */
 
 // Export types
@@ -26,21 +29,24 @@ export {
   getDefaultStorageProvider
 } from './factory';
 
-// Export providers
+// Export Edge-compatible providers only
 export { MemoryStorageProvider } from './providers/memory-provider';
 export { RedisStorageProvider } from './providers/redis-provider';
 export { VercelKVProvider } from './providers/vercel-kv-provider';
 
-// Export adapters
-export { SQLiteAdapter } from './adapters/sqlite';
-export { PostgreSQLAdapter } from './adapters/postgresql';
-export { MongoDBAdapter } from './adapters/mongodb';
-export { S3Adapter } from './adapters/s3';
-export { DynamoDBAdapter } from './adapters/dynamodb';
+// NOTE: Node.js adapters are NOT exported here. They must be registered server-side.
+// In the future, this could be done using:
+// import { registerNodeAdapters } from 'agentdock-core/storage/register-node-adapters';
+// await registerNodeAdapters();
 
-// Export adapter configurations
-export type { SQLiteAdapterOptions } from './adapters/sqlite/types';
-export type { PostgreSQLAdapterOptions } from './adapters/postgresql/types';
-export type { MongoDBConfig } from './adapters/mongodb/types';
-export type { S3Config } from './adapters/s3/types';
-export type { DynamoDBConfig } from './adapters/dynamodb/types';
+// Export adapter registry functions (for server-side use only)
+export {
+  registerSQLiteAdapter,
+  registerPostgreSQLAdapter,
+  registerPostgreSQLVectorAdapter,
+  registerMongoDBAdapter,
+  registerCloudAdapters,
+  registerVectorAdapters,
+  registerAgentChatAdapters,
+  isAdapterRegistered
+} from './adapters/registry';

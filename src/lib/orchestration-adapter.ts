@@ -17,6 +17,7 @@ import {
   OrchestrationConfig,
   OrchestrationManager
 } from 'agentdock-core';
+
 import type { AIOrchestrationState } from 'agentdock-core/types/orchestration';
 import type { SessionId } from 'agentdock-core/types/session';
 
@@ -87,7 +88,7 @@ const getConfiguredStorageProvider = () => {
   );
 
   const storageType = process.env.KV_STORE_PROVIDER || 'memory';
-  
+
   try {
     // Use the factory to get the configured provider
     const provider = getStorageFactory().getProvider({
@@ -103,13 +104,13 @@ const getConfiguredStorageProvider = () => {
         uri: process.env.MONGODB_URI
       }
     });
-    
+
     logger.info(
       LogCategory.API,
       'OrchestrationAdapter',
       `Using ${storageType} Storage Provider`
     );
-    
+
     return provider;
   } catch (error) {
     logger.error(
@@ -120,7 +121,7 @@ const getConfiguredStorageProvider = () => {
         error: error instanceof Error ? error.message : String(error)
       }
     );
-    
+
     // Fallback to memory storage
     return getStorageFactory().getProvider({
       type: 'memory',

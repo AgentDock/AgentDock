@@ -10,7 +10,7 @@
     }
   },
   "scripts": {
-    "build": "tsup src/index.ts --format esm,cjs --dts --external ai --external @ai-sdk/* --external @anthropic-ai/* --external @google/* --external openai --external @upstash/* --external @vercel/*",
+    "build": "tsup src/index.ts --format esm,cjs --dts --external ai --external @ai-sdk/* --external @anthropic-ai/* --external @google/* --external openai --external @upstash/* --external @vercel/* --external zod",
     "typecheck": "tsc --noEmit"
   },
   "version": "0.1.0-161-1",
@@ -26,7 +26,8 @@
     "ai": "4.2.0",
     "openai": "^4.83.0",
     "sentiment": "^5.0.2",
-    "string-comparisons": "^0.0.20"
+    "string-comparisons": "^0.0.20",
+    "zod": "^3.24.1"
   },
   "comments": {
     "providers": "DeepSeek API is compatible with OpenAI's format, so we use the OpenAI client with a custom baseURL"

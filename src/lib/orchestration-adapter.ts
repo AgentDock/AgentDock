@@ -14,15 +14,14 @@ import {
   LLMMessage,
   LogCategory,
   logger,
-  MemoryStorageProvider,
   OrchestrationConfig,
-  OrchestrationManager,
-  RedisStorageProvider,
-  StorageProvider
+  OrchestrationManager
 } from 'agentdock-core';
-
 import type { AIOrchestrationState } from 'agentdock-core/types/orchestration';
 import type { SessionId } from 'agentdock-core/types/session';
+
+// Import storage initialization (will auto-initialize on import in server context)
+import './storage-init';
 
 // Local type for template orchestration config, which may have readonly properties
 export type TemplateOrchestrationConfig = {
@@ -74,10 +73,11 @@ export interface OrchestrationAdapter {
  */
 const getConfiguredStorageProvider = () => {
   const debug = {
-    STORAGE_TYPE: process.env.STORAGE_TYPE,
+    KV_STORE_PROVIDER: process.env.KV_STORE_PROVIDER,
     REDIS_URL: process.env.REDIS_URL,
     SRH_TOKEN: process.env.SRH_TOKEN,
-    KV_STORE_PROVIDER: process.env.KV_STORE_PROVIDER
+    DATABASE_URL: process.env.DATABASE_URL,
+    MONGODB_URI: process.env.MONGODB_URI
   };
   logger.debug(
     LogCategory.API,
@@ -87,77 +87,46 @@ const getConfiguredStorageProvider = () => {
   );
 
   const storageType = process.env.KV_STORE_PROVIDER || 'memory';
-  const redisUrl = process.env.REDIS_URL;
-  const redisToken = process.env.SRH_TOKEN;
-
-  if (storageType === 'redis' && redisUrl) {
-    // Token is required by @upstash/redis, use placeholder if missing locally
-    const tokenToUse = redisToken || 'local_placeholder_token';
+  
+  try {
+    // Use the factory to get the configured provider
+    const provider = getStorageFactory().getProvider({
+      type: storageType,
+      namespace: 'sessions',
+      config: {
+        // Redis-specific config
+        url: process.env.REDIS_URL,
+        token: process.env.SRH_TOKEN || process.env.REDIS_TOKEN,
+        // PostgreSQL-specific config
+        connectionString: process.env.DATABASE_URL,
+        // MongoDB-specific config
+        uri: process.env.MONGODB_URI
+      }
+    });
+    
     logger.info(
       LogCategory.API,
       'OrchestrationAdapter',
-      `Using Redis Storage Provider: ${redisUrl}`
+      `Using ${storageType} Storage Provider`
     );
-
-    try {
-      return new RedisStorageProvider({
-        url: redisUrl,
-        token: tokenToUse // Pass token (now read from SRH_TOKEN)
-        // @upstash/redis handles TLS based on URL
-      });
-    } catch (error) {
-      logger.error(
-        LogCategory.API,
-        'OrchestrationAdapter',
-        'Failed to initialize RedisStorageProvider, falling back to Memory',
-        {
-          error: error instanceof Error ? error.message : String(error)
-        }
-      );
-    }
-  } else if (storageType === 'vercel-kv') {
-    // Check if necessary env vars are present (optional, @vercel/kv might handle errors)
-    // const kvUrl = process.env.KV_URL;
-    // const kvToken = process.env.KV_REST_API_TOKEN;
-    // if (!kvUrl || !kvToken) {
-    //    logger.error(LogCategory.API, 'OrchestrationAdapter', 'Vercel KV environment variables (KV_URL, KV_REST_API_TOKEN) are missing, falling back to Memory');
-    // }
-    // else {
-    logger.info(
+    
+    return provider;
+  } catch (error) {
+    logger.error(
       LogCategory.API,
       'OrchestrationAdapter',
-      'Using Vercel KV Storage Provider'
+      `Failed to initialize ${storageType} provider, falling back to Memory`,
+      {
+        error: error instanceof Error ? error.message : String(error)
+      }
     );
-    try {
-      // Use the factory to get the Vercel KV provider instance
-      return getStorageFactory().getProvider({
-        type: 'vercel-kv',
-        namespace: 'sessions'
-      });
-    } catch (error) {
-      logger.error(
-        LogCategory.API,
-        'OrchestrationAdapter',
-        'Failed to initialize VercelKVProvider, falling back to Memory',
-        {
-          error: error instanceof Error ? error.message : String(error)
-        }
-      );
-    }
-    // }
+    
+    // Fallback to memory storage
+    return getStorageFactory().getProvider({
+      type: 'memory',
+      namespace: 'sessions'
+    });
   }
-
-  // Default / Fallback
-  logger.warn(
-    LogCategory.API,
-    'OrchestrationAdapter',
-    'Using Memory Storage Provider (State will NOT persist across requests)'
-  );
-  // Use factory for memory provider, ensuring a consistent namespace
-  return getStorageFactory().getProvider({
-    type: 'memory',
-    namespace: 'sessions'
-  });
 };
 
 /**
@@ -323,7 +292,8 @@ export async function trackToolUsage(
       }
     );
     try {
-      const state = await getOrchestrationManagerInstance().getState(sessionId);
+      const manager = getOrchestrationManagerInstance();
+      const state = await manager.getState(sessionId);
       return state ?? { sessionId, recentlyUsedTools: [toolName] };
     } catch (innerError) {
       return { sessionId, recentlyUsedTools: [toolName] };

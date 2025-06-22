@@ -9,346 +9,685 @@
 
 Modern AI agents in 2025 are implementing human-like memory systems that intelligently manage context, prioritize information, and adapt to user patterns. With larger context windows (100k+ tokens), the focus shifts from storage to intelligent selection and vertical-specific optimizations.
 
-## The Evolution of AI Memory
-
-### From Vector Storage to Cognitive Architecture
-
-Traditional approaches relied heavily on vector databases for semantic search. While useful, they lack the nuance of human memory:
-
-- **Old Approach**: Store everything, retrieve by similarity
-- **New Approach**: Selective retention, importance-based recall, temporal awareness
+## System Architecture
 
 ```mermaid
 graph TD
-    subgraph "Traditional Memory"
-        A1[User Input] --> B1[Vector Embedding]
-        B1 --> C1[Store Everything]
-        C1 --> D1[Similarity Search]
-        D1 --> E1[Retrieve Top-K]
+    subgraph "Human-Like Memory System"
+        A[Working Memory<br/>Current Context Window] --> B[Memory Controller]
+        C[Episodic Memory<br/>Time-stamped Experiences] --> B
+        D[Semantic Memory<br/>Extracted Facts] --> B
+        E[Procedural Memory<br/>Tool Usage Patterns] --> B
+        
+        B --> F[Memory Consolidation]
+        F --> G[Token-Aware Context]
+        
+        H[User Input] --> I[Rule-Based Triggers]
+        I --> |"Active Chat"| B
+        I --> |"Idle Period"| J[Skip Processing]
+        
+        style A fill:#f9f,stroke:#333,stroke-width:2px
+        style C fill:#9ff,stroke:#333,stroke-width:2px
+        style D fill:#ff9,stroke:#333,stroke-width:2px
+        style E fill:#9f9,stroke:#333,stroke-width:2px
     end
-    
-    subgraph "Advanced Memory 2025"
-        A2[User Input] --> B2[Multi-Modal Analysis]
-        B2 --> C2[Importance Scoring]
-        C2 --> D2[Selective Storage]
-        D2 --> E2[Context-Aware Retrieval]
-        E2 --> F2[Dynamic Consolidation]
-    end
-    
-    style C2 fill:#f9f,stroke:#333,stroke-width:2px
-    style F2 fill:#9ff,stroke:#333,stroke-width:2px
 ```
 
-## Vertical-Specific Memory Approaches
+## Memory Layer Interactions
 
-Leading companies like OpenAI and Anthropic demonstrate that vertical approaches work best. Here's how memory should adapt to specific use cases:
+| Layer | Purpose | Without This Layer | With This Layer | Example |
+|-------|---------|-------------------|-----------------|---------|
+| **Working Memory** | Current context | Agent forgets conversation flow | Maintains coherent dialogue | "As I mentioned earlier..." |
+| **Episodic Memory** | Personal history | No personalization | Remembers past interactions | "Last week you asked about..." |
+| **Semantic Memory** | Extracted facts | Re-learns every time | Builds knowledge base | "Your preference is dark mode" |
+| **Procedural Memory** | Tool patterns | Random tool usage | Optimized tool selection | Uses search before deep_research |
 
-### 1. Therapist/Counselor Agents
+## HTTP Adapter Pattern (Platform Independence)
+
+Memory must work across different applications - open source client and commercial products use different frameworks. Core provides the memory logic, apps provide the HTTP layer.
 
 ```typescript
-interface TherapistMemory {
-  // Emotional trajectory tracking
-  emotionalStates: EmotionalEvent[];
-  
-  // Session continuity
-  sessionNotes: SessionSummary[];
-  recurringThemes: Theme[];
-  
-  // Progress tracking
-  copingStrategies: Strategy[];
-  breakthroughs: Insight[];
-  
-  // Privacy-first design
-  encryption: 'AES-256';
-  retention: '1-year-max';
+// agentdock-core/src/memory/adapters/base.ts
+export interface MemoryAdapter {
+  parseRequest(request: unknown): Promise<MemoryRequest>;
+  createResponse(data: MemoryResponse): unknown;
+  handleError(error: Error): unknown;
 }
-```
 
-**Key Features:**
-- Emotional pattern recognition
-- Session-to-session continuity
-- Progress visualization
-- Maximum privacy protection
-
-### 2. Legal Assistant Agents
-
-```typescript
-interface LegalMemory {
-  // Case context
-  caseHistory: CaseFile[];
-  relevantStatutes: Law[];
+// agentdock-core/src/memory/adapters/express.ts
+export class ExpressMemoryAdapter implements MemoryAdapter {
+  async parseRequest(req: Request): Promise<MemoryRequest> {
+    return {
+      action: req.body.action,
+      agentId: req.body.agentId,
+      content: req.body.content,
+      options: req.body.options
+    };
+  }
   
-  // Document tracking
-  filedDocuments: Document[];
-  deadlines: Deadline[];
+  createResponse(data: MemoryResponse): Response {
+    return { 
+      status: 200, 
+      body: data 
+    };
+  }
   
-  // Precedent matching
-  similarCases: Precedent[];
-  
-  // Audit trail
-  allInteractions: AuditLog[];
-}
-```
-
-**Key Features:**
-- Complete audit trails
-- Precedent pattern matching
-- Deadline awareness
-- Document version control
-
-### 3. Educational Tutor Agents
-
-```typescript
-interface TutorMemory {
-  // Learning progress
-  conceptsMastered: Concept[];
-  strugglingAreas: Topic[];
-  
-  // Personalization
-  learningStyle: LearningProfile;
-  preferredExamples: Example[];
-  
-  // Performance tracking
-  assessmentHistory: Assessment[];
-  improvementRate: number;
-}
-```
-
-**Key Features:**
-- Adaptive learning paths
-- Concept mastery tracking
-- Learning style adaptation
-- Progress analytics
-
-### 4. Personal Assistant Agents
-
-```typescript
-interface AssistantMemory {
-  // User preferences
-  preferences: PreferenceMap;
-  routines: DailyRoutine[];
-  
-  // Context awareness
-  currentProjects: Project[];
-  upcomingEvents: Event[];
-  
-  // Proactive support
-  anticipatedNeeds: Prediction[];
-  reminders: Reminder[];
-}
-```
-
-**Key Features:**
-- Habit learning
-- Proactive suggestions
-- Context switching
-- Multi-project awareness
-
-## Human-Like Memory Patterns
-
-### Working Memory (Immediate Context)
-- **Capacity**: Limited to current task focus
-- **Duration**: Seconds to minutes
-- **Implementation**: Direct context window management
-
-### Episodic Memory (Personal Experiences)
-- **Capacity**: Selective retention based on importance
-- **Duration**: Can persist indefinitely if reinforced
-- **Implementation**: Chronological storage with emotional weighting
-
-### Semantic Memory (Facts and Knowledge)
-- **Capacity**: Large, organized by domain
-- **Duration**: Permanent until contradicted
-- **Implementation**: Graph-based knowledge representation
-
-### Procedural Memory (Skills and Patterns)
-- **Capacity**: Grows with successful interactions
-- **Duration**: Strengthens with repeated success
-- **Implementation**: Pattern extraction from outcomes
-
-## Importance-Based Retention
-
-Not all information deserves equal memory allocation:
-
-```typescript
-function calculateMemoryImportance(
-  memory: Memory,
-  context: VerticalContext
-): number {
-  // Base factors
-  const baseScore = {
-    emotionalSalience: detectEmotionalWeight(memory),
-    userEmphasis: checkExplicitImportance(memory),
-    repetition: memory.mentionCount / 10,
-    recency: 1 / (1 + daysSince(memory.timestamp)),
-    utility: memory.accessFrequency / totalAccesses,
-  };
-  
-  // Vertical-specific weighting
-  const weights = getVerticalWeights(context.vertical);
-  
-  return calculateWeightedScore(baseScore, weights);
-}
-```
-
-## Smart Truncation for Large Contexts
-
-With 100k+ token windows, the challenge isn't fitting everything but selecting the right content:
-
-### 1. Progressive Summarization
-```typescript
-class ProgressiveSummarizer {
-  summarize(messages: Message[], budget: TokenBudget): Summary {
-    // Keep recent messages verbatim
-    const recent = messages.slice(-10);
-    
-    // Summarize middle messages by importance
-    const middle = messages.slice(10, -10)
-      .filter(m => m.importance > threshold)
-      .map(m => this.extractKeyPoints(m));
-    
-    // Preserve critical early context
-    const early = messages.slice(0, 10)
-      .filter(m => m.establishesContext)
-      .map(m => this.minimalSummary(m));
-    
-    return this.combine(early, middle, recent, budget);
+  handleError(error: Error): Response {
+    return { 
+      status: 500, 
+      body: { error: error.message }
+    };
   }
 }
+
+// Open Source Client Usage with Express
+// routes/memory.js
+const express = require('express');
+const { MemoryProvider, ExpressMemoryAdapter } = require('agentdock-core');
+
+const router = express.Router();
+
+router.post('/memory', async (req, res) => {
+  const memory = new MemoryProvider(storageAdapter, embedder);
+  const handler = new MemoryApiHandler(memory, new ExpressMemoryAdapter());
+  const response = await handler.handle(req);
+  res.status(response.status).json(response.body);
+});
 ```
 
-### 2. Vertical-Specific Context Selection
+## Implementation Plan
+
+### Core Memory Interface (AgentDock Insight Engine)
+
+```mermaid
+graph LR
+    subgraph "AgentDock Insight Engine"
+        A[New Message] --> B[Analyze Context]
+        B --> C{Is Important?}
+        C -->|No| D[Skip]
+        C -->|Yes| E[Find Similar]
+        E --> F{Match Type}
+        F -->|New| G[Add Memory]
+        F -->|Similar| H[Merge Facts]
+        F -->|Contradicts| I[Replace Old]
+        F -->|Duplicate| J[Skip]
+    end
+```
+
 ```typescript
-class VerticalContextManager {
-  selectContext(vertical: Vertical, available: Memory[]): Context {
-    switch(vertical) {
-      case 'therapy':
-        // Prioritize emotional continuity
-        return this.selectTherapyContext(available);
-        
-      case 'legal':
-        // Prioritize precedent and facts
-        return this.selectLegalContext(available);
-        
-      case 'education':
-        // Prioritize learning progression
-        return this.selectEducationContext(available);
-        
-      default:
-        // Balanced selection
-        return this.selectBalancedContext(available);
+// agentdock-core/src/memory/types.ts
+export interface MemoryProvider {
+  // AgentDock Insight Engine operations
+  remember(agentId: string, content: string, context?: MemoryContext): Promise<Memory>;
+  recall(agentId: string, query: string, options?: RecallOptions): Promise<Memory[]>;
+  forget(agentId: string, memoryId: string): Promise<void>;
+  export(agentId: string): Promise<MemoryExport>;
+  
+  // Memory lifecycle management
+  consolidate(agentId: string): Promise<ConsolidationResult>;
+  decay(agentId: string): Promise<DecayResult>;
+  
+  // Compact summaries for efficiency
+  getCompactSummary(agentId: string): Promise<string>;
+  updateCompactSummary(agentId: string): Promise<void>;
+}
+
+export interface Memory {
+  id: string;
+  agentId: string;
+  content: string;
+  embedding: number[]; // Semantic from day 1
+  
+  // Human memory type
+  type: 'working' | 'episodic' | 'semantic' | 'procedural';
+  
+  // Temporal awareness
+  timestamp: Date;
+  sessionId?: string;
+  
+  // Dynamic importance
+  importance: number;      // Initial importance
+  resonance: number;       // Current relevance after decay
+  insightKeys?: string[];  // Semantic tags for clustering
+  
+  // Access patterns
+  accessCount: number;
+  lastAccessed: Date;
+  
+  // Efficiency
+  compactForm?: string;    // One-sentence summary
+  
+  // Token management
+  tokenCount: number;
+  truncationPriority: number;
+  
+  // Metadata
+  language?: string;
+  userId?: string;
+  metadata?: Record<string, any>;
+}
+
+// AgentDock Memory Operations
+export enum MemoryOperation {
+  ADD = 'ADD',       // New unique memory
+  UPDATE = 'UPDATE', // Merge with existing
+  DELETE = 'DELETE', // Remove outdated
+  NOOP = 'NOOP'     // Already exists
+}
+```
+
+### Rule-Based Memory Triggers with AI Enhancement
+
+```typescript
+// Memory processing happens through intelligent rules
+export interface MemoryTriggerRules {
+  // Chat activity triggers
+  messagesPerMinute: number;        // Default: 2
+  minMessageLength: number;         // Default: 50 chars
+  idleTimeoutMinutes: number;       // Default: 30
+  
+  // Content triggers
+  emotionalKeywords: string[];      // ["urgent", "important", "remember"]
+  explicitMemoryRequest: boolean;   // "Remember that..."
+  
+  // Tool usage pattern triggers
+  toolUsageThreshold: number;       // 3 tool calls = save pattern
+  errorRepetitionThreshold: number; // 2 same errors = save solution
+  toolSuccessPattern: boolean;      // Capture successful tool sequences
+  
+  // AI-enhanced triggers (optional)
+  enableLLMAnalysis?: boolean;      // Use LLM for importance detection
+  enableSmallModel?: boolean;       // Use small model for quick checks
+  dynamicRuleGeneration?: boolean;  // Let LLM create new rules
+}
+
+export class IntelligentMemoryController {
+  private lastActivity: Date = new Date();
+  private messageBuffer: Message[] = [];
+  private toolUsagePatterns: Map<string, ToolPattern[]> = new Map();
+  
+  constructor(
+    private llm?: LLMProvider,
+    private smallModel?: SmallModelProvider
+  ) {}
+  
+  async shouldProcessMemory(
+    message: Message, 
+    context: MemoryContext,
+    rules: MemoryTriggerRules
+  ): Promise<boolean> {
+    // Basic rule checks first (fast path)
+    const basicTrigger = this.checkBasicRules(message, rules);
+    if (basicTrigger) return true;
+    
+    // AI-enhanced analysis (optional)
+    if (rules.enableLLMAnalysis && this.llm) {
+      const importance = await this.llm.analyzeImportance(message, context);
+      if (importance > 0.7) return true;
+    }
+    
+    // Small model for quick checks
+    if (rules.enableSmallModel && this.smallModel) {
+      const quickCheck = await this.smallModel.quickImportanceCheck(message);
+      if (quickCheck.isImportant) return true;
+    }
+    
+    return false;
+  }
+  
+  // Capture successful tool usage patterns
+  async captureToolPattern(
+    agentId: string,
+    toolCalls: ToolCall[],
+    outcome: 'success' | 'failure'
+  ): Promise<void> {
+    if (outcome === 'success' && toolCalls.length >= 2) {
+      const pattern = this.extractToolPattern(toolCalls);
+      
+      // Store pattern for future use
+      const patterns = this.toolUsagePatterns.get(agentId) || [];
+      patterns.push({
+        sequence: toolCalls,
+        successRate: 1,
+        useCount: 1,
+        context: await this.summarizeContext(toolCalls)
+      });
+      
+      this.toolUsagePatterns.set(agentId, patterns);
     }
   }
-}
-```
-
-## Implementation Patterns
-
-### Memory-Augmented Agent Architecture
-
-```typescript
-class VerticalMemoryAgent {
-  constructor(
-    private vertical: Vertical,
-    private storage: StorageProvider
-  ) {
-    this.memoryConfig = getVerticalMemoryConfig(vertical);
-  }
   
-  async processQuery(query: string, sessionId: string): Promise<Response> {
-    // Load vertical-specific context
-    const context = await this.loadVerticalContext(query, sessionId);
+  // Dynamic rule generation (node-based system capability)
+  async generateDynamicRules(
+    agentId: string,
+    context: MemoryContext
+  ): Promise<MemoryTriggerRules> {
+    if (!this.llm) return this.getDefaultRules();
     
-    // Generate with appropriate memory
-    const response = await this.llm.generate({
-      query,
-      context: this.formatForVertical(context),
-      instructions: this.getVerticalInstructions()
+    // LLM can analyze patterns and suggest new rules
+    const analysis = await this.llm.analyzeBehaviorPatterns({
+      recentInteractions: context.messages,
+      toolUsageHistory: this.toolUsagePatterns.get(agentId),
+      currentRules: this.getDefaultRules()
     });
     
-    // Update memory based on vertical needs
-    await this.updateVerticalMemory(query, response, sessionId);
-    
-    return response;
+    return {
+      ...this.getDefaultRules(),
+      ...analysis.suggestedRules,
+      dynamicRuleGeneration: true
+    };
   }
 }
 ```
 
-## Performance Considerations
-
-### Storage Backend Selection
-
-For character.ai style applications:
+### User-Configurable Memory Decay
 
 ```typescript
-// Development
-const devStorage = {
-  provider: 'sqlite',
-  benefits: [
-    'Zero configuration',
-    'Single file persistence',
-    'Easy backup/restore',
-    'Perfect for prototyping'
-  ]
+// Extended decay configuration with examples
+export interface MemoryDecayConfig {
+  episodicToSemanticDays: number;  // Default: 30
+  decayRate: number;                // Default: 0.1
+  minImportanceThreshold: number;   // Default: 0.2
+  
+  custom?: {
+    neverDecay?: string[];          // Patterns to preserve
+    acceleratedDecay?: string[];    // Patterns to forget faster
+    verticalSpecific?: {
+      therapy?: {
+        sessionNotesDecay: number;  // 90 days
+        traumaEventsDecay: never;   // Never forget
+        copingStrategiesDecay: 180; // 6 months
+      };
+      legal?: {
+        caseFactsDecay: never;      // Preserve forever
+        proceduralDeadlines: never; // Critical dates
+        draftDocuments: 30;         // Clean up drafts
+      };
+      education?: {
+        conceptsLearned: 365;       // 1 year
+        practiceProblems: 60;       // 2 months
+        examDates: never;           // Keep schedule
+      };
+      customerSupport?: {
+        resolvedIssues: 90;         // 3 months
+        productPreferences: 180;    // 6 months
+        accountDetails: never;      // Keep forever
+      };
+    };
+  };
+}
+
+// Example configurations for different use cases
+const therapyConfig: MemoryDecayConfig = {
+  episodicToSemanticDays: 7,  // Quick pattern recognition
+  decayRate: 0.05,             // Slow decay
+  minImportanceThreshold: 0.1, // Keep more memories
+  custom: {
+    neverDecay: [
+      "trauma", "trigger", "medication", "allergy",
+      "emergency contact", "crisis plan"
+    ],
+    acceleratedDecay: [
+      "small talk", "weather", "greeting"
+    ],
+    verticalSpecific: {
+      therapy: {
+        sessionNotesDecay: 90,
+        traumaEventsDecay: never,
+        copingStrategiesDecay: 180
+      }
+    }
+  }
 };
 
-// Production
-const prodStorage = {
-  sessions: 'redis',      // Fast state access
-  messages: 'postgresql', // ACID compliance
-  embeddings: 'pgvector', // Semantic search
-  benefits: [
-    'Horizontal scaling',
-    'High availability',
-    'Advanced querying',
-    'Supabase integration'
-  ]
+const legalConfig: MemoryDecayConfig = {
+  episodicToSemanticDays: 60,   // Longer consolidation
+  decayRate: 0.01,              // Very slow decay
+  minImportanceThreshold: 0.3,  // Higher bar
+  custom: {
+    neverDecay: [
+      "deadline", "court date", "case number",
+      "settlement", "verdict", "filing"
+    ],
+    verticalSpecific: {
+      legal: {
+        caseFactsDecay: never,
+        proceduralDeadlines: never,
+        draftDocuments: 30
+      }
+    }
+  }
 };
 ```
 
-### Optimization Strategies
+### Phase 1: Human-Like Memory Foundation (Week 1)
 
-1. **Lazy Loading**: Load only memory types needed for current vertical
-2. **Smart Caching**: Keep frequently accessed memories in Redis
-3. **Batch Processing**: Consolidate memories during off-peak times
-4. **Selective Indexing**: Index based on vertical access patterns
+```typescript
+// Core memory types matching human cognitive architecture
+export class HumanLikeMemoryProvider implements MemoryProvider {
+  // Maintain compact summary per agent
+  private agentSummaries: Map<string, string> = new Map();
+  
+  // Intelligent trigger controller
+  private triggerController = new IntelligentMemoryController();
+  
+  constructor(
+    private storage: StorageProvider,
+    private embedder: EmbeddingProvider,
+    private config: MemoryConfig
+  ) {}
+  
+  // AgentDock Insight Engine: Analyze → Act
+  async remember(agentId: string, content: string, context?: MemoryContext): Promise<Memory> {
+    // Check if we should process based on intelligent rules
+    const shouldProcess = await this.triggerController.shouldProcessMemory(
+      content, 
+      context, 
+      this.config.triggers
+    );
+    
+    if (!shouldProcess) return null; // Skip processing
+    
+    // Phase 1: Analyze context (what matters?)
+    const insight = await this.analyzeContext(content, context);
+    if (!insight) return null; // Nothing significant
+    
+    // Phase 2: Act on memory update
+    const existingMemories = await this.findSimilar(agentId, insight);
+    
+    if (existingMemories.length === 0) {
+      // ADD: New episodic memory
+      return await this.addEpisodicMemory(agentId, insight, context);
+    } else if (this.shouldConsolidate(insight, existingMemories)) {
+      // UPDATE: Merge into semantic memory
+      return await this.consolidateToSemantic(agentId, insight, existingMemories);
+    } else if (this.contradicts(insight, existingMemories[0])) {
+      // DELETE + ADD: Replace outdated memory
+      await this.forget(agentId, existingMemories[0].id);
+      return await this.addEpisodicMemory(agentId, insight, context);
+    }
+    
+    // NOOP: Similar memory already exists
+    return existingMemories[0];
+  }
+  
+  // Multi-language importance detection with simple fallback
+  private async detectImportance(content: string, language?: string): Promise<number> {
+    // Try small multi-language model first
+    if (this.config.xlmRoberta && language !== 'en') {
+      try {
+        const analysis = await this.config.xlmRoberta.analyze(content);
+        return analysis.importance;
+      } catch (error) {
+        console.warn('XLM-RoBERTa failed, falling back to LLM');
+      }
+    }
+    
+    // Fallback to LLM if available
+    if (this.config.llm) {
+      return await this.config.llm.analyzeImportance(content, language);
+    }
+    
+    // Final fallback: Return neutral importance
+    return 0.5; // Neutral importance when analysis fails
+  }
+}
+```
 
-## Future Directions
+### Procedural Memory: Tool Usage Patterns
 
-### Context Window Evolution
-As context windows grow (100k → 1M tokens), memory systems will evolve:
-- Less emphasis on compression
-- More emphasis on organization
-- Quality over quantity selection
-- Vertical-specific relevance scoring
+```typescript
+// Procedural memory focuses on capturing successful tool usage patterns
+export interface ProceduralMemory extends Memory {
+  type: 'procedural';
+  toolSequence: ToolCall[];
+  successRate: number;
+  avgExecutionTime: number;
+  errorPatterns?: ErrorPattern[];
+  userContext?: string; // What the user was trying to achieve
+}
 
-### Multi-Agent Memory
-- Shared knowledge bases per vertical
-- Privacy-preserving aggregation
-- Collective learning from all users
-- Vertical-specific insights
+export interface ToolCall {
+  toolName: string;
+  parameters: any;
+  result: 'success' | 'failure';
+  executionTime: number;
+  userIntent?: string; // Captured user goal
+}
 
-## Implementation Roadmap
+export class ProceduralMemoryManager {
+  // Learn from successful tool usage patterns
+  async learnFromExecution(
+    agentId: string,
+    toolCalls: ToolCall[],
+    outcome: 'success' | 'failure',
+    userContext?: string
+  ): Promise<void> {
+    // Capture patterns that work for users
+    if (outcome === 'success') {
+      const pattern = this.extractPattern(toolCalls);
+      const existingPattern = await this.findSimilarPattern(agentId, pattern);
+      
+      if (existingPattern) {
+        // Update success metrics
+        existingPattern.successRate = 
+          (existingPattern.successRate * existingPattern.useCount + 1) / 
+          (existingPattern.useCount + 1);
+        existingPattern.useCount++;
+        
+        await this.storage.update(existingPattern);
+      } else if (toolCalls.length >= 2) {
+        // Save new successful pattern
+        await this.storage.save({
+          type: 'procedural',
+          agentId,
+          pattern,
+          successRate: 1,
+          useCount: 1,
+          toolSequence: toolCalls,
+          userContext: userContext || 'Tool usage pattern'
+        });
+      }
+    }
+    
+    // Also learn from failures to avoid them
+    if (outcome === 'failure' && toolCalls.length > 0) {
+      await this.captureFailurePattern(agentId, toolCalls, userContext);
+    }
+  }
+  
+  // Suggest optimal tool sequence based on past successes
+  async suggestToolSequence(
+    agentId: string,
+    task: string,
+    context?: MemoryContext
+  ): Promise<ToolCall[]> {
+    const patterns = await this.storage.searchPatterns(agentId, task);
+    
+    // Return highest success rate pattern that matches context
+    const bestPattern = patterns
+      .filter(p => p.successRate > 0.7)
+      .filter(p => this.matchesContext(p, context))
+      .sort((a, b) => b.successRate - a.successRate)[0];
+    
+    return bestPattern?.toolSequence || [];
+  }
+  
+  // Capture what users actually do that works
+  private async captureUserSuccess(
+    userId: string,
+    action: string,
+    result: any
+  ): Promise<void> {
+    // This is where we learn from actual user behavior
+    // Not abstract workflows, but real tool usage that worked
+    await this.storage.save({
+      type: 'user_success_pattern',
+      userId,
+      action,
+      result,
+      timestamp: new Date(),
+      context: await this.extractContext()
+    });
+  }
+}
 
-### Phase 1: Foundation (Q2 2025)
-- [x] Storage abstraction layer
-- [ ] Basic memory types implementation
-- [ ] Vertical configuration system
-- [ ] Simple importance scoring
+// Example: Learning that search → deep_research works better than direct deep_research
+const proceduralExample = {
+  type: 'procedural',
+  pattern: 'information_gathering',
+  toolSequence: [
+    { toolName: 'search', parameters: { query: '...' }, result: 'success', executionTime: 200 },
+    { toolName: 'deep_research', parameters: { topic: '...' }, result: 'success', executionTime: 3000 }
+  ],
+  successRate: 0.85,
+  useCount: 20
+};
+```
 
-### Phase 2: Vertical Optimization (Q3 2025)
-- [ ] Therapy agent memory
-- [ ] Legal agent memory
-- [ ] Education agent memory
-- [ ] Personal assistant memory
+### Customer Support Memory
+```typescript
+// Customer: "My order hasn't arrived yet, it's been 2 weeks"
+// Without Memory: "Can you provide your order number?"
+// With Memory: "I see your order #98765 placed on June 3rd, 2025. Let me check the shipping status - it shows delayed at customs. I'll escalate this to our shipping team immediately."
 
-### Phase 3: Advanced Features (Q4 2025)
-- [ ] Progressive summarization
-- [ ] Smart context selection
-- [ ] Performance benchmarks
-- [ ] Production optimizations
+const supportMemory: Memory = {
+  type: 'episodic',
+  content: 'Customer placed order #98765 for wireless headphones',
+  timestamp: new Date('2025-06-03'),
+  importance: 0.9,
+  metadata: {
+    customerId: 'cust_12345',
+    orderId: '98765',
+    orderValue: 149.99,
+    productType: 'electronics',
+    shippingMethod: 'international'
+  }
+};
 
-### Phase 4: Next Generation (2026)
-- [ ] Multi-agent knowledge sharing
-- [ ] Advanced vertical patterns
-- [ ] Automated memory evolution 
+// System also learns from support patterns
+const supportPattern: ProceduralMemory = {
+  type: 'procedural',
+  pattern: 'delayed_shipping_resolution',
+  toolSequence: [
+    { toolName: 'check_order_status', result: 'success', executionTime: 100 },
+    { toolName: 'identify_delay_reason', result: 'success', executionTime: 150 },
+    { toolName: 'create_support_ticket', result: 'success', executionTime: 80 },
+    { toolName: 'send_customer_update', result: 'success', executionTime: 50 }
+  ],
+  successRate: 0.92,
+  userContext: 'Customer inquiring about delayed international shipment'
+};
+```
+
+## Storage Backend Support
+
+**Note**: This implementation depends on the storage abstraction layer ([PR #211](https://github.com/AgentDock/AgentDock/pull/211)) being finalized and merged first.
+
+### Development
+- **SQLite + sqlite-vec**: Local development with vector support
+- **PostgreSQL + pgvector**: Self-hosted with full features
+
+### Production
+- **PostgreSQL + pgvector**: Primary choice (NOT Redis for chat history)
+- **Supabase**: Managed PostgreSQL with pgvector
+- **MongoDB**: With vector search
+- **Pinecone/Qdrant**: Dedicated vector databases
+
+## Performance Benefits
+
+Based on academic research and industry implementations:
+- **Improved recall accuracy** through semantic search
+- **Reduced latency** via compact summaries
+- **Lower token usage** through intelligent selection
+- **Better task completion** with procedural patterns
+- **Extended conversation coherence** beyond 300 turns
+
+## Future Research Directions
+
+### Academic Papers
+- [MemGPT: Towards LLMs as Operating Systems](https://arxiv.org/abs/2310.08560)
+- [Reflexion: Language Agents with Verbal Reinforcement Learning](https://arxiv.org/abs/2303.11366)
+- [Voyager: An Open-Ended Embodied Agent](https://arxiv.org/abs/2305.16291)
+
+### Industry Research
+- [Anthropic's Constitutional AI and Memory Safety](https://www.anthropic.com/index/constitutional-ai-harmlessness-from-ai-feedback)
+- [OpenAI's WebGPT with Long-term Memory](https://openai.com/research/webgpt)
+- [Google's LaMDA Memory Architecture](https://arxiv.org/abs/2201.08239)
+
+### Emerging Directions
+- Hierarchical memory representations
+- Multimodal memory (text + images + audio)
+- On-device memory for privacy
+- Federated memory learning
+- Quantum-inspired memory architectures
+
+## Real-World Examples
+
+### Customer Support Memory
+```typescript
+// Customer: "I called last week about my refund"
+// Without Memory: "I don't have any record of previous calls"
+// With Memory: "Yes, I see you called on March 15th about order #12345. The refund was processed on March 17th."
+
+const supportMemory: Memory = {
+  type: 'episodic',
+  content: 'Customer called about refund for order #12345',
+  timestamp: new Date('2024-03-15'),
+  importance: 0.8,
+  metadata: {
+    orderId: '12345',
+    issueType: 'refund',
+    resolved: true,
+    resolutionDate: '2024-03-17'
+  }
+};
+```
+
+### Educational Tutor Memory
+```typescript
+// Student: "Can we review what we learned about photosynthesis?"
+// With Semantic Memory: Recalls consolidated facts from multiple sessions
+
+const educationMemory: Memory = {
+  type: 'semantic',
+  content: 'Student struggles with the light-dependent reactions in photosynthesis',
+  importance: 0.9,
+  consolidatedFrom: ['episode-1', 'episode-2', 'episode-3'],
+  metadata: {
+    subject: 'biology',
+    topic: 'photosynthesis',
+    difficulty: 'light-dependent reactions',
+    masteryLevel: 0.6
+  }
+};
+```
+
+### Developer Assistant Memory
+```typescript
+// Developer: "Use the same error handling pattern as last time"
+// With Procedural Memory: Applies previously successful pattern
+
+const developerMemory: ProceduralMemory = {
+  type: 'procedural',
+  pattern: 'error_handling_setup',
+  toolSequence: [
+    { toolName: 'analyze_code', parameters: { file: 'api.ts' }, result: 'success', executionTime: 100 },
+    { toolName: 'generate_error_handler', parameters: { style: 'try-catch-finally' }, result: 'success', executionTime: 50 },
+    { toolName: 'add_logging', parameters: { level: 'error' }, result: 'success', executionTime: 30 }
+  ],
+  successRate: 0.95,
+  avgExecutionTime: 180
+};
+```
+
+## Conclusion
+
+The AgentDock memory system provides a flexible, human-like approach to agent memory that:
+- Works across any HTTP framework through adapters
+- Uses rule-based triggers to avoid unnecessary processing
+- Provides configurable decay for different verticals
+- Focuses on practical tool usage patterns rather than abstract workflows
+- Maintains efficiency through compact summaries and token awareness
+
+By combining insights from cognitive science with practical engineering, we create agents that truly remember and improve over time. 

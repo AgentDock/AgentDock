@@ -175,7 +175,7 @@ runAgent().catch(console.error);
 *   **Aggregate and Store Results**: Normalize scores, calculate weighted averages, and persist results using `EvaluationStorageProvider` implementations (e.g., `JsonFileStorageProvider`).
 *   **Extend with Custom Logic**: Easily create and integrate custom evaluators and storage providers.
 
-This framework is essential for building reliable, high-quality agents by enabling data-driven insights into their performance. Refer to the [full Evaluation Framework documentation](../../docs/evaluations/README.md) for detailed usage and API information.
+This framework is essential for building reliable, high-quality agents by enabling data-driven insights into their performance. Refer to the [full Evaluation Framework documentation](../docs/evaluations/README.md) for detailed usage and API information.
 
 ## Contributing to AgentDock Core
 

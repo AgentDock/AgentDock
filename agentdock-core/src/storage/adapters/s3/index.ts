@@ -271,19 +271,32 @@ export class S3Adapter extends BaseStorageAdapter {
    * Create a namespaced instance
    */
   withNamespace(namespace: string): S3Adapter {
+    // Ensure the adapter is initialized before creating namespaced instance
+    if (!this.isInitialized) {
+      throw new Error(
+        'S3Adapter must be initialized before creating namespaced instances'
+      );
+    }
+
+    // Get the current connection safely
+    const connection = this.connectionManager.getCurrentConnection();
+    if (!connection) {
+      throw new Error('S3Adapter connection is not available');
+    }
+
     const adapter = Object.create(this);
     adapter.namespace = namespace;
 
     // Re-initialize operations with new namespace
     adapter.kvOps = new S3KVOperations(
-      this.connectionManager['connection']!,
+      connection,
       this.keyManager,
       this.ttlManager,
       namespace
     );
 
     adapter.batchOps = new S3BatchOperations(
-      this.connectionManager['connection']!,
+      connection,
       this.keyManager,
       this.ttlManager,
       namespace

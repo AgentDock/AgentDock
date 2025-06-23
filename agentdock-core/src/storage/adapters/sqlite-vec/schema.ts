@@ -39,7 +39,6 @@ export async function initializeSqliteVec(
         break;
       } catch (err) {
         // Try next path
-        continue;
       }
     }
 

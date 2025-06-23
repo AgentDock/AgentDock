@@ -8,7 +8,7 @@ Storage adapters provide database-specific implementations of the storage abstra
 
 Each adapter is organized into focused modules:
 
-```
+```text
 adapter-name/
 ├── index.ts              # Main adapter class (delegates to operations)
 ├── connection.ts         # Connection/pool management
@@ -130,7 +130,7 @@ export class SQLiteAdapter extends BaseStorageAdapter {
 
 Each module should have corresponding tests:
 
-```
+```text
 adapter-name/
 ├── __tests__/
 │   ├── connection.test.ts
@@ -268,33 +268,3 @@ try {
 
 #### Cloudflare D1 Adapter
 - **Module**: `cloudflare-d1/`
-- **Use Case**: Edge SQL database
-- **Features**: SQLite-compatible, Workers integration
-- **External Dependency**: Cloudflare Workers runtime
-
-### Vector Database Adapters
-
-#### Pinecone Adapter
-- **Module**: `pinecone/`
-- **Use Case**: Managed vector database for AI applications
-- **Features**: Similarity search, metadata filtering, namespaces
-- **External Dependency**: `@pinecone-database/pinecone`
-
-#### Qdrant Adapter
-- **Module**: `qdrant/`
-- **Use Case**: Open-source vector database
-- **Features**: Rich filtering, payload storage, batch operations
-- **External Dependency**: HTTP client (built-in)
-
-#### ChromaDB Adapter
-- **Module**: `chromadb/`
-- **Use Case**: Open-source embedding database
-- **Features**: Multi-modal embeddings, metadata filtering
-- **External Dependency**: `chromadb`
-
-### Summary
-
-**Total Adapters**: 15 (including 3 built-in providers)
-- **Built-in Providers**: Memory, Redis, Vercel KV (in `/providers`)
-- **Storage Adapters**: 12 database/cloud adapters (in `/adapters`)
-- **Vector-capable**: 5 adapters (SQLite-vec, PostgreSQL Vector, Pinecone, Qdrant, ChromaDB) 

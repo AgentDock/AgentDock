@@ -227,13 +227,21 @@ export class SQLiteVecAdapter
     collection: string,
     vectors: VectorData[]
   ): Promise<void> {
-    // For simplicity, we'll update existing and insert new
-    const existingIds = await Promise.all(
-      vectors.map((v) => this.getVector(collection, v.id))
-    );
+    // Batch check for existing vectors
+    const connection = await this.getVectorConnection();
+    const vectorIds = vectors.map((v) => v.id);
 
-    const toUpdate = vectors.filter((_, i) => existingIds[i] !== null);
-    const toInsert = vectors.filter((_, i) => existingIds[i] === null);
+    // Batch check for existing vectors
+    const placeholders = vectorIds.map(() => '?').join(',');
+    const existingRows = connection.db
+      .prepare(
+        `SELECT id FROM vec_vectors WHERE collection = ? AND id IN (${placeholders})`
+      )
+      .all(collection, ...vectorIds) as Array<{ id: string }>;
+
+    const existingIdSet = new Set(existingRows.map((row) => row.id));
+    const toUpdate = vectors.filter((v) => existingIdSet.has(v.id));
+    const toInsert = vectors.filter((v) => !existingIdSet.has(v.id));
 
     if (toUpdate.length > 0) {
       await this.updateVectors(collection, toUpdate);

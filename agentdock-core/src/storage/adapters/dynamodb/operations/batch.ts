@@ -158,13 +158,10 @@ export class BatchOperations {
 
       // Handle TTL from options
       let ttl: number | undefined;
-      if (options && typeof options === 'object' && 'ttl' in options) {
-        const ttlValue = (options as any).ttl;
-        if (typeof ttlValue === 'number') {
-          // Import TTLManager for static method
-          const { TTLManager } = await import('../../../utils/ttl-manager');
-          ttl = TTLManager.calculateExpiration(ttlValue);
-        }
+      if (options?.ttlSeconds && typeof options.ttlSeconds === 'number') {
+        // Import TTLManager for static method
+        const { TTLManager } = await import('../../../utils/ttl-manager');
+        ttl = TTLManager.calculateExpiration(options.ttlSeconds);
       }
 
       for (let i = 0; i < entries.length; i += batchSize) {

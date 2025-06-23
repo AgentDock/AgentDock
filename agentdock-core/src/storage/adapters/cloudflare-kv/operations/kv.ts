@@ -48,7 +48,10 @@ export class KVOperations {
         // Handle different types based on metadata
         if (
           result.metadata?.type === 'string' &&
-          typeof result.value === 'object'
+          typeof result.value === 'object' &&
+          result.value !== null &&
+          '_type' in result.value &&
+          result.value._type === 'string'
         ) {
           return result.value.value as T;
         }

@@ -584,6 +584,10 @@ const supportPattern: ProceduralMemory = {
 
 **Note**: This implementation depends on the storage abstraction layer ([PR #211](https://github.com/AgentDock/AgentDock/pull/211)) being finalized and merged first.
 
+### Officially Supported for Memory
+- **SQLite + sqlite-vec**: Local development with vector support (zero dependencies)
+- **PostgreSQL + pgvector**: Production-ready with full vector capabilities
+
 ### Development
 - **SQLite + sqlite-vec**: Local development with vector support
 - **PostgreSQL + pgvector**: Self-hosted with full features
@@ -591,8 +595,11 @@ const supportPattern: ProceduralMemory = {
 ### Production
 - **PostgreSQL + pgvector**: Primary choice (NOT Redis for chat history)
 - **Supabase**: Managed PostgreSQL with pgvector
-- **MongoDB**: With vector search
-- **Pinecone/Qdrant**: Dedicated vector databases
+
+### Optional Adapters (Not Officially Supported for Memory)
+- **MongoDB**: Basic KV only, no native vector search in our adapter
+- **Pinecone/Qdrant**: Alternative vector databases if needed
+- **Redis**: Session caching only, not for persistent memory
 
 ## Performance Benefits
 

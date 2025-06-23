@@ -193,6 +193,16 @@ export async function registerPostgreSQLVectorAdapter(
  * Registers the MongoDB adapter
  *
  * @param factory - Storage factory instance
+ *
+ * @note MongoDB adapter is OPTIONAL and not included in the default agent chat setup.
+ *       For memory systems, we officially support:
+ *       - SQLite + sqlite-vec (development)
+ *       - PostgreSQL + pgvector (production)
+ *
+ *       MongoDB can be used for basic KV storage but lacks native vector search.
+ *       MongoDB Atlas offers vector search as a separate service, but it's not
+ *       implemented in this adapter. Users requiring MongoDB should understand
+ *       these limitations.
  */
 export async function registerMongoDBAdapter(
   factory: StorageFactory
@@ -411,6 +421,14 @@ export async function registerVectorAdapters(
  *
  * @param factory - Storage factory instance
  * @param options - Registration options
+ *
+ * @note This registers ONLY the officially supported adapters for AgentDock memory:
+ *       - SQLite/SQLite-vec for development (zero external dependencies)
+ *       - PostgreSQL/PostgreSQL-Vector for production (single database solution)
+ *
+ *       Other adapters (MongoDB, S3, DynamoDB, etc.) are available but must be
+ *       registered separately using their specific registration functions.
+ *       They are NOT part of the official memory system support.
  */
 export async function registerAgentChatAdapters(
   factory: StorageFactory,

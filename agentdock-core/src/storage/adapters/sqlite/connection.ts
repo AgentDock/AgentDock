@@ -108,15 +108,11 @@ export class SQLiteConnectionManager extends BaseConnectionManager<
 }
 
 // Export convenience functions for backward compatibility
-export function createConnection(
+export async function createConnection(
   options: SQLiteAdapterOptions = {}
-): SQLiteConnection {
+): Promise<SQLiteConnection> {
   const manager = new SQLiteConnectionManager(options);
-  // This is synchronous for SQLite, so we can use a workaround
-  let conn: SQLiteConnection | undefined;
-  manager.getConnection().then((c) => (conn = c));
-  // SQLite connection is synchronous, so conn should be set immediately
-  return conn!;
+  return await manager.getConnection();
 }
 
 export async function closeConnection(

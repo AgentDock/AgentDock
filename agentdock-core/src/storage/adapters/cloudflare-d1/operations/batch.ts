@@ -242,18 +242,74 @@ export class BatchOperations {
   }
 
   /**
-   * Get all key-value pairs with a given prefix
-   * Useful for backup/restore operations
+   * Get all key-value pairs with a given prefix (legacy method)
+   * Warning: This method fetches all records and may cause memory issues with large datasets
+   * @deprecated Use getAllWithPrefixPaginated instead
    */
-  async getAllWithPrefix<T>(
+  async getAllWithPrefixLegacy<T>(
     prefix: string,
     options?: StorageOptions
   ): Promise<Record<string, T>> {
+    const allData: Record<string, T> = {};
+    let cursor: string | undefined;
+
+    do {
+      const result = await this.getAllWithPrefix<T>(prefix, {
+        ...options,
+        cursor,
+        limit: 1000
+      });
+
+      Object.assign(allData, result.data);
+      cursor = result.nextCursor;
+    } while (cursor);
+
+    return allData;
+  }
+
+  /**
+   * Get all key-value pairs with a given prefix
+   * Supports pagination to prevent memory overload on large datasets
+   */
+  async getAllWithPrefix<T>(
+    prefix: string,
+    options?: StorageOptions & {
+      limit?: number;
+      offset?: number;
+      cursor?: string;
+    }
+  ): Promise<{
+    data: Record<string, T>;
+    hasMore: boolean;
+    nextCursor?: string;
+    total?: number;
+  }> {
     const namespace = this.getNamespace(options);
     const now = Date.now();
     const escapedPrefix = this.escapeSqlWildcards(prefix);
+    const limit = options?.limit || 1000; // Default limit of 1000 records
+    const offset = options?.cursor
+      ? parseInt(options.cursor, 10)
+      : options?.offset || 0;
 
     try {
+      // First, get total count
+      const countResult = await this.connection.db
+        .prepare(
+          `
+        SELECT COUNT(*) as total
+        FROM ${this.connection.kvTableName} 
+        WHERE namespace = ? 
+          AND key LIKE ?
+          AND (expires_at IS NULL OR expires_at > ?)
+      `
+        )
+        .bind(namespace, `${escapedPrefix}%`, now)
+        .first<{ total: number }>();
+
+      const total = countResult?.total || 0;
+
+      // Then get paginated results
       const result = await this.connection.db
         .prepare(
           `
@@ -263,9 +319,11 @@ export class BatchOperations {
           AND key LIKE ?
           AND (expires_at IS NULL OR expires_at > ?)
         ORDER BY key
+        LIMIT ?
+        OFFSET ?
       `
         )
-        .bind(namespace, `${escapedPrefix}%`, now)
+        .bind(namespace, `${escapedPrefix}%`, now, limit, offset)
         .all<D1KVRow>();
 
       const resultMap: Record<string, T> = {};
@@ -290,13 +348,25 @@ export class BatchOperations {
         }
       }
 
+      const hasMore = offset + limit < total;
+      const nextCursor = hasMore ? String(offset + limit) : undefined;
+
       logger.debug(LogCategory.STORAGE, 'CloudflareD1', 'Got all with prefix', {
         prefix,
         namespace,
-        count: Object.keys(resultMap).length
+        count: Object.keys(resultMap).length,
+        limit,
+        offset,
+        total,
+        hasMore
       });
 
-      return resultMap;
+      return {
+        data: resultMap,
+        hasMore,
+        nextCursor,
+        total
+      };
     } catch (error) {
       logger.error(
         LogCategory.STORAGE,

@@ -88,7 +88,7 @@ export async function fetchCryptoPrice(
   const key = apiKey || process.env.COINGECKO_API_KEY || '';
 
   // Build API URL - for free tier we don't need to include the API key
-  let url = `${COINGECKO_API_BASE_URL}/coins/markets?vs_currency=${currency}&ids=${formattedId}&order=market_cap_desc&per_page=1&page=1&sparkline=false&price_change_percentage=24h`;
+  const url = `${COINGECKO_API_BASE_URL}/coins/markets?vs_currency=${currency}&ids=${formattedId}&order=market_cap_desc&per_page=1&page=1&sparkline=false&price_change_percentage=24h`;
 
   // If API key is provided, use it (for Pro tier)
   if (key) {

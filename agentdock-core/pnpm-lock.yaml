@@ -47,6 +47,9 @@ importers:
       string-comparisons:
         specifier: ^0.0.20
         version: 0.0.20
+      zod:
+        specifier: ^3.24.1
+        version: 3.25.67
     devDependencies:
       '@aws-sdk/client-dynamodb':
         specifier: ^3.830.0

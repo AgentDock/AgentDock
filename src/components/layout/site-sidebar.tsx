@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/ui/logo';
 import { AGENT_TAGS } from '@/config/agent-tags';
 import { cn } from '@/lib/utils';
-import { useSidebar } from './layout-content';
+import { useSidebar } from './sidebar-context';
 
 interface NavigationItemData {
   name: string;

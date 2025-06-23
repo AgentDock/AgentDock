@@ -529,7 +529,7 @@ export const deepResearchTool: Tool = {
 
     let searchResult = '';
     let deepContent = '';
-    let sources: Array<{ title: string; url: string }> = [];
+    const sources: Array<{ title: string; url: string }> = [];
     let scrapingWasRateLimited = false;
     let scrapingFailedCompletely = false;
 

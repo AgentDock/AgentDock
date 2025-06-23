@@ -1,3 +1,54 @@
+# Storage System Overview
+
+AgentDock Core provides a flexible and extensible storage abstraction layer designed to handle various data persistence needs. This abstraction layer enables switching between different storage backends without changing application code.
+
+## Core Concepts
+
+-   **Abstraction:** A primary goal is to abstract the underlying storage mechanism, allowing developers to choose the backend that best fits their deployment needs (e.g., in-memory for development, Redis for scalable deployments, Vercel KV for Vercel hosting).
+-   **Purpose-Driven Configuration:** Different types of data (Key-Value, Vector, Relational) will ideally be configurable with distinct providers based on their requirements (e.g., using Redis for session KV and pgvector for Vector storage).
+-   **Session Scoping:** Much of the core storage usage revolves around managing session-specific data with appropriate isolation and lifecycle management (TTL).
+-   **Security:** Includes components like `SecureStorage` for handling sensitive data client-side.
+
+## Key Components (`agentdock-core/src/storage`)
+
+1.  **Storage Abstraction Layer (SAL):**
+    -   **Interface (`StorageProvider`):** Defines the standard contract for Key-Value storage operations (`get`, `set`, `delete`, `exists`, etc.).
+    -   **Factory (`StorageFactory`, `getStorageFactory`):** Instantiates the configured `StorageProvider` based on environment variables (`KV_STORE_PROVIDER`, `REDIS_URL`, etc.). Manages provider instances.
+    -   **Implementations (`/providers` and `/adapters`):**
+        -   `MemoryStorageProvider`: Default in-memory KV store.
+        -   `RedisStorageProvider`: Uses `@upstash/redis` for Redis/Upstash KV storage.
+        -   `VercelKVProvider`: Uses `@vercel/kv` for Vercel KV storage.
+        -   Plus 12 additional adapters for various backends (SQLite, PostgreSQL, MongoDB, S3, etc.)
+    -   **Vector Support:** PostgreSQL Vector, Pinecone, Qdrant, ChromaDB, and SQLite-vec for AI/embeddings.
+
+2.  **Secure Storage (`SecureStorage`):**
+    -   A separate utility class designed for **client-side (browser)** secure storage.
+    -   Uses the Web Crypto API (AES-GCM) for encryption and HMAC for integrity checking.
+    -   Typically used for storing sensitive browser-side data like user-provided API keys in `localStorage`.
+    -   **Note:** This is distinct from the server-side Storage Abstraction Layer used by `SessionManager`, etc.
+
+## Integration with Other Subsystems
+
+-   **Session Management:** `SessionManager` relies *directly* on the SAL (`StorageProvider` via `StorageFactory`) to persist session state.
+-   **Orchestration Framework:** `OrchestrationStateManager` uses `SessionManager`, thus indirectly depending on the SAL for persisting orchestration state.
+-   **Advanced Memory / RAG:** Vector storage adapters (pgvector, Pinecone, etc.) are ready for AI memory implementation.
+
+## Current Status & Usage
+
+-   The Key-Value part of the Storage Abstraction Layer is implemented and stable, supporting 15 different adapters.
+-   This KV storage is actively used by `SessionManager` and `OrchestrationStateManager` for persistence when configured (defaults to Memory).
+-   `SecureStorage` is available for client-side use cases.
+-   Vector storage abstractions are implemented and ready for AI memory features.
+
+## Further Reading
+
+Dive deeper into specific storage aspects:
+
+-   [Getting Started Guide](./getting-started.md)
+-   [Storage Abstraction Layer (Roadmap)](../roadmap/storage-abstraction.md) - Implementation completed Q2 2025
+-   [Advanced Memory Systems (Roadmap)](../roadmap/advanced-memory.md)
+-   [Session Management](../architecture/sessions/session-management.md) (Details usage of storage)
+
 # Storage Abstraction Layer
 
 AgentDock provides a unified storage interface that allows you to switch between different storage backends without changing your application code.

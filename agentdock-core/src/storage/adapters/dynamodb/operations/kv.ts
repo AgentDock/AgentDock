@@ -173,7 +173,9 @@ export class KVOperations {
       const pk = `ns#${namespace}`;
 
       const items: string[] = [];
-      let lastEvaluatedKey: any;
+      let lastEvaluatedKey:
+        | Record<string, import('@aws-sdk/client-dynamodb').AttributeValue>
+        | undefined;
 
       do {
         const command = new QueryCommand({

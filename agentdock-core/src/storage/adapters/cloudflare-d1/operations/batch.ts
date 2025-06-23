@@ -39,7 +39,10 @@ export class BatchOperations {
    * Escape SQL wildcard characters in a string
    */
   private escapeSqlWildcards(str: string): string {
-    return str.replace(/[_%]/g, '\\$&');
+    // First escape backslashes, then escape wildcards
+    return str
+      .replace(/\\/g, '\\\\') // Escape backslashes first
+      .replace(/[_%]/g, '\\$&'); // Then escape wildcards
   }
 
   /**

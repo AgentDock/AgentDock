@@ -1,166 +1,123 @@
 # Storage Setup Guide
 
-## Overview
+## Quick Start
 
-AgentDock uses a storage abstraction layer that supports multiple providers. This guide covers setting up storage adapters for development and production environments.
-
-## Local Development
-
-### Default Configuration
-
-By default, local development uses SQLite:
+### Local Development
 
 ```bash
+# Run the application
 pnpm dev
+
+# Storage configuration:
+# - SQLite adapter auto-registered
+# - Database created at ./agentdock.db
+# - Sessions persist across server restarts
 ```
 
-This automatically configures:
-- SQLite database at `./agentdock.db`
-- Memory storage provider for ephemeral data
-- SQLite-vec for vector operations (if extension available)
+**No .env.local configuration required for local storage.**
 
-No environment configuration required for basic development.
+### Production with PostgreSQL/Supabase
 
-### Advanced Local Setup
+#### Step 1: Database Setup
+Choose a PostgreSQL provider:
+- Supabase (managed PostgreSQL)
+- Neon
+- Railway
+- Self-hosted PostgreSQL 15+
 
-For vector search capabilities in development:
-
+#### Step 2: Configure Environment
+Add to `.env.local`:
 ```bash
-# Enable SQLite with vector extension
-ENABLE_SQLITE_VEC=true
+DATABASE_URL=postgresql://postgres:[PASSWORD]@db.[PROJECT-ID].supabase.co:5432/postgres
+ENABLE_PGVECTOR=true  # Optional: for vector operations
+KV_STORE_PROVIDER=postgresql
 ```
 
-## Production Configuration
+#### Step 3: Enable Vector Extension (Optional)
+For vector search capabilities:
+```sql
+CREATE EXTENSION IF NOT EXISTS vector;
+```
 
-### PostgreSQL (Recommended)
-
-PostgreSQL is the recommended production storage provider.
-
-#### Supabase Setup
-
-1. Create a Supabase project at [supabase.com](https://supabase.com)
-2. Enable the vector extension:
-   ```sql
-   CREATE EXTENSION IF NOT EXISTS vector;
-   ```
-3. Configure environment variables:
-   ```bash
-   DATABASE_URL=postgresql://postgres:[password]@db.[project-id].supabase.co:5432/postgres
-   ENABLE_PGVECTOR=true
-   KV_STORE_PROVIDER=postgresql
-   ```
-
-#### Self-Hosted PostgreSQL
-
-Requirements:
-- PostgreSQL 15+
-- pgvector extension installed
-
-Configuration:
+#### Step 4: Deploy
 ```bash
-DATABASE_URL=postgresql://user:password@host:port/database
+pnpm build
+pnpm start
+```
+
+**Current capabilities with this setup:**
+- Session state persistence
+- Storage API with PostgreSQL backend
+- Vector operations (if pgvector enabled)
+
+**Not yet implemented:**
+- Server-side message persistence (messages remain in browser localStorage)
+- User authentication system
+- AI memory implementation
+
+## Configuration Examples
+
+### Minimal Local Development
+```bash
+# No storage configuration needed
+# SQLite is automatically enabled in development
+```
+
+### Production with PostgreSQL
+```bash
+# PostgreSQL connection
+DATABASE_URL=postgresql://postgres:password@host:5432/database
 ENABLE_PGVECTOR=true
 KV_STORE_PROVIDER=postgresql
 ```
 
-### Vercel KV
+## Common Questions
 
-For Vercel deployments, Vercel KV is automatically configured when added via the Vercel dashboard. No additional configuration required.
+### Do I need Redis?
+No. PostgreSQL can handle session storage directly. Redis is optional for caching.
 
-## Optional Storage Adapters
+### Do I need MongoDB?
+No. MongoDB is not recommended for the memory system. Use PostgreSQL or SQLite.
 
-The following adapters require explicit registration and are not part of the core auto-registration:
+### What about Vercel deployments?
+Options:
+- Use external PostgreSQL (Supabase, Neon)
+- Use Vercel KV (auto-configured when added via Vercel dashboard)
 
-### MongoDB
+### Data not persisting locally?
+Ensure you're running `pnpm dev` which enables SQLite automatically.
 
-MongoDB is optional and not officially supported for the memory system.
+### Can I use my own PostgreSQL?
+Yes. Any PostgreSQL 15+ instance works. Add pgvector extension for vector operations.
 
+## Using Additional Storage Adapters
+
+Most applications don't need additional adapters. For specific requirements:
+
+### Step 1: Configure Environment
 ```bash
-# Enable in environment
+# Example: MongoDB (not recommended for memory)
 ENABLE_MONGODB=true
 MONGODB_URI=mongodb://localhost:27017/agentdock
-
-# Register in API route
-import { getStorageFactory, registerMongoDBAdapter } from 'agentdock-core/storage';
-
-const factory = getStorageFactory();
-await registerMongoDBAdapter(factory);
 ```
 
-### S3-Compatible Storage
+### Step 2: Register in API Route
+```typescript
+// app/api/route.ts
+import { getStorageFactory } from 'agentdock-core';
+import { registerMongoDBAdapter } from 'agentdock-core/storage';
 
-For file storage using S3 or compatible services:
-
-```bash
-ENABLE_S3=true
-S3_ENDPOINT=https://s3.amazonaws.com
-S3_REGION=us-east-1
-S3_ACCESS_KEY_ID=your-key
-S3_SECRET_ACCESS_KEY=your-secret
-S3_BUCKET=agentdock-storage
+export async function POST(req: Request) {
+  const factory = getStorageFactory();
+  await registerMongoDBAdapter(factory);
+  
+  const storage = factory.getProvider({ type: 'mongodb' });
+  // Use storage...
+}
 ```
 
-### Additional Adapters
+## Summary
 
-Refer to the [Storage Documentation](./README.md) for configuration details on:
-- Cloudflare KV/D1/R2
-- Azure Table/Blob Storage
-- Google Cloud Storage/Firestore
-- DynamoDB
-- ChromaDB
-- Pinecone
-- Qdrant
-
-## Storage Initialization
-
-The application automatically registers necessary adapters based on environment configuration:
-
-1. **Core Auto-Registration** (at factory level):
-   - Memory (always available)
-   - Redis (if REDIS_URL configured)
-   - Vercel KV (if Vercel environment detected)
-
-2. **Application Auto-Registration** (in API routes):
-   - SQLite (development or ENABLE_SQLITE=true)
-   - SQLite-vec (development or ENABLE_SQLITE_VEC=true)
-   - PostgreSQL (if DATABASE_URL configured)
-   - PostgreSQL Vector (if ENABLE_PGVECTOR=true)
-
-3. **Manual Registration Required**:
-   - MongoDB
-   - All cloud storage providers (S3, Azure, GCS, etc.)
-   - All vector databases (ChromaDB, Pinecone, Qdrant)
-
-## Environment Variables Reference
-
-### Core Storage Configuration
-
-```bash
-# Development
-ENABLE_SQLITE=true           # Enable SQLite (auto-enabled in dev)
-ENABLE_SQLITE_VEC=true       # Enable SQLite vector extension
-
-# Production - PostgreSQL
-DATABASE_URL=postgresql://...
-ENABLE_PGVECTOR=true
-KV_STORE_PROVIDER=postgresql
-
-# Production - Redis
-REDIS_URL=redis://...
-REDIS_TOKEN=...              # For Upstash Redis
-
-# Optional Adapters
-ENABLE_MONGODB=true
-MONGODB_URI=mongodb://...
-```
-
-For complete environment variable reference, see `.env.example`.
-
-## Implementation Notes
-
-The storage abstraction layer provides interfaces for:
-- Key-value storage
-- Session management
-- Vector operations (for future memory system implementation)
-
-**Note**: Advanced features like persistent chat history, AI memory, and automatic backups are planned but not yet implemented. The current implementation provides the foundation for these features. 
+- **Local Development**: SQLite auto-configured
+- **Production**: PostgreSQL recommended
+- **Additional adapters**: Available but require manual registration 

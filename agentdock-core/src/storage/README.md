@@ -2,24 +2,72 @@
 
 The storage abstraction provides a unified interface for key-value storage across different backends, enabling AgentDock to work with various storage providers from local development to production deployments.
 
+## Quick Start: Step-by-Step Setup
+
+### For Local Development (SQLite - Persistent Storage)
+
+**Step 1: No configuration needed!**
+```bash
+# Just run the app - SQLite is auto-enabled in development
+pnpm dev
+```
+
+That's it! Your data is automatically saved to `./agentdock.db`
+
+### For Production (Supabase/PostgreSQL)
+
+**Step 1: Get your Supabase database URL**
+- Go to [supabase.com](https://supabase.com)
+- Create a project
+- Go to Settings → Database
+- Copy your connection string
+
+**Step 2: Add to your .env.local**
+```bash
+# Add these lines to .env.local
+DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.[YOUR-PROJECT].supabase.co:5432/postgres
+ENABLE_PGVECTOR=true
+KV_STORE_PROVIDER=postgresql
+```
+
+**Step 3: Enable pgvector in Supabase**
+```sql
+-- Run this in Supabase SQL editor
+CREATE EXTENSION IF NOT EXISTS vector;
+```
+
+**Step 4: Deploy**
+```bash
+pnpm build
+pnpm start
+```
+
 ## Current Providers
 
-### Production Ready
-- **SQLite** (default) - Zero-config local storage with file persistence
-- **PostgreSQL** - Production-ready with ACID compliance and connection pooling
-- **MongoDB** - Document-based NoSQL storage with native TTL support
-- **Memory** - In-memory storage for development and testing
-- **Redis** - Distributed caching and session storage  
-- **Vercel KV** - For Vercel deployments
+### Core Adapters (Always Available)
+These adapters are built into the core package:
 
-### Additional Providers
+- **Memory** - In-memory storage (default, non-persistent)
+- **Redis** - Distributed caching via Upstash client
+- **Vercel KV** - Vercel's KV storage
 
-Currently implemented:
+### Auto-Registered by App
+These adapters are automatically registered by the app when conditions are met:
+
+- **SQLite** - Auto-registered when `NODE_ENV=development` or `ENABLE_SQLITE=true`
+- **SQLite-vec** - Auto-registered when `NODE_ENV=development` or `ENABLE_SQLITE_VEC=true`
+- **PostgreSQL** - Auto-registered when `DATABASE_URL` is set
+- **PostgreSQL Vector** - Auto-registered when `DATABASE_URL` is set and `ENABLE_PGVECTOR=true`
+
+### Additional Providers (Not Auto-registered)
+
+To keep the build size small, these adapters are available but not automatically registered. You can manually register them if needed:
+
+- **MongoDB** - Document-based NoSQL storage (optional, enable with `ENABLE_MONGODB=true`)
 - **S3** - Object storage for large files and backups
 - **DynamoDB** - AWS serverless NoSQL database
 - **Cloudflare KV** - Edge key-value storage
 - **Cloudflare D1** - Edge SQL database
-- **PostgreSQL Vector** - pgvector extension for embeddings
 - **Pinecone** - Managed vector database
 - **Qdrant** - Open-source vector database
 - **ChromaDB** - Open-source embeddings database
@@ -111,29 +159,176 @@ const mongoStorage = getStorageFactory().getProvider({
 });
 ```
 
+## Environment Variables
+
+### Officially Supported Storage (Auto-registered in App)
+
+```bash
+# SQLite - Local Development (Enabled by default in development)
+ENABLE_SQLITE=true              # Enable SQLite adapter
+ENABLE_SQLITE_VEC=true          # Enable SQLite with vector search
+SQLITE_PATH=./agentdock.db      # Optional: Custom database path
+
+# PostgreSQL - Production (Enabled when DATABASE_URL is set)
+DATABASE_URL=postgresql://user:password@localhost:5432/agentdock
+ENABLE_PGVECTOR=true            # Enable pgvector extension for AI memory
+```
+
+### Key-Value Storage Selection
+
+```bash
+# Choose your KV storage provider (default: memory)
+KV_STORE_PROVIDER=memory        # Options: memory, redis, vercel-kv, sqlite, postgresql
+
+# Redis Configuration
+REDIS_URL=http://localhost:8079
+REDIS_TOKEN=your-token          # Optional
+
+# Vercel KV (auto-configured on Vercel)
+KV_URL=...
+KV_REST_API_URL=...
+KV_REST_API_TOKEN=...
+```
+
+### Optional Storage Adapters
+
+These adapters are not auto-registered to keep build size small. You must manually register them:
+
+```bash
+# MongoDB
+ENABLE_MONGODB=true
+MONGODB_URI=mongodb://localhost:27017/agentdock
+
+# AWS S3
+ENABLE_S3=true
+S3_BUCKET=my-bucket
+AWS_REGION=us-east-1
+AWS_ACCESS_KEY_ID=...
+AWS_SECRET_ACCESS_KEY=...
+
+# AWS DynamoDB
+ENABLE_DYNAMODB=true
+DYNAMODB_TABLE_NAME=agentdock-storage
+
+# Cloudflare (requires wrangler.toml bindings)
+ENABLE_CLOUDFLARE=true
+
+# Vector Databases
+ENABLE_VECTOR_DBS=true
+
+# Pinecone
+PINECONE_API_KEY=...
+PINECONE_INDEX=agentdock
+
+# Qdrant
+QDRANT_HOST=localhost
+QDRANT_PORT=6333
+QDRANT_API_KEY=...              # For Qdrant Cloud
+
+# ChromaDB
+CHROMADB_HOST=http://localhost:8000
+CHROMADB_AUTH_TOKEN=...         # Optional
+```
+
+## How to Enable Additional Storage Adapters
+
+### Step 1: Install Dependencies (if needed)
+
+Some adapters require additional packages:
+
+```bash
+# For MongoDB
+pnpm add mongodb
+
+# For AWS (S3, DynamoDB)
+pnpm add @aws-sdk/client-s3 @aws-sdk/client-dynamodb
+
+# For ChromaDB
+pnpm add chromadb
+```
+
+### Step 2: Register the Adapter
+
+In your API route or server-side code:
+
+```typescript
+// app/api/your-route/route.ts
+import { getStorageFactory } from 'agentdock-core';
+import { 
+  registerMongoDBAdapter,
+  registerCloudAdapters,
+  registerVectorAdapters 
+} from 'agentdock-core/storage';
+
+// Register the adapters you need
+const factory = getStorageFactory();
+
+// For MongoDB
+if (process.env.ENABLE_MONGODB === 'true') {
+  await registerMongoDBAdapter(factory);
+}
+
+// For Cloud Storage (S3, DynamoDB, Cloudflare)
+if (process.env.ENABLE_S3 === 'true' || 
+    process.env.ENABLE_DYNAMODB === 'true' || 
+    process.env.ENABLE_CLOUDFLARE === 'true') {
+  await registerCloudAdapters(factory);
+}
+
+// For Vector Databases (Pinecone, Qdrant, ChromaDB)
+if (process.env.ENABLE_VECTOR_DBS === 'true') {
+  await registerVectorAdapters(factory);
+}
+```
+
+### Step 3: Use the Adapter
+
+```typescript
+// After registration, use it like any other storage
+const storage = factory.getProvider({
+  type: 'mongodb',  // or 's3', 'dynamodb', 'pinecone', etc.
+  namespace: 'myapp'
+});
+
+await storage.set('key', 'value');
+```
+
+### App Default Registration
+
+The AgentDock app automatically registers these adapters in `src/lib/storage-init.ts`:
+- SQLite (development or ENABLE_SQLITE=true)
+- SQLite-vec (development or ENABLE_SQLITE_VEC=true)
+- PostgreSQL (when DATABASE_URL is set)
+- PostgreSQL Vector (when ENABLE_PGVECTOR=true)
+
+MongoDB and other adapters require manual registration in your API routes.
+
 ## Supported Storage Adapters
 
-### Built-in Adapters
+AgentDock supports 15 storage adapters for different use cases:
 
-**Key-Value Storage:**
-1. **Memory** - In-memory storage for development and testing
-2. **SQLite** (default) - Zero-config local file-based storage with SQL capabilities
-3. **PostgreSQL** - Production-ready RDBMS with full ACID compliance
-4. **MongoDB** - Document database for flexible schemas
-5. **Redis** - High-performance distributed key-value store
-6. **Vercel KV** - Serverless Redis-compatible storage
-7. **Cloudflare KV** - Edge key-value storage
-8. **Cloudflare D1** - Edge SQL database
-9. **DynamoDB** - AWS managed NoSQL database
+### Core Adapters (Built into Package)
+1. **Memory** - In-memory storage (default, non-persistent)
+2. **Redis** - High-performance distributed key-value store
+3. **Vercel KV** - Serverless Redis-compatible storage
 
-**Object Storage:**
-10. **S3** - AWS S3 and compatible object storage for large files
+### Auto-Registered Adapters (App Level)
+4. **SQLite** - Zero-config local file-based storage with SQL capabilities
+5. **SQLite-vec** - SQLite with vector search for local AI features
+6. **PostgreSQL** - Production-ready RDBMS with full ACID compliance
+7. **PostgreSQL Vector** - pgvector extension for production AI/embeddings
 
-**Vector Storage:**
-11. **PostgreSQL Vector** - pgvector extension for embeddings
-12. **Pinecone** - Managed vector database service
-13. **Qdrant** - Open-source vector database
-14. **ChromaDB** - Open-source embeddings database
+### Additional Storage (Manual Registration)
+Optional adapters kept separate to minimize build size:
+
+8. **MongoDB** - Document database for flexible schemas
+9. **S3** - AWS S3 and compatible object storage for large files
+10. **DynamoDB** - AWS managed NoSQL database
+11. **Cloudflare KV** - Edge key-value storage
+12. **Cloudflare D1** - Edge SQL database
+13. **Pinecone** - Managed vector database service
+14. **Qdrant** - Open-source vector database
+15. **ChromaDB** - Open-source embeddings database
 
 ## Usage Examples
 
@@ -311,25 +506,6 @@ await migrator.migrate({
 5. **Consider SQLite for single-server deployments** (can handle thousands of requests/second)
 6. **Use PostgreSQL for multi-server deployments** requiring consistency
 
-## Environment Variables
-
-```bash
-# PostgreSQL (if not using explicit config)
-DATABASE_URL=postgresql://user:password@localhost:5432/mydb
-
-# MongoDB
-MONGODB_URI=mongodb://localhost:27017
-
-# Redis
-REDIS_URL=redis://localhost:6379
-REDIS_TOKEN=your-token
-
-# Vercel KV (auto-detected in Vercel environment)
-KV_URL=...
-KV_REST_API_URL=...
-KV_REST_API_TOKEN=...
-```
-
 ## Testing
 
 ### Quick Start
@@ -375,19 +551,29 @@ npm test src/storage/__tests__
 
 ## Implementation Status
 
-### Core Adapters (14 Total)
-- ✅ **SQLite** - Default local storage
-- ✅ **PostgreSQL** - Production-ready with pooling
-- ✅ **MongoDB** - Document storage with TTL
+### Core Adapters (15 Total)
+- ✅ **SQLite + SQLite-vec** - Default local storage with optional vector support
+- ✅ **PostgreSQL + pgvector** - Production-ready with pooling and vector support
+- ✅ **Redis/Vercel KV** - Session caching and temporary data
+- ✅ **MongoDB** - Document storage with TTL (optional, not auto-registered)
 - ✅ **S3** - Large object storage
 - ✅ **DynamoDB** - AWS serverless NoSQL database
 - ✅ **Cloudflare KV/D1** - Edge storage
-- ✅ **Vector DBs** - PostgreSQL Vector, Pinecone, Qdrant, ChromaDB
+- ✅ **Vector DBs** - Pinecone, Qdrant, ChromaDB
+
+### Current Use Cases
+- **Session Persistence**: Store orchestration state across requests
+- **Namespace Isolation**: Basic multi-tenancy support via namespaces
+- **TTL Support**: Automatic expiration for temporary data
+
+### Future Use Cases (Not Yet Implemented)
+- **Chat Persistence**: Server-side message storage (currently localStorage only)
+- **Authentication**: User accounts and permissions
+- **AI Memory**: Vector storage for semantic search (adapters ready, system not built)
+- **File Storage**: S3 for attachments and media
 
 ### Production Notes
 - SQLite has been tested with thousands of requests/second for single-server deployments
-- PostgreSQL is recommended for multi-server deployments
-- Vector databases are experimental and need production validation
-- All adapters follow consistent error handling and retry patterns
-
-**Note:** While core functionality is complete, production testing for newer adapters (S3, MongoDB, Vector DBs, DynamoDB, Cloudflare) is still TBD. We recommend thorough testing in your specific use case before production deployment. 
+- PostgreSQL is recommended for multi-server deployments requiring consistency
+- Additional adapters (S3, MongoDB, DynamoDB, Cloudflare, vector DBs) are not auto-registered to keep build size small
+- All adapters follow consistent error handling and retry patterns 

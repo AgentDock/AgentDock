@@ -161,7 +161,7 @@ export class BatchOperations {
       if (options?.ttlSeconds && typeof options.ttlSeconds === 'number') {
         // Import TTLManager for static method
         const { TTLManager } = await import('../../../utils/ttl-manager');
-        ttl = TTLManager.calculateExpiration(options.ttlSeconds);
+        ttl = TTLManager.calculateExpiration(options.ttlSeconds * 1000);
       }
 
       for (let i = 0; i < entries.length; i += batchSize) {

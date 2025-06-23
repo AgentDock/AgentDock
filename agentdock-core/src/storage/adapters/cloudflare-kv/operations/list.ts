@@ -50,8 +50,11 @@ export class ListOperations {
         });
 
         for (const key of result.keys) {
-          // Skip list keys
-          if (key.name.includes('__list:')) continue;
+          // Skip list keys - check if the key starts with namespace:__list: or just __list:
+          const keyWithoutNamespace = namespace
+            ? key.name.substring(`${namespace}:`.length)
+            : key.name;
+          if (keyWithoutNamespace.startsWith('__list:')) continue;
 
           // Handle offset
           if (skipped < offset) {
@@ -100,7 +103,20 @@ export class ListOperations {
 
     try {
       const data = await this.connection.kv.get(fullKey, { type: 'json' });
-      if (!data || !Array.isArray(data)) return null;
+      if (!data) return null;
+
+      if (!Array.isArray(data)) {
+        logger.error(
+          LogCategory.STORAGE,
+          'CloudflareKV',
+          'Invalid list data format',
+          {
+            key: fullKey,
+            dataType: typeof data
+          }
+        );
+        return null;
+      }
 
       // Handle range
       if (start !== undefined || end !== undefined) {
@@ -131,7 +147,17 @@ export class ListOperations {
     const fullKey = this.getFullKey(listKey, options?.namespace);
 
     try {
-      const putOptions: any = {};
+      interface PutOptions {
+        expirationTtl?: number;
+        metadata?: {
+          type: string;
+          length: number;
+          namespace?: string;
+          createdAt: number;
+        };
+      }
+
+      const putOptions: PutOptions = {};
 
       // Handle TTL
       if (options?.ttlSeconds) {
@@ -175,7 +201,7 @@ export class ListOperations {
 
     try {
       // Check if exists
-      const exists = await this.connection.kv.get(fullKey, { type: 'text' });
+      const exists = await this.connection.kv.get(fullKey);
       if (!exists) return false;
 
       await this.connection.kv.delete(fullKey);

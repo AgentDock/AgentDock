@@ -126,7 +126,7 @@ export class S3BatchOperations {
           'x-amz-meta-content-type': 'application/json'
         };
 
-        if (ttl) {
+        if (ttl !== undefined) {
           metadata['x-amz-meta-ttl'] = ttl.toString();
           this.ttlManager.setTTL(fullKey, ttl);
         }

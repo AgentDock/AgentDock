@@ -42,6 +42,7 @@ export { VercelKVProvider } from './providers/vercel-kv-provider';
 // Export adapter registry functions (for server-side use only)
 export {
   registerSQLiteAdapter,
+  registerSQLiteVecAdapter,
   registerPostgreSQLAdapter,
   registerPostgreSQLVectorAdapter,
   registerMongoDBAdapter,

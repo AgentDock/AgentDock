@@ -1,19 +1,20 @@
-import {
-  fetchAnthropicModels,
-  fetchCerebrasModels,
-  fetchDeepSeekModels,
-  fetchGeminiModels,
-  fetchGroqModels,
-  fetchOpenAIModels,
-  validateAnthropicApiKey,
-  validateCerebrasApiKey,
-  validateDeepSeekApiKey,
-  validateGeminiApiKey,
-  validateGroqApiKey,
-  validateOpenAIApiKey
-} from '.';
 import { LogCategory, logger } from '../../logging';
 import { LLMProvider, ModelMetadata } from '../types';
+import {
+  fetchAnthropicModels,
+  validateAnthropicApiKey
+} from './anthropic-adapter';
+import {
+  fetchCerebrasModels,
+  validateCerebrasApiKey
+} from './cerebras-adapter';
+import {
+  fetchDeepSeekModels,
+  validateDeepSeekApiKey
+} from './deepseek-adapter';
+import { fetchGeminiModels, validateGeminiApiKey } from './gemini-adapter';
+import { fetchGroqModels, validateGroqApiKey } from './groq-adapter';
+import { fetchOpenAIModels, validateOpenAIApiKey } from './openai-adapter';
 
 /**
  * @fileoverview Provider adapters for LLM providers

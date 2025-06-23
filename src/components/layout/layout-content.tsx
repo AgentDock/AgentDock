@@ -1,39 +1,18 @@
 'use client';
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState
-} from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { Toaster } from 'sonner';
 
 import { CoreInitializer } from '@/components/core/initializer';
 import { FontProvider } from '@/components/font-provider';
+import { SidebarContext } from '@/components/layout/sidebar-context';
 import { SiteHeader } from '@/components/layout/site-header';
 import { SiteSidebar } from '@/components/layout/site-sidebar';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { cn } from '@/lib/utils';
 
-// Create a context to share the collapse state and handlers
-interface SidebarContextType {
-  isCollapsed: boolean;
-  setIsCollapsed: (value: boolean) => void;
-  toggleSidebar: () => void;
-  expandSidebar: () => void;
-}
-
-export const SidebarContext = createContext<SidebarContextType>({
-  isCollapsed: false,
-  setIsCollapsed: () => {},
-  toggleSidebar: () => {},
-  expandSidebar: () => {}
-});
-
-export const useSidebar = () => useContext(SidebarContext);
+// Sidebar context imported from separate file to prevent circular dependencies
 
 export function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

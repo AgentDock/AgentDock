@@ -284,25 +284,35 @@ export class S3Adapter extends BaseStorageAdapter {
       throw new Error('S3Adapter connection is not available');
     }
 
-    const adapter = Object.create(this);
-    adapter.namespace = namespace;
+    // Create a new adapter instance to ensure proper isolation
+    // We can't use Object.create as it shares mutable state
+    const nsAdapter = Object.create(Object.getPrototypeOf(this));
 
-    // Re-initialize operations with new namespace
-    adapter.kvOps = new S3KVOperations(
+    // Copy over the connection manager (safe to share)
+    nsAdapter.connectionManager = this.connectionManager;
+    nsAdapter.namespace = namespace;
+    nsAdapter.isInitialized = true;
+
+    // Create new instances of managers to avoid shared mutable state
+    nsAdapter.keyManager = new KeyManager();
+    nsAdapter.ttlManager = new TTLManager({ cleanupInterval: 0 });
+
+    // Initialize operations with new namespace
+    nsAdapter.kvOps = new S3KVOperations(
       connection,
-      this.keyManager,
-      this.ttlManager,
+      nsAdapter.keyManager,
+      nsAdapter.ttlManager,
       namespace
     );
 
-    adapter.batchOps = new S3BatchOperations(
+    nsAdapter.batchOps = new S3BatchOperations(
       connection,
-      this.keyManager,
-      this.ttlManager,
+      nsAdapter.keyManager,
+      nsAdapter.ttlManager,
       namespace
     );
 
-    return adapter;
+    return nsAdapter;
   }
 
   async keys(pattern?: string): Promise<string[]> {

@@ -92,7 +92,7 @@ export class MongoBatchOperations {
           updatedAt: now
         };
 
-        if (ttl) {
+        if (ttl !== undefined) {
           doc.expiresAt = new Date(Date.now() + ttl);
           this.ttlManager.setTTL(fullKey, ttl);
         }

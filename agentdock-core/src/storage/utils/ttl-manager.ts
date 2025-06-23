@@ -20,10 +20,10 @@ export class TTLManager {
 
   constructor(options: TTLOptions = {}) {
     this.options = {
-      defaultTTL: options.defaultTTL || 0,
-      cleanupInterval: options.cleanupInterval || 60000, // 1 minute
-      maxTTL: options.maxTTL || 86400000, // 24 hours
-      minTTL: options.minTTL || 1000 // 1 second
+      defaultTTL: options.defaultTTL ?? 0,
+      cleanupInterval: options.cleanupInterval ?? 60000, // 1 minute
+      maxTTL: options.maxTTL ?? 86400000, // 24 hours
+      minTTL: options.minTTL ?? 1000 // 1 second
     };
 
     if (this.options.cleanupInterval > 0) {
@@ -35,14 +35,15 @@ export class TTLManager {
    * Set TTL for a key
    */
   setTTL(key: string, ttlMs?: number): number | undefined {
-    if (!ttlMs && !this.options.defaultTTL) {
+    // Use nullish coalescing to properly handle 0 as a valid TTL value
+    if (ttlMs === undefined && this.options.defaultTTL === 0) {
       return undefined;
     }
 
-    const effectiveTTL = ttlMs || this.options.defaultTTL;
+    const effectiveTTL = ttlMs ?? this.options.defaultTTL;
 
-    // Validate TTL bounds
-    if (effectiveTTL < this.options.minTTL) {
+    // Validate TTL bounds (allow 0 for immediate expiration)
+    if (effectiveTTL !== 0 && effectiveTTL < this.options.minTTL) {
       throw new Error(`TTL must be at least ${this.options.minTTL}ms`);
     }
     if (effectiveTTL > this.options.maxTTL) {

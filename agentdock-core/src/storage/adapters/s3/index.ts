@@ -30,9 +30,11 @@ export class S3Adapter extends BaseStorageAdapter {
   private ttlManager: TTLManager;
   private isInitialized = false;
   protected namespace?: string;
+  private config: S3Config; // Store config for creating namespaced instances
 
   constructor(config: S3Config) {
     super();
+    this.config = config;
     this.connectionManager = new S3ConnectionManager(config);
     this.keyManager = new KeyManager();
     this.ttlManager = new TTLManager({ cleanupInterval: 0 }); // No auto cleanup for S3
@@ -278,26 +280,23 @@ export class S3Adapter extends BaseStorageAdapter {
       );
     }
 
-    // Get the current connection safely
+    // Create a new adapter instance using the constructor for proper initialization
+    const nsAdapter = new S3Adapter(this.config);
+    nsAdapter.namespace = namespace;
+
+    // Share the existing connection manager to avoid creating new connections
+    nsAdapter.connectionManager = this.connectionManager;
+
+    // Mark as initialized since we're sharing an already-initialized connection
+    nsAdapter.isInitialized = true;
+
+    // Get the current connection
     const connection = this.connectionManager.getCurrentConnection();
     if (!connection) {
       throw new Error('S3Adapter connection is not available');
     }
 
-    // Create a new adapter instance to ensure proper isolation
-    // We can't use Object.create as it shares mutable state
-    const nsAdapter = Object.create(Object.getPrototypeOf(this));
-
-    // Copy over the connection manager (safe to share)
-    nsAdapter.connectionManager = this.connectionManager;
-    nsAdapter.namespace = namespace;
-    nsAdapter.isInitialized = true;
-
-    // Create new instances of managers to avoid shared mutable state
-    nsAdapter.keyManager = new KeyManager();
-    nsAdapter.ttlManager = new TTLManager({ cleanupInterval: 0 });
-
-    // Initialize operations with new namespace
+    // Initialize operations with the namespace
     nsAdapter.kvOps = new S3KVOperations(
       connection,
       nsAdapter.keyManager,

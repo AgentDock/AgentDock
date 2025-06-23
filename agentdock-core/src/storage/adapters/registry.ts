@@ -44,6 +44,52 @@ export async function registerSQLiteAdapter(
 }
 
 /**
+ * Registers the SQLite-vec adapter (SQLite with vector support)
+ *
+ * @param factory - Storage factory instance
+ */
+export async function registerSQLiteVecAdapter(
+  factory: StorageFactory
+): Promise<void> {
+  try {
+    const { SQLiteVecAdapter } = await import('./sqlite-vec');
+    factory.registerAdapter('sqlite-vec', (options = {}) => {
+      return new SQLiteVecAdapter({
+        path: options.config?.path || './agentdock.db',
+        namespace: options.namespace,
+        verbose: options.config?.verbose,
+        walMode: options.config?.walMode,
+        // Vector-specific options
+        enableVector: options.config?.enableVector,
+        defaultDimension: options.config?.defaultDimension,
+        defaultMetric: options.config?.defaultMetric,
+        vecExtensionPath: options.config?.vecExtensionPath
+      });
+    });
+
+    // Register alias
+    factory.registerAdapter(
+      'sqlite-vector',
+      factory.getProviderFactory('sqlite-vec')!
+    );
+
+    logger.info(
+      LogCategory.STORAGE,
+      'AdapterRegistry',
+      'Registered SQLite-vec adapter'
+    );
+  } catch (error) {
+    logger.error(
+      LogCategory.STORAGE,
+      'AdapterRegistry',
+      'Failed to register SQLite-vec adapter',
+      { error: error instanceof Error ? error.message : String(error) }
+    );
+    throw error;
+  }
+}
+
+/**
  * Registers the PostgreSQL adapter
  *
  * @param factory - Storage factory instance
@@ -370,12 +416,14 @@ export async function registerAgentChatAdapters(
   factory: StorageFactory,
   options: {
     enableSQLite?: boolean;
+    enableSQLiteVec?: boolean;
     enablePostgreSQL?: boolean;
     enableVector?: boolean;
   } = {}
 ): Promise<void> {
   const {
     enableSQLite = true,
+    enableSQLiteVec = false, // Default false until sqlite-vec is installed
     enablePostgreSQL = true,
     enableVector = true
   } = options;
@@ -383,6 +431,11 @@ export async function registerAgentChatAdapters(
   // Register SQLite for local development
   if (enableSQLite) {
     await registerSQLiteAdapter(factory);
+  }
+
+  // Register SQLite-vec if requested
+  if (enableSQLiteVec) {
+    await registerSQLiteVecAdapter(factory);
   }
 
   // Register PostgreSQL for production
@@ -399,7 +452,7 @@ export async function registerAgentChatAdapters(
     LogCategory.STORAGE,
     'AdapterRegistry',
     'Registered agent chat adapters',
-    { enableSQLite, enablePostgreSQL, enableVector }
+    { enableSQLite, enableSQLiteVec, enablePostgreSQL, enableVector }
   );
 }
 

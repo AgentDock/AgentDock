@@ -3,6 +3,7 @@
  */
 
 export { SQLiteAdapter } from './sqlite';
+export { SQLiteVecAdapter } from './sqlite-vec';
 export { PostgreSQLAdapter } from './postgresql';
 export { PostgreSQLVectorAdapter } from './postgresql-vector';
 export { MongoDBAdapter } from './mongodb';

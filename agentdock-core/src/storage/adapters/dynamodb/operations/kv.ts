@@ -46,9 +46,7 @@ export class KVOperations {
         Key: { pk: { S: pk }, sk: { S: sk } }
       });
 
-      const response = (await retry(() =>
-        this.connection.client.send(command)
-      )) as any;
+      const response = await retry(() => this.connection.client.send(command));
 
       if (!response.Item) {
         return null;
@@ -85,13 +83,10 @@ export class KVOperations {
   async set<T>(key: string, value: T, options?: StorageOptions): Promise<void> {
     const namespace =
       options?.namespace || this.connection.defaultNamespace || 'default';
-    // Handle TTL from options.ttl if it exists
+    // Handle TTL from options.ttlSeconds
     let ttl: number | undefined;
-    if (options && typeof options === 'object' && 'ttl' in options) {
-      const ttlValue = (options as any).ttl;
-      if (typeof ttlValue === 'number') {
-        ttl = TTLManager.calculateExpiration(ttlValue);
-      }
+    if (options?.ttlSeconds && typeof options.ttlSeconds === 'number') {
+      ttl = TTLManager.calculateExpiration(options.ttlSeconds);
     }
 
     try {
@@ -140,9 +135,7 @@ export class KVOperations {
         ReturnValues: 'ALL_OLD'
       });
 
-      const response = (await retry(() =>
-        this.connection.client.send(command)
-      )) as any;
+      const response = await retry(() => this.connection.client.send(command));
 
       logger.debug(LogCategory.STORAGE, 'DynamoDB:delete', 'Value deleted', {
         key,
@@ -193,9 +186,9 @@ export class KVOperations {
           ExclusiveStartKey: lastEvaluatedKey
         });
 
-        const response = (await retry(() =>
+        const response = await retry(() =>
           this.connection.client.send(command)
-        )) as any;
+        );
 
         if (response.Items) {
           for (const item of response.Items) {

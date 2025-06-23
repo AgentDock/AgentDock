@@ -86,7 +86,7 @@ export class S3Adapter extends BaseStorageAdapter {
     const namespace = options?.namespace || this.namespace;
     const nsAdapter =
       namespace && namespace !== this.namespace
-        ? this.withNamespace(namespace)
+        ? await this.withNamespace(namespace)
         : this;
     return (await nsAdapter.kvOps.get(key)) as T | null;
   }
@@ -96,7 +96,7 @@ export class S3Adapter extends BaseStorageAdapter {
     const namespace = options?.namespace || this.namespace;
     const nsAdapter =
       namespace && namespace !== this.namespace
-        ? this.withNamespace(namespace)
+        ? await this.withNamespace(namespace)
         : this;
     await nsAdapter.kvOps.set(
       key,
@@ -110,7 +110,7 @@ export class S3Adapter extends BaseStorageAdapter {
     const namespace = options?.namespace || this.namespace;
     const nsAdapter =
       namespace && namespace !== this.namespace
-        ? this.withNamespace(namespace)
+        ? await this.withNamespace(namespace)
         : this;
     try {
       await nsAdapter.kvOps.delete(key);
@@ -125,7 +125,7 @@ export class S3Adapter extends BaseStorageAdapter {
     const namespace = options?.namespace || this.namespace;
     const nsAdapter =
       namespace && namespace !== this.namespace
-        ? this.withNamespace(namespace)
+        ? await this.withNamespace(namespace)
         : this;
     return nsAdapter.kvOps.exists(key);
   }
@@ -138,7 +138,7 @@ export class S3Adapter extends BaseStorageAdapter {
     const namespace = options?.namespace || this.namespace;
     const nsAdapter =
       namespace && namespace !== this.namespace
-        ? this.withNamespace(namespace)
+        ? await this.withNamespace(namespace)
         : this;
 
     const values = await nsAdapter.batchOps.mget(keys);
@@ -159,7 +159,7 @@ export class S3Adapter extends BaseStorageAdapter {
     const namespace = options?.namespace || this.namespace;
     const nsAdapter =
       namespace && namespace !== this.namespace
-        ? this.withNamespace(namespace)
+        ? await this.withNamespace(namespace)
         : this;
 
     const pairs = Object.entries(items).map(([key, value]) => ({
@@ -176,7 +176,7 @@ export class S3Adapter extends BaseStorageAdapter {
     const namespace = options?.namespace || this.namespace;
     const nsAdapter =
       namespace && namespace !== this.namespace
-        ? this.withNamespace(namespace)
+        ? await this.withNamespace(namespace)
         : this;
     return nsAdapter.batchOps.mdel(keys);
   }
@@ -186,7 +186,7 @@ export class S3Adapter extends BaseStorageAdapter {
     const namespace = options?.namespace || this.namespace;
     const nsAdapter =
       namespace && namespace !== this.namespace
-        ? this.withNamespace(namespace)
+        ? await this.withNamespace(namespace)
         : this;
 
     const pattern = prefix ? `${prefix}*` : '*';
@@ -272,13 +272,9 @@ export class S3Adapter extends BaseStorageAdapter {
   /**
    * Create a namespaced instance
    */
-  withNamespace(namespace: string): S3Adapter {
+  async withNamespace(namespace: string): Promise<S3Adapter> {
     // Ensure the adapter is initialized before creating namespaced instance
-    if (!this.isInitialized) {
-      throw new Error(
-        'S3Adapter must be initialized before creating namespaced instances'
-      );
-    }
+    await this.ensureInitialized();
 
     // Create a new adapter instance using the constructor for proper initialization
     const nsAdapter = new S3Adapter(this.config);
@@ -287,14 +283,11 @@ export class S3Adapter extends BaseStorageAdapter {
     // Share the existing connection manager to avoid creating new connections
     nsAdapter.connectionManager = this.connectionManager;
 
-    // Mark as initialized since we're sharing an already-initialized connection
+    // Mark as initialized and ensure connection exists
     nsAdapter.isInitialized = true;
 
-    // Get the current connection
-    const connection = this.connectionManager.getCurrentConnection();
-    if (!connection) {
-      throw new Error('S3Adapter connection is not available');
-    }
+    // Use getConnection() to ensure connection exists (handles race conditions)
+    const connection = await this.connectionManager.getConnection();
 
     // Initialize operations with the namespace
     nsAdapter.kvOps = new S3KVOperations(

@@ -104,8 +104,8 @@ export class ListOperations {
 
       // Handle range
       if (start !== undefined || end !== undefined) {
-        const startIdx = start || 0;
-        const endIdx = end === -1 ? data.length : end || data.length;
+        const startIdx = start ?? 0;
+        const endIdx = end === -1 ? data.length : (end ?? data.length);
         return data.slice(startIdx, endIdx);
       }
 

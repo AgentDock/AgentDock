@@ -55,6 +55,11 @@ export class BatchOperations {
     const namespace = this.getNamespace(options);
     const now = Date.now();
 
+    // Return empty object for empty keys array to avoid invalid SQL
+    if (keys.length === 0) {
+      return {};
+    }
+
     try {
       // Create placeholders for SQL IN clause
       const placeholders = keys.map(() => '?').join(',');
@@ -287,10 +292,27 @@ export class BatchOperations {
     const namespace = this.getNamespace(options);
     const now = Date.now();
     const escapedPrefix = this.escapeSqlWildcards(prefix);
-    const limit = options?.limit || 1000; // Default limit of 1000 records
-    const offset = options?.cursor
-      ? parseInt(options.cursor, 10)
-      : options?.offset || 0;
+
+    // Validate and sanitize pagination parameters
+    const MAX_LIMIT = 5000;
+    const MIN_LIMIT = 1;
+    let validatedLimit = options?.limit || 1000;
+
+    // Ensure limit is a positive integer within acceptable range
+    validatedLimit = Math.max(
+      MIN_LIMIT,
+      Math.min(MAX_LIMIT, Math.floor(validatedLimit))
+    );
+
+    // Validate offset/cursor
+    let validatedOffset = 0;
+    if (options?.cursor) {
+      const parsedCursor = parseInt(options.cursor, 10);
+      validatedOffset =
+        isNaN(parsedCursor) || parsedCursor < 0 ? 0 : parsedCursor;
+    } else if (options?.offset !== undefined) {
+      validatedOffset = Math.max(0, Math.floor(options.offset));
+    }
 
     try {
       // First, get total count
@@ -323,7 +345,13 @@ export class BatchOperations {
         OFFSET ?
       `
         )
-        .bind(namespace, `${escapedPrefix}%`, now, limit, offset)
+        .bind(
+          namespace,
+          `${escapedPrefix}%`,
+          now,
+          validatedLimit,
+          validatedOffset
+        )
         .all<D1KVRow>();
 
       const resultMap: Record<string, T> = {};
@@ -348,15 +376,17 @@ export class BatchOperations {
         }
       }
 
-      const hasMore = offset + limit < total;
-      const nextCursor = hasMore ? String(offset + limit) : undefined;
+      const hasMore = validatedOffset + validatedLimit < total;
+      const nextCursor = hasMore
+        ? String(validatedOffset + validatedLimit)
+        : undefined;
 
       logger.debug(LogCategory.STORAGE, 'CloudflareD1', 'Got all with prefix', {
         prefix,
         namespace,
         count: Object.keys(resultMap).length,
-        limit,
-        offset,
+        limit: validatedLimit,
+        offset: validatedOffset,
         total,
         hasMore
       });

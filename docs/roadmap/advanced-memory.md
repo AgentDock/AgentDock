@@ -582,24 +582,82 @@ const supportPattern: ProceduralMemory = {
 
 ## Storage Backend Support
 
-**Note**: This implementation depends on the storage abstraction layer ([PR #211](https://github.com/AgentDock/AgentDock/pull/211)) being finalized and merged first.
+### Officially Supported for Memory System
 
-### Officially Supported for Memory
-- **SQLite + sqlite-vec**: Local development with vector support (zero dependencies)
+Only these adapters support the advanced memory system with vector search:
+
+#### Development Configuration
+```bash
+# .env.local
+ENABLE_SQLITE=true
+ENABLE_SQLITE_VEC=true
+KV_STORE_PROVIDER=sqlite
+```
+- **SQLite + sqlite-vec**: ✅ IMPLEMENTED - Zero-config local development
+- Auto-registered in development mode
+- Full vector search capabilities
+- No external dependencies
+
+#### Production Configuration
+```bash
+# .env.local
+DATABASE_URL=postgresql://user:password@host:5432/agentdock
+ENABLE_PGVECTOR=true
+KV_STORE_PROVIDER=postgresql
+```
 - **PostgreSQL + pgvector**: Production-ready with full vector capabilities
+- **Supabase**: Managed PostgreSQL with pgvector extension
+- Auto-registered when DATABASE_URL is set
 
-### Development
-- **SQLite + sqlite-vec**: Local development with vector support
-- **PostgreSQL + pgvector**: Self-hosted with full features
+### Not Supported for Memory System
+These adapters can be used for other storage needs but NOT for the memory system:
+- **MongoDB**: No native vector search in our adapter
+- **Redis**: Session caching only, not persistent memory
+- **S3/DynamoDB**: Object/document storage, not optimized for memory
+- **Pinecone/Qdrant/ChromaDB**: Could work but not officially supported
 
-### Production
-- **PostgreSQL + pgvector**: Primary choice (NOT Redis for chat history)
-- **Supabase**: Managed PostgreSQL with pgvector
+### Quick Setup Guide
 
-### Optional Adapters (Not Officially Supported for Memory)
-- **MongoDB**: Basic KV only, no native vector search in our adapter
-- **Pinecone/Qdrant**: Alternative vector databases if needed
-- **Redis**: Session caching only, not for persistent memory
+#### Local Development (Zero Config)
+
+```bash
+# Step 1: Just run it
+pnpm dev
+
+# That's it! You get:
+# ✅ SQLite with persistent storage
+# ✅ sqlite-vec for AI memory (if available)
+# ✅ Everything saved to ./agentdock.db
+```
+
+#### Production with Supabase
+
+**Step 1: Create Supabase Project**
+- Go to [supabase.com](https://supabase.com)
+- Create new project
+- Save your database password
+
+**Step 2: Enable pgvector**
+```sql
+-- Run in Supabase SQL Editor
+CREATE EXTENSION IF NOT EXISTS vector;
+```
+
+**Step 3: Add to .env.local**
+```bash
+DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.[YOUR-PROJECT].supabase.co:5432/postgres
+ENABLE_PGVECTOR=true
+KV_STORE_PROVIDER=postgresql
+```
+
+**Step 4: Deploy**
+```bash
+pnpm build
+pnpm start
+```
+
+**Step 5: Verify**
+Check logs for: "PostgreSQL Vector adapter registered"
 
 ## Performance Benefits
 

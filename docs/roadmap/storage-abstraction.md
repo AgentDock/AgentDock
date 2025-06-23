@@ -25,25 +25,28 @@ AgentDock now includes a comprehensive storage abstraction layer that provides a
 - Added MongoDB as optional document store
 - Implemented automatic Node.js adapter registration
 
-### 🚀 Phase 3: Advanced Features (In Core)
+### 🚀 Phase 3: Advanced Features (Complete)
 - S3, DynamoDB, Cloudflare KV/D1 adapters ready
 - Pinecone, Qdrant, ChromaDB for vector operations
+- SQLite-vec for local vector search
 - All adapters follow consistent patterns
 
-## Available Adapters
+## Available Adapters (15 Total)
 
 ### Always Available (Auto-registered)
 1. **Memory** - Default, in-memory storage
 2. **Redis/Upstash** - High-performance distributed cache
 3. **Vercel KV** - Vercel's Redis-compatible service
 
-### Optional Registration (Server-side)
+### Core Storage (Server-side)
 4. **SQLite** - File-based local storage
-5. **PostgreSQL** - Production relational database
-6. **PostgreSQL Vector** - pgvector for embeddings
-7. **MongoDB** - Document storage (enable with `ENABLE_MONGODB=true`)
+5. **SQLite-vec** - SQLite with vector search capabilities
+6. **PostgreSQL** - Production relational database
+7. **PostgreSQL Vector** - pgvector for embeddings
+8. **MongoDB** - Document storage (enable with `ENABLE_MONGODB=true`)
 
-### Additional in Core
+### Additional Adapters (Not Auto-registered)
+To keep build size small:
 - S3, DynamoDB, Cloudflare KV/D1, Pinecone, Qdrant, ChromaDB
 
 ## Implementation Details
@@ -79,9 +82,10 @@ await storage.set('key', 'value');
 
 1. **Zero Breaking Changes**: Default memory storage maintains compatibility
 2. **Simple Configuration**: Environment variables control everything
-3. **Production Ready**: Battle-tested adapters for all use cases
+3. **Production Ready**: Battle-tested adapters for all use cases (15 total)
 4. **Developer Friendly**: Single API to learn, works everywhere
 5. **Flexible Architecture**: Easy to add new storage backends
+6. **Build Optimization**: Non-essential adapters not auto-registered to keep builds small
 
 ## Technical Decisions
 
@@ -112,8 +116,8 @@ await storage.set('key', 'value');
 
 ## Success Metrics
 
-- ✅ 14 production-ready adapters
-- ✅ Zero-config memory storage
+- ✅ 15 production-ready adapters (including SQLite-vec)
+- ✅ Zero-config memory storage  
 - ✅ < 5 min setup for any adapter
 - ✅ No client-side bundling issues
 - ✅ Backward compatible

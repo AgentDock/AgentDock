@@ -46,6 +46,7 @@ Dive deeper into specific storage aspects:
 -   [Storage Abstraction Layer (Roadmap)](../roadmap/storage-abstraction.md)
 -   [Vector Storage Integration (Roadmap)](../roadmap/vector-storage.md)
 -   [Advanced Memory Systems (Roadmap)](../roadmap/advanced-memory.md)
+-   [Metacognitive Memory Implementation](../../AGENTDOCK_MEMORY_SYSTEM_FINAL.md) - Our production memory plan
 -   [Session Management](../architecture/sessions/session-management.md) (Details usage of storage)
 
 # Storage Abstraction Layer
@@ -303,11 +304,6 @@ The storage layer is designed to support:
 - **Global Scale**: From single-user to millions of concurrent sessions
 
 ## Next Steps
-
-### Benchmarks (Priority)
-- Performance testing across all adapters
-- Optimization recommendations
-- Best practices guide
 
 ### Future Features
 - Admin dashboard for multi-tenancy

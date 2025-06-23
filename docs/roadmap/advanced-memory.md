@@ -593,7 +593,7 @@ ENABLE_SQLITE=true
 ENABLE_SQLITE_VEC=true
 KV_STORE_PROVIDER=sqlite
 ```
-- **SQLite + sqlite-vec**: ✅ IMPLEMENTED - Zero-config local development
+- **SQLite + sqlite-vec**: IMPLEMENTED - Zero-config local development
 - Auto-registered in development mode
 - Full vector search capabilities
 - No external dependencies
@@ -625,9 +625,9 @@ These adapters can be used for other storage needs but NOT for the memory system
 pnpm dev
 
 # That's it! You get:
-# ✅ SQLite with persistent storage
-# ✅ sqlite-vec for AI memory (if available)
-# ✅ Everything saved to ./agentdock.db
+# SQLite with persistent storage
+# sqlite-vec for AI memory (if available)
+# Everything saved to ./agentdock.db
 ```
 
 #### Production with Supabase

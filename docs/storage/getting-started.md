@@ -1,199 +1,166 @@
-# Getting Started with Storage
+# Storage Setup Guide
 
-This guide will help you set up storage for your AgentDock application.
+## Overview
 
-## Quick Start
+AgentDock uses a storage abstraction layer that supports multiple providers. This guide covers setting up storage adapters for development and production environments.
 
-### 1. Default Setup (Memory Storage)
+## Local Development
 
-No configuration needed! AgentDock uses in-memory storage by default.
+### Default Configuration
+
+By default, local development uses SQLite:
 
 ```bash
-# Just run the app
 pnpm dev
 ```
 
-⚠️ **Note**: Memory storage resets when the server restarts.
+This automatically configures:
+- SQLite database at `./agentdock.db`
+- Memory storage provider for ephemeral data
+- SQLite-vec for vector operations (if extension available)
 
-### 2. Local Development (SQLite)
+No environment configuration required for basic development.
 
-For persistent local storage:
+### Advanced Local Setup
 
-```bash
-# In your .env.local file
-KV_STORE_PROVIDER=sqlite
-```
-
-SQLite will automatically create a database file at `./agentdock.db`.
-
-### 3. Production Setup (PostgreSQL)
-
-For production deployments:
+For vector search capabilities in development:
 
 ```bash
-# In your .env.local file
-KV_STORE_PROVIDER=postgresql
-DATABASE_URL=postgresql://user:password@localhost:5432/agentdock
+# Enable SQLite with vector extension
+ENABLE_SQLITE_VEC=true
 ```
 
-### 4. Redis for Real-time Apps
+## Production Configuration
 
-For agent chat applications with real-time features:
+### PostgreSQL (Recommended)
 
-```bash
-# In your .env.local file
-KV_STORE_PROVIDER=redis
-REDIS_URL=redis://localhost:6379
-```
+PostgreSQL is the recommended production storage provider.
 
-## Step-by-Step Setup
+#### Supabase Setup
 
-### Setting up PostgreSQL
-
-1. **Install PostgreSQL**
-   ```bash
-   # macOS
-   brew install postgresql
-   brew services start postgresql
-
-   # Ubuntu/Debian
-   sudo apt install postgresql
-   sudo systemctl start postgresql
+1. Create a Supabase project at [supabase.com](https://supabase.com)
+2. Enable the vector extension:
+   ```sql
+   CREATE EXTENSION IF NOT EXISTS vector;
    ```
-
-2. **Create Database**
+3. Configure environment variables:
    ```bash
-   createdb agentdock
-   ```
-
-3. **Set Environment Variable**
-   ```bash
-   # .env.local
+   DATABASE_URL=postgresql://postgres:[password]@db.[project-id].supabase.co:5432/postgres
+   ENABLE_PGVECTOR=true
    KV_STORE_PROVIDER=postgresql
-   DATABASE_URL=postgresql://localhost:5432/agentdock
    ```
 
-### Setting up Redis
+#### Self-Hosted PostgreSQL
 
-1. **Install Redis**
-   ```bash
-   # macOS
-   brew install redis
-   brew services start redis
+Requirements:
+- PostgreSQL 15+
+- pgvector extension installed
 
-   # Ubuntu/Debian
-   sudo apt install redis-server
-   sudo systemctl start redis
-   ```
-
-2. **Configure AgentDock**
-   ```bash
-   # .env.local
-   KV_STORE_PROVIDER=redis
-   REDIS_URL=redis://localhost:6379
-   ```
-
-### Using Upstash Redis (Serverless)
-
-1. **Create Upstash Account**
-   - Go to [upstash.com](https://upstash.com)
-   - Create a Redis database
-
-2. **Get Credentials**
-   - Copy the REST URL and token
-
-3. **Configure**
-   ```bash
-   # .env.local
-   KV_STORE_PROVIDER=redis
-   REDIS_URL=https://your-instance.upstash.io
-   REDIS_TOKEN=your-token-here
-   ```
-
-### Enabling MongoDB (Optional)
-
-1. **Install MongoDB**
-   ```bash
-   # macOS
-   brew tap mongodb/brew
-   brew install mongodb-community
-   brew services start mongodb-community
-
-   # Ubuntu/Debian
-   sudo apt install mongodb
-   sudo systemctl start mongodb
-   ```
-
-2. **Enable in AgentDock**
-   ```bash
-   # .env.local
-   ENABLE_MONGODB=true
-   MONGODB_URI=mongodb://localhost:27017/agentdock
-   ```
-
-## Where to Set Environment Variables
-
-### Local Development
-
-Create a `.env.local` file in the **root directory** (not in agentdock-core):
-
-```
-/agentdock_cursor_starter/
-├── .env.local          ← Create this file here
-├── package.json
-├── agentdock-core/
-└── ...
-```
-
-### Production (Vercel)
-
-1. Go to your Vercel project settings
-2. Navigate to "Environment Variables"
-3. Add the variables without the `.env.local` file
-
-### Production (Other Platforms)
-
-- **Heroku**: Use `heroku config:set KEY=value`
-- **Railway**: Use the environment variables UI
-- **Docker**: Use `-e KEY=value` or env file
-
-## Verifying Your Setup
-
-Run this in your project root to test:
-
+Configuration:
 ```bash
-# Check which storage is being used
-pnpm dev
-# Look for log: "Using [Storage Type] Storage Provider"
-```
-
-## Common Configurations
-
-### For a ChatGPT Clone
-```bash
-KV_STORE_PROVIDER=redis
-REDIS_URL=redis://localhost:6379
-```
-
-### For a Local AI Assistant
-```bash
-KV_STORE_PROVIDER=sqlite
-```
-
-### For a Production SaaS
-```bash
+DATABASE_URL=postgresql://user:password@host:port/database
+ENABLE_PGVECTOR=true
 KV_STORE_PROVIDER=postgresql
-DATABASE_URL=postgresql://user:pass@db.example.com:5432/agentdock
 ```
 
-### For Vercel Deployment
+### Vercel KV
+
+For Vercel deployments, Vercel KV is automatically configured when added via the Vercel dashboard. No additional configuration required.
+
+## Optional Storage Adapters
+
+The following adapters require explicit registration and are not part of the core auto-registration:
+
+### MongoDB
+
+MongoDB is optional and not officially supported for the memory system.
+
 ```bash
-# Vercel KV is auto-configured
-# Just enable KV in Vercel dashboard
+# Enable in environment
+ENABLE_MONGODB=true
+MONGODB_URI=mongodb://localhost:27017/agentdock
+
+# Register in API route
+import { getStorageFactory, registerMongoDBAdapter } from 'agentdock-core/storage';
+
+const factory = getStorageFactory();
+await registerMongoDBAdapter(factory);
 ```
 
-## Next Steps
+### S3-Compatible Storage
 
-- Learn about [Message Persistence](./message-persistence.md)
-- Explore [Message History](./message-history.md)
-- Understand the [Storage Architecture](./README.md) 
+For file storage using S3 or compatible services:
+
+```bash
+ENABLE_S3=true
+S3_ENDPOINT=https://s3.amazonaws.com
+S3_REGION=us-east-1
+S3_ACCESS_KEY_ID=your-key
+S3_SECRET_ACCESS_KEY=your-secret
+S3_BUCKET=agentdock-storage
+```
+
+### Additional Adapters
+
+Refer to the [Storage Documentation](./README.md) for configuration details on:
+- Cloudflare KV/D1/R2
+- Azure Table/Blob Storage
+- Google Cloud Storage/Firestore
+- DynamoDB
+- ChromaDB
+- Pinecone
+- Qdrant
+
+## Storage Initialization
+
+The application automatically registers necessary adapters based on environment configuration:
+
+1. **Core Auto-Registration** (at factory level):
+   - Memory (always available)
+   - Redis (if REDIS_URL configured)
+   - Vercel KV (if Vercel environment detected)
+
+2. **Application Auto-Registration** (in API routes):
+   - SQLite (development or ENABLE_SQLITE=true)
+   - SQLite-vec (development or ENABLE_SQLITE_VEC=true)
+   - PostgreSQL (if DATABASE_URL configured)
+   - PostgreSQL Vector (if ENABLE_PGVECTOR=true)
+
+3. **Manual Registration Required**:
+   - MongoDB
+   - All cloud storage providers (S3, Azure, GCS, etc.)
+   - All vector databases (ChromaDB, Pinecone, Qdrant)
+
+## Environment Variables Reference
+
+### Core Storage Configuration
+
+```bash
+# Development
+ENABLE_SQLITE=true           # Enable SQLite (auto-enabled in dev)
+ENABLE_SQLITE_VEC=true       # Enable SQLite vector extension
+
+# Production - PostgreSQL
+DATABASE_URL=postgresql://...
+ENABLE_PGVECTOR=true
+KV_STORE_PROVIDER=postgresql
+
+# Production - Redis
+REDIS_URL=redis://...
+REDIS_TOKEN=...              # For Upstash Redis
+
+# Optional Adapters
+ENABLE_MONGODB=true
+MONGODB_URI=mongodb://...
+```
+
+For complete environment variable reference, see `.env.example`.
+
+## Implementation Notes
+
+The storage abstraction layer provides interfaces for:
+- Key-value storage
+- Session management
+- Vector operations (for future memory system implementation)
+
+**Note**: Advanced features like persistent chat history, AI memory, and automatic backups are planned but not yet implemented. The current implementation provides the foundation for these features. 

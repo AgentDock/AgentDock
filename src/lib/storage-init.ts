@@ -9,10 +9,10 @@ import { getStorageFactory, LogCategory, logger } from 'agentdock-core';
 
 import {
   isAdapterRegistered,
-  registerMongoDBAdapter,
   registerPostgreSQLAdapter,
   registerPostgreSQLVectorAdapter,
-  registerSQLiteAdapter
+  registerSQLiteAdapter,
+  registerSQLiteVecAdapter
 } from 'agentdock-core/storage';
 
 let initialized = false;
@@ -49,6 +49,30 @@ export async function initializeStorageAdapters(): Promise<void> {
           'SQLite adapter registered'
         );
       }
+
+      // Also register SQLite-vec for local vector search (advanced memory)
+      if (
+        process.env.ENABLE_SQLITE_VEC === 'true' ||
+        process.env.NODE_ENV === 'development'
+      ) {
+        if (!isAdapterRegistered(factory, 'sqlite-vec')) {
+          try {
+            await registerSQLiteVecAdapter(factory);
+            logger.info(
+              LogCategory.STORAGE,
+              'StorageInit',
+              'SQLite-vec adapter registered for local vector search'
+            );
+          } catch (error) {
+            logger.warn(
+              LogCategory.STORAGE,
+              'StorageInit',
+              'SQLite-vec adapter registration failed - vector search unavailable',
+              { error: error instanceof Error ? error.message : String(error) }
+            );
+          }
+        }
+      }
     }
 
     // Register PostgreSQL if DATABASE_URL is set
@@ -75,17 +99,9 @@ export async function initializeStorageAdapters(): Promise<void> {
       }
     }
 
-    // Register MongoDB if explicitly enabled
-    if (process.env.ENABLE_MONGODB === 'true' && process.env.MONGODB_URI) {
-      if (!isAdapterRegistered(factory, 'mongodb')) {
-        await registerMongoDBAdapter(factory);
-        logger.info(
-          LogCategory.STORAGE,
-          'StorageInit',
-          'MongoDB adapter registered'
-        );
-      }
-    }
+    // MongoDB is NOT auto-registered
+    // To use MongoDB, manually register it in your API routes:
+    // await registerMongoDBAdapter(factory);
 
     // Set appropriate default based on what's available
     if (

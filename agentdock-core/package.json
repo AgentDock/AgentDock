@@ -11,6 +11,9 @@
   },
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts --external ai --external @ai-sdk/* --external @anthropic-ai/* --external @google/* --external openai --external @upstash/* --external @vercel/* --external zod",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "test:watch": "jest --watch",
     "typecheck": "tsc --noEmit"
   },
   "version": "0.1.0-161-1",
@@ -33,7 +36,11 @@
     "providers": "DeepSeek API is compatible with OpenAI's format, so we use the OpenAI client with a custom baseURL"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.0",
     "@types/sentiment": "^5.0.4",
+    "jest": "^29.7.0",
+    "jest-environment-node": "^29.7.0",
+    "ts-jest": "^29.1.0",
     "tsup": "^8.0.2"
   }
 }

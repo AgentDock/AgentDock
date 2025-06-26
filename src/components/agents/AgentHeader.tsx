@@ -9,7 +9,6 @@ import { Plus, Search, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { type TagConfig } from '@/config/agent-tags';
 
 // Compatible with both TagConfig and dynamically created category configs
 export interface CategoryConfig {

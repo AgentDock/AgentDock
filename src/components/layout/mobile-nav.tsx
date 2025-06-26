@@ -102,12 +102,12 @@ export function MobileNav({ onNavigate }: { onNavigate?: () => void }) {
     // Child path match (handles /agents/category correctly)
     if (
       itemPath !== '/' &&
-      pathname.startsWith(itemPath + (itemPath.endsWith('/') ? '' : '/')) &&
+      pathname?.startsWith(itemPath + (itemPath.endsWith('/') ? '' : '/')) &&
       itemPath.length > 1
     ) {
       // Ensure it's not just a partial match for non-category paths
       if (!itemPath.startsWith('/agents/')) {
-        const pathSegments = pathname.split('/');
+        const pathSegments = pathname?.split('/');
         const itemSegments = itemPath.split('/');
         // Only active if the segment count matches or the next segment starts the child path
         return (

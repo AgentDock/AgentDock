@@ -19,11 +19,11 @@ export function LayoutContent({ children }: { children: React.ReactNode }) {
 
   // Determine if the sidebar should be collapsed based on pathname
   const shouldBeCollapsed = useMemo(() => {
-    return pathname.startsWith('/docs');
+    return pathname?.startsWith('/docs');
   }, [pathname]);
 
   // Set initial collapsed state based on pathname
-  const [isCollapsed, setIsCollapsed] = useState(shouldBeCollapsed);
+  const [isCollapsed, setIsCollapsed] = useState(shouldBeCollapsed ?? false);
 
   const toggleSidebar = useCallback(() => {
     setIsCollapsed((prev) => !prev);
@@ -35,7 +35,7 @@ export function LayoutContent({ children }: { children: React.ReactNode }) {
 
   // Monitor pathname changes and collapse sidebar when on docs pages
   useEffect(() => {
-    setIsCollapsed(shouldBeCollapsed);
+    setIsCollapsed(shouldBeCollapsed ?? false);
   }, [shouldBeCollapsed]);
 
   return (

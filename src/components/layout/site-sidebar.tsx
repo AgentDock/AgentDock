@@ -109,7 +109,7 @@ export function SiteSidebar({ isCollapsed }: SiteSidebarProps) {
     // Child path match (handles /agents/category correctly)
     if (
       itemPath !== '/' &&
-      pathname.startsWith(itemPath + (itemPath.endsWith('/') ? '' : '/')) &&
+      pathname?.startsWith(itemPath + (itemPath.endsWith('/') ? '' : '/')) &&
       itemPath.length > 1
     ) {
       // Ensure it's not just a partial match for non-category paths

@@ -31,8 +31,8 @@ export function DocsSidebar({ sidebarSections }: DocsSidebarProps) {
       const normalizedHref = linkHref.endsWith('/')
         ? linkHref.slice(0, -1)
         : linkHref;
-      const normalizedPathname = pathname.endsWith('/')
-        ? pathname.slice(0, -1)
+      const normalizedPathname = pathname?.endsWith('/')
+        ? pathname?.slice(0, -1)
         : pathname;
 
       return normalizedPathname === normalizedHref;

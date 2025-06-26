@@ -16,6 +16,7 @@ import {
 } from 'agentdock-core/storage';
 
 let initialized = false;
+let initializationPromise: Promise<void> | null = null;
 
 /**
  * Initializes storage adapters based on environment configuration
@@ -28,6 +29,17 @@ export async function initializeStorageAdapters(): Promise<void> {
     return;
   }
 
+  // If initialization is already in progress, wait for it
+  if (initializationPromise) {
+    return initializationPromise;
+  }
+
+  // Start initialization and cache the promise
+  initializationPromise = performInitialization();
+  return initializationPromise;
+}
+
+async function performInitialization(): Promise<void> {
   // Ensure we're running server-side
   if (typeof window !== 'undefined') {
     throw new Error('Storage adapters can only be initialized server-side');
@@ -133,6 +145,8 @@ export async function initializeStorageAdapters(): Promise<void> {
       'Storage adapters initialized'
     );
   } catch (error) {
+    // Reset promise to allow retry
+    initializationPromise = null;
     logger.error(
       LogCategory.STORAGE,
       'StorageInit',
@@ -150,14 +164,9 @@ export function isStorageInitialized(): boolean {
   return initialized;
 }
 
-// Automatically initialize on import if in API route context
-if (typeof window === 'undefined' && !initialized) {
-  initializeStorageAdapters().catch((error) => {
-    logger.error(
-      LogCategory.STORAGE,
-      'StorageInit',
-      'Auto-initialization failed',
-      { error: error instanceof Error ? error.message : String(error) }
-    );
-  });
-}
+/**
+ * Lazy initialization - only initialize when explicitly called
+ * This prevents race conditions on module import.
+ *
+ * Call initializeStorageAdapters() explicitly in your API routes.
+ */

@@ -199,9 +199,6 @@ export function getEdgeStorageFactory(): EdgeStorageFactory {
   return EdgeStorageFactory.getInstance();
 }
 
-// Global storage map to ensure persistence between function invocations
-const GLOBAL_STORAGE = new Map<string, any>();
-
 /**
  * Creates an Edge-compatible storage provider
  *
@@ -215,19 +212,20 @@ export function createEdgeStorageProvider(config: {
 }): StorageProvider {
   const factory = getEdgeStorageFactory();
 
-  // Special handling for memory provider with persistence flag
-  if (config.type === 'memory' && config.config?.isPersistent) {
+  // Memory provider gets fresh instance per request (no global state)
+  // This prevents memory leaks and data bleeding in serverless environments
+  if (config.type === 'memory') {
     logger.debug(
       LogCategory.STORAGE,
       'EdgeFactory',
-      'Creating persistent memory storage provider',
+      'Creating request-scoped memory storage provider',
       { namespace: config.namespace }
     );
 
     return new MemoryStorageProvider({
       namespace: config.namespace,
-      ...config.config,
-      store: GLOBAL_STORAGE
+      ...config.config
+      // No shared store - each request gets isolated storage
     });
   }
 

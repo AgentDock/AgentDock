@@ -108,8 +108,8 @@ export class KVOperations {
     const namespace = options?.namespace || this.namespace;
     const docId = `${namespace}:kv:${key}`;
 
-    // Get TTL from options if provided
-    const ttl = (options as any)?.ttl;
+    // Get TTL from options if provided (convert seconds to milliseconds)
+    const ttl = options?.ttlSeconds ? options.ttlSeconds * 1000 : undefined;
     const metadata = this.createMetadata(key, value, ttl);
 
     // Generate embedding for the key (as document content)

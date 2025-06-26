@@ -157,7 +157,10 @@ export class BatchOperations {
       if (options?.ttlSeconds && typeof options.ttlSeconds === 'number') {
         // Import TTLManager for static method
         const { TTLManager } = await import('../../../utils/ttl-manager');
-        ttl = TTLManager.calculateExpiration(options.ttlSeconds * 1000);
+        // DynamoDB TTL expects seconds since Unix epoch, not milliseconds
+        ttl = Math.floor(
+          TTLManager.calculateExpiration(options.ttlSeconds * 1000) / 1000
+        );
       }
 
       for (let i = 0; i < entries.length; i += batchSize) {

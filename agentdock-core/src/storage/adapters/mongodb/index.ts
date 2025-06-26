@@ -44,6 +44,10 @@ export class MongoDBAdapter extends BaseStorageAdapter {
   private ttlManager: TTLManager;
   private namespace?: string;
 
+  // Namespace-specific operation caches
+  private kvOpsCache = new Map<string, MongoKVOperations>();
+  private batchOpsCache = new Map<string, MongoBatchOperations>();
+
   constructor(options: MongoDBAdapterOptions) {
     super();
     this.config = options.config;
@@ -153,13 +157,7 @@ export class MongoDBAdapter extends BaseStorageAdapter {
     // MongoDB operations don't accept options parameter, handle namespace separately
     const actualNamespace = options?.namespace || this.namespace;
     if (actualNamespace !== this.namespace) {
-      // Create a new operation instance with the different namespace
-      const kvOps = new MongoKVOperations(
-        this.connection.kvCollection,
-        this.keyManager,
-        this.ttlManager,
-        actualNamespace
-      );
+      const kvOps = this.getKVOps(actualNamespace);
       return kvOps.get(key);
     }
     return this.kvOps.get(key);
@@ -175,13 +173,7 @@ export class MongoDBAdapter extends BaseStorageAdapter {
 
     const actualNamespace = options?.namespace || this.namespace;
     if (actualNamespace !== this.namespace) {
-      // Create a new operation instance with the different namespace
-      const kvOps = new MongoKVOperations(
-        this.connection.kvCollection,
-        this.keyManager,
-        this.ttlManager,
-        actualNamespace
-      );
+      const kvOps = this.getKVOps(actualNamespace);
       return kvOps.set(key, value, ttlMs);
     }
     return this.kvOps.set(key, value, ttlMs);
@@ -194,17 +186,10 @@ export class MongoDBAdapter extends BaseStorageAdapter {
     await this.ensureInitialized();
     const actualNamespace = options?.namespace || this.namespace;
     if (actualNamespace !== this.namespace) {
-      // Create a new operation instance with the different namespace
-      const kvOps = new MongoKVOperations(
-        this.connection.kvCollection,
-        this.keyManager,
-        this.ttlManager,
-        actualNamespace
-      );
+      const kvOps = this.getKVOps(actualNamespace);
       return kvOps.delete(key);
-    } else {
-      return this.kvOps.delete(key);
     }
+    return this.kvOps.delete(key);
   }
 
   /**
@@ -214,13 +199,7 @@ export class MongoDBAdapter extends BaseStorageAdapter {
     await this.ensureInitialized();
     const actualNamespace = options?.namespace || this.namespace;
     if (actualNamespace !== this.namespace) {
-      // Create a new operation instance with the different namespace
-      const kvOps = new MongoKVOperations(
-        this.connection.kvCollection,
-        this.keyManager,
-        this.ttlManager,
-        actualNamespace
-      );
+      const kvOps = this.getKVOps(actualNamespace);
       return kvOps.exists(key);
     }
     return this.kvOps.exists(key);
@@ -238,13 +217,7 @@ export class MongoDBAdapter extends BaseStorageAdapter {
 
     let batchOps = this.batchOps;
     if (actualNamespace !== this.namespace) {
-      // Create a new operation instance with the different namespace
-      batchOps = new MongoBatchOperations(
-        this.connection,
-        this.keyManager,
-        this.ttlManager,
-        actualNamespace
-      );
+      batchOps = this.getBatchOps(actualNamespace);
     }
 
     const values = await batchOps.mget(keys);
@@ -270,13 +243,7 @@ export class MongoDBAdapter extends BaseStorageAdapter {
 
     let batchOps = this.batchOps;
     if (actualNamespace !== this.namespace) {
-      // Create a new operation instance with the different namespace
-      batchOps = new MongoBatchOperations(
-        this.connection,
-        this.keyManager,
-        this.ttlManager,
-        actualNamespace
-      );
+      batchOps = this.getBatchOps(actualNamespace);
     }
 
     const pairs = Object.entries(items).map(([key, value]) => ({
@@ -369,6 +336,42 @@ export class MongoDBAdapter extends BaseStorageAdapter {
       _id: fullKey
     });
     return result.deletedCount > 0;
+  }
+
+  /**
+   * Get cached KV operations for namespace
+   */
+  private getKVOps(namespace?: string): MongoKVOperations {
+    const key = namespace || 'default';
+    let kvOps = this.kvOpsCache.get(key);
+    if (!kvOps) {
+      kvOps = new MongoKVOperations(
+        this.connection.kvCollection,
+        this.keyManager,
+        this.ttlManager,
+        namespace
+      );
+      this.kvOpsCache.set(key, kvOps);
+    }
+    return kvOps;
+  }
+
+  /**
+   * Get cached batch operations for namespace
+   */
+  private getBatchOps(namespace?: string): MongoBatchOperations {
+    const key = namespace || 'default';
+    let batchOps = this.batchOpsCache.get(key);
+    if (!batchOps) {
+      batchOps = new MongoBatchOperations(
+        this.connection,
+        this.keyManager,
+        this.ttlManager,
+        namespace
+      );
+      this.batchOpsCache.set(key, batchOps);
+    }
+    return batchOps;
   }
 
   /**

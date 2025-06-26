@@ -29,7 +29,7 @@
     "git-hooks-validate": "tsx scripts/git-hooks-validate.ts",
     "prepare": "husky",
     "clean-install": "./scripts/clean-install.sh",
-    "postinstall": "cd agentdock-core && pnpm install && cd .. && tsx --no-deprecation scripts/generate-llms-from-docs.ts",
+    "postinstall": "cd agentdock-core && pnpm install --no-frozen-lockfile && cd .. && tsx --no-deprecation scripts/generate-llms-from-docs.ts",
     "generate-llms": "tsx --no-deprecation scripts/generate-llms-from-docs.ts",
     "build:agentdock-core": "pnpm --filter agentdock-core build",
     "run-eval-example": "tsx examples/run_evaluation_example.ts",

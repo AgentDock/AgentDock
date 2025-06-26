@@ -46,7 +46,7 @@ export class StorageFactory {
    * @private Use StorageFactory.getInstance() instead
    */
   private constructor() {
-    // Register built-in providers
+    // Register built-in providers (Edge-compatible)
     this.registerProvider('memory', (options = {}) => {
       return new MemoryStorageProvider(options);
     });
@@ -71,6 +71,10 @@ export class StorageFactory {
         namespace: options.namespace
       });
     });
+
+    // NOTE: Node.js-dependent adapters (SQLite, PostgreSQL, MongoDB, etc.) are not registered here
+    // to avoid importing Node.js modules at build time. They should be registered separately
+    // when running in a Node.js environment via registerNodeAdapters() or similar.
 
     logger.debug(
       LogCategory.STORAGE,
@@ -238,6 +242,30 @@ export class StorageFactory {
       'StorageFactory',
       'Cleared provider cache'
     );
+  }
+
+  /**
+   * Registers a new adapter factory
+   *
+   * @param type - Adapter type identifier
+   * @param factory - Factory function for creating adapters
+   */
+  public registerAdapter(type: string, factory: StorageProviderFactory): void {
+    this.providers[type] = factory;
+
+    logger.debug(LogCategory.STORAGE, 'StorageFactory', 'Registered adapter', {
+      type
+    });
+  }
+
+  /**
+   * Gets the provider factory for a given type
+   *
+   * @param type - Provider type identifier
+   * @returns The provider factory function or undefined
+   */
+  public getProviderFactory(type: string): StorageProviderFactory | undefined {
+    return this.providers[type];
   }
 }
 

@@ -94,7 +94,7 @@ describe('ToolRegistry (via getToolRegistry singleton)', () => {
   // --- Testing getToolsForAgent ---
   describe('getToolsForAgent', () => {
     it('should return an empty object if nodeNames array is empty', () => {
-      let tools = toolRegistry.getToolsForAgent([]);
+      const tools = toolRegistry.getToolsForAgent([]);
       expect(Object.keys(tools)).toHaveLength(0); // Expect 0 tools
     });
 

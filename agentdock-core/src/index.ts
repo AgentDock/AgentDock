@@ -103,9 +103,40 @@ export { loadAgentConfig } from './config/agent-config';
 
 /**
  * Storage system for persisting data
+ * NOTE: Only export client-safe storage types and factories.
+ * Node.js-dependent adapters should be imported directly from their paths.
  */
-export * from './storage';
+// Export only types and client-safe utilities
+export type {
+  StorageProvider,
+  StorageOptions,
+  StorageProviderOptions,
+  StorageProviderFactory,
+  ListOptions
+} from './storage/types';
+
+// Export factory functions that handle dynamic imports
+export {
+  createStorageProvider,
+  getDefaultStorageProvider,
+  getStorageFactory
+} from './storage/factory';
+
+// Export only Edge-compatible providers
+export { MemoryStorageProvider } from './storage/providers/memory-provider';
 export { RedisStorageProvider } from './storage/providers/redis-provider';
+export { VercelKVProvider } from './storage/providers/vercel-kv-provider';
+
+// Export base adapter for extension (but not Node.js-dependent implementations)
+export { BaseStorageAdapter } from './storage/base-adapter';
+
+// Export migration tools
+export { StorageMigrator, createMigrator } from './storage/migration';
+export type {
+  MigrationOptions,
+  MigrationProgress,
+  MigrationResult
+} from './storage/migration';
 
 //=============================================================================
 // Logging

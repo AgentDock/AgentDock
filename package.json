@@ -179,7 +179,7 @@
   },
   "lint-staged": {
     "*": [
-      "prettier --check --ignore-unknown"
+      "prettier --write --ignore-unknown"
     ]
   },
   "pnpm": {

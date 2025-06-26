@@ -74,7 +74,7 @@ export function AgentHeader({
           />
         </div>
         <Link
-          href={'/docs/rfa/add-agent' as any}
+          href="/docs/rfa/add-agent"
           passHref
         >
           <Button className="sm:w-[140px]">

@@ -201,11 +201,10 @@ export class MongoDBAdapter extends BaseStorageAdapter {
         this.ttlManager,
         actualNamespace
       );
-      await kvOps.delete(key);
+      return kvOps.delete(key);
     } else {
-      await this.kvOps.delete(key);
+      return this.kvOps.delete(key);
     }
-    return true;
   }
 
   /**

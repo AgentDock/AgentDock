@@ -26,26 +26,26 @@ export interface MongoIndexSpec {
 export interface MongoConnection {
   client: MongoClient;
   db: Db;
-  kvCollection: Collection<MongoDocument>;
-  listCollection: Collection<MongoListDocument>;
+  kvCollection: Collection<MongoDocument<unknown>>;
+  listCollection: Collection<MongoListDocument<unknown>>;
 }
 
-export interface MongoDocument {
+export interface MongoDocument<T = unknown> {
   _id: string;
-  value: any;
+  value: T;
   namespace?: string;
   expiresAt?: Date;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   createdAt: Date;
   updatedAt: Date;
 }
 
-export interface MongoListDocument {
+export interface MongoListDocument<T = unknown> {
   _id: string;
   name: string;
-  items: any[];
+  items: T[];
   namespace?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -57,11 +57,11 @@ export interface MongoQueryOptions {
   skip?: number;
 }
 
-export interface MongoBulkOperation {
+export interface MongoBulkOperation<T = unknown> {
   type: 'insert' | 'update' | 'delete';
   key?: string;
-  value?: any;
-  filter?: Record<string, any>;
-  update?: Record<string, any>;
-  options?: Record<string, any>;
+  value?: T;
+  filter?: Record<string, unknown>;
+  update?: Record<string, unknown>;
+  options?: Record<string, unknown>;
 }

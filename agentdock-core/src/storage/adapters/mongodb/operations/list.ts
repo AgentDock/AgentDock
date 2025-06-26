@@ -250,7 +250,7 @@ export class MongoListOperations {
         return null;
       }
 
-      return jsonDeserializer(result.items[0]);
+      return jsonDeserializer(result.items[0] as string);
     } catch (error) {
       throw ErrorMapper.mapError(error, 'generic');
     }

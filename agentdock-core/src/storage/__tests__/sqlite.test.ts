@@ -78,14 +78,20 @@ describe('SQLiteAdapter', () => {
 
   // Batch operations
   it('should set multiple values if batch operations are supported', async () => {
-    if ('setMany' in adapter) {
-      await (adapter as any).setMany({
+    // Type guard for batch operations
+    if (
+      'setMany' in adapter &&
+      typeof adapter.setMany === 'function' &&
+      'getMany' in adapter &&
+      typeof adapter.getMany === 'function'
+    ) {
+      await adapter.setMany({
         key1: 'value1',
         key2: 'value2',
         key3: 'value3'
       });
 
-      const values = await (adapter as any).getMany(['key1', 'key2', 'key3']);
+      const values = await adapter.getMany(['key1', 'key2', 'key3']);
       expect(values).toEqual({
         key1: 'value1',
         key2: 'value2',
@@ -129,7 +135,13 @@ describe('SQLiteAdapter', () => {
   // SQLite-specific tests
   describe('SQLite-specific features', () => {
     it('should support transactions for batch operations', async () => {
-      if ('setMany' in adapter) {
+      // Type guard for batch operations with proper type checking
+      if (
+        'setMany' in adapter &&
+        typeof adapter.setMany === 'function' &&
+        'getMany' in adapter &&
+        typeof adapter.getMany === 'function'
+      ) {
         // The batch operations already use transactions internally
         const items = {
           'tx:1': 'value1',
@@ -137,13 +149,9 @@ describe('SQLiteAdapter', () => {
           'tx:3': 'value3'
         };
 
-        await (adapter as any).setMany(items);
+        await adapter.setMany(items);
 
-        const retrieved = await (adapter as any).getMany([
-          'tx:1',
-          'tx:2',
-          'tx:3'
-        ]);
+        const retrieved = await adapter.getMany(['tx:1', 'tx:2', 'tx:3']);
         expect(retrieved).toEqual(items);
       }
     });

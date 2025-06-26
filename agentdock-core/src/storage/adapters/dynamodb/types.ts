@@ -46,7 +46,7 @@ export interface DynamoDBConfig {
   writeCapacityUnits?: number;
 
   /** Additional client configuration */
-  clientConfig?: Record<string, any>;
+  clientConfig?: Record<string, unknown>;
 }
 
 /**
@@ -64,13 +64,13 @@ export interface DynamoDBConnection {
 /**
  * DynamoDB item structure
  */
-export interface DynamoDBItem {
+export interface DynamoDBItem<T = unknown> {
   pk: string;
   sk: string;
-  value: any;
-  metadata?: Record<string, any>;
+  value: T;
+  metadata?: Record<string, unknown>;
   expiresAt?: number;
   namespace?: string;
   type?: 'kv' | 'list';
-  listData?: any[];
+  listData?: T[];
 }

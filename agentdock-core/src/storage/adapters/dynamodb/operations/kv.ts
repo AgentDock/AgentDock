@@ -166,11 +166,12 @@ export class KVOperations {
   async list(prefix: string, options?: StorageOptions): Promise<string[]> {
     const namespace =
       options?.namespace || this.connection.defaultNamespace || 'default';
-    const pattern = buildPattern(prefix);
 
     try {
       const { QueryCommand } = await import('@aws-sdk/client-dynamodb');
       const pk = `ns#${namespace}`;
+      // Use DynamoDB's native prefix filtering instead of client-side regex
+      const skPrefix = `key#${prefix}`;
 
       const items: string[] = [];
       let lastEvaluatedKey:
@@ -183,7 +184,7 @@ export class KVOperations {
           KeyConditionExpression: 'pk = :pk AND begins_with(sk, :prefix)',
           ExpressionAttributeValues: {
             ':pk': { S: pk },
-            ':prefix': { S: 'key#' }
+            ':prefix': { S: skPrefix } // Server-side prefix filtering
           },
           ExclusiveStartKey: lastEvaluatedKey
         });
@@ -196,9 +197,8 @@ export class KVOperations {
           for (const item of response.Items) {
             if (item.sk?.S) {
               const key = parseKey(item.sk.S);
-              if (pattern.test(key)) {
-                items.push(key);
-              }
+              // No client-side filtering needed - DynamoDB already filtered by prefix
+              items.push(key);
             }
           }
         }

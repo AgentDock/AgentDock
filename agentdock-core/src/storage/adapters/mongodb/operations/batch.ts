@@ -56,7 +56,7 @@ export class MongoBatchOperations {
         const doc = docMap.get(fullKey);
         if (!doc) return null;
 
-        return jsonDeserializer((doc as MongoDocument).value);
+        return jsonDeserializer((doc as MongoDocument).value as string);
       });
     } catch (error) {
       throw ErrorMapper.mapError(error, 'generic');

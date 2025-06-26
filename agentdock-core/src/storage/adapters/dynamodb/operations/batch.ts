@@ -39,8 +39,12 @@ export class BatchOperations {
 
       for (let i = 0; i < keys.length; i += batchSize) {
         const batch = keys.slice(i, i + batchSize);
+
+        // Create Map for O(1) key lookups - eliminates O(n²) performance
+        const skToKeyMap = new Map<string, string>();
         const keysToGet = batch.map((key) => {
           const { pk, sk } = buildCompositeKey(namespace, key);
+          skToKeyMap.set(sk, key); // O(1) lookup mapping
           return { pk: { S: pk }, sk: { S: sk } };
         });
 
@@ -54,15 +58,11 @@ export class BatchOperations {
 
         const response = await this.connection.client.send(command);
 
-        // Process responses
+        // Process responses with O(1) Map lookups instead of O(n) find()
         if (response.Responses?.[this.connection.tableName]) {
           for (const item of response.Responses[this.connection.tableName]) {
             if (item.sk?.S) {
-              const key = item.sk.S.replace('key#', '');
-              const originalKey = batch.find((k) => {
-                const { sk: itemSk } = buildCompositeKey(namespace, k);
-                return itemSk === item.sk?.S;
-              });
+              const originalKey = skToKeyMap.get(item.sk.S); // O(1) lookup!
 
               if (originalKey) {
                 // Convert item
@@ -79,18 +79,14 @@ export class BatchOperations {
           }
         }
 
-        // Handle unprocessed keys
+        // Handle unprocessed keys with O(1) Map lookups
         if (response.UnprocessedKeys?.[this.connection.tableName]) {
           // For simplicity, try individual gets for unprocessed items
           for (const unprocessedKey of response.UnprocessedKeys[
             this.connection.tableName
           ].Keys || []) {
             if (unprocessedKey.sk?.S) {
-              const key = unprocessedKey.sk.S.replace('key#', '');
-              const originalKey = batch.find((k) => {
-                const { sk: itemSk } = buildCompositeKey(namespace, k);
-                return itemSk === unprocessedKey.sk?.S;
-              });
+              const originalKey = skToKeyMap.get(unprocessedKey.sk.S); // O(1) lookup!
 
               if (originalKey) {
                 result[originalKey] = await this.kvOps.get<T>(
@@ -185,21 +181,23 @@ export class BatchOperations {
 
         const response = await this.connection.client.send(command);
 
-        // Handle unprocessed items
+        // Handle unprocessed items with O(1) Map lookups
         if (response.UnprocessedItems?.[this.connection.tableName]) {
+          // Create Map for O(1) lookup of batch entries
+          const skToBatchEntryMap = new Map<string, [string, T]>();
+          batch.forEach(([key, value]) => {
+            const { sk } = buildCompositeKey(namespace, key);
+            skToBatchEntryMap.set(sk, [key, value]);
+          });
+
           // For simplicity, try individual sets for unprocessed items
           for (const unprocessedItem of response.UnprocessedItems[
             this.connection.tableName
           ]) {
             if (unprocessedItem.PutRequest?.Item?.sk?.S) {
-              const key = unprocessedItem.PutRequest.Item.sk.S.replace(
-                'key#',
-                ''
-              );
-              const originalEntry = batch.find(([k]) => {
-                const { sk: itemSk } = buildCompositeKey(namespace, k);
-                return itemSk === unprocessedItem.PutRequest?.Item?.sk?.S;
-              });
+              const originalEntry = skToBatchEntryMap.get(
+                unprocessedItem.PutRequest.Item.sk.S
+              ); // O(1) lookup!
 
               if (originalEntry) {
                 await this.kvOps.set(
@@ -275,24 +273,26 @@ export class BatchOperations {
         // Count successful deletes (DynamoDB doesn't return info about what was actually deleted)
         deleted += batch.length;
 
-        // Handle unprocessed items
+        // Handle unprocessed items with O(1) Map lookups
         if (response.UnprocessedItems?.[this.connection.tableName]) {
           deleted -=
             response.UnprocessedItems[this.connection.tableName].length;
+
+          // Create Map for O(1) lookup of batch keys
+          const skToKeyMap = new Map<string, string>();
+          batch.forEach((key) => {
+            const { sk } = buildCompositeKey(namespace, key);
+            skToKeyMap.set(sk, key);
+          });
 
           // For simplicity, try individual deletes for unprocessed items
           for (const unprocessedItem of response.UnprocessedItems[
             this.connection.tableName
           ]) {
             if (unprocessedItem.DeleteRequest?.Key?.sk?.S) {
-              const key = unprocessedItem.DeleteRequest.Key.sk.S.replace(
-                'key#',
-                ''
-              );
-              const originalKey = batch.find((k) => {
-                const { sk: itemSk } = buildCompositeKey(namespace, k);
-                return itemSk === unprocessedItem.DeleteRequest?.Key?.sk?.S;
-              });
+              const originalKey = skToKeyMap.get(
+                unprocessedItem.DeleteRequest.Key.sk.S
+              ); // O(1) lookup!
 
               if (originalKey) {
                 const wasDeleted = await this.kvOps.delete(

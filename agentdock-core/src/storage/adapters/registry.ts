@@ -278,11 +278,25 @@ export async function registerCloudAdapters(
     // DynamoDB Adapter
     const { DynamoDBAdapter } = await import('./dynamodb');
     factory.registerAdapter('dynamodb', (options = {}) => {
-      const dynamoConfig = options as any;
-      if (!dynamoConfig.tableName) {
+      // Type-safe configuration validation
+      if (!options.config?.tableName) {
         throw new Error('DynamoDB adapter requires tableName in config');
       }
-      return new DynamoDBAdapter(dynamoConfig);
+      return new DynamoDBAdapter({
+        tableName: options.config.tableName,
+        region: options.config.region,
+        credentials: options.config.credentials,
+        endpoint: options.config.endpoint,
+        namespace: options.namespace,
+        partitionKey: options.config.partitionKey,
+        sortKey: options.config.sortKey,
+        ttlAttribute: options.config.ttlAttribute,
+        createTableIfNotExists: options.config.createTableIfNotExists,
+        billingMode: options.config.billingMode,
+        readCapacityUnits: options.config.readCapacityUnits,
+        writeCapacityUnits: options.config.writeCapacityUnits,
+        clientConfig: options.config.clientConfig
+      });
     });
 
     // Cloudflare KV Adapter

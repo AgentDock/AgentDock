@@ -29,6 +29,63 @@ AgentDock Core is designed to be framework-agnostic and can be used standalone i
 -   **Robust Error Handling**: Standardized error system.
 -   **Type Safety**: Fully written in TypeScript.
 
+## Storage & Memory System
+
+AgentDock Core includes a complete memory system with official database support built-in.
+
+### Official Memory Providers (Included)
+
+```bash
+# No additional installation needed!
+# SQLite and PostgreSQL are included for the memory system:
+
+# Development: SQLite (automatic)
+# Production: PostgreSQL (configure DATABASE_URL)
+```
+
+### Optional Storage Adapters
+
+For additional storage needs beyond the memory system, install only what you need:
+
+```bash
+# Document Storage
+pnpm add mongodb
+
+# AWS Storage
+pnpm add @aws-sdk/client-dynamodb
+pnpm add @aws-sdk/client-s3 @aws-sdk/lib-storage @aws-sdk/s3-request-presigner
+
+# Redis Session Cache  
+pnpm add @upstash/redis
+
+# Vercel KV
+pnpm add @vercel/kv
+```
+
+### Bundle Size Impact
+
+| **Configuration** | **Bundle Size** | **Notes** |
+|------------------|-----------------|-----------|
+| Core + Memory (current) | ~15MB | SQLite + PostgreSQL included |
+| + MongoDB | ~20MB | Optional document storage |
+| + DynamoDB | ~23MB | Optional AWS storage |
+| + All optional adapters | ~38MB | Still 16% smaller than old approach |
+| Old approach (everything) | ~45MB | All adapters bundled |
+
+### Error Resolution
+
+If you see import errors like `Cannot resolve module '@aws-sdk/client-dynamodb'`, install the missing peer dependency:
+
+```bash
+pnpm add @aws-sdk/client-dynamodb
+```
+
+For TypeScript errors, add the corresponding `@types` package:
+
+```bash
+pnpm add -D @types/pg  # for PostgreSQL
+```
+
 ### Basic Interaction Flow
 
 ```mermaid

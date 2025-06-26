@@ -151,9 +151,12 @@ export async function cleanupExpired(
       'CloudflareD1',
       'Failed to cleanup expired entries',
       {
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
+        kvTable: kvTableName,
+        listTable: listTableName
       }
     );
-    return 0;
+    // Re-throw error instead of silent failure - caller should handle cleanup failures
+    throw error;
   }
 }

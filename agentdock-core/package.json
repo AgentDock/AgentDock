@@ -10,7 +10,7 @@
     }
   },
   "scripts": {
-    "build": "tsup src/index.ts --format esm,cjs --dts --external ai --external @ai-sdk/* --external @anthropic-ai/* --external @google/* --external openai --external @upstash/* --external @vercel/* --external better-sqlite3 --external pg --external mongodb --external @aws-sdk/* --external @aws-sdk/client-s3 --external @aws-sdk/lib-storage --external @aws-sdk/s3-request-presigner --external @aws-sdk/client-dynamodb --external @aws-sdk/types --external zod",
+    "build": "tsup",
     "typecheck": "tsc --noEmit"
   },
   "version": "0.1.0-161-1",
@@ -26,9 +26,34 @@
     "ai": "4.2.0",
     "better-sqlite3": "^11.10.0",
     "openai": "^4.83.0",
+    "pg": "^8.13.1",
     "sentiment": "^5.0.2",
     "string-comparisons": "^0.0.20",
     "zod": "^3.24.1"
+  },
+  "peerDependencies": {
+    "@aws-sdk/client-dynamodb": "^3.830.0",
+    "@aws-sdk/client-s3": "^3.832.0",
+    "@aws-sdk/lib-storage": "^3.832.0",
+    "@aws-sdk/s3-request-presigner": "^3.832.0",
+    "mongodb": "^6.10.0"
+  },
+  "peerDependenciesMeta": {
+    "@aws-sdk/client-dynamodb": {
+      "optional": true
+    },
+    "@aws-sdk/client-s3": {
+      "optional": true
+    },
+    "@aws-sdk/lib-storage": {
+      "optional": true
+    },
+    "@aws-sdk/s3-request-presigner": {
+      "optional": true
+    },
+    "mongodb": {
+      "optional": true
+    }
   },
   "comments": {
     "providers": "DeepSeek API is compatible with OpenAI's format, so we use the OpenAI client with a custom baseURL"

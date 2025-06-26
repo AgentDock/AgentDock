@@ -42,7 +42,7 @@ export class MongoKVOperations {
         return null;
       }
 
-      return jsonDeserializer(doc.value);
+      return jsonDeserializer(doc.value as string);
     } catch (error) {
       throw ErrorMapper.mapError(error, 'generic');
     }
@@ -82,13 +82,16 @@ export class MongoKVOperations {
   /**
    * Delete a key
    */
-  async delete(key: string): Promise<void> {
+  async delete(key: string): Promise<boolean> {
     try {
       validateKey(key);
       const fullKey = this.keyManager.createKey(key, this.namespace);
 
-      await this.collection.deleteOne({ _id: fullKey });
+      const result = await this.collection.deleteOne({ _id: fullKey });
       this.ttlManager.removeTTL(fullKey);
+
+      // Return whether the document was actually deleted
+      return result.deletedCount > 0;
     } catch (error) {
       throw ErrorMapper.mapError(error, 'generic');
     }

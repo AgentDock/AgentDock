@@ -289,7 +289,7 @@ export interface StorageMetadata {
   /**
    * List items (for lists)
    */
-  _list_items?: string;
+  _list_items?: string[];
 
   /**
    * Value type for deserialization

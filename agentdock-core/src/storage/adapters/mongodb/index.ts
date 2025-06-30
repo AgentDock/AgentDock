@@ -260,7 +260,14 @@ export class MongoDBAdapter extends BaseStorageAdapter {
    */
   async deleteMany(keys: string[], options?: StorageOptions): Promise<number> {
     await this.ensureInitialized();
-    return this.batchOps.mdel(keys);
+    const actualNamespace = options?.namespace || this.namespace;
+
+    let batchOps = this.batchOps;
+    if (actualNamespace !== this.namespace) {
+      batchOps = this.getBatchOps(actualNamespace);
+    }
+
+    return batchOps.mdel(keys);
   }
 
   /**

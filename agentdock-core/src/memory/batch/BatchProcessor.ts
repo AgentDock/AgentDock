@@ -153,19 +153,15 @@ export class BatchProcessor {
 
     const bufferKey = `${userId}:${agentId}`;
 
-    // CRITICAL FIX: Use immutable operations to prevent race conditions
-    // Create new buffer instead of mutating existing one
-    this.messageBuffer.set(bufferKey, [
-      ...(this.messageBuffer.get(bufferKey) || []),
-      message
-    ]);
+    // Atomic buffer update using Map.set with computed value
+    const newBuffer = [...(this.messageBuffer.get(bufferKey) || []), message];
+    this.messageBuffer.set(bufferKey, newBuffer);
 
-    const buffer = this.messageBuffer.get(bufferKey)!;
-    if (this.shouldProcessBatch(buffer)) {
+    if (this.shouldProcessBatch(newBuffer)) {
       const memories = await this.processBatchWithTracking(
         userId,
         agentId,
-        buffer
+        newBuffer
       );
       this.messageBuffer.delete(bufferKey);
       return memories;

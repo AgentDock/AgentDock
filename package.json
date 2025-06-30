@@ -29,7 +29,8 @@
     "git-hooks-validate": "tsx scripts/git-hooks-validate.ts",
     "prepare": "husky",
     "clean-install": "./scripts/clean-install.sh",
-    "postinstall": "cd agentdock-core && pnpm install --no-frozen-lockfile && cd .. && tsx --no-deprecation scripts/generate-llms-from-docs.ts",
+    "postinstall": "pnpm run install:agentdock-core && tsx --no-deprecation scripts/generate-llms-from-docs.ts",
+    "install:agentdock-core": "cd agentdock-core && (pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile) && cd ..",
     "generate-llms": "tsx --no-deprecation scripts/generate-llms-from-docs.ts",
     "build:agentdock-core": "pnpm --filter agentdock-core build",
     "run-eval-example": "tsx examples/run_evaluation_example.ts",
@@ -190,5 +191,9 @@
       "undici": ">=5.28.5",
       "esbuild": ">=0.25.0"
     }
+  },
+  "comments": {
+    "agentdock-core": "Local development of separate package - will be published to npm when ready",
+    "postinstall-security": "install:agentdock-core tries --frozen-lockfile first, falls back to --no-frozen-lockfile for development flexibility"
   }
 }

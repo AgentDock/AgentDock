@@ -435,7 +435,7 @@ export class LifecycleScheduler {
     const retryConfig = this.config.retryConfig!;
     let lastError: Error | null = null;
 
-    for (let attempt = 0; attempt <= retryConfig.maxRetries; attempt++) {
+    for (let attempt = 0; attempt < retryConfig.maxRetries + 1; attempt++) {
       try {
         await operation();
         return; // Success
@@ -465,7 +465,7 @@ export class LifecycleScheduler {
       }
     }
 
-    // All retries exhausted
+    // All retries exhausted - log and re-throw error
     logger.error(
       LogCategory.STORAGE,
       'LifecycleScheduler',
@@ -476,5 +476,8 @@ export class LifecycleScheduler {
         error: lastError?.message || 'Unknown error'
       }
     );
+
+    // Re-throw the last error to ensure caller can handle it
+    throw lastError || new Error('Operation failed after all retries');
   }
 }

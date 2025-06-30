@@ -18,12 +18,41 @@ import { MemoryType } from '../../types';
 import { Memory } from '../../types/common';
 import { ConsolidationConfig, ConsolidationResult } from '../types';
 
-// Zod schema for LLM consolidation validation
+/**
+ * Storage interface for MemoryConsolidator operations
+ */
+interface ConsolidatorStorage {
+  setMemory?: (memory: Memory) => Promise<void>;
+  deleteMemory?: (
+    userId: string,
+    agentId: string,
+    type: string,
+    id: string
+  ) => Promise<void>;
+  vectorSearch?: (
+    content: string,
+    options: {
+      limit: number;
+      threshold: number;
+      exclude: string[];
+    }
+  ) => Promise<Array<{ id: string; score: number }>>;
+  memory?: {
+    getByType: (
+      userId: string,
+      agentId: string,
+      type: string,
+      options?: { cutoffTime?: number; createdBefore?: number }
+    ) => Promise<Memory[]>;
+  };
+}
+
+// Zod schema for LLM-based consolidation analysis
 const ConsolidationAnalysisSchema = z.object({
   shouldConsolidate: z.boolean(),
-  consolidatedContent: z.string().optional(),
-  reasoning: z.string().optional(),
-  confidence: z.number().min(0).max(1)
+  reasoning: z.string(),
+  confidence: z.number().min(0).max(1),
+  suggestedStrategy: z.enum(['merge', 'synthesize', 'summarize'])
 });
 
 type ConsolidationAnalysis = z.infer<typeof ConsolidationAnalysisSchema>;
@@ -39,7 +68,7 @@ interface CostTracker {
       cost: number;
       memoriesExtracted: number;
       messagesProcessed: number;
-      metadata: Record<string, any>;
+      metadata: Record<string, unknown>;
     }
   ): Promise<void>;
 
@@ -54,7 +83,7 @@ export class MemoryConsolidator {
   private costTracker: CostTracker;
 
   constructor(
-    private storage: any,
+    private storage: ConsolidatorStorage,
     private config: ConsolidationConfig,
     costTracker?: CostTracker
   ) {

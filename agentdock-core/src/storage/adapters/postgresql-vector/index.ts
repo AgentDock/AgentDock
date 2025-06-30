@@ -61,8 +61,6 @@ export class PostgreSQLVectorAdapter
 {
   private vectorOptions: PostgreSQLVectorAdapterOptions;
   private isVectorInitialized = false;
-  private vectorConnectionManager: PostgreSQLConnectionManager;
-  private vectorConnection?: PostgreSQLConnection;
 
   constructor(options: PostgreSQLVectorAdapterOptions) {
     super(options);
@@ -73,8 +71,6 @@ export class PostgreSQLVectorAdapter
       defaultMetric: options.defaultMetric || VectorMetric.COSINE,
       defaultIndexType: options.defaultIndexType || VectorIndexType.IVFFLAT
     };
-    // Create our own connection manager to access the connection
-    this.vectorConnectionManager = new PostgreSQLConnectionManager(options);
   }
 
   /**
@@ -84,14 +80,13 @@ export class PostgreSQLVectorAdapter
     await super.initialize();
 
     if (this.vectorOptions.enableVector && !this.isVectorInitialized) {
-      // Get connection from our own manager
-      this.vectorConnection =
-        await this.vectorConnectionManager.getConnection();
-      await initializePgVector(this.vectorConnection.pool);
+      // Use parent class connection instead of creating duplicate
+      const connection = await this.getConnection();
+      await initializePgVector(connection.pool);
 
       // Set IVF Flat probes if configured
       if (this.vectorOptions.ivfflat?.probes) {
-        await this.vectorConnection.pool.query(
+        await connection.pool.query(
           `SET ivfflat.probes = ${this.vectorOptions.ivfflat.probes}`
         );
       }
@@ -110,10 +105,7 @@ export class PostgreSQLVectorAdapter
    */
   private async getVectorConnection(): Promise<PostgreSQLConnection> {
     await this.initialize();
-    if (!this.vectorConnection) {
-      throw new Error('Vector connection not initialized');
-    }
-    return this.vectorConnection;
+    return this.getConnection();
   }
 
   /**
@@ -287,7 +279,6 @@ export class PostgreSQLVectorAdapter
    */
   async close(): Promise<void> {
     await super.close();
-    await this.vectorConnectionManager.close();
   }
 
   /**

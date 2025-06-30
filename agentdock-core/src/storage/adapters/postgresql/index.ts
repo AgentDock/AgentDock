@@ -131,6 +131,17 @@ export class PostgreSQLAdapter extends BaseStorageAdapter {
   }
 
   /**
+   * Get the current connection (for use by child classes)
+   */
+  protected async getConnection(): Promise<PostgreSQLConnection> {
+    await this.initialize();
+    if (!this.connection) {
+      throw new Error('Connection not initialized');
+    }
+    return this.connection;
+  }
+
+  /**
    * Close the adapter
    */
   async close(): Promise<void> {

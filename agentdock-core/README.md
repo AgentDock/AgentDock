@@ -250,6 +250,8 @@ See the main [CONTRIBUTING.md](../CONTRIBUTING.md) for general guidelines.
 
 AgentDock Core is currently under active development (pre-release). APIs may change before the first official stable release (v1.0.0). We follow semantic versioning principles.
 
+For information about the local development pattern and package structure, see [DEVELOPMENT.md](./DEVELOPMENT.md).
+
 ## License
 
 AgentDock Core is released under the [MIT License](../LICENSE). 

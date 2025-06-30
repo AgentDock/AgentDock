@@ -10,28 +10,30 @@ import { SQLiteAdapter } from '../sqlite';
 import { SQLiteConnectionManager } from '../sqlite/connection';
 import { SQLiteConnection } from '../sqlite/types';
 import {
-  deleteVectors,
-  getVectorById,
-  insertVectors,
+  deleteVector,
+  getVector,
+  insertVector,
   searchVectors,
-  updateVectors
+  updateVector,
+  getCollectionStats
 } from './operations/vector';
 import {
   checkCollectionExists,
   createVectorCollection,
   createVectorTables,
   dropVectorCollection,
+  getCollectionMetadata,
   initializeSqliteVec,
   listVectorCollections
 } from './schema';
 import {
   SQLiteVecAdapterOptions,
   VectorCollectionConfig,
-  VectorData,
-  VectorMetric,
-  VectorOperations,
   VectorSearchOptions,
-  VectorSearchResult
+  VectorSearchResult,
+  VectorData,
+  VectorInsertOptions,
+  VectorMetric
 } from './types';
 
 // Export types
@@ -40,9 +42,29 @@ export type {
   VectorCollectionConfig,
   VectorData,
   VectorSearchOptions,
-  VectorSearchResult
+  VectorSearchResult,
+  VectorInsertOptions
 };
 export { VectorMetric };
+
+/**
+ * Vector operations interface
+ */
+export interface VectorOperations {
+  createCollection(config: VectorCollectionConfig): Promise<void>;
+  dropCollection(name: string): Promise<void>;
+  collectionExists(name: string): Promise<boolean>;
+  listCollections(): Promise<string[]>;
+  insertVectors(collection: string, vectors: VectorData[]): Promise<void>;
+  updateVectors(collection: string, vectors: VectorData[]): Promise<void>;
+  deleteVectors(collection: string, ids: string[]): Promise<void>;
+  searchVectors(
+    collection: string,
+    queryVector: number[],
+    options?: VectorSearchOptions
+  ): Promise<VectorSearchResult[]>;
+  getVector(collection: string, id: string): Promise<VectorData | null>;
+}
 
 /**
  * SQLite storage adapter with vector similarity search capabilities
@@ -178,7 +200,13 @@ export class SQLiteVecAdapter
     vectors: VectorData[]
   ): Promise<void> {
     const connection = await this.getVectorConnection();
-    await insertVectors(connection.db, collection, vectors);
+    
+    // Insert each vector individually using the new API
+    for (const vector of vectors) {
+      await insertVector(connection.db, collection, vector.id, vector.vector, {
+        metadata: vector.metadata
+      });
+    }
   }
 
   /**
@@ -189,7 +217,11 @@ export class SQLiteVecAdapter
     vectors: VectorData[]
   ): Promise<void> {
     const connection = await this.getVectorConnection();
-    await updateVectors(connection.db, collection, vectors);
+    
+    // Update each vector individually using the new API
+    for (const vector of vectors) {
+      await updateVector(connection.db, collection, vector.id, vector.vector);
+    }
   }
 
   /**
@@ -197,7 +229,11 @@ export class SQLiteVecAdapter
    */
   async deleteVectors(collection: string, ids: string[]): Promise<void> {
     const connection = await this.getVectorConnection();
-    await deleteVectors(connection.db, collection, ids);
+    
+    // Delete each vector individually using the new API
+    for (const id of ids) {
+      await deleteVector(connection.db, collection, id);
+    }
   }
 
   /**
@@ -217,7 +253,18 @@ export class SQLiteVecAdapter
    */
   async getVector(collection: string, id: string): Promise<VectorData | null> {
     const connection = await this.getVectorConnection();
-    return getVectorById(connection.db, collection, id);
+    const vector = await getVector(connection.db, collection, id);
+    
+    if (!vector) {
+      return null;
+    }
+    
+    // Convert the returned number[] to VectorData format
+    return {
+      id: id,
+      vector: vector,
+      metadata: undefined // sqlite-vec doesn't store metadata in the same way
+    };
   }
 
   /**
@@ -227,28 +274,21 @@ export class SQLiteVecAdapter
     collection: string,
     vectors: VectorData[]
   ): Promise<void> {
-    // Batch check for existing vectors
     const connection = await this.getVectorConnection();
-    const vectorIds = vectors.map((v) => v.id);
-
-    // Batch check for existing vectors
-    const placeholders = vectorIds.map(() => '?').join(',');
-    const existingRows = connection.db
-      .prepare(
-        `SELECT id FROM vec_vectors WHERE collection = ? AND id IN (${placeholders})`
-      )
-      .all(collection, ...vectorIds) as Array<{ id: string }>;
-
-    const existingIdSet = new Set(existingRows.map((row) => row.id));
-    const toUpdate = vectors.filter((v) => existingIdSet.has(v.id));
-    const toInsert = vectors.filter((v) => !existingIdSet.has(v.id));
-
-    if (toUpdate.length > 0) {
-      await this.updateVectors(collection, toUpdate);
-    }
-
-    if (toInsert.length > 0) {
-      await this.insertVectors(collection, toInsert);
+    
+    for (const vector of vectors) {
+      // Try to get existing vector
+      const existing = await getVector(connection.db, collection, vector.id);
+      
+      if (existing) {
+        // Update existing
+        await updateVector(connection.db, collection, vector.id, vector.vector);
+      } else {
+        // Insert new
+        await insertVector(connection.db, collection, vector.id, vector.vector, {
+          metadata: vector.metadata
+        });
+      }
     }
   }
 

@@ -42,8 +42,13 @@ export type {
   ChromaDocument,
   ChromaQueryParams,
   ChromaQueryResult,
-  ChromaWhereFilter
+  ChromaWhereFilter,
+  ChromaEmbeddingFunction
 };
+
+// Export embedding functions
+export { DefaultEmbeddingFunction } from './types';
+export { AISDKEmbeddingFunction, createAISDKEmbeddingFunction } from './ai-sdk-embedding';
 
 /**
  * Default collection name for storage operations

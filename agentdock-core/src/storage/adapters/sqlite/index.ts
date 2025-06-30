@@ -7,11 +7,12 @@
 
 import { LogCategory, logger } from '../../../logging';
 import { BaseStorageAdapter } from '../../base-adapter';
-import { ListOptions, StorageOptions } from '../../types';
+import { ListOptions, StorageOptions, MemoryOperations as IMemoryOperations } from '../../types';
 import { SQLiteConnectionManager } from './connection';
 import { BatchOperations } from './operations/batch';
 import { KVOperations } from './operations/kv';
 import { ListOperations } from './operations/list';
+import { SqliteMemoryOperations } from './operations/memory';
 import { SQLiteAdapterOptions, SQLiteConnection } from './types';
 
 // Export types
@@ -29,6 +30,9 @@ export class SQLiteAdapter extends BaseStorageAdapter {
   private listOps!: ListOperations;
   private batchOps!: BatchOperations;
 
+  // Memory operations (optional)
+  memory?: IMemoryOperations;
+
   constructor(options: SQLiteAdapterOptions = {}) {
     super();
     this.connectionManager = new SQLiteConnectionManager(options);
@@ -45,7 +49,131 @@ export class SQLiteAdapter extends BaseStorageAdapter {
     this.listOps = new ListOperations(this.connection);
     this.batchOps = new BatchOperations(this.connection);
 
+    // Initialize memory operations if tables exist (or auto-create for SQLite)
+    await this.initializeMemoryOperations();
+
     logger.info(LogCategory.STORAGE, 'SQLiteAdapter', 'Adapter initialized');
+  }
+
+  /**
+   * Initialize memory operations - auto-creates tables for SQLite
+   */
+  private async initializeMemoryOperations(): Promise<void> {
+    if (!this.connection) return;
+
+    try {
+      // Check if memory tables exist
+      const result = this.connection.db.prepare(`
+        SELECT name FROM sqlite_master 
+        WHERE type='table' AND name='memories'
+      `).get();
+
+             if (result) {
+         // Tables exist - initialize memory operations directly (no bridge)
+         this.memory = new SqliteMemoryOperations(this.connection.db);
+
+        logger.info(
+          LogCategory.STORAGE,
+          'SQLiteAdapter',
+          'Memory operations enabled'
+        );
+      } else {
+        // Tables don't exist - auto-create them for SQLite
+        logger.info(
+          LogCategory.STORAGE,
+          'SQLiteAdapter',
+          'Memory tables not found - creating them automatically'
+        );
+        
+        await this.createMemoryTables();
+        
+        // Now initialize memory operations
+        this.memory = new SqliteMemoryOperations(this.connection.db);
+        
+        logger.info(
+          LogCategory.STORAGE,
+          'SQLiteAdapter',
+          'Memory operations enabled with auto-created tables'
+        );
+      }
+    } catch (error) {
+      logger.warn(
+        LogCategory.STORAGE,
+        'SQLiteAdapter',
+        'Failed to check for memory tables',
+        { 
+          error: error instanceof Error ? error.message : String(error)
+        }
+      );
+      // Memory operations remain disabled
+    }
+  }
+
+  /**
+   * Create memory tables if they don't exist
+   */
+  private async createMemoryTables(): Promise<void> {
+    if (!this.connection) {
+      throw new Error('Database connection not available');
+    }
+
+    const createMemoriesTable = `
+      CREATE TABLE IF NOT EXISTS memories (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        agent_id TEXT NOT NULL,
+        content TEXT NOT NULL,
+        type TEXT NOT NULL,
+        importance REAL NOT NULL DEFAULT 0.5,
+        resonance REAL NOT NULL DEFAULT 0.5,
+        access_count INTEGER NOT NULL DEFAULT 0,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        last_accessed_at INTEGER NOT NULL,
+        session_id TEXT,
+        token_count INTEGER,
+        keywords TEXT,
+        embedding_id TEXT,
+        metadata TEXT,
+        extraction_method TEXT,
+        batch_id TEXT,
+        source_message_ids TEXT,
+        embedding_model TEXT,
+        embedding_dimension INTEGER
+      )
+    `;
+
+    const createIndexes = [
+      'CREATE INDEX IF NOT EXISTS idx_memories_user_agent ON memories(user_id, agent_id)',
+      'CREATE INDEX IF NOT EXISTS idx_memories_type ON memories(type)',
+      'CREATE INDEX IF NOT EXISTS idx_memories_importance ON memories(importance)',
+      'CREATE INDEX IF NOT EXISTS idx_memories_created_at ON memories(created_at)',
+      'CREATE INDEX IF NOT EXISTS idx_memories_content_fts ON memories(content)'
+    ];
+
+    try {
+      // Create the memories table
+      this.connection.db.exec(createMemoriesTable);
+      
+      // Create indexes for better performance
+      for (const indexSQL of createIndexes) {
+        this.connection.db.exec(indexSQL);
+      }
+
+      logger.info(
+        LogCategory.STORAGE,
+        'SQLiteAdapter',
+        'Memory tables and indexes created successfully'
+      );
+    } catch (error) {
+      logger.error(
+        LogCategory.STORAGE,
+        'SQLiteAdapter',
+        'Failed to create memory tables',
+        { error: error instanceof Error ? error.message : String(error) }
+      );
+      throw error;
+    }
   }
 
   /**

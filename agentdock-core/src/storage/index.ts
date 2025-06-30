@@ -39,15 +39,18 @@ export { VercelKVProvider } from './providers/vercel-kv-provider';
 // import { registerNodeAdapters } from 'agentdock-core/storage/register-node-adapters';
 // await registerNodeAdapters();
 
-// Export adapter registry functions (for server-side use only)
+// Export ONLY essential adapter registry functions (for server-side use only)
 export {
   registerSQLiteAdapter,
   registerSQLiteVecAdapter,
   registerPostgreSQLAdapter,
   registerPostgreSQLVectorAdapter,
-  registerMongoDBAdapter,
-  registerCloudAdapters,
-  registerVectorAdapters,
   registerAgentChatAdapters,
   isAdapterRegistered
 } from './adapters/registry';
+
+// NOTE: Optional adapter registration functions are NOT exported here to prevent bundling.
+// To use them, import directly from their paths:
+// import { registerMongoDBAdapter } from 'agentdock-core/storage/adapters/registry';
+// import { registerCloudAdapters } from 'agentdock-core/storage/adapters/registry';
+// import { registerVectorAdapters } from 'agentdock-core/storage/adapters/registry';

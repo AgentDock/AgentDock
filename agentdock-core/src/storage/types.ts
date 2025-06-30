@@ -5,6 +5,8 @@
  * allowing for pluggable storage providers with a consistent interface.
  */
 
+import { MemoryType } from '../shared/types/memory';
+
 /**
  * Common options for storage operations
  */
@@ -178,6 +180,85 @@ export interface StorageProvider {
    * This should be called when the provider is no longer needed
    */
   destroy?(): Promise<void>;
+
+  /**
+   * Memory operations (optional - not all storage providers support memory operations)
+   */
+  memory?: MemoryOperations;
+}
+
+/**
+ * Memory operations interface for storage providers that support memory functionality
+ * This is the standard interface - storage adapters may implement extended versions
+ */
+export interface MemoryOperations {
+  store(userId: string, agentId: string, memory: MemoryData): Promise<string>;
+  recall(userId: string, agentId: string, query: string, options?: MemoryRecallOptions): Promise<MemoryData[]>;
+  update(userId: string, agentId: string, memoryId: string, updates: Partial<MemoryData>): Promise<void>;
+  delete(userId: string, agentId: string, memoryId: string): Promise<void>;
+  getStats(userId: string, agentId?: string): Promise<MemoryOperationStats>;
+  getById?(userId: string, memoryId: string): Promise<MemoryData | null>;
+  
+  // Extended operations - may not be implemented by all providers
+  batchStore?(userId: string, agentId: string, memories: MemoryData[]): Promise<string[]>;
+  applyDecay?(userId: string, agentId: string, decayRules: any): Promise<any>;
+  createConnections?(userId: string, connections: any[]): Promise<void>;
+  findConnectedMemories?(userId: string, memoryId: string, depth?: number): Promise<any>;
+}
+
+/**
+ * Memory data structure for storage operations
+ */
+export interface MemoryData {
+  id: string;
+  userId: string;        // Required for user isolation
+  agentId: string;
+  type: MemoryType;
+  content: string;
+  importance: number;
+  resonance: number;
+  accessCount: number;
+  createdAt: number;
+  updatedAt: number;
+  lastAccessedAt: number;
+  
+  // Fields that exist in PostgreSQL Memory table
+  sessionId?: string;
+  tokenCount?: number;
+  keywords?: string[];
+  embeddingId?: string;
+  
+  // Type-specific metadata (properly typed)
+  metadata?: {
+    contextWindow?: number;
+    expiresAt?: number;
+    context?: string;
+    category?: string;
+    confidence?: number;
+    [key: string]: unknown;
+  };
+}
+
+/**
+ * Options for memory recall operations
+ */
+export interface MemoryRecallOptions {
+  type?: MemoryType;
+  limit?: number;
+  threshold?: number;
+  minImportance?: number;
+  useVectorSearch?: boolean;
+  timeRange?: { start: Date; end: Date };
+}
+
+/**
+ * Memory operation statistics
+ */
+export interface MemoryOperationStats {
+  totalMemories: number;
+  byType: Record<string, number>;
+  avgImportance: number;
+  totalSize: string;
 }
 
 /**

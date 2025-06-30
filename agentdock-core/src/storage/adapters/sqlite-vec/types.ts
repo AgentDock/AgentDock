@@ -60,6 +60,16 @@ export interface VectorCollectionConfig {
 }
 
 /**
+ * Vector insert options
+ */
+export interface VectorInsertOptions {
+  /**
+   * Additional metadata to store with the vector
+   */
+  metadata?: Record<string, any>;
+}
+
+/**
  * Vector data with metadata
  */
 export interface VectorData {
@@ -84,27 +94,30 @@ export interface VectorData {
  */
 export interface VectorSearchOptions {
   /**
-   * Number of results to return
+   * Maximum number of results to return
+   * @default 10
    */
-  k?: number;
+  limit?: number;
 
   /**
-   * Similarity threshold (0-1 for cosine, varies for other metrics)
+   * Distance threshold for filtering results
    */
   threshold?: number;
 
   /**
-   * Filter by metadata
+   * Additional metadata filters
    */
   filter?: Record<string, any>;
 
   /**
-   * Include vectors in results
+   * Whether to include vector data in results
+   * @default false
    */
   includeVector?: boolean;
 
   /**
-   * Include distance/similarity score
+   * Whether to include similarity score in results
+   * @default true
    */
   includeScore?: boolean;
 }
@@ -114,22 +127,27 @@ export interface VectorSearchOptions {
  */
 export interface VectorSearchResult {
   /**
-   * Document ID
+   * Vector ID
    */
   id: string;
 
   /**
-   * Similarity/distance score
+   * Distance from query vector (lower = more similar)
+   */
+  distance: number;
+
+  /**
+   * Similarity score (higher = more similar)
    */
   score: number;
 
   /**
-   * Optional vector
+   * Vector data (if requested)
    */
   vector?: number[];
 
   /**
-   * Document metadata
+   * Associated metadata
    */
   metadata?: Record<string, any>;
 }

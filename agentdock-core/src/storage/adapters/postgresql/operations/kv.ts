@@ -50,7 +50,8 @@ export class KVOperations {
         return null;
       }
 
-      return result.rows[0].value as T;
+      // Parse JSON since we store values as JSON strings
+      return JSON.parse(result.rows[0].value) as T;
     } catch (error) {
       logger.error(LogCategory.STORAGE, 'PostgreSQLKV', 'Get failed', {
         key: fullKey,

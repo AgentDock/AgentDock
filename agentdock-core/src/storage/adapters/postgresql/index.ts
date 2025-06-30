@@ -4,15 +4,17 @@
 
 import { LogCategory, logger } from '../../../logging';
 import { BaseStorageAdapter } from '../../base-adapter';
-import { ListOptions, StorageOptions } from '../../types';
+import { ListOptions, StorageOptions, MemoryOperations as IMemoryOperations } from '../../types';
 import { PostgreSQLConnectionManager } from './connection';
 import { BatchOperations } from './operations/batch';
 import { KVOperations } from './operations/kv';
 import { ListOperations } from './operations/list';
+import { MemoryOperations } from './operations/memory';
 import { PostgreSQLAdapterOptions, PostgreSQLConnection } from './types';
 
 // Export types
 export type { PostgreSQLAdapterOptions } from './types';
+export { BatchOperations } from './operations/batch';
 
 /**
  * PostgreSQL storage adapter - Production-ready with ACID compliance
@@ -25,6 +27,9 @@ export class PostgreSQLAdapter extends BaseStorageAdapter {
   private kvOps!: KVOperations;
   private listOps!: ListOperations;
   private batchOps!: BatchOperations;
+
+  // Memory operations (optional)
+  memory?: IMemoryOperations;
 
   private initPromise?: Promise<void>;
 
@@ -53,11 +58,69 @@ export class PostgreSQLAdapter extends BaseStorageAdapter {
     this.listOps = new ListOperations(this.connection);
     this.batchOps = new BatchOperations(this.connection);
 
+    // Initialize memory operations if tables exist
+    await this.initializeMemoryOperations();
+
     logger.info(
       LogCategory.STORAGE,
       'PostgreSQLAdapter',
       'Adapter initialized'
     );
+  }
+
+  /**
+   * Initialize memory operations if memory tables exist
+   */
+  private async initializeMemoryOperations(): Promise<void> {
+    if (!this.connection) return;
+
+    try {
+      // Check if memory tables exist
+      const client = await this.connection.pool.connect();
+      try {
+        const result = await client.query(`
+          SELECT EXISTS (
+            SELECT FROM information_schema.tables 
+            WHERE table_schema = $1 AND table_name = 'memories'
+          )
+        `, [this.connection.schema]);
+
+                 if (result.rows[0].exists) {
+           // Initialize memory operations directly (no bridge)
+           this.memory = new MemoryOperations(
+             this.connection.pool, 
+             this.connection.schema
+           );
+
+          logger.info(
+            LogCategory.STORAGE,
+            'PostgreSQLAdapter',
+            'Memory operations enabled',
+            { schema: this.connection.schema }
+          );
+        } else {
+          logger.debug(
+            LogCategory.STORAGE,
+            'PostgreSQLAdapter',
+            'Memory tables not found - memory operations disabled',
+            { schema: this.connection.schema }
+          );
+        }
+      } finally {
+        client.release();
+      }
+    } catch (error) {
+      logger.warn(
+        LogCategory.STORAGE,
+        'PostgreSQLAdapter',
+        'Failed to check for memory tables',
+        { 
+          error: error instanceof Error ? error.message : String(error),
+          schema: this.connection.schema
+        }
+      );
+      // Memory operations remain disabled
+    }
   }
 
   /**

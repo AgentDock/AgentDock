@@ -91,7 +91,7 @@ export class TTLManager {
     const now = Date.now();
     const expired: string[] = [];
 
-    for (const [key, expiresAt] of this.expirationMap) {
+    for (const [key, expiresAt] of Array.from(this.expirationMap.entries())) {
       if (now >= expiresAt) {
         expired.push(key);
       }
@@ -134,7 +134,7 @@ export class TTLManager {
   getAllRecords(): TTLRecord[] {
     const records: TTLRecord[] = [];
 
-    for (const [key, expiresAt] of this.expirationMap) {
+    for (const [key, expiresAt] of Array.from(this.expirationMap.entries())) {
       records.push({ key, expiresAt });
     }
 

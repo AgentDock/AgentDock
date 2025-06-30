@@ -17,3 +17,4 @@ export * from './stream';
 export * from './array';
 export * from './base-connection-manager';
 export * from './id';
+export { generateId } from './id-generator';

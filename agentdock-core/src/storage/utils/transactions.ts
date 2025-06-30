@@ -15,6 +15,7 @@ export interface Transaction {
     timestamp: number;
   }>;
   state: 'active' | 'committed' | 'aborted';
+  timeoutId?: NodeJS.Timeout; // Track timeout reference to prevent memory leak
 }
 
 /**
@@ -38,13 +39,14 @@ export class TransactionManager {
 
     this.transactions.set(id, transaction);
 
-    // Set timeout if specified
+    // Set timeout if specified and store reference to prevent memory leak
     if (options?.timeout) {
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         if (this.transactions.get(id)?.state === 'active') {
           this.abort(id, new TimeoutError('Transaction timeout'));
         }
       }, options.timeout);
+      transaction.timeoutId = timeoutId;
     }
 
     return transaction;
@@ -99,8 +101,19 @@ export class TransactionManager {
       transaction.state = 'aborted';
       throw error;
     } finally {
-      // Clean up after delay
-      setTimeout(() => this.transactions.delete(transactionId), 60000);
+      // Clear timeout to prevent memory leak
+      if (transaction.timeoutId) {
+        clearTimeout(transaction.timeoutId);
+      }
+      
+      // CRITICAL FIX: Immediate cleanup for completed transactions
+      // Only delay cleanup for potentially stuck active transactions
+      if (transaction.state !== 'active') {
+        this.transactions.delete(transactionId);
+      } else {
+        // Reduced delay from 60s to 5s for stuck transactions
+        setTimeout(() => this.transactions.delete(transactionId), 5000);
+      }
     }
   }
 
@@ -115,8 +128,13 @@ export class TransactionManager {
       transaction.state = 'aborted';
     }
 
-    // Clean up
-    setTimeout(() => this.transactions.delete(transactionId), 60000);
+    // Clear timeout to prevent memory leak
+    if (transaction.timeoutId) {
+      clearTimeout(transaction.timeoutId);
+    }
+
+    // CRITICAL FIX: Immediate cleanup for aborted transactions
+    this.transactions.delete(transactionId);
   }
 
   /**

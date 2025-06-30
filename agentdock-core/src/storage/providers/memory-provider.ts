@@ -112,7 +112,7 @@ export class MemoryStorageProvider implements StorageProvider {
   private cleanup(): void {
     let removedCount = 0;
 
-    for (const [key, item] of this.store.entries()) {
+    for (const [key, item] of Array.from(this.store.entries())) {
       if (this.isExpired(item)) {
         this.store.delete(key);
         removedCount++;
@@ -291,7 +291,7 @@ export class MemoryStorageProvider implements StorageProvider {
     const prefixLength = namespacePrefix.length;
 
     // Iterate through all keys
-    for (const [key, item] of this.store.entries()) {
+    for (const [key, item] of Array.from(this.store.entries())) {
       // Skip expired items
       if (this.isExpired(item)) {
         continue;

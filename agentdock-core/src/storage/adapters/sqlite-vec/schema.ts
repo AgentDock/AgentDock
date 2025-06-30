@@ -15,7 +15,7 @@ export async function initializeSqliteVec(
   extensionPath?: string
 ): Promise<void> {
   try {
-    // Load sqlite-vec extension
+    // Load sqlite-vec extension (vec0)
     // Default paths for common platforms
     const paths = extensionPath
       ? [extensionPath]
@@ -48,16 +48,18 @@ export async function initializeSqliteVec(
       );
     }
 
-    // Verify extension is loaded by checking for vec_distance_cosine function
-    const result = db
-      .prepare(
-        "SELECT name FROM pragma_function_list WHERE name = 'vec_distance_cosine'"
-      )
-      .get();
-
-    if (!result) {
+    // Verify extension is loaded by trying to create a test table
+    try {
+      db.prepare('CREATE VIRTUAL TABLE IF NOT EXISTS _vec_test USING vec0(test_embedding float[3])').run();
+      db.prepare('DROP TABLE _vec_test').run();
+      logger.info(
+        LogCategory.STORAGE,
+        'SQLiteVec',
+        'sqlite-vec extension verified successfully'
+      );
+    } catch (error) {
       throw new Error(
-        'sqlite-vec extension loaded but functions not available'
+        'sqlite-vec extension loaded but vec0 virtual table module not available'
       );
     }
   } catch (error) {
@@ -69,10 +71,10 @@ export async function initializeSqliteVec(
 }
 
 /**
- * Create vector collections table
+ * Create vector collections table (metadata tracking)
  */
 export async function createVectorTables(db: Database.Database): Promise<void> {
-  // Collections metadata table
+  // Collections metadata table for tracking our virtual tables
   db.prepare(
     `
     CREATE TABLE IF NOT EXISTS vec_collections (
@@ -85,51 +87,44 @@ export async function createVectorTables(db: Database.Database): Promise<void> {
   `
   ).run();
 
-  // Vectors table - stores all vectors across collections
-  db.prepare(
-    `
-    CREATE TABLE IF NOT EXISTS vec_vectors (
-      id TEXT NOT NULL,
-      collection TEXT NOT NULL,
-      vector_data BLOB NOT NULL,
-      metadata TEXT,
-      created_at INTEGER DEFAULT (unixepoch()),
-      updated_at INTEGER DEFAULT (unixepoch()),
-      PRIMARY KEY (collection, id),
-      FOREIGN KEY (collection) REFERENCES vec_collections(name) ON DELETE CASCADE
-    )
-  `
-  ).run();
-
-  // Create indexes
-  db.prepare(
-    'CREATE INDEX IF NOT EXISTS idx_vec_vectors_collection ON vec_vectors(collection)'
-  ).run();
-
-  logger.info(LogCategory.STORAGE, 'SQLiteVec', 'Vector tables created');
+  logger.info(LogCategory.STORAGE, 'SQLiteVec', 'Vector metadata tables created');
 }
 
 /**
- * Create a vector collection
+ * Create a vector collection using sqlite-vec virtual table
  */
 export async function createVectorCollection(
   db: Database.Database,
   config: VectorCollectionConfig
 ): Promise<void> {
-  const stmt = db.prepare(
-    `
-    INSERT INTO vec_collections (name, dimension, metric)
-    VALUES (?, ?, ?)
-  `
-  );
+  const { name, dimension, metric = VectorMetric.COSINE } = config;
+  
+  // Create the vec0 virtual table
+  const createTableSQL = `CREATE VIRTUAL TABLE IF NOT EXISTS ${name} USING vec0(embedding float[${dimension}])`;
+  
+  try {
+    db.prepare(createTableSQL).run();
+    
+    // Track the collection in our metadata table
+    const insertMetadata = db.prepare(
+      `INSERT OR REPLACE INTO vec_collections (name, dimension, metric) VALUES (?, ?, ?)`
+    );
+    insertMetadata.run(name, dimension, metric);
 
-  stmt.run(config.name, config.dimension, config.metric || VectorMetric.COSINE);
-
-  logger.info(
-    LogCategory.STORAGE,
-    'SQLiteVec',
-    `Created collection: ${config.name}`
-  );
+    logger.info(
+      LogCategory.STORAGE,
+      'SQLiteVec',
+      `Created vector collection: ${name} with ${dimension} dimensions`
+    );
+  } catch (error) {
+    logger.error(
+      LogCategory.STORAGE,
+      'SQLiteVec', 
+      `Failed to create vector collection: ${name}`,
+      { error: error instanceof Error ? error.message : String(error) }
+    );
+    throw error;
+  }
 }
 
 /**
@@ -139,11 +134,23 @@ export async function dropVectorCollection(
   db: Database.Database,
   name: string
 ): Promise<void> {
-  // Delete from collections table (cascade will delete vectors)
-  const stmt = db.prepare('DELETE FROM vec_collections WHERE name = ?');
-  stmt.run(name);
+  try {
+    // Drop the virtual table
+    db.prepare(`DROP TABLE IF EXISTS ${name}`).run();
+    
+    // Remove from metadata
+    db.prepare('DELETE FROM vec_collections WHERE name = ?').run(name);
 
-  logger.info(LogCategory.STORAGE, 'SQLiteVec', `Dropped collection: ${name}`);
+    logger.info(LogCategory.STORAGE, 'SQLiteVec', `Dropped collection: ${name}`);
+  } catch (error) {
+    logger.error(
+      LogCategory.STORAGE,
+      'SQLiteVec',
+      `Failed to drop collection: ${name}`,
+      { error: error instanceof Error ? error.message : String(error) }
+    );
+    throw error;
+  }
 }
 
 /**
@@ -153,11 +160,15 @@ export async function checkCollectionExists(
   db: Database.Database,
   name: string
 ): Promise<boolean> {
-  const stmt = db.prepare(
-    'SELECT 1 FROM vec_collections WHERE name = ? LIMIT 1'
-  );
-  const result = stmt.get(name);
-  return !!result;
+  try {
+    const stmt = db.prepare(
+      'SELECT 1 FROM vec_collections WHERE name = ? LIMIT 1'
+    );
+    const result = stmt.get(name);
+    return !!result;
+  } catch (error) {
+    return false;
+  }
 }
 
 /**
@@ -166,9 +177,19 @@ export async function checkCollectionExists(
 export async function listVectorCollections(
   db: Database.Database
 ): Promise<string[]> {
-  const stmt = db.prepare('SELECT name FROM vec_collections ORDER BY name');
-  const rows = stmt.all() as Array<{ name: string }>;
-  return rows.map((row) => row.name);
+  try {
+    const stmt = db.prepare('SELECT name FROM vec_collections ORDER BY name');
+    const rows = stmt.all() as Array<{ name: string }>;
+    return rows.map((row) => row.name);
+  } catch (error) {
+    logger.error(
+      LogCategory.STORAGE,
+      'SQLiteVec',
+      'Failed to list collections',
+      { error: error instanceof Error ? error.message : String(error) }
+    );
+    return [];
+  }
 }
 
 /**
@@ -178,22 +199,32 @@ export async function getCollectionMetadata(
   db: Database.Database,
   name: string
 ): Promise<VectorCollectionConfig | null> {
-  const stmt = db.prepare(
-    'SELECT name, dimension, metric FROM vec_collections WHERE name = ?'
-  );
-  const row = stmt.get(name) as
-    | {
-        name: string;
-        dimension: number;
-        metric: string;
-      }
-    | undefined;
+  try {
+    const stmt = db.prepare(
+      'SELECT name, dimension, metric FROM vec_collections WHERE name = ?'
+    );
+    const row = stmt.get(name) as
+      | {
+          name: string;
+          dimension: number;
+          metric: string;
+        }
+      | undefined;
 
-  if (!row) return null;
+    if (!row) return null;
 
-  return {
-    name: row.name,
-    dimension: row.dimension,
-    metric: row.metric as VectorMetric
-  };
+    return {
+      name: row.name,
+      dimension: row.dimension,
+      metric: row.metric as VectorMetric
+    };
+  } catch (error) {
+    logger.error(
+      LogCategory.STORAGE,
+      'SQLiteVec',
+      `Failed to get metadata for collection: ${name}`,
+      { error: error instanceof Error ? error.message : String(error) }
+    );
+    return null;
+  }
 }

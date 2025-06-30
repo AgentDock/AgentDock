@@ -1,11 +1,12 @@
 import { z } from 'zod';
-import { WorkingMemory } from '../types/working/WorkingMemory'
-import { EpisodicMemory } from '../types/episodic/EpisodicMemory'
-import { SemanticMemory } from '../types/semantic/SemanticMemory'
-import { ProceduralMemory } from '../types/procedural/ProceduralMemory'
-import { createLLM } from '../../llm/create-llm'
-import { CoreLLM } from '../../llm/core-llm'
-import { LLMProvider } from '../../llm/types'
+
+import { CoreLLM } from '../../llm/core-llm';
+import { createLLM } from '../../llm/create-llm';
+import { LLMProvider } from '../../llm/types';
+import { EpisodicMemory } from '../types/episodic/EpisodicMemory';
+import { ProceduralMemory } from '../types/procedural/ProceduralMemory';
+import { SemanticMemory } from '../types/semantic/SemanticMemory';
+import { WorkingMemory } from '../types/working/WorkingMemory';
 
 /**
  * Configurable conversation message for processing
@@ -28,7 +29,7 @@ export interface ExtractionConfig {
     semantic?: string;
     procedural?: string;
   };
-  
+
   // Pattern-based extraction rules
   patterns?: {
     factPattern?: RegExp;
@@ -36,7 +37,7 @@ export interface ExtractionConfig {
     actionPattern?: RegExp;
     definitionPattern?: RegExp;
   };
-  
+
   // LLM provider configuration
   llmConfig?: {
     provider: LLMProvider;
@@ -46,7 +47,7 @@ export interface ExtractionConfig {
     apiKey?: string;
     baseURL?: string;
   };
-  
+
   // Extraction strategy preferences
   strategy?: {
     preferLLM: boolean;
@@ -54,7 +55,7 @@ export interface ExtractionConfig {
     tokenOptimized: boolean;
     batchSize: number;
   };
-  
+
   // Memory type filters
   memoryTypes?: {
     enableEpisodic: boolean;
@@ -62,7 +63,7 @@ export interface ExtractionConfig {
     enableProcedural: boolean;
     enableWorking: boolean;
   };
-  
+
   // Quality thresholds
   thresholds?: {
     minConfidence: number;
@@ -112,35 +113,41 @@ export interface ProcessingResult {
  */
 // Zod schemas for memory extraction validation
 const EpisodicMemorySchema = z.object({
-  memories: z.array(z.object({
-    content: z.string().min(1),
-    importance: z.number().min(0).max(1),
-    confidence: z.number().min(0).max(1),
-    tags: z.array(z.string()).optional(),
-    metadata: z.record(z.any()).optional()
-  }))
+  memories: z.array(
+    z.object({
+      content: z.string().min(1),
+      importance: z.number().min(0).max(1),
+      confidence: z.number().min(0).max(1),
+      tags: z.array(z.string()).optional(),
+      metadata: z.record(z.any()).optional()
+    })
+  )
 });
 
 const SemanticMemorySchema = z.object({
-  memories: z.array(z.object({
-    content: z.string().min(1),
-    category: z.string().optional(),
-    importance: z.number().min(0).max(1),
-    confidence: z.number().min(0).max(1),
-    keywords: z.array(z.string()).optional(),
-    metadata: z.record(z.any()).optional()
-  }))
+  memories: z.array(
+    z.object({
+      content: z.string().min(1),
+      category: z.string().optional(),
+      importance: z.number().min(0).max(1),
+      confidence: z.number().min(0).max(1),
+      keywords: z.array(z.string()).optional(),
+      metadata: z.record(z.any()).optional()
+    })
+  )
 });
 
 const ProceduralMemorySchema = z.object({
-  memories: z.array(z.object({
-    trigger: z.string(),
-    action: z.string().min(1),
-    context: z.record(z.any()).optional(),
-    confidence: z.number().min(0).max(1),
-    conditions: z.array(z.string()).optional(),
-    metadata: z.record(z.any()).optional()
-  }))
+  memories: z.array(
+    z.object({
+      trigger: z.string(),
+      action: z.string().min(1),
+      context: z.record(z.any()).optional(),
+      confidence: z.number().min(0).max(1),
+      conditions: z.array(z.string()).optional(),
+      metadata: z.record(z.any()).optional()
+    })
+  )
 });
 
 const DEFAULT_EXTRACTION_PROMPTS = {
@@ -164,12 +171,14 @@ const DEFAULT_EXTRACTION_PROMPTS = {
 };
 
 /**
- * Token-optimized fallback patterns
+ * Token-optimized fallback patterns (ReDoS-safe)
  */
 const FALLBACK_PATTERNS = {
   facts: /(?:is|are|was|were)\s+(.{10,100})/gi,
-  definitions: /(.+?)\s+(?:means|refers to|is defined as)\s+(.+)/gi,
-  actions: /(?:I|user|you)\s+(did|tried|attempted|executed|ran)\s+(.{10,150})/gi,
+  definitions:
+    /([A-Za-z0-9\s\-_]{1,50})\s+(?:means|refers to|is defined as)\s+([A-Za-z0-9\s\-_,.!?]{1,200})/gi,
+  actions:
+    /(?:I|user|you)\s+(did|tried|attempted|executed|ran)\s+(.{10,150})/gi,
   outcomes: /(?:resulted in|led to|caused|produced)\s+(.{10,100})/gi,
   questions: /\?[^?]*$/gm,
   temporal: /(?:when|after|before|during|while)\s+(.{10,100})/gi
@@ -191,7 +200,7 @@ export class ConversationProcessor {
     config: ExtractionConfig = {}
   ) {
     this.config = this.mergeWithDefaults(config);
-    
+
     // Initialize LLM if apiKey is provided
     if (this.config.llmConfig.apiKey) {
       try {
@@ -237,13 +246,21 @@ export class ConversationProcessor {
     try {
       // Update working memory with current context
       if (this.config.memoryTypes.enableWorking) {
-        await this.updateWorkingMemory(userId, agentId, sessionId, messages, result);
+        await this.updateWorkingMemory(
+          userId,
+          agentId,
+          sessionId,
+          messages,
+          result
+        );
       }
 
       // Extract episodic memories
       if (this.config.memoryTypes.enableEpisodic) {
         const episodicResult = await this.extractEpisodicMemories(
-          agentId, sessionId, messages
+          agentId,
+          sessionId,
+          messages
         );
         result.extractionResults.push(episodicResult);
         result.totalTokensUsed += episodicResult.tokensUsed;
@@ -252,10 +269,10 @@ export class ConversationProcessor {
         for (const memory of episodicResult.memories) {
           try {
             // TEMPORAL FIX: Preserve conversation timestamps in episodic memories
-            const messageTimestamps = messages.map(m => m.timestamp);
+            const messageTimestamps = messages.map((m) => m.timestamp);
             const conversationStartTime = Math.min(...messageTimestamps);
             const conversationEndTime = Math.max(...messageTimestamps);
-            
+
             const id = await this.episodicMemory.store(
               userId,
               agentId,
@@ -268,7 +285,9 @@ export class ConversationProcessor {
                   // NEW: Preserve original conversation temporal context
                   conversationStartTime,
                   conversationEndTime,
-                  originalConversationDate: new Date(conversationStartTime).toISOString(),
+                  originalConversationDate: new Date(
+                    conversationStartTime
+                  ).toISOString(),
                   messageTimestamps: messageTimestamps
                 }
               }
@@ -280,10 +299,11 @@ export class ConversationProcessor {
         }
       }
 
-      // Extract semantic memories  
+      // Extract semantic memories
       if (this.config.memoryTypes.enableSemantic) {
         const semanticResult = await this.extractSemanticMemories(
-          agentId, messages
+          agentId,
+          messages
         );
         result.extractionResults.push(semanticResult);
         result.totalTokensUsed += semanticResult.tokensUsed;
@@ -313,7 +333,8 @@ export class ConversationProcessor {
       // Extract procedural memories
       if (this.config.memoryTypes.enableProcedural) {
         const proceduralResult = await this.extractProceduralMemories(
-          agentId, messages
+          agentId,
+          messages
         );
         result.extractionResults.push(proceduralResult);
         result.totalTokensUsed += proceduralResult.tokensUsed;
@@ -323,7 +344,7 @@ export class ConversationProcessor {
           try {
             const trigger = memory.metadata.trigger || '';
             const action = memory.content;
-            
+
             const learningResult = await this.proceduralMemory.learn(
               userId,
               agentId,
@@ -336,7 +357,6 @@ export class ConversationProcessor {
           }
         }
       }
-
     } catch (error) {
       result.errors.push(`Processing error: ${error}`);
     }
@@ -367,12 +387,13 @@ export class ConversationProcessor {
         // Use LLM extraction
         const llmResult = await this.extractWithLLM(
           messages,
-          this.config.customInstructions?.episodic || DEFAULT_EXTRACTION_PROMPTS.episodic,
+          this.config.customInstructions?.episodic ||
+            DEFAULT_EXTRACTION_PROMPTS.episodic,
           'episodic'
         );
-        
+
         if (llmResult.success) {
-          result.memories = llmResult.memories.map(m => ({
+          result.memories = llmResult.memories.map((m) => ({
             ...m,
             extractionMethod: 'llm' as const
           }));
@@ -380,12 +401,12 @@ export class ConversationProcessor {
         } else if (this.config.strategy.fallbackToPatterns) {
           // Fallback to patterns
           result.memories = this.extractEpisodicWithPatterns(messages);
-          result.memories.forEach(m => m.extractionMethod = 'fallback');
+          result.memories.forEach((m) => (m.extractionMethod = 'fallback'));
         }
       } else {
         // Use pattern-based extraction
         result.memories = this.extractEpisodicWithPatterns(messages);
-        result.memories.forEach(m => m.extractionMethod = 'pattern');
+        result.memories.forEach((m) => (m.extractionMethod = 'pattern'));
       }
     } catch (error) {
       result.errors.push(`Episodic extraction error: ${error}`);
@@ -415,23 +436,24 @@ export class ConversationProcessor {
       if (this.config.strategy.preferLLM && this.config.llmConfig) {
         const llmResult = await this.extractWithLLM(
           messages,
-          this.config.customInstructions?.semantic || DEFAULT_EXTRACTION_PROMPTS.semantic,
+          this.config.customInstructions?.semantic ||
+            DEFAULT_EXTRACTION_PROMPTS.semantic,
           'semantic'
         );
-        
+
         if (llmResult.success) {
-          result.memories = llmResult.memories.map(m => ({
+          result.memories = llmResult.memories.map((m) => ({
             ...m,
             extractionMethod: 'llm' as const
           }));
           result.tokensUsed = llmResult.tokensUsed;
         } else if (this.config.strategy.fallbackToPatterns) {
           result.memories = this.extractSemanticWithPatterns(messages);
-          result.memories.forEach(m => m.extractionMethod = 'fallback');
+          result.memories.forEach((m) => (m.extractionMethod = 'fallback'));
         }
       } else {
         result.memories = this.extractSemanticWithPatterns(messages);
-        result.memories.forEach(m => m.extractionMethod = 'pattern');
+        result.memories.forEach((m) => (m.extractionMethod = 'pattern'));
       }
     } catch (error) {
       result.errors.push(`Semantic extraction error: ${error}`);
@@ -461,23 +483,24 @@ export class ConversationProcessor {
       if (this.config.strategy.preferLLM && this.config.llmConfig) {
         const llmResult = await this.extractWithLLM(
           messages,
-          this.config.customInstructions?.procedural || DEFAULT_EXTRACTION_PROMPTS.procedural,
+          this.config.customInstructions?.procedural ||
+            DEFAULT_EXTRACTION_PROMPTS.procedural,
           'procedural'
         );
-        
+
         if (llmResult.success) {
-          result.memories = llmResult.memories.map(m => ({
+          result.memories = llmResult.memories.map((m) => ({
             ...m,
             extractionMethod: 'llm' as const
           }));
           result.tokensUsed = llmResult.tokensUsed;
         } else if (this.config.strategy.fallbackToPatterns) {
           result.memories = this.extractProceduralWithPatterns(messages);
-          result.memories.forEach(m => m.extractionMethod = 'fallback');
+          result.memories.forEach((m) => (m.extractionMethod = 'fallback'));
         }
       } else {
         result.memories = this.extractProceduralWithPatterns(messages);
-        result.memories.forEach(m => m.extractionMethod = 'pattern');
+        result.memories.forEach((m) => (m.extractionMethod = 'pattern'));
       }
     } catch (error) {
       result.errors.push(`Procedural extraction error: ${error}`);
@@ -510,24 +533,31 @@ export class ConversationProcessor {
 
     const conversationText = this.optimizeConversationForLLM(messages);
     const schema = this.getSchemaForMemoryType(memoryType);
-    
+
     try {
-      console.log(`🧠 Using generateObject for ${memoryType} extraction with Zod schema`);
+      console.log(
+        `🧠 Using generateObject for ${memoryType} extraction with Zod schema`
+      );
       const { object: result, usage } = await this.llm.generateObject({
         schema,
-        messages: [{
-          role: 'user',
-          content: `${instructions}
+        messages: [
+          {
+            role: 'user',
+            content: `${instructions}
 
 Conversation:
 ${conversationText}
 
 Extract memories according to the schema provided.`
-        }],
+          }
+        ],
         temperature: this.config.llmConfig.temperature
       });
 
-      console.log(`✅ generateObject returned:`, JSON.stringify(result, null, 2));
+      console.log(
+        `✅ generateObject returned:`,
+        JSON.stringify(result, null, 2)
+      );
 
       const memories = result.memories.map((memory: any) => {
         // Handle different memory type schemas
@@ -561,9 +591,10 @@ Extract memories according to the schema provided.`
 
       return {
         success: true,
-        memories: memories.filter((m: { content: string; importance: number }) => 
-          m.content.length >= this.config.thresholds.minLength &&
-          m.importance >= this.config.thresholds.minImportance
+        memories: memories.filter(
+          (m: { content: string; importance: number }) =>
+            m.content.length >= this.config.thresholds.minLength &&
+            m.importance >= this.config.thresholds.minImportance
         ),
         tokensUsed: usage?.totalTokens || 0
       };
@@ -580,7 +611,9 @@ Extract memories according to the schema provided.`
   /**
    * Get appropriate Zod schema for memory type
    */
-  private getSchemaForMemoryType(memoryType: 'episodic' | 'semantic' | 'procedural') {
+  private getSchemaForMemoryType(
+    memoryType: 'episodic' | 'semantic' | 'procedural'
+  ) {
     switch (memoryType) {
       case 'episodic':
         return EpisodicMemorySchema;
@@ -604,10 +637,12 @@ Extract memories according to the schema provided.`
     extractionMethod: 'pattern';
   }> {
     const memories: any[] = [];
-    const fullText = messages.map(m => m.content).join(' ');
+    const fullText = messages.map((m) => m.content).join(' ');
 
     // Extract temporal events
-    const temporalMatches = Array.from(fullText.matchAll(FALLBACK_PATTERNS.temporal));
+    const temporalMatches = Array.from(
+      fullText.matchAll(FALLBACK_PATTERNS.temporal)
+    );
     for (const match of temporalMatches) {
       if (match[1] && match[1].length >= this.config.thresholds.minLength) {
         memories.push({
@@ -621,7 +656,9 @@ Extract memories according to the schema provided.`
     }
 
     // Extract action sequences
-    const actionMatches = Array.from(fullText.matchAll(FALLBACK_PATTERNS.actions));
+    const actionMatches = Array.from(
+      fullText.matchAll(FALLBACK_PATTERNS.actions)
+    );
     for (const match of actionMatches) {
       if (match[2] && match[2].length >= this.config.thresholds.minLength) {
         memories.push({
@@ -645,7 +682,7 @@ Extract memories according to the schema provided.`
     extractionMethod: 'pattern';
   }> {
     const memories: any[] = [];
-    const fullText = messages.map(m => m.content).join(' ');
+    const fullText = messages.map((m) => m.content).join(' ');
 
     // Extract facts
     const factMatches = Array.from(fullText.matchAll(FALLBACK_PATTERNS.facts));
@@ -662,14 +699,20 @@ Extract memories according to the schema provided.`
     }
 
     // Extract definitions
-    const defMatches = Array.from(fullText.matchAll(FALLBACK_PATTERNS.definitions));
+    const defMatches = Array.from(
+      fullText.matchAll(FALLBACK_PATTERNS.definitions)
+    );
     for (const match of defMatches) {
       if (match[1] && match[2]) {
         memories.push({
           content: `${match[1]} means ${match[2]}`.trim(),
           importance: 0.8,
           confidence: 0.7,
-          metadata: { category: 'definition', pattern: 'definition', keywords: [match[1].trim()] },
+          metadata: {
+            category: 'definition',
+            pattern: 'definition',
+            keywords: [match[1].trim()]
+          },
           extractionMethod: 'pattern'
         });
       }
@@ -678,7 +721,9 @@ Extract memories according to the schema provided.`
     return memories.slice(0, 10);
   }
 
-  private extractProceduralWithPatterns(messages: ConversationMessage[]): Array<{
+  private extractProceduralWithPatterns(
+    messages: ConversationMessage[]
+  ): Array<{
     content: string;
     importance: number;
     confidence: number;
@@ -686,17 +731,19 @@ Extract memories according to the schema provided.`
     extractionMethod: 'pattern';
   }> {
     const memories: any[] = [];
-    const fullText = messages.map(m => m.content).join(' ');
+    const fullText = messages.map((m) => m.content).join(' ');
 
     // Extract outcome patterns
-    const outcomeMatches = Array.from(fullText.matchAll(FALLBACK_PATTERNS.outcomes));
+    const outcomeMatches = Array.from(
+      fullText.matchAll(FALLBACK_PATTERNS.outcomes)
+    );
     for (const match of outcomeMatches) {
       if (match[1] && match[1].length >= this.config.thresholds.minLength) {
         memories.push({
           content: match[1].trim(),
           importance: 0.6,
           confidence: 0.5,
-          metadata: { 
+          metadata: {
             trigger: 'pattern_detected',
             action: match[1].trim(),
             pattern: 'outcome',
@@ -722,27 +769,36 @@ Extract memories according to the schema provided.`
   ): Promise<void> {
     try {
       const recentMessages = messages.slice(-5); // Last 5 messages
-      const contextContent = recentMessages.map(m => `${m.role}: ${m.content}`).join('\n');
-      
+      const contextContent = recentMessages
+        .map((m) => `${m.role}: ${m.content}`)
+        .join('\n');
+
       // TEMPORAL FIX: Preserve original conversation timestamps
-      const messageTimestamps = recentMessages.map(m => m.timestamp);
+      const messageTimestamps = recentMessages.map((m) => m.timestamp);
       const conversationStartTime = Math.min(...messageTimestamps);
       const conversationEndTime = Math.max(...messageTimestamps);
-      
-      const id = await this.workingMemory.store(userId, agentId, contextContent, {
-        sessionId: sessionId,
-        metadata: {
-          priority: 'high',
-          messageCount: recentMessages.length,
-          lastMessageTime: conversationEndTime,
-          // NEW: Preserve original conversation temporal context
-          conversationStartTime,
-          conversationEndTime,
-          originalConversationDate: new Date(conversationStartTime).toISOString(),
-          messageTimestamps: messageTimestamps
+
+      const id = await this.workingMemory.store(
+        userId,
+        agentId,
+        contextContent,
+        {
+          sessionId: sessionId,
+          metadata: {
+            priority: 'high',
+            messageCount: recentMessages.length,
+            lastMessageTime: conversationEndTime,
+            // NEW: Preserve original conversation temporal context
+            conversationStartTime,
+            conversationEndTime,
+            originalConversationDate: new Date(
+              conversationStartTime
+            ).toISOString(),
+            messageTimestamps: messageTimestamps
+          }
         }
-      });
-      
+      );
+
       result.storedMemoryIds.working.push(id);
     } catch (error) {
       result.errors.push(`Failed to update working memory: ${error}`);
@@ -754,7 +810,7 @@ Extract memories according to the schema provided.`
    */
   private optimizeConversationForLLM(messages: ConversationMessage[]): string {
     if (!this.config.strategy.tokenOptimized) {
-      return messages.map(m => `${m.role}: ${m.content}`).join('\n');
+      return messages.map((m) => `${m.role}: ${m.content}`).join('\n');
     }
 
     // Token optimization strategies
@@ -767,15 +823,22 @@ Extract memories according to the schema provided.`
 
     // Remove excessive whitespace and format efficiently
     return optimizedMessages
-      .map(m => `${m.role}: ${m.content.trim().replace(/\s+/g, ' ')}`)
+      .map((m) => `${m.role}: ${m.content.trim().replace(/\s+/g, ' ')}`)
       .join('\n')
-      .substring(0, this.config.llmConfig?.maxTokens ? this.config.llmConfig.maxTokens * 3 : 3000);
+      .substring(
+        0,
+        this.config.llmConfig?.maxTokens
+          ? this.config.llmConfig.maxTokens * 3
+          : 3000
+      );
   }
 
   /**
    * Merge user config with defaults
    */
-  private mergeWithDefaults(config: ExtractionConfig): Required<ExtractionConfig> {
+  private mergeWithDefaults(
+    config: ExtractionConfig
+  ): Required<ExtractionConfig> {
     return {
       customInstructions: config.customInstructions || {},
       patterns: { ...FALLBACK_PATTERNS, ...config.patterns },

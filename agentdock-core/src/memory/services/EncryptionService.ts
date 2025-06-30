@@ -210,28 +210,116 @@ export class EncryptionService {
     columnName: string
   ): Promise<void> {
     try {
-      // Add bytea column for encrypted content
+      // SECURITY FIX: Validate and sanitize SQL identifiers to prevent injection
+      const validatedTableName = this.validateSQLIdentifier(tableName);
+      const validatedColumnName = this.validateSQLIdentifier(columnName);
+
+      // Use parameterized queries where possible, or properly escaped identifiers
       await this.pool.query(`
-        ALTER TABLE ${tableName} 
-        ADD COLUMN IF NOT EXISTS ${columnName}_encrypted BYTEA,
-        ADD COLUMN IF NOT EXISTS ${columnName}_key_id TEXT,
-        ADD COLUMN IF NOT EXISTS ${columnName}_algorithm TEXT DEFAULT 'pgp_sym_encrypt',
-        ADD COLUMN IF NOT EXISTS ${columnName}_version INTEGER DEFAULT 1
+        ALTER TABLE ${this.escapeIdentifier(validatedTableName)}
+        ADD COLUMN IF NOT EXISTS ${this.escapeIdentifier(validatedColumnName)}_encrypted BYTEA,
+        ADD COLUMN IF NOT EXISTS ${this.escapeIdentifier(validatedColumnName)}_key_id TEXT,
+        ADD COLUMN IF NOT EXISTS ${this.escapeIdentifier(validatedColumnName)}_algorithm TEXT DEFAULT 'pgp_sym_encrypt',
+        ADD COLUMN IF NOT EXISTS ${this.escapeIdentifier(validatedColumnName)}_version INTEGER DEFAULT 1
       `);
 
-      // Create index for key lookups
+      // Create index for key lookups - using escaped identifiers
+      const indexName = `idx_${validatedTableName}_${validatedColumnName}_key_id`;
+      const validatedIndexName = this.validateSQLIdentifier(indexName);
+
       await this.pool.query(`
-        CREATE INDEX IF NOT EXISTS idx_${tableName}_${columnName}_key_id 
-        ON ${tableName}(${columnName}_key_id)
+        CREATE INDEX IF NOT EXISTS ${this.escapeIdentifier(validatedIndexName)}
+        ON ${this.escapeIdentifier(validatedTableName)}(${this.escapeIdentifier(validatedColumnName)}_key_id)
       `);
 
-      console.log(`Encrypted column ${columnName} added to ${tableName}`);
+      console.log(
+        `Encrypted column ${validatedColumnName} added to ${validatedTableName}`
+      );
     } catch (error) {
       console.error(`Failed to create encrypted column:`, error);
       throw new Error(
         `Failed to create encrypted column: ${error instanceof Error ? error.message : String(error)}`
       );
     }
+  }
+
+  /**
+   * Validate SQL identifier to prevent injection attacks.
+   * Only allows alphanumeric characters and underscores.
+   *
+   * @private
+   */
+  private validateSQLIdentifier(identifier: string): string {
+    if (!identifier || typeof identifier !== 'string') {
+      throw new Error('SQL identifier must be a non-empty string');
+    }
+
+    // Remove any whitespace
+    const trimmed = identifier.trim();
+
+    // Check for valid identifier pattern (letters, numbers, underscores only)
+    const validPattern = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
+    if (!validPattern.test(trimmed)) {
+      throw new Error(
+        `Invalid SQL identifier: "${identifier}". Only alphanumeric characters and underscores are allowed.`
+      );
+    }
+
+    // Check length constraints
+    if (trimmed.length > 63) {
+      throw new Error(
+        `SQL identifier too long: "${identifier}". Maximum 63 characters allowed.`
+      );
+    }
+
+    // Check against reserved words (basic PostgreSQL reserved words)
+    const reservedWords = [
+      'SELECT',
+      'INSERT',
+      'UPDATE',
+      'DELETE',
+      'DROP',
+      'CREATE',
+      'ALTER',
+      'TABLE',
+      'INDEX',
+      'VIEW',
+      'TRIGGER',
+      'FUNCTION',
+      'PROCEDURE',
+      'DATABASE',
+      'SCHEMA',
+      'USER',
+      'ROLE',
+      'GRANT',
+      'REVOKE',
+      'AND',
+      'OR',
+      'NOT',
+      'NULL',
+      'TRUE',
+      'FALSE'
+    ];
+
+    if (reservedWords.includes(trimmed.toUpperCase())) {
+      throw new Error(
+        `Cannot use reserved word as identifier: "${identifier}"`
+      );
+    }
+
+    return trimmed;
+  }
+
+  /**
+   * Escape SQL identifier by wrapping in double quotes.
+   * This prevents injection while allowing the identifier to be used safely.
+   *
+   * @private
+   */
+  private escapeIdentifier(identifier: string): string {
+    // Double any existing double quotes to escape them
+    const escaped = identifier.replace(/"/g, '""');
+    return `"${escaped}"`;
   }
 
   /**

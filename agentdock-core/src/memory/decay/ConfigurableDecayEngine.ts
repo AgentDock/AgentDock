@@ -308,7 +308,7 @@ export class ConfigurableDecayEngine {
 
   /**
    * Safely evaluate rule condition against memory.
-   * Uses Function constructor with try-catch for safety.
+   * Uses safe evaluation with whitelist instead of Function constructor.
    *
    * @private
    */
@@ -332,14 +332,9 @@ export class ConfigurableDecayEngine {
           (24 * 60 * 60 * 1000)
       };
 
-      // Create function with condition
-      const conditionFn = new Function(
-        ...Object.keys(evaluationContext),
-        `return ${rule.condition}`
-      );
-
-      // Execute condition
-      return Boolean(conditionFn(...Object.values(evaluationContext)));
+      // SECURITY FIX: Use safe expression evaluator instead of Function constructor
+      // This prevents arbitrary code execution (RCE vulnerability)
+      return this.evaluateSafeExpression(rule.condition, evaluationContext);
     } catch (error) {
       logger.warn(
         LogCategory.STORAGE,
@@ -353,6 +348,184 @@ export class ConfigurableDecayEngine {
         }
       );
       return false; // Safe fallback
+    }
+  }
+
+  /**
+   * Safe expression evaluator that only allows whitelisted operations.
+   * Prevents code injection by restricting to a safe subset of JavaScript.
+   *
+   * @private
+   */
+  private evaluateSafeExpression(expression: string, context: any): boolean {
+    // Remove whitespace and normalize
+    const normalized = expression.trim();
+
+    // Validate expression against safe patterns only
+    const safePatterns = [
+      // Simple comparisons
+      /^(type|importance|resonance|accessCount)\s*([><=!]+)\s*(['"]?[^'"]*['"]?|\d+\.?\d*)$/,
+      // Keywords array checks
+      /^keywords\.includes\(['"]([^'"]*)['"]\)$/,
+      // Helper function calls
+      /^(daysSinceCreated|daysSinceAccessed)\(\)\s*([><=!]+)\s*(\d+\.?\d*)$/,
+      // Boolean combinations (AND/OR only)
+      /^.+\s+(&&|\|\|)\s+.+$/,
+      // Metadata property checks
+      /^metadata\.([a-zA-Z_][a-zA-Z0-9_]*)\s*([><=!]+)\s*(['"]?[^'"]*['"]?|\d+\.?\d*)$/
+    ];
+
+    // Check if expression matches any safe pattern
+    const isSafe = safePatterns.some((pattern) => pattern.test(normalized));
+
+    if (!isSafe) {
+      logger.warn(
+        LogCategory.STORAGE,
+        'ConfigurableDecayEngine',
+        'Unsafe expression blocked',
+        { expression: normalized }
+      );
+      return false;
+    }
+
+    // Parse and evaluate safely
+    return this.parseAndEvaluateExpression(normalized, context);
+  }
+
+  /**
+   * Parse and evaluate a validated safe expression.
+   *
+   * @private
+   */
+  private parseAndEvaluateExpression(
+    expression: string,
+    context: any
+  ): boolean {
+    try {
+      // Handle simple comparisons
+      const simpleCompareMatch = expression.match(/^(\w+)\s*([><=!]+)\s*(.+)$/);
+      if (simpleCompareMatch) {
+        const [, property, operator, valueStr] = simpleCompareMatch;
+        const contextValue = context[property];
+        const value = this.parseValue(valueStr);
+        return this.compareValues(contextValue, operator, value);
+      }
+
+      // Handle keywords.includes()
+      const keywordsMatch = expression.match(
+        /^keywords\.includes\(['"]([^'"]*)['"]\)$/
+      );
+      if (keywordsMatch) {
+        const keyword = keywordsMatch[1];
+        return context.keywords.includes(keyword);
+      }
+
+      // Handle helper functions
+      const helperMatch = expression.match(
+        /^(daysSinceCreated|daysSinceAccessed)\(\)\s*([><=!]+)\s*(\d+\.?\d*)$/
+      );
+      if (helperMatch) {
+        const [, helperName, operator, valueStr] = helperMatch;
+        const helperValue = context[helperName]();
+        const value = parseFloat(valueStr);
+        return this.compareValues(helperValue, operator, value);
+      }
+
+      // Handle metadata property access
+      const metadataMatch = expression.match(
+        /^metadata\.([a-zA-Z_][a-zA-Z0-9_]*)\s*([><=!]+)\s*(.+)$/
+      );
+      if (metadataMatch) {
+        const [, property, operator, valueStr] = metadataMatch;
+        const contextValue = context.metadata[property];
+        const value = this.parseValue(valueStr);
+        return this.compareValues(contextValue, operator, value);
+      }
+
+      // Handle boolean combinations
+      if (expression.includes('&&')) {
+        const parts = expression.split('&&').map((p) => p.trim());
+        return parts.every((part) =>
+          this.parseAndEvaluateExpression(part, context)
+        );
+      }
+
+      if (expression.includes('||')) {
+        const parts = expression.split('||').map((p) => p.trim());
+        return parts.some((part) =>
+          this.parseAndEvaluateExpression(part, context)
+        );
+      }
+
+      return false;
+    } catch (error) {
+      logger.warn(
+        LogCategory.STORAGE,
+        'ConfigurableDecayEngine',
+        'Expression evaluation failed',
+        {
+          expression,
+          error: error instanceof Error ? error.message : String(error)
+        }
+      );
+      return false;
+    }
+  }
+
+  /**
+   * Parse a value string to appropriate type.
+   *
+   * @private
+   */
+  private parseValue(valueStr: string): any {
+    const trimmed = valueStr.trim();
+
+    // String values (quoted)
+    if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
+      return trimmed.slice(1, -1);
+    }
+    if (trimmed.startsWith("'") && trimmed.endsWith("'")) {
+      return trimmed.slice(1, -1);
+    }
+
+    // Numeric values
+    if (/^\d+\.?\d*$/.test(trimmed)) {
+      return parseFloat(trimmed);
+    }
+
+    // Boolean values
+    if (trimmed === 'true') return true;
+    if (trimmed === 'false') return false;
+
+    // Unquoted strings
+    return trimmed;
+  }
+
+  /**
+   * Compare two values using the given operator.
+   *
+   * @private
+   */
+  private compareValues(a: any, operator: string, b: any): boolean {
+    switch (operator) {
+      case '>':
+        return a > b;
+      case '>=':
+        return a >= b;
+      case '<':
+        return a < b;
+      case '<=':
+        return a <= b;
+      case '==':
+        return a === b; // Use strict equality for safety
+      case '===':
+        return a === b;
+      case '!=':
+        return a !== b; // Use strict inequality for safety
+      case '!==':
+        return a !== b;
+      default:
+        return false;
     }
   }
 

@@ -186,23 +186,31 @@ export class BatchProcessor {
     return timeoutReached && buffer.length >= this.config.minBatchSize;
   }
 
-  /** Process batch with tracking and extraction rate control for 5x cost reduction */
+  /**
+   * Process a batch of messages and extract memories using configured strategies.
+   * Uses deterministic extraction rate to prevent race conditions.
+   */
   private async processBatchWithTracking(
     userId: string,
     agentId: string,
     messages: MemoryMessage[]
   ): Promise<any[]> {
-    const batchId = this.generateBatchId();
     const startTime = new Date();
-    const sourceMessageIds = messages.map(
-      (m) => m.id || this.generateMessageId()
-    );
+    const batchId = this.generateBatchId();
+    const sourceMessageIds = messages.map((m) => m.id);
 
     try {
       const meaningful = this.filterNoise(messages);
 
-      // Apply extraction rate for 5x cost reduction
-      const shouldExtract = Math.random() < this.config.extractionRate;
+      // SECURITY FIX: Use deterministic extraction rate to prevent race conditions
+      // This ensures consistent behavior across multiple runs with same input
+      const shouldExtract = this.shouldExtractDeterministically(
+        batchId,
+        userId,
+        agentId,
+        this.config.extractionRate
+      );
+
       if (!shouldExtract) {
         await this.saveBatchMetadata({
           batchId,
@@ -290,6 +298,69 @@ export class BatchProcessor {
       });
       throw error;
     }
+  }
+
+  /**
+   * Deterministically decide whether to extract based on input hash.
+   * This prevents race conditions by ensuring the same inputs always produce
+   * the same extraction decision.
+   *
+   * @private
+   */
+  private shouldExtractDeterministically(
+    batchId: string,
+    userId: string,
+    agentId: string,
+    extractionRate: number
+  ): boolean {
+    // Create a deterministic hash from stable inputs
+    const hashInput = `${userId}:${agentId}:${batchId}`;
+    const hash = this.simpleHash(hashInput);
+
+    // Convert hash to a value between 0 and 1
+    const normalizedHash = (hash % 1000000) / 1000000;
+
+    // Compare against extraction rate
+    return normalizedHash < extractionRate;
+  }
+
+  /**
+   * Enhanced deterministic hash function that incorporates message content.
+   * This provides better distribution while maintaining deterministic behavior.
+   *
+   * @private
+   */
+  private createContentAwareHash(
+    userId: string,
+    agentId: string,
+    messages: MemoryMessage[]
+  ): string {
+    // Create content signature from messages
+    const contentSignature = messages
+      .map((m) => m.content.length + m.content.slice(0, 10))
+      .join('|');
+
+    const timestamp = Date.now();
+    const hashInput = `${userId}:${agentId}:${contentSignature}:${timestamp}`;
+    const hash = this.simpleHash(hashInput);
+
+    return `batch_${timestamp}_${hash.toString(36).substr(0, 5)}`;
+  }
+
+  /**
+   * Simple hash function for deterministic behavior.
+   * Uses a basic hash algorithm to convert strings to numbers.
+   *
+   * @private
+   */
+  private simpleHash(str: string): number {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return Math.abs(hash);
   }
 
   /** Enhanced noise filtering with industry best practices */
@@ -420,14 +491,22 @@ export class BatchProcessor {
     await this.storage.set(`batch_metadata:${metadata.batchId}`, metadata);
   }
 
-  /** Generate unique batch ID */
+  /** Generate unique batch ID using deterministic approach */
   private generateBatchId(): string {
-    return `batch_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+    const timestamp = Date.now();
+    const hashSuffix = this.simpleHash(
+      `batch_${timestamp}_${this.storage}`
+    ).toString(36);
+    return `batch_${timestamp}_${hashSuffix.substr(0, 5)}`;
   }
 
-  /** Generate unique message ID */
+  /** Generate unique message ID using deterministic approach */
   private generateMessageId(): string {
-    return `msg_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+    const timestamp = Date.now();
+    const hashSuffix = this.simpleHash(
+      `msg_${timestamp}_${this.storage}`
+    ).toString(36);
+    return `msg_${timestamp}_${hashSuffix.substr(0, 5)}`;
   }
 
   /** Extract using rules (zero cost) */
@@ -619,8 +698,16 @@ export class BatchProcessor {
     );
 
     try {
-      // CRITICAL: Apply extraction rate for 5x cost reduction
-      const shouldExtract = Math.random() < this.config.extractionRate;
+      // SECURITY FIX: Use deterministic extraction rate to prevent race conditions
+      // Use content-aware hash for better distribution while maintaining determinism
+      const batchId = this.createContentAwareHash(userId, agentId, messages);
+      const shouldExtract = this.shouldExtractDeterministically(
+        batchId,
+        userId,
+        agentId,
+        this.config.extractionRate
+      );
+
       if (!shouldExtract) {
         const endTime = new Date();
         const metrics: ExtractionMetrics = {

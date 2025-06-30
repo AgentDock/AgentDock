@@ -286,36 +286,12 @@ export class ConnectionGraph {
     memory: Memory | null;
     connections: MemoryConnection[];
   }> {
-    try {
-      // Use PostgreSQL memory adapter if available
-      if (this.storage.findConnectedMemories) {
-        const result = await this.storage.findConnectedMemories(memoryId, 1);
-        return {
-          memory:
-            result.memories.find((m: Memory) => m.id === memoryId) || null,
-          connections: result.connections
-        };
-      }
+    const memory = (await this.storage.get(
+      `memory:${memoryId}`
+    )) as Memory | null;
+    const connections = await this.getConnectionsForMemory(memoryId);
 
-      // Fallback to basic storage
-      const memory = (await this.storage.get(
-        `memory:${memoryId}`
-      )) as Memory | null;
-      const connections = await this.getConnectionsForMemory(memoryId);
-
-      return { memory, connections };
-    } catch (error) {
-      logger.warn(
-        LogCategory.STORAGE,
-        'ConnectionGraph',
-        'Error getting memory with connections',
-        {
-          memoryId,
-          error: error instanceof Error ? error.message : String(error)
-        }
-      );
-      return { memory: null, connections: [] };
-    }
+    return { memory, connections };
   }
 
   /**
@@ -349,13 +325,31 @@ export class ConnectionGraph {
   private async getAllConnections(
     agentId: string
   ): Promise<MemoryConnection[]> {
-    try {
-      // This would need to be implemented based on storage adapter capabilities
-      // For now, return empty array
-      return [];
-    } catch (error) {
-      return [];
+    const connections: MemoryConnection[] = [];
+
+    // Use the standard connection storage pattern
+    const connectionKeys = await this.storage.list(`connection:${agentId}:`);
+
+    for (const key of connectionKeys) {
+      const connection = (await this.storage.get(
+        key
+      )) as MemoryConnection | null;
+      if (connection) {
+        connections.push(connection);
+      }
     }
+
+    logger.debug(
+      LogCategory.STORAGE,
+      'ConnectionGraph',
+      'Retrieved agent connections',
+      {
+        agentId: agentId.substring(0, 8),
+        connectionCount: connections.length
+      }
+    );
+
+    return connections;
   }
 
   /**
@@ -383,7 +377,7 @@ export class ConnectionGraph {
   }
 
   /**
-   * Find clusters in the connection graph (simplified implementation)
+   * Find clusters in the connection graph using connected components algorithm
    */
   private async findClusters(connections: MemoryConnection[]): Promise<
     Array<{
@@ -392,15 +386,109 @@ export class ConnectionGraph {
       avgStrength: number;
     }>
   > {
-    // Simple clustering based on connected components
-    const components: Array<{
+    const clusters: Array<{
       size: number;
       members: string[];
       avgStrength: number;
     }> = [];
 
-    // This would need a more sophisticated clustering algorithm
-    // For now, return empty array
-    return components;
+    if (connections.length === 0) {
+      return clusters;
+    }
+
+    // Build adjacency list from connections
+    const adjacencyList = new Map<string, Set<string>>();
+    const connectionStrengths = new Map<string, number[]>();
+
+    for (const connection of connections) {
+      // Add nodes to adjacency list
+      if (!adjacencyList.has(connection.sourceId)) {
+        adjacencyList.set(connection.sourceId, new Set());
+        connectionStrengths.set(connection.sourceId, []);
+      }
+      if (!adjacencyList.has(connection.targetId)) {
+        adjacencyList.set(connection.targetId, new Set());
+        connectionStrengths.set(connection.targetId, []);
+      }
+
+      // Add edges (bidirectional for undirected graph)
+      adjacencyList.get(connection.sourceId)!.add(connection.targetId);
+      adjacencyList.get(connection.targetId)!.add(connection.sourceId);
+
+      // Track connection strengths for each node
+      connectionStrengths.get(connection.sourceId)!.push(connection.strength);
+      connectionStrengths.get(connection.targetId)!.push(connection.strength);
+    }
+
+    // Find connected components using DFS
+    const visited = new Set<string>();
+    const allNodes = Array.from(adjacencyList.keys());
+
+    for (const startNode of allNodes) {
+      if (visited.has(startNode)) {
+        continue;
+      }
+
+      // DFS to find all nodes in this component
+      const component: string[] = [];
+      const stack = [startNode];
+      let totalStrength = 0;
+      let strengthCount = 0;
+
+      while (stack.length > 0) {
+        const node = stack.pop()!;
+
+        if (visited.has(node)) {
+          continue;
+        }
+
+        visited.add(node);
+        component.push(node);
+
+        // Calculate total strength for this node
+        const nodeStrengths = connectionStrengths.get(node) || [];
+        totalStrength += nodeStrengths.reduce(
+          (sum, strength) => sum + strength,
+          0
+        );
+        strengthCount += nodeStrengths.length;
+
+        // Add unvisited neighbors to stack
+        const neighbors = adjacencyList.get(node) || new Set();
+        for (const neighbor of neighbors) {
+          if (!visited.has(neighbor)) {
+            stack.push(neighbor);
+          }
+        }
+      }
+
+      // Only include clusters with multiple nodes
+      if (component.length > 1) {
+        const avgStrength =
+          strengthCount > 0 ? totalStrength / strengthCount : 0;
+
+        clusters.push({
+          size: component.length,
+          members: component.sort(), // Sort for consistency
+          avgStrength: Math.round(avgStrength * 1000) / 1000 // Round to 3 decimal places
+        });
+      }
+    }
+
+    // Sort clusters by size (largest first)
+    clusters.sort((a, b) => b.size - a.size);
+
+    logger.debug(
+      LogCategory.STORAGE,
+      'ConnectionGraph',
+      'Found memory clusters',
+      {
+        totalClusters: clusters.length,
+        largestCluster: clusters.length > 0 ? clusters[0].size : 0,
+        totalNodes: allNodes.length
+      }
+    );
+
+    return clusters;
   }
 }

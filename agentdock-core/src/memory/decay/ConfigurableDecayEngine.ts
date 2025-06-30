@@ -49,18 +49,22 @@ export class ConfigurableDecayEngine {
   private readonly config: DecayConfiguration;
 
   /**
-   * Creates a new ConfigurableDecayEngine.
+   * Create a new ConfigurableDecayEngine instance.
    *
-   * @param storage - Storage provider for accessing memories
+   * @param storage - Storage provider with memory support
    * @param config - User-defined decay configuration
    */
   constructor(storage: StorageProvider, config: DecayConfiguration) {
     this.storage = storage;
-    this.config = config;
 
     if (!storage.memory) {
       throw new Error('Storage provider must support memory operations');
     }
+
+    // Validate config object structure
+    this.validateConfig(config);
+
+    this.config = config;
 
     logger.debug(
       LogCategory.STORAGE,
@@ -73,6 +77,70 @@ export class ConfigurableDecayEngine {
         decayInterval: config.decayInterval
       }
     );
+  }
+
+  /**
+   * Validate decay configuration object structure and values.
+   *
+   * @private
+   */
+  private validateConfig(config: DecayConfiguration): void {
+    if (!config || typeof config !== 'object') {
+      throw new Error('Decay configuration must be a valid object');
+    }
+
+    if (!config.agentId || typeof config.agentId !== 'string') {
+      throw new Error('agentId is required and must be a string');
+    }
+
+    if (
+      typeof config.defaultDecayRate !== 'number' ||
+      config.defaultDecayRate < 0 ||
+      config.defaultDecayRate > 1
+    ) {
+      throw new Error('defaultDecayRate must be between 0 and 1');
+    }
+
+    if (!Array.isArray(config.rules)) {
+      throw new Error('rules must be an array');
+    }
+
+    if (typeof config.decayInterval !== 'number' || config.decayInterval <= 0) {
+      throw new Error('decayInterval must be positive');
+    }
+
+    // Validate each rule strictly
+    config.rules.forEach((rule, i) => {
+      if (!rule?.id || typeof rule.id !== 'string') {
+        throw new Error(`Rule ${i}: id required`);
+      }
+      if (!rule.name || typeof rule.name !== 'string') {
+        throw new Error(`Rule ${i}: name required`);
+      }
+      if (!rule.condition || typeof rule.condition !== 'string') {
+        throw new Error(`Rule ${i}: condition required`);
+      }
+      if (typeof rule.enabled !== 'boolean') {
+        throw new Error(`Rule ${i}: enabled must be boolean`);
+      }
+      if (
+        typeof rule.decayRate !== 'number' ||
+        rule.decayRate < 0 ||
+        rule.decayRate > 1
+      ) {
+        throw new Error(`Rule ${i}: decayRate must be between 0 and 1`);
+      }
+      if (
+        typeof rule.minImportance !== 'number' ||
+        rule.minImportance < 0 ||
+        rule.minImportance > 1
+      ) {
+        throw new Error(`Rule ${i}: minImportance must be between 0 and 1`);
+      }
+      if (typeof rule.neverDecay !== 'boolean') {
+        throw new Error(`Rule ${i}: neverDecay must be boolean`);
+      }
+    });
   }
 
   /**

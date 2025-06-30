@@ -196,16 +196,18 @@ export class BatchProcessor {
     messages: MemoryMessage[]
   ): Promise<any[]> {
     const startTime = new Date();
-    const batchId = this.generateBatchId();
     const sourceMessageIds = messages.map((m) => m.id);
+
+    // SECURITY FIX: Use deterministic extraction rate to prevent race conditions
+    // Generate content-aware hash for consistent but varied extraction decisions
+    const contentHash = this.createContentAwareHash(userId, agentId, messages);
+    const batchId = contentHash; // Use content hash as batch ID
 
     try {
       const meaningful = this.filterNoise(messages);
 
-      // SECURITY FIX: Use deterministic extraction rate to prevent race conditions
-      // This ensures consistent behavior across multiple runs with same input
       const shouldExtract = this.shouldExtractDeterministically(
-        batchId,
+        contentHash,
         userId,
         agentId,
         this.config.extractionRate
@@ -301,32 +303,8 @@ export class BatchProcessor {
   }
 
   /**
-   * Deterministically decide whether to extract based on input hash.
-   * This prevents race conditions by ensuring the same inputs always produce
-   * the same extraction decision.
-   *
-   * @private
-   */
-  private shouldExtractDeterministically(
-    batchId: string,
-    userId: string,
-    agentId: string,
-    extractionRate: number
-  ): boolean {
-    // Create a deterministic hash from stable inputs
-    const hashInput = `${userId}:${agentId}:${batchId}`;
-    const hash = this.simpleHash(hashInput);
-
-    // Convert hash to a value between 0 and 1
-    const normalizedHash = (hash % 1000000) / 1000000;
-
-    // Compare against extraction rate
-    return normalizedHash < extractionRate;
-  }
-
-  /**
-   * Enhanced deterministic hash function that incorporates message content.
-   * This provides better distribution while maintaining deterministic behavior.
+   * Create content-aware hash for deterministic but varied extraction decisions.
+   * This ensures different content gets different hash values while remaining deterministic.
    *
    * @private
    */
@@ -335,16 +313,46 @@ export class BatchProcessor {
     agentId: string,
     messages: MemoryMessage[]
   ): string {
-    // Create content signature from messages
-    const contentSignature = messages
-      .map((m) => m.content.length + m.content.slice(0, 10))
+    // Create a hash that's sensitive to content variations
+    const contentFingerprint = messages
+      .map((m) => {
+        // Extract meaningful content patterns
+        const words = m.content.toLowerCase().match(/\w+/g) || [];
+        const numbers = m.content.match(/\d+/g) || [];
+        const length = m.content.length;
+
+        // Create a signature that changes with content
+        return `${words.slice(0, 3).join('')}:${numbers.join('')}:${length}`;
+      })
       .join('|');
 
-    const timestamp = Date.now();
-    const hashInput = `${userId}:${agentId}:${contentSignature}:${timestamp}`;
+    const hashInput = `${userId}:${agentId}:${contentFingerprint}`;
+
+    return `batch_${this.simpleHash(hashInput)}`;
+  }
+
+  /**
+   * Deterministically decide whether to extract based on content-aware input hash.
+   * This prevents race conditions by ensuring the same inputs always produce
+   * the same extraction decision, while varying appropriately with content.
+   *
+   * @private
+   */
+  private shouldExtractDeterministically(
+    contentHash: string,
+    userId: string,
+    agentId: string,
+    extractionRate: number
+  ): boolean {
+    // Create a deterministic hash from content-aware inputs
+    const hashInput = `${userId}:${agentId}:${contentHash}`;
     const hash = this.simpleHash(hashInput);
 
-    return `batch_${timestamp}_${hash.toString(36).substr(0, 5)}`;
+    // Convert hash to a value between 0 and 1 with better distribution
+    const normalizedHash = Math.abs(hash % 10000) / 10000;
+
+    // Compare against extraction rate
+    return normalizedHash < extractionRate;
   }
 
   /**
@@ -685,6 +693,12 @@ export class BatchProcessor {
     }
 
     const startTime = new Date();
+
+    // SECURITY FIX: Use deterministic extraction rate to prevent race conditions
+    // Generate content-aware hash for consistent but varied extraction decisions
+    const contentHash = this.createContentAwareHash(userId, agentId, messages);
+    const batchId = contentHash; // Use content hash as batch ID
+
     logger.info(
       LogCategory.STORAGE,
       'BatchProcessor',
@@ -693,16 +707,14 @@ export class BatchProcessor {
         userId,
         agentId,
         messageCount: messages.length,
-        budget: this.config.costBudget
+        budget: this.config.costBudget,
+        batchId: batchId.substring(0, 16) // Log short version of batch ID
       }
     );
 
     try {
-      // SECURITY FIX: Use deterministic extraction rate to prevent race conditions
-      // Use content-aware hash for better distribution while maintaining determinism
-      const batchId = this.createContentAwareHash(userId, agentId, messages);
       const shouldExtract = this.shouldExtractDeterministically(
-        batchId,
+        contentHash,
         userId,
         agentId,
         this.config.extractionRate

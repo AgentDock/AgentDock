@@ -437,9 +437,141 @@ Extract the general knowledge or pattern that can be applied beyond this specifi
     candidates: Memory[],
     threshold: number
   ): Promise<Memory[]> {
-    // This would use actual embedding similarity
-    // For now, return just the target memory as a placeholder
-    return [targetMemory];
+    const similar: Memory[] = [targetMemory]; // Always include the target memory
+
+    // Use vector-based similarity if available, otherwise content-based
+    if (this.storage.vectorSearch) {
+      const results = await this.storage.vectorSearch(targetMemory.content, {
+        limit: 10,
+        threshold: threshold,
+        exclude: [targetMemory.id]
+      });
+
+      // Filter results to only include candidates
+      const candidateIds = new Set(candidates.map((c) => c.id));
+      for (const result of results) {
+        if (candidateIds.has(result.id)) {
+          const candidate = candidates.find((c) => c.id === result.id);
+          if (candidate) {
+            similar.push(candidate);
+          }
+        }
+      }
+    } else {
+      // Content-based similarity fallback
+      for (const candidate of candidates) {
+        if (candidate.id === targetMemory.id) continue;
+
+        // Calculate content similarity using multiple approaches
+        const similarities = {
+          keyword: this.calculateKeywordSimilarity(targetMemory, candidate),
+          content: this.calculateContentSimilarity(
+            targetMemory.content,
+            candidate.content
+          ),
+          metadata: this.calculateMetadataSimilarity(targetMemory, candidate)
+        };
+
+        // Weighted similarity score
+        const weightedSimilarity =
+          similarities.keyword * 0.4 +
+          similarities.content * 0.5 +
+          similarities.metadata * 0.1;
+
+        if (weightedSimilarity >= threshold) {
+          similar.push(candidate);
+        }
+      }
+    }
+
+    logger.debug(
+      LogCategory.STORAGE,
+      'MemoryConsolidator',
+      'Found similar memories',
+      {
+        targetMemoryId: targetMemory.id.substring(0, 8),
+        candidatesCount: candidates.length,
+        similarCount: similar.length - 1, // Exclude target memory
+        threshold
+      }
+    );
+
+    return similar;
+  }
+
+  /**
+   * Calculate keyword-based similarity between two memories
+   */
+  private calculateKeywordSimilarity(memory1: Memory, memory2: Memory): number {
+    const keywords1 = new Set(memory1.keywords || []);
+    const keywords2 = new Set(memory2.keywords || []);
+
+    if (keywords1.size === 0 && keywords2.size === 0) {
+      return 0.5; // Neutral score when no keywords
+    }
+
+    const intersection = new Set(
+      [...keywords1].filter((k) => keywords2.has(k))
+    );
+    const union = new Set([...keywords1, ...keywords2]);
+
+    return union.size > 0 ? intersection.size / union.size : 0;
+  }
+
+  /**
+   * Calculate content-based similarity using simple text comparison
+   */
+  private calculateContentSimilarity(
+    content1: string,
+    content2: string
+  ): number {
+    // Normalize content
+    const normalize = (text: string) =>
+      text
+        .toLowerCase()
+        .replace(/[^\w\s]/g, ' ')
+        .split(/\s+/)
+        .filter((w) => w.length > 2);
+
+    const words1 = new Set(normalize(content1));
+    const words2 = new Set(normalize(content2));
+
+    if (words1.size === 0 && words2.size === 0) {
+      return 1.0; // Both empty
+    }
+
+    const intersection = new Set([...words1].filter((w) => words2.has(w)));
+    const union = new Set([...words1, ...words2]);
+
+    return union.size > 0 ? intersection.size / union.size : 0;
+  }
+
+  /**
+   * Calculate metadata-based similarity
+   */
+  private calculateMetadataSimilarity(
+    memory1: Memory,
+    memory2: Memory
+  ): number {
+    const meta1 = memory1.metadata || {};
+    const meta2 = memory2.metadata || {};
+
+    const keys1 = new Set(Object.keys(meta1));
+    const keys2 = new Set(Object.keys(meta2));
+    const commonKeys = [...keys1].filter((k) => keys2.has(k));
+
+    if (commonKeys.length === 0) {
+      return 0.5; // Neutral when no common metadata
+    }
+
+    let matches = 0;
+    for (const key of commonKeys) {
+      if (meta1[key] === meta2[key]) {
+        matches++;
+      }
+    }
+
+    return matches / commonKeys.length;
   }
 
   /**

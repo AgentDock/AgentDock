@@ -71,7 +71,13 @@ export class KVOperations {
       return itemToStorageFormat<T>(item, this.connection);
     } catch (error) {
       if (error instanceof Error) {
-        throw new StorageError(error.message, 'READ_ERROR', error);
+        throw new StorageError(
+          error.message,
+          'READ_ERROR',
+          'dynamodb',
+          'get',
+          error
+        );
       }
       throw error;
     }
@@ -117,7 +123,13 @@ export class KVOperations {
       });
     } catch (error) {
       if (error instanceof Error) {
-        throw new StorageError(error.message, 'WRITE_ERROR', error);
+        throw new StorageError(
+          error.message,
+          'WRITE_ERROR',
+          'dynamodb',
+          'set',
+          error
+        );
       }
       throw error;
     }
@@ -150,7 +162,13 @@ export class KVOperations {
       return !!response.Attributes;
     } catch (error) {
       if (error instanceof Error) {
-        throw new StorageError(error.message, 'DELETE_ERROR', error);
+        throw new StorageError(
+          error.message,
+          'DELETE_ERROR',
+          'dynamodb',
+          'delete',
+          error
+        );
       }
       throw error;
     }
@@ -219,7 +237,13 @@ export class KVOperations {
       return items;
     } catch (error) {
       if (error instanceof Error) {
-        throw new StorageError(error.message, 'LIST_ERROR', error);
+        throw new StorageError(
+          error.message,
+          'LIST_ERROR',
+          'dynamodb',
+          'list',
+          error
+        );
       }
       throw error;
     }
@@ -270,7 +294,13 @@ export class KVOperations {
       });
     } catch (error) {
       if (error instanceof Error) {
-        throw new StorageError(error.message, 'CLEAR_ERROR', error);
+        throw new StorageError(
+          error.message,
+          'CLEAR_ERROR',
+          'dynamodb',
+          'clear',
+          error
+        );
       }
       throw error;
     }

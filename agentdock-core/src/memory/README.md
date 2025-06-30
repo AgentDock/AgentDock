@@ -460,22 +460,6 @@ const config = {
 };
 ```
 
-## Critical Bug Fixes Applied
-
-**3 Critical bugs were identified and fixed**:
-
-1. **Buffer Overflow Protection** (`StreamingMemoryBatchProcessor`):
-   - **Issue**: Unbounded memory growth leading to OOM crashes
-   - **Fix**: Hard buffer limits with backpressure and overflow detection
-
-2. **Race Condition Fix** (`BatchProcessor`): 
-   - **Issue**: Concurrent buffer access causing data corruption
-   - **Fix**: Proper async/await patterns and buffer state management
-
-3. **Memory Leak Prevention** (`Transaction cleanup`):
-   - **Issue**: 60-second delay in transaction cleanup
-   - **Fix**: Immediate cleanup with timeout fallback
-
 ## Browser/Server Architecture
 
 **Problem Solved**: SQLite imports were breaking Next.js browser builds.

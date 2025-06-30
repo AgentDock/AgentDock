@@ -119,7 +119,7 @@ describe('SQLiteVecAdapter', () => {
       const results = await vectorAdapter.searchVectors(
         collection,
         [0.9, 0.1, 0], // Close to x-axis
-        { k: 2 }
+        { limit: 2 }
       );
 
       expect(results).toHaveLength(2);
@@ -142,7 +142,7 @@ describe('SQLiteVecAdapter', () => {
       ]);
 
       const results = await vectorAdapter.searchVectors(collection, [1, 0, 0], {
-        k: 3,
+        limit: 3,
         filter: { category: 'A' }
       });
 

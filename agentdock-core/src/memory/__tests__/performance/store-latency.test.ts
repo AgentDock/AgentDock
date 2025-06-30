@@ -5,7 +5,6 @@
  */
 
 import { WorkingMemory } from '../../types/working/WorkingMemory';
-import { createIntelligenceConfig } from '../../config/intelligence-layer-config';
 
 describe('Store Latency Performance Test', () => {
   let workingMemory: WorkingMemory;
@@ -20,6 +19,16 @@ describe('Store Latency Performance Test', () => {
     clear: jest.fn().mockResolvedValue(undefined),
     getStats: jest.fn().mockResolvedValue({ totalItems: 0, totalSize: '0 B' }),
     healthCheck: jest.fn().mockResolvedValue(true),
+
+    // Batch operations
+    getMany: jest.fn().mockResolvedValue({}),
+    setMany: jest.fn().mockResolvedValue(undefined),
+    deleteMany: jest.fn().mockResolvedValue(0),
+
+    // List operations  
+    getList: jest.fn().mockResolvedValue([]),
+    saveList: jest.fn().mockResolvedValue(undefined),
+    deleteList: jest.fn().mockResolvedValue(undefined),
     
     memory: {
       store: jest.fn().mockImplementation(async () => {
@@ -35,7 +44,15 @@ describe('Store Latency Performance Test', () => {
         type: 'working'
       }),
       
-      recall: jest.fn().mockResolvedValue([])
+      recall: jest.fn().mockResolvedValue([]),
+      update: jest.fn().mockResolvedValue(undefined),
+      delete: jest.fn().mockResolvedValue(undefined),
+      getStats: jest.fn().mockResolvedValue({
+        totalMemories: 0,
+        byType: {},
+        avgImportance: 0,
+        totalSize: '0 B'
+      })
     },
     
     createConnections: jest.fn().mockImplementation(async () => {
@@ -46,25 +63,18 @@ describe('Store Latency Performance Test', () => {
   
   beforeEach(() => {
     const storage = createMockStorage();
-    
-    const intelligenceConfig = createIntelligenceConfig({
-      embedding: {
-        enabled: true,
-        similarityThreshold: 0.70
-      },
-      connectionDetection: {
-        method: 'embedding-only' // Fastest method
-      }
-    });
-    
+
+    // Don't pass intelligence config to avoid LLM initialization
     workingMemory = new WorkingMemory(
       storage,
       {
         maxContextItems: 10,
         ttlSeconds: 3600,
-        encryptSensitive: false
-      },
-      intelligenceConfig
+        encryptSensitive: false,
+        maxTokens: 1000,
+        compressionThreshold: 0.8
+      }
+      // No intelligence config = no LLM initialization
     );
   });
   

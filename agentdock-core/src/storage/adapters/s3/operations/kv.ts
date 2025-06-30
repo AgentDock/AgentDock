@@ -113,6 +113,7 @@ export class S3KVOperations {
         Key: fullKey,
         Body: serializedValue,
         ContentType: 'application/json',
+        ServerSideEncryption: 'AES256', // Add default encryption for security
         Metadata: metadata
       });
 

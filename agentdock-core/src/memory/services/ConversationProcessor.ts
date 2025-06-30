@@ -227,6 +227,24 @@ export class ConversationProcessor {
     sessionId: string,
     messages: ConversationMessage[]
   ): Promise<ProcessingResult> {
+    // Validate input messages array
+    if (!messages || messages.length === 0) {
+      return {
+        sessionId,
+        messageCount: 0,
+        extractionResults: [],
+        totalTokensUsed: 0,
+        totalProcessingTime: 0,
+        storedMemoryIds: {
+          working: [],
+          episodic: [],
+          semantic: [],
+          procedural: []
+        },
+        errors: ['No messages provided for processing']
+      };
+    }
+
     const startTime = Date.now();
     const result: ProcessingResult = {
       sessionId,

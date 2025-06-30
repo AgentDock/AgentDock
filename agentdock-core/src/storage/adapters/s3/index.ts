@@ -261,7 +261,8 @@ export class S3Adapter extends BaseStorageAdapter {
         : new PutObjectCommand({
             Bucket: connection.bucket,
             Key: fullKey,
-            ContentType: options?.contentType
+            ContentType: options?.contentType,
+            ServerSideEncryption: 'AES256'
           });
 
     return await getSignedUrl(connection.client, command, {

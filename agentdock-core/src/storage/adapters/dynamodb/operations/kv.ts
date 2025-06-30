@@ -87,8 +87,9 @@ export class KVOperations {
     let ttl: number | undefined;
     if (options?.ttlSeconds && typeof options.ttlSeconds === 'number') {
       // DynamoDB TTL expects seconds since Unix epoch, not milliseconds
+      // Fix: Convert ttlSeconds to milliseconds first for calculateExpiration
       ttl = Math.floor(
-        TTLManager.calculateExpiration(options.ttlSeconds) / 1000
+        TTLManager.calculateExpiration(options.ttlSeconds * 1000) / 1000
       );
     }
 

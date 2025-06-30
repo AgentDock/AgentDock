@@ -136,6 +136,7 @@ export class S3BatchOperations {
           Key: fullKey,
           Body: serializedValue,
           ContentType: 'application/json',
+          ServerSideEncryption: 'AES256', // Add default encryption
           Metadata: metadata
         });
 

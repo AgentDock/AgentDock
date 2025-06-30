@@ -54,6 +54,12 @@ export class MongoKVOperations {
   async set(key: string, value: any, ttlMs?: number): Promise<void> {
     try {
       validateKey(key);
+
+      // Validate value is not undefined
+      if (value === undefined) {
+        throw new Error('Value cannot be undefined');
+      }
+
       const fullKey = this.keyManager.createKey(key, this.namespace);
       const serializedValue = jsonSerializer(value);
 

@@ -3,18 +3,37 @@
  */
 
 /**
- * Base storage error class
+ * Consistent storage error class for all adapters
  */
 export class StorageError extends Error {
   constructor(
     message: string,
     public code: string,
-    public cause?: Error,
-    public retryable: boolean = false
+    public adapter?: string,
+    public operation?: string,
+    public cause?: Error
   ) {
     super(message);
     this.name = 'StorageError';
-    Error.captureStackTrace(this, this.constructor);
+  }
+
+  /**
+   * Create a storage error with full context
+   */
+  static create(params: {
+    message: string;
+    code: string;
+    adapter: string;
+    operation: string;
+    cause?: Error;
+  }): StorageError {
+    return new StorageError(
+      params.message,
+      params.code,
+      params.adapter,
+      params.operation,
+      params.cause
+    );
   }
 }
 
@@ -23,49 +42,49 @@ export class StorageError extends Error {
  */
 export class ConnectionError extends StorageError {
   constructor(message: string, cause?: Error) {
-    super(message, 'CONNECTION_ERROR', cause, true);
+    super(message, 'CONNECTION_ERROR', undefined, undefined, cause);
     this.name = 'ConnectionError';
   }
 }
 
 export class TimeoutError extends StorageError {
   constructor(message: string, cause?: Error) {
-    super(message, 'TIMEOUT_ERROR', cause, true);
+    super(message, 'TIMEOUT_ERROR', undefined, undefined, cause);
     this.name = 'TimeoutError';
   }
 }
 
 export class ValidationError extends StorageError {
   constructor(message: string, cause?: Error) {
-    super(message, 'VALIDATION_ERROR', cause, false);
+    super(message, 'VALIDATION_ERROR', undefined, undefined, cause);
     this.name = 'ValidationError';
   }
 }
 
 export class SerializationError extends StorageError {
   constructor(message: string, cause?: Error) {
-    super(message, 'SERIALIZATION_ERROR', cause, false);
+    super(message, 'SERIALIZATION_ERROR', undefined, undefined, cause);
     this.name = 'SerializationError';
   }
 }
 
 export class NotFoundError extends StorageError {
   constructor(message: string, cause?: Error) {
-    super(message, 'NOT_FOUND', cause, false);
+    super(message, 'NOT_FOUND', undefined, undefined, cause);
     this.name = 'NotFoundError';
   }
 }
 
 export class ConflictError extends StorageError {
   constructor(message: string, cause?: Error) {
-    super(message, 'CONFLICT', cause, true);
+    super(message, 'CONFLICT', undefined, undefined, cause);
     this.name = 'ConflictError';
   }
 }
 
 export class QuotaExceededError extends StorageError {
   constructor(message: string, cause?: Error) {
-    super(message, 'QUOTA_EXCEEDED', cause, false);
+    super(message, 'QUOTA_EXCEEDED', undefined, undefined, cause);
     this.name = 'QuotaExceededError';
   }
 }
@@ -116,26 +135,40 @@ export class ErrorMapper {
         return new StorageError(
           'Database is read-only',
           'READ_ONLY',
-          error,
-          false
+          undefined,
+          undefined,
+          error
         );
 
       case ERROR_CODES.SQLITE_IOERR:
-        return new StorageError('I/O error', 'IO_ERROR', error, true);
+        return new StorageError(
+          'I/O error',
+          'IO_ERROR',
+          undefined,
+          undefined,
+          error
+        );
 
       case ERROR_CODES.SQLITE_CORRUPT:
         return new StorageError(
           'Database corrupted',
           'CORRUPTED',
-          error,
-          false
+          undefined,
+          undefined,
+          error
         );
 
       case ERROR_CODES.SQLITE_FULL:
         return new QuotaExceededError('Database full', error);
 
       default:
-        return new StorageError(message, 'SQLITE_ERROR', error, false);
+        return new StorageError(
+          message,
+          'SQLITE_ERROR',
+          undefined,
+          undefined,
+          error
+        );
     }
   }
 
@@ -166,12 +199,19 @@ export class ErrorMapper {
         return new StorageError(
           'Insufficient resources',
           'RESOURCE_ERROR',
-          error,
-          true
+          undefined,
+          undefined,
+          error
         );
 
       default:
-        return new StorageError(message, 'PG_ERROR', error, false);
+        return new StorageError(
+          message,
+          'PG_ERROR',
+          undefined,
+          undefined,
+          error
+        );
     }
   }
 
@@ -193,8 +233,9 @@ export class ErrorMapper {
       return new StorageError(
         'Authentication required',
         'AUTH_ERROR',
-        error,
-        false
+        undefined,
+        undefined,
+        error
       );
     }
 
@@ -202,7 +243,13 @@ export class ErrorMapper {
       return new TimeoutError(`Command timeout: ${message}`, error);
     }
 
-    return new StorageError(message, 'REDIS_ERROR', error, false);
+    return new StorageError(
+      message,
+      'REDIS_ERROR',
+      undefined,
+      undefined,
+      error
+    );
   }
 
   /**
@@ -228,8 +275,9 @@ export class ErrorMapper {
         return new StorageError(
           error.message || 'Unknown error',
           'UNKNOWN_ERROR',
-          error,
-          false
+          undefined,
+          undefined,
+          error
         );
     }
   }
@@ -265,7 +313,15 @@ export function handleStorageError(
  */
 export function isRetryableError(error: Error): boolean {
   if (error instanceof StorageError) {
-    return error.retryable;
+    // Retryable error codes
+    const retryableCodes = [
+      'CONNECTION_ERROR',
+      'TIMEOUT_ERROR',
+      'CONFLICT',
+      'IO_ERROR',
+      'RESOURCE_ERROR'
+    ];
+    return retryableCodes.includes(error.code);
   }
 
   // Check for common retryable error patterns

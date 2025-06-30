@@ -164,6 +164,16 @@ export class KVOperations {
    * List keys with prefix
    */
   async list(prefix: string, options?: ListOptions): Promise<string[]> {
+    // Validate prefix is provided
+    if (!prefix) {
+      logger.warn(
+        LogCategory.STORAGE,
+        'ChromaDB:KV',
+        'List operation requires a prefix, empty prefix not supported'
+      );
+      return [];
+    }
+
     const namespace = options?.namespace || this.namespace;
 
     // Build filter for namespace and prefix
@@ -172,8 +182,8 @@ export class KVOperations {
       _storage_type: { $eq: 'kv' }
     };
 
-    // ChromaDB doesn't support prefix filtering directly,
-    // so we need to get all KV items and filter client-side
+    // ChromaDB limitation: No efficient prefix scanning due to vector-first design
+    // This operation requires client-side filtering which is inefficient for large datasets
     try {
       const result = await this.client.peekDocuments(
         this.collection,
@@ -183,12 +193,13 @@ export class KVOperations {
       const keys: string[] = [];
       const now = Date.now();
 
+      // Client-side filtering (necessary due to ChromaDB's vector-first architecture)
       for (let i = 0; i < result.metadatas.length; i++) {
         const metadata = result.metadatas[i];
 
         if (!metadata) continue;
 
-        // Check if it's our namespace and type
+        // Check namespace and type
         if (
           metadata._namespace !== namespace ||
           metadata._storage_type !== 'kv'
@@ -196,7 +207,7 @@ export class KVOperations {
           continue;
         }
 
-        // Check TTL
+        // Check TTL expiration
         if (
           metadata._ttl_expires &&
           typeof metadata._ttl_expires === 'number' &&
@@ -205,7 +216,7 @@ export class KVOperations {
           continue;
         }
 
-        // Check prefix
+        // Check prefix match
         if (
           typeof metadata._key === 'string' &&
           metadata._key.startsWith(prefix)

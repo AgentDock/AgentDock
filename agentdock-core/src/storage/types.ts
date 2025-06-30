@@ -8,6 +8,20 @@
 import { MemoryType } from '../shared/types/memory';
 
 /**
+ * Type-safe storage metadata interface
+ */
+export interface StorageMetadata {
+  created?: Date;
+  updated?: Date;
+  version?: number;
+  source?: string;
+  tags?: string[];
+  priority?: 'low' | 'medium' | 'high';
+  // Allow additional properties but typed
+  [key: string]: unknown;
+}
+
+/**
  * Common options for storage operations
  */
 export interface StorageOptions {
@@ -24,7 +38,7 @@ export interface StorageOptions {
    * Additional metadata to store with the value
    * This can be used for filtering and organization
    */
-  metadata?: Record<string, any>;
+  metadata?: StorageMetadata;
 }
 
 /**
@@ -193,17 +207,35 @@ export interface StorageProvider {
  */
 export interface MemoryOperations {
   store(userId: string, agentId: string, memory: MemoryData): Promise<string>;
-  recall(userId: string, agentId: string, query: string, options?: MemoryRecallOptions): Promise<MemoryData[]>;
-  update(userId: string, agentId: string, memoryId: string, updates: Partial<MemoryData>): Promise<void>;
+  recall(
+    userId: string,
+    agentId: string,
+    query: string,
+    options?: MemoryRecallOptions
+  ): Promise<MemoryData[]>;
+  update(
+    userId: string,
+    agentId: string,
+    memoryId: string,
+    updates: Partial<MemoryData>
+  ): Promise<void>;
   delete(userId: string, agentId: string, memoryId: string): Promise<void>;
   getStats(userId: string, agentId?: string): Promise<MemoryOperationStats>;
   getById?(userId: string, memoryId: string): Promise<MemoryData | null>;
-  
+
   // Extended operations - may not be implemented by all providers
-  batchStore?(userId: string, agentId: string, memories: MemoryData[]): Promise<string[]>;
+  batchStore?(
+    userId: string,
+    agentId: string,
+    memories: MemoryData[]
+  ): Promise<string[]>;
   applyDecay?(userId: string, agentId: string, decayRules: any): Promise<any>;
   createConnections?(userId: string, connections: any[]): Promise<void>;
-  findConnectedMemories?(userId: string, memoryId: string, depth?: number): Promise<any>;
+  findConnectedMemories?(
+    userId: string,
+    memoryId: string,
+    depth?: number
+  ): Promise<any>;
 }
 
 /**
@@ -211,7 +243,7 @@ export interface MemoryOperations {
  */
 export interface MemoryData {
   id: string;
-  userId: string;        // Required for user isolation
+  userId: string; // Required for user isolation
   agentId: string;
   type: MemoryType;
   content: string;
@@ -221,13 +253,13 @@ export interface MemoryData {
   createdAt: number;
   updatedAt: number;
   lastAccessedAt: number;
-  
+
   // Fields that exist in PostgreSQL Memory table
   sessionId?: string;
   tokenCount?: number;
   keywords?: string[];
   embeddingId?: string;
-  
+
   // Type-specific metadata (properly typed)
   metadata?: {
     contextWindow?: number;

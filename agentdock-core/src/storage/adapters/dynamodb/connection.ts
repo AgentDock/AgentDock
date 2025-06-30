@@ -15,8 +15,15 @@ export class DynamoDBConnectionManager extends BaseConnectionManager<
    * Create a new DynamoDB client connection
    */
   protected async createConnection(): Promise<DynamoDBConnection> {
+    // Validate required configuration
+    if (!this.config.tableName) {
+      throw new Error('DynamoDB tableName is required');
+    }
+
     const clientConfig: any = {
       region: this.config.region || 'us-east-1',
+      maxAttempts: 3,
+      retryMode: 'adaptive',
       ...this.config.clientConfig
     };
 

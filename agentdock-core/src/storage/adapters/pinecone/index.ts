@@ -221,10 +221,18 @@ export class PineconeAdapter
 
     const entries = Object.entries(items);
     const batches = chunkArray(entries, this.options.batchSize);
+    const concurrency = 5; // Limit concurrent batches to avoid API rate limits
 
-    for (const batch of batches) {
+    // Process batches with controlled concurrency
+    for (let i = 0; i < batches.length; i += concurrency) {
+      const concurrentBatches = batches.slice(i, i + concurrency);
+
       await Promise.all(
-        batch.map(([key, value]) => this.set(key, value, options))
+        concurrentBatches.map((batch) =>
+          Promise.all(
+            batch.map(([key, value]) => this.set(key, value, options))
+          )
+        )
       );
     }
   }
@@ -234,12 +242,22 @@ export class PineconeAdapter
 
     let deleted = 0;
     const batches = chunkArray(keys, this.options.batchSize);
+    const concurrency = 5; // Limit concurrent batches
 
-    for (const batch of batches) {
-      const results = await Promise.all(
-        batch.map((key) => this.delete(key, options))
+    // Process batches with controlled concurrency
+    for (let i = 0; i < batches.length; i += concurrency) {
+      const concurrentBatches = batches.slice(i, i + concurrency);
+
+      const batchResults = await Promise.all(
+        concurrentBatches.map((batch) =>
+          Promise.all(batch.map((key) => this.delete(key, options)))
+        )
       );
-      deleted += results.filter(Boolean).length;
+
+      // Flatten results and count deleted items
+      for (const results of batchResults) {
+        deleted += results.filter(Boolean).length;
+      }
     }
 
     return deleted;
@@ -296,11 +314,18 @@ export class PineconeAdapter
     vectors: PineconeVector[],
     namespace?: string
   ): Promise<void> {
-    // Process in batches
+    // Process in batches with controlled concurrency
     const batches = chunkArray(vectors, this.options.batchSize);
+    const concurrency = 5; // Limit concurrent batches
 
-    for (const batch of batches) {
-      await this.client.upsertVectors(indexName, batch, namespace);
+    for (let i = 0; i < batches.length; i += concurrency) {
+      const concurrentBatches = batches.slice(i, i + concurrency);
+
+      await Promise.all(
+        concurrentBatches.map((batch) =>
+          this.client.upsertVectors(indexName, batch, namespace)
+        )
+      );
     }
   }
 
@@ -352,11 +377,18 @@ export class PineconeAdapter
     ids: string[],
     namespace?: string
   ): Promise<void> {
-    // Process in batches
+    // Process in batches with controlled concurrency
     const batches = chunkArray(ids, this.options.batchSize);
+    const concurrency = 5; // Limit concurrent batches
 
-    for (const batch of batches) {
-      await this.client.deleteVectors(indexName, batch, namespace);
+    for (let i = 0; i < batches.length; i += concurrency) {
+      const concurrentBatches = batches.slice(i, i + concurrency);
+
+      await Promise.all(
+        concurrentBatches.map((batch) =>
+          this.client.deleteVectors(indexName, batch, namespace)
+        )
+      );
     }
   }
 

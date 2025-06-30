@@ -1,11 +1,12 @@
 /**
  * @fileoverview SQLite memory-specific schema for development
- * 
+ *
  * Simplified memory tables for local development with SQLite.
  * Uses the same structure as PostgreSQL but adapted for SQLite syntax.
  */
 
 import { Database } from 'better-sqlite3';
+
 import { LogCategory, logger } from '../../../logging';
 
 /**
@@ -213,14 +214,18 @@ export function cleanupDecayedMemories(
   }
 ): number {
   try {
-    const cutoffTime = Date.now() - (thresholds.daysOld * 24 * 60 * 60 * 1000);
-    
-    const result = db.prepare(`
+    const cutoffTime = Date.now() - thresholds.daysOld * 24 * 60 * 60 * 1000;
+
+    const result = db
+      .prepare(
+        `
       DELETE FROM memories 
       WHERE resonance < ?
         AND last_accessed_at < ?
         AND type != 'semantic'
-    `).run(thresholds.resonanceThreshold, cutoffTime);
+    `
+      )
+      .run(thresholds.resonanceThreshold, cutoffTime);
 
     if (result.changes > 0) {
       logger.debug(
@@ -236,14 +241,9 @@ export function cleanupDecayedMemories(
 
     return result.changes;
   } catch (error) {
-    logger.warn(
-      LogCategory.STORAGE,
-      'SQLiteMemorySchema',
-      'Cleanup failed',
-      {
-        error: error instanceof Error ? error.message : String(error)
-      }
-    );
+    logger.warn(LogCategory.STORAGE, 'SQLiteMemorySchema', 'Cleanup failed', {
+      error: error instanceof Error ? error.message : String(error)
+    });
     return 0;
   }
 }
@@ -264,7 +264,7 @@ export function getMemoryStats(
   try {
     const whereClause = agentId ? 'WHERE agent_id = ?' : '';
     const params = agentId ? [agentId] : [];
-    
+
     // Get stats by type
     const statsStmt = db.prepare(`
       SELECT 
@@ -276,23 +276,27 @@ export function getMemoryStats(
       ${whereClause}
       GROUP BY type
     `);
-    
+
     const statsRows = agentId ? statsStmt.all(agentId) : statsStmt.all();
-    
+
     // Get connection count
     const connectionStmt = db.prepare(`
       SELECT COUNT(*) as total
       FROM memory_connections mc
-      ${agentId ? `WHERE EXISTS (
+      ${
+        agentId
+          ? `WHERE EXISTS (
         SELECT 1 FROM memories m 
         WHERE m.id = mc.source_memory_id 
         AND m.agent_id = ?
-      )` : ''}
+      )`
+          : ''
+      }
     `);
-    
-    const connectionResult = agentId 
-      ? connectionStmt.get(agentId) as { total: number }
-      : connectionStmt.get() as { total: number };
+
+    const connectionResult = agentId
+      ? (connectionStmt.get(agentId) as { total: number })
+      : (connectionStmt.get() as { total: number });
 
     const byType: Record<string, number> = {};
     let totalMemories = 0;
@@ -322,7 +326,7 @@ export function getMemoryStats(
         error: error instanceof Error ? error.message : String(error)
       }
     );
-    
+
     return {
       totalMemories: 0,
       byType: {},
@@ -342,10 +346,10 @@ export function optimizeMemoryDatabase(db: Database): void {
     db.exec('ANALYZE memories;');
     db.exec('ANALYZE memory_connections;');
     db.exec('ANALYZE procedural_patterns;');
-    
+
     // Vacuum to reclaim space
     db.exec('VACUUM;');
-    
+
     logger.debug(
       LogCategory.STORAGE,
       'SQLiteMemorySchema',

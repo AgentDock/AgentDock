@@ -1,6 +1,6 @@
 /**
  * @fileoverview AI SDK embedding function for ChromaDB
- * 
+ *
  * Properly typed embedding function using AI SDK embedding models
  */
 
@@ -45,7 +45,7 @@ export class AISDKEmbeddingFunction implements ChromaEmbeddingFunction {
         documents.forEach((doc, index) => {
           const cacheKey = this.getCacheKey(doc);
           const cached = this.embeddingCache.get(cacheKey);
-          
+
           if (cached) {
             embeddings[index] = cached;
           } else {
@@ -61,8 +61,8 @@ export class AISDKEmbeddingFunction implements ChromaEmbeddingFunction {
 
       // Generate embeddings for uncached documents
       if (uncachedDocs.length > 0) {
-        const texts = uncachedDocs.map(d => d.text);
-        
+        const texts = uncachedDocs.map((d) => d.text);
+
         logger.debug(
           LogCategory.STORAGE,
           'AISDKEmbeddingFunction',
@@ -78,7 +78,7 @@ export class AISDKEmbeddingFunction implements ChromaEmbeddingFunction {
         // We'll need to dynamically import the OpenAI provider
         const { openai } = await import('@ai-sdk/openai');
         const embeddingModel = openai.embedding(this.embeddingModelName);
-        
+
         const result = await embedMany({
           model: embeddingModel,
           values: texts
@@ -87,12 +87,12 @@ export class AISDKEmbeddingFunction implements ChromaEmbeddingFunction {
         // Store results and update cache
         uncachedDocs.forEach((doc, i) => {
           const embedding = result.embeddings[i];
-          
+
           // Ensure correct dimension
           const adjustedEmbedding = this.adjustDimension(embedding);
-          
+
           embeddings[doc.index] = adjustedEmbedding;
-          
+
           // Cache if enabled
           if (this.cacheEnabled) {
             this.embeddingCache.set(
@@ -115,7 +115,7 @@ export class AISDKEmbeddingFunction implements ChromaEmbeddingFunction {
           model: this.embeddingModelName
         }
       );
-      
+
       // Fallback to zero vectors on error
       return documents.map(() => new Array(this.dimension).fill(0));
     }
@@ -128,7 +128,7 @@ export class AISDKEmbeddingFunction implements ChromaEmbeddingFunction {
     if (embedding.length === this.dimension) {
       return embedding;
     }
-    
+
     if (embedding.length > this.dimension) {
       // Truncate to desired dimension
       logger.debug(
@@ -142,7 +142,7 @@ export class AISDKEmbeddingFunction implements ChromaEmbeddingFunction {
       );
       return embedding.slice(0, this.dimension);
     }
-    
+
     // Pad with zeros if too short
     logger.debug(
       LogCategory.STORAGE,
@@ -153,7 +153,7 @@ export class AISDKEmbeddingFunction implements ChromaEmbeddingFunction {
         to: this.dimension
       }
     );
-    
+
     const padded = [...embedding];
     while (padded.length < this.dimension) {
       padded.push(0);
@@ -169,7 +169,7 @@ export class AISDKEmbeddingFunction implements ChromaEmbeddingFunction {
     let hash = 0;
     for (let i = 0; i < content.length; i++) {
       const char = content.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash; // Convert to 32bit integer
     }
     return `emb_${this.dimension}_${Math.abs(hash).toString(36)}`;

@@ -1,9 +1,9 @@
 /**
  * @fileoverview MemoryLifecycleManager - Orchestrate complete memory lifecycle
- * 
+ *
  * Coordinates decay, promotion, and cleanup operations for automated memory
  * management. Integrates with existing storage adapters and intelligence layer.
- * 
+ *
  * @example
  * ```typescript
  * const lifecycleConfig: LifecycleConfig = {
@@ -32,32 +32,32 @@
  *     maxMemoriesPerAgent: 10000
  *   }
  * };
- * 
+ *
  * const manager = new MemoryLifecycleManager(storage, lifecycleConfig);
  * const result = await manager.runLifecycle('therapy_agent');
  * ```
- * 
+ *
  * @author AgentDock Core Team
  */
 
-import { StorageProvider } from '../../storage';
 import { LogCategory, logger } from '../../logging';
+import { StorageProvider } from '../../storage';
 import { generateId } from '../../storage/utils';
-import { Memory, MemoryType } from '../types/common';
 import { ConfigurableDecayEngine } from '../decay/ConfigurableDecayEngine';
+import { Memory, MemoryType } from '../types/common';
 import { MemoryEvolutionTracker } from './MemoryEvolutionTracker';
 import {
+  CleanupConfiguration,
+  CleanupResult,
   LifecycleConfig,
   LifecycleResult,
-  PromotionResult,
-  CleanupResult,
   PromotionConfiguration,
-  CleanupConfiguration
+  PromotionResult
 } from './types';
 
 /**
  * Orchestrates complete memory lifecycle management.
- * 
+ *
  * Key features:
  * - Automated decay with user-defined rules
  * - Memory promotion between types (episodic → semantic)
@@ -73,41 +73,51 @@ export class MemoryLifecycleManager {
 
   /**
    * Creates a new MemoryLifecycleManager.
-   * 
+   *
    * @param storage - Storage provider for memory operations
    * @param config - Lifecycle configuration
    */
-  constructor(
-    storage: StorageProvider,
-    config: LifecycleConfig
-  ) {
+  constructor(storage: StorageProvider, config: LifecycleConfig) {
     this.storage = storage;
     this.config = config;
     this.decayEngine = new ConfigurableDecayEngine(storage, config.decayConfig);
     this.evolutionTracker = new MemoryEvolutionTracker(storage);
 
-    logger.debug(LogCategory.STORAGE, 'MemoryLifecycleManager', 'Initialized lifecycle manager', {
-      agentId: config.decayConfig.agentId,
-      decayRules: config.decayConfig.rules.length,
-      promotionEnabled: config.promotionConfig.episodicToSemanticDays > 0,
-      cleanupEnabled: config.cleanupConfig.deleteThreshold < 1.0
-    });
+    logger.debug(
+      LogCategory.STORAGE,
+      'MemoryLifecycleManager',
+      'Initialized lifecycle manager',
+      {
+        agentId: config.decayConfig.agentId,
+        decayRules: config.decayConfig.rules.length,
+        promotionEnabled: config.promotionConfig.episodicToSemanticDays > 0,
+        cleanupEnabled: config.cleanupConfig.deleteThreshold < 1.0
+      }
+    );
   }
 
   /**
    * Run complete lifecycle management for an agent.
-   * 
+   *
    * @param userId - User identifier
    * @param agentId - Agent identifier
    * @returns Promise resolving to lifecycle operation results
    */
-  async runLifecycle(userId: string, agentId: string): Promise<LifecycleResult> {
+  async runLifecycle(
+    userId: string,
+    agentId: string
+  ): Promise<LifecycleResult> {
     const startTime = Date.now();
-    
-    logger.info(LogCategory.STORAGE, 'MemoryLifecycleManager', 'Starting lifecycle management', {
-      userId,
-      agentId
-    });
+
+    logger.info(
+      LogCategory.STORAGE,
+      'MemoryLifecycleManager',
+      'Starting lifecycle management',
+      {
+        userId,
+        agentId
+      }
+    );
 
     try {
       // 1. Apply decay rules
@@ -131,40 +141,58 @@ export class MemoryLifecycleManager {
         durationMs: Date.now() - startTime
       };
 
-      logger.info(LogCategory.STORAGE, 'MemoryLifecycleManager', 'Lifecycle management completed', {
-        userId,
-        agentId,
-        decayUpdated: result.decay.updated,
-        decayDeleted: result.decay.deleted,
-        promoted: result.promotion.promotedCount,
-        cleaned: result.cleanup.deletedCount,
-        durationMs: result.durationMs
-      });
+      logger.info(
+        LogCategory.STORAGE,
+        'MemoryLifecycleManager',
+        'Lifecycle management completed',
+        {
+          userId,
+          agentId,
+          decayUpdated: result.decay.updated,
+          decayDeleted: result.decay.deleted,
+          promoted: result.promotion.promotedCount,
+          cleaned: result.cleanup.deletedCount,
+          durationMs: result.durationMs
+        }
+      );
 
       return result;
-
     } catch (error) {
-      logger.error(LogCategory.STORAGE, 'MemoryLifecycleManager', 'Lifecycle management failed', {
-        userId,
-        agentId,
-        error: error instanceof Error ? error.message : String(error)
-      });
+      logger.error(
+        LogCategory.STORAGE,
+        'MemoryLifecycleManager',
+        'Lifecycle management failed',
+        {
+          userId,
+          agentId,
+          error: error instanceof Error ? error.message : String(error)
+        }
+      );
       throw error;
     }
   }
 
   /**
    * Promote old, important episodic memories to semantic memories.
-   * 
+   *
    * @private
    */
-  private async promoteMemories(userId: string, agentId: string): Promise<PromotionResult> {
+  private async promoteMemories(
+    userId: string,
+    agentId: string
+  ): Promise<PromotionResult> {
     const config = this.config.promotionConfig;
-    const cutoffTime = Date.now() - (config.episodicToSemanticDays * 24 * 60 * 60 * 1000);
+    const cutoffTime =
+      Date.now() - config.episodicToSemanticDays * 24 * 60 * 60 * 1000;
 
     try {
       // Get episodic memories older than cutoff
-      const candidateMemories = await this.getEpisodicCandidates(userId, agentId, cutoffTime, config);
+      const candidateMemories = await this.getEpisodicCandidates(
+        userId,
+        agentId,
+        cutoffTime,
+        config
+      );
 
       if (candidateMemories.length === 0) {
         return {
@@ -214,34 +242,47 @@ export class MemoryLifecycleManager {
           });
 
           promotedCount++;
-
         } catch (error) {
-          logger.warn(LogCategory.STORAGE, 'MemoryLifecycleManager', 'Failed to promote memory', {
-            memoryId: memory.id,
-            error: error instanceof Error ? error.message : String(error)
-          });
+          logger.warn(
+            LogCategory.STORAGE,
+            'MemoryLifecycleManager',
+            'Failed to promote memory',
+            {
+              memoryId: memory.id,
+              error: error instanceof Error ? error.message : String(error)
+            }
+          );
         }
       }
 
-      logger.info(LogCategory.STORAGE, 'MemoryLifecycleManager', 'Memory promotion completed', {
-        userId,
-        agentId,
-        candidateCount: candidateMemories.length,
-        promotedCount
-      });
+      logger.info(
+        LogCategory.STORAGE,
+        'MemoryLifecycleManager',
+        'Memory promotion completed',
+        {
+          userId,
+          agentId,
+          candidateCount: candidateMemories.length,
+          promotedCount
+        }
+      );
 
       return {
         candidateCount: candidateMemories.length,
         promotedCount,
         promotions
       };
-
     } catch (error) {
-      logger.error(LogCategory.STORAGE, 'MemoryLifecycleManager', 'Memory promotion failed', {
-        userId,
-        agentId,
-        error: error instanceof Error ? error.message : String(error)
-      });
+      logger.error(
+        LogCategory.STORAGE,
+        'MemoryLifecycleManager',
+        'Memory promotion failed',
+        {
+          userId,
+          agentId,
+          error: error instanceof Error ? error.message : String(error)
+        }
+      );
 
       return {
         candidateCount: 0,
@@ -253,10 +294,13 @@ export class MemoryLifecycleManager {
 
   /**
    * Clean up memories through archival and deletion.
-   * 
+   *
    * @private
    */
-  private async cleanupMemories(userId: string, agentId: string): Promise<CleanupResult> {
+  private async cleanupMemories(
+    userId: string,
+    agentId: string
+  ): Promise<CleanupResult> {
     const config = this.config.cleanupConfig;
 
     try {
@@ -273,7 +317,7 @@ export class MemoryLifecycleManager {
 
       // Filter memories for cleanup (below threshold)
       const lowResonanceMemories = allMemories.filter(
-        memory => (memory.resonance || 1.0) < config.deleteThreshold
+        (memory) => (memory.resonance || 1.0) < config.deleteThreshold
       );
 
       let archivedCount = 0;
@@ -299,35 +343,48 @@ export class MemoryLifecycleManager {
             newValue: 'deleted',
             reason: `Cleanup: resonance ${memory.resonance} below threshold ${config.deleteThreshold}`
           });
-
         } catch (error) {
-          logger.warn(LogCategory.STORAGE, 'MemoryLifecycleManager', 'Failed to cleanup memory', {
-            memoryId: memory.id,
-            error: error instanceof Error ? error.message : String(error)
-          });
+          logger.warn(
+            LogCategory.STORAGE,
+            'MemoryLifecycleManager',
+            'Failed to cleanup memory',
+            {
+              memoryId: memory.id,
+              error: error instanceof Error ? error.message : String(error)
+            }
+          );
         }
       }
 
-      logger.info(LogCategory.STORAGE, 'MemoryLifecycleManager', 'Memory cleanup completed', {
-        userId,
-        agentId,
-        evaluatedCount: allMemories.length,
-        archivedCount,
-        deletedCount
-      });
+      logger.info(
+        LogCategory.STORAGE,
+        'MemoryLifecycleManager',
+        'Memory cleanup completed',
+        {
+          userId,
+          agentId,
+          evaluatedCount: allMemories.length,
+          archivedCount,
+          deletedCount
+        }
+      );
 
       return {
         evaluatedCount: allMemories.length,
         archivedCount,
         deletedCount
       };
-
     } catch (error) {
-      logger.error(LogCategory.STORAGE, 'MemoryLifecycleManager', 'Memory cleanup failed', {
-        userId,
-        agentId,
-        error: error instanceof Error ? error.message : String(error)
-      });
+      logger.error(
+        LogCategory.STORAGE,
+        'MemoryLifecycleManager',
+        'Memory cleanup failed',
+        {
+          userId,
+          agentId,
+          error: error instanceof Error ? error.message : String(error)
+        }
+      );
 
       return {
         evaluatedCount: 0,
@@ -340,10 +397,13 @@ export class MemoryLifecycleManager {
 
   /**
    * Enforce memory limits by removing oldest or lowest-resonance memories.
-   * 
+   *
    * @private
    */
-  private async enforceMemoryLimits(userId: string, agentId: string): Promise<{
+  private async enforceMemoryLimits(
+    userId: string,
+    agentId: string
+  ): Promise<{
     enforced: boolean;
     removedCount: number;
     method: 'oldest' | 'lowest-resonance' | 'custom';
@@ -378,11 +438,16 @@ export class MemoryLifecycleManager {
       // Remove excess memories
       for (let i = 0; i < excessCount; i++) {
         const memory = sortedMemories[i];
-        
+
         try {
           // Archive if enabled
           if (this.config.cleanupConfig.archiveEnabled) {
-            await this.archiveMemory(userId, agentId, memory, this.config.cleanupConfig);
+            await this.archiveMemory(
+              userId,
+              agentId,
+              memory,
+              this.config.cleanupConfig
+            );
           }
 
           // Delete from primary storage
@@ -397,35 +462,48 @@ export class MemoryLifecycleManager {
             newValue: 'deleted',
             reason: `Memory limit enforcement: agent has ${allMemories.length} memories, limit is ${maxMemories}`
           });
-
         } catch (error) {
-          logger.warn(LogCategory.STORAGE, 'MemoryLifecycleManager', 'Failed to remove memory for limit enforcement', {
-            memoryId: memory.id,
-            error: error instanceof Error ? error.message : String(error)
-          });
+          logger.warn(
+            LogCategory.STORAGE,
+            'MemoryLifecycleManager',
+            'Failed to remove memory for limit enforcement',
+            {
+              memoryId: memory.id,
+              error: error instanceof Error ? error.message : String(error)
+            }
+          );
         }
       }
 
-      logger.info(LogCategory.STORAGE, 'MemoryLifecycleManager', 'Memory limits enforced', {
-        userId,
-        agentId,
-        totalMemories: allMemories.length,
-        limit: maxMemories,
-        removedCount
-      });
+      logger.info(
+        LogCategory.STORAGE,
+        'MemoryLifecycleManager',
+        'Memory limits enforced',
+        {
+          userId,
+          agentId,
+          totalMemories: allMemories.length,
+          limit: maxMemories,
+          removedCount
+        }
+      );
 
       return {
         enforced: true,
         removedCount,
         method: 'lowest-resonance'
       };
-
     } catch (error) {
-      logger.error(LogCategory.STORAGE, 'MemoryLifecycleManager', 'Memory limit enforcement failed', {
-        userId,
-        agentId,
-        error: error instanceof Error ? error.message : String(error)
-      });
+      logger.error(
+        LogCategory.STORAGE,
+        'MemoryLifecycleManager',
+        'Memory limit enforcement failed',
+        {
+          userId,
+          agentId,
+          error: error instanceof Error ? error.message : String(error)
+        }
+      );
 
       return {
         enforced: false,
@@ -437,28 +515,29 @@ export class MemoryLifecycleManager {
 
   /**
    * Get episodic memories that are candidates for promotion.
-   * 
+   *
    * @private
    */
   private async getEpisodicCandidates(
-    userId: string, 
-    agentId: string, 
-    cutoffTime: number, 
+    userId: string,
+    agentId: string,
+    cutoffTime: number,
     config: PromotionConfiguration
   ): Promise<Memory[]> {
     const allMemories = await this.getAllAgentMemories(userId, agentId);
 
-    return allMemories.filter(memory => 
-      memory.type === MemoryType.EPISODIC &&
-      memory.createdAt < cutoffTime &&
-      memory.importance >= config.minImportanceForPromotion &&
-      memory.accessCount >= config.minAccessCountForPromotion
+    return allMemories.filter(
+      (memory) =>
+        memory.type === MemoryType.EPISODIC &&
+        memory.createdAt < cutoffTime &&
+        memory.importance >= config.minImportanceForPromotion &&
+        memory.accessCount >= config.minAccessCountForPromotion
     );
   }
 
   /**
    * Convert episodic memory to semantic memory.
-   * 
+   *
    * @private
    */
   private async convertToSemantic(episodicMemory: Memory): Promise<Memory> {
@@ -479,17 +558,19 @@ export class MemoryLifecycleManager {
 
   /**
    * Archive a memory before deletion.
-   * 
+   *
    * @private
    */
   private async archiveMemory(
-    userId: string, 
-    agentId: string, 
-    memory: Memory, 
+    userId: string,
+    agentId: string,
+    memory: Memory,
     config: CleanupConfiguration
   ): Promise<void> {
-    const archiveKey = config.archiveKeyPattern 
-      ? config.archiveKeyPattern.replace('{agentId}', agentId).replace('{memoryId}', memory.id)
+    const archiveKey = config.archiveKeyPattern
+      ? config.archiveKeyPattern
+          .replace('{agentId}', agentId)
+          .replace('{memoryId}', memory.id)
       : `archive:${agentId}:${memory.id}`;
 
     const archiveData = {
@@ -499,39 +580,46 @@ export class MemoryLifecycleManager {
     };
 
     await this.storage.set(archiveKey, archiveData, {
-      ttlSeconds: config.archiveTTL || (365 * 24 * 60 * 60) // Default 1 year
+      ttlSeconds: config.archiveTTL || 365 * 24 * 60 * 60 // Default 1 year
     });
   }
 
   /**
    * Get all memories for an agent.
-   * 
+   *
    * @private
    */
-  private async getAllAgentMemories(userId: string, agentId: string): Promise<Memory[]> {
+  private async getAllAgentMemories(
+    userId: string,
+    agentId: string
+  ): Promise<Memory[]> {
     const memories: Memory[] = [];
-    
+
     try {
-      const memoryKeys = await this.storage.list(`memory:${userId}:${agentId}:`);
-      
+      const memoryKeys = await this.storage.list(
+        `memory:${userId}:${agentId}:`
+      );
+
       for (const key of memoryKeys) {
         const memory = await this.storage.get<Memory>(key);
         if (memory) {
           memories.push(memory);
         }
       }
-      
+
       return memories;
     } catch (error) {
-      logger.warn(LogCategory.STORAGE, 'MemoryLifecycleManager', 'Failed to retrieve some memories', {
-        userId,
-        agentId,
-        error: error instanceof Error ? error.message : String(error)
-      });
+      logger.warn(
+        LogCategory.STORAGE,
+        'MemoryLifecycleManager',
+        'Failed to retrieve some memories',
+        {
+          userId,
+          agentId,
+          error: error instanceof Error ? error.message : String(error)
+        }
+      );
       return memories;
     }
   }
-} 
- 
- 
- 
+}

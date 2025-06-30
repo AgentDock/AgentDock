@@ -1,14 +1,15 @@
 /**
  * @fileoverview EmbeddingService - Vector embeddings using AgentDock's AI infrastructure
- * 
+ *
  * Provides configurable embedding generation with caching and batch processing.
  * Uses AgentDock's LLM module following established patterns.
- * 
+ *
  * @author AgentDock Core Team
  */
 
-import { embedMany } from '../../../llm';
 import type { EmbeddingModel } from 'ai';
+
+import { embedMany } from '../../../llm';
 import { LogCategory, logger } from '../../../logging';
 import { Memory } from '../../types/common';
 import { EmbeddingConfig, EmbeddingResult } from '../types';
@@ -41,7 +42,7 @@ class LRUCache<K, V> {
       // Remove least recently used (first entry)
       const firstKey = this.cache.keys().next().value;
       if (firstKey !== undefined) {
-      this.cache.delete(firstKey);
+        this.cache.delete(firstKey);
       }
     }
     this.cache.set(key, value);
@@ -70,7 +71,7 @@ export class EmbeddingService {
   ) {
     this.cacheEnabled = config.cacheEnabled ?? true;
     this.batchSize = config.batchSize ?? 100;
-    
+
     // Initialize LRU cache with configurable size (default 1000)
     const cacheSize = config.cacheSize ?? 1000;
     this.embeddingCache = new LRUCache<string, number[]>(cacheSize);
@@ -116,7 +117,7 @@ export class EmbeddingService {
         texts.forEach((text, index) => {
           const cacheKey = this.getCacheKey(text);
           const cached = this.embeddingCache.get(cacheKey);
-          
+
           if (cached) {
             results[index] = {
               embedding: cached,
@@ -137,8 +138,8 @@ export class EmbeddingService {
 
       // Generate embeddings for uncached texts
       if (uncachedItems.length > 0) {
-        const uncachedTexts = uncachedItems.map(item => item.text);
-        
+        const uncachedTexts = uncachedItems.map((item) => item.text);
+
         logger.debug(
           LogCategory.STORAGE,
           'EmbeddingService',
@@ -152,7 +153,7 @@ export class EmbeddingService {
 
         // Use AgentDock's embedMany function with batching
         const batches = this.createBatches(uncachedTexts, this.batchSize);
-        
+
         for (const batch of batches) {
           const batchResult = await embedMany({
             model: this.embeddingModel,
@@ -163,7 +164,7 @@ export class EmbeddingService {
           batch.items.forEach((item, i) => {
             const embedding = batchResult.embeddings[i];
             const adjustedEmbedding = this.adjustDimension(embedding);
-            
+
             const result: EmbeddingResult = {
               embedding: adjustedEmbedding,
               dimensions: adjustedEmbedding.length,
@@ -171,9 +172,9 @@ export class EmbeddingService {
               model: this.config.model,
               cached: false
             };
-            
+
             results[item.index] = result;
-            
+
             // Cache if enabled
             if (this.cacheEnabled) {
               this.embeddingCache.set(
@@ -210,26 +211,33 @@ export class EmbeddingService {
     storage: any
   ): Promise<Memory[]> {
     const embeddingResult = await this.generateEmbedding(queryText);
-    
+
     // Use storage adapter's vector search if available
     if (storage.searchSimilar) {
-      return await storage.searchSimilar(agentId, embeddingResult.embedding, threshold);
+      return await storage.searchSimilar(
+        agentId,
+        embeddingResult.embedding,
+        threshold
+      );
     }
-    
+
     logger.warn(
       LogCategory.STORAGE,
       'EmbeddingService',
       'Storage adapter does not support vector search',
       { agentId: agentId.substring(0, 8) }
     );
-    
+
     return [];
   }
 
   /**
    * Create batches for efficient processing
    */
-  private createBatches(texts: string[], batchSize: number): Array<{
+  private createBatches(
+    texts: string[],
+    batchSize: number
+  ): Array<{
     texts: string[];
     items: Array<{ index: number; text: string }>;
   }> {
@@ -237,20 +245,20 @@ export class EmbeddingService {
       texts: string[];
       items: Array<{ index: number; text: string }>;
     }> = [];
-    
+
     for (let i = 0; i < texts.length; i += batchSize) {
       const batchTexts = texts.slice(i, i + batchSize);
       const batchItems = batchTexts.map((text, idx) => ({
         index: i + idx,
         text
       }));
-      
+
       batches.push({
         texts: batchTexts,
         items: batchItems
       });
     }
-    
+
     return batches;
   }
 
@@ -259,15 +267,15 @@ export class EmbeddingService {
    */
   private adjustDimension(embedding: number[]): number[] {
     const targetDimension = this.config.dimensions || embedding.length;
-    
+
     if (embedding.length === targetDimension) {
       return embedding;
     }
-    
+
     if (embedding.length > targetDimension) {
       return embedding.slice(0, targetDimension);
     }
-    
+
     // Pad with zeros if too short
     const padded = [...embedding];
     while (padded.length < targetDimension) {
@@ -283,7 +291,7 @@ export class EmbeddingService {
     let hash = 0;
     for (let i = 0; i < content.length; i++) {
       const char = content.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash;
     }
     return `emb_${this.config.dimensions || 1536}_${Math.abs(hash).toString(36)}`;
@@ -316,4 +324,4 @@ export class EmbeddingService {
       enabled: this.cacheEnabled
     };
   }
-} 
+}

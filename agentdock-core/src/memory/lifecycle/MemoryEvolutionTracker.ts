@@ -3,8 +3,8 @@
  * Tracks changes to memories over time for analytics and insights
  */
 
-import { StorageProvider } from '../../storage';
 import { LogCategory, logger } from '../../logging';
+import { StorageProvider } from '../../storage';
 import { generateId } from '../../storage/utils';
 
 export interface MemoryEvolution {
@@ -28,7 +28,7 @@ export class MemoryEvolutionTracker {
    * Track a memory evolution event
    */
   async trackEvolution(
-    memoryId: string, 
+    memoryId: string,
     evolution: Omit<MemoryEvolution, 'id' | 'memoryId' | 'timestamp'>
   ): Promise<void> {
     try {
@@ -42,17 +42,26 @@ export class MemoryEvolutionTracker {
       const key = `evolution:${memoryId}:${evolutionRecord.id}`;
       await this.storage.set(key, evolutionRecord);
 
-      logger.debug(LogCategory.STORAGE, 'MemoryEvolutionTracker', 'Tracked evolution', {
-        memoryId,
-        changeType: evolution.changeType,
-        reason: evolution.reason
-      });
-
+      logger.debug(
+        LogCategory.STORAGE,
+        'MemoryEvolutionTracker',
+        'Tracked evolution',
+        {
+          memoryId,
+          changeType: evolution.changeType,
+          reason: evolution.reason
+        }
+      );
     } catch (error) {
-      logger.error(LogCategory.STORAGE, 'MemoryEvolutionTracker', 'Failed to track evolution', {
-        memoryId,
-        error: error instanceof Error ? error.message : String(error)
-      });
+      logger.error(
+        LogCategory.STORAGE,
+        'MemoryEvolutionTracker',
+        'Failed to track evolution',
+        {
+          memoryId,
+          error: error instanceof Error ? error.message : String(error)
+        }
+      );
     }
   }
 
@@ -63,7 +72,7 @@ export class MemoryEvolutionTracker {
     try {
       const prefix = `evolution:${memoryId}:`;
       const keys = await this.storage.list(prefix);
-      
+
       const evolutions: MemoryEvolution[] = [];
       for (const key of keys) {
         const evolution = await this.storage.get<MemoryEvolution>(key);
@@ -74,13 +83,17 @@ export class MemoryEvolutionTracker {
 
       // Sort by timestamp
       return evolutions.sort((a, b) => a.timestamp - b.timestamp);
-
     } catch (error) {
-      logger.error(LogCategory.STORAGE, 'MemoryEvolutionTracker', 'Failed to get evolution history', {
-        memoryId,
-        error: error instanceof Error ? error.message : String(error)
-      });
+      logger.error(
+        LogCategory.STORAGE,
+        'MemoryEvolutionTracker',
+        'Failed to get evolution history',
+        {
+          memoryId,
+          error: error instanceof Error ? error.message : String(error)
+        }
+      );
       return [];
     }
   }
-} 
+}

@@ -1,17 +1,17 @@
 import { MemoryType } from '../types/common';
-import { 
-  RecallQuery, 
-  UnifiedMemoryResult, 
+import { EpisodicMemoryData } from '../types/episodic/EpisodicMemoryTypes';
+import { ProceduralMemoryData } from '../types/procedural/ProceduralMemoryTypes';
+import { SemanticMemoryData } from '../types/semantic/SemanticMemoryTypes';
+import { WorkingMemoryData } from '../types/working/WorkingMemoryTypes';
+import {
   HybridSearchResult,
-  VectorSearchResult,
-  TextSearchResult,
   ProceduralMatchResult,
-  RelatedMemory
-} from './RecallServiceTypes'
-import { EpisodicMemoryData } from '../types/episodic/EpisodicMemoryTypes'
-import { SemanticMemoryData } from '../types/semantic/SemanticMemoryTypes'
-import { ProceduralMemoryData } from '../types/procedural/ProceduralMemoryTypes'
-import { WorkingMemoryData } from '../types/working/WorkingMemoryTypes'
+  RecallQuery,
+  RelatedMemory,
+  TextSearchResult,
+  UnifiedMemoryResult,
+  VectorSearchResult
+} from './RecallServiceTypes';
 
 /**
  * Utility functions for RecallService operations
@@ -21,7 +21,11 @@ import { WorkingMemoryData } from '../types/working/WorkingMemoryTypes'
  * Convert different memory types to unified format
  */
 export function convertToUnifiedResult(
-  memory: EpisodicMemoryData | SemanticMemoryData | ProceduralMemoryData | WorkingMemoryData,
+  memory:
+    | EpisodicMemoryData
+    | SemanticMemoryData
+    | ProceduralMemoryData
+    | WorkingMemoryData,
   type: MemoryType,
   relevance: number = 0.5
 ): UnifiedMemoryResult {
@@ -91,7 +95,8 @@ export function convertToUnifiedResult(
         timestamp: proceduralMemory.lastUsed,
         context: {
           pattern: proceduralMemory.pattern,
-          successRate: proceduralMemory.successCount / proceduralMemory.totalCount,
+          successRate:
+            proceduralMemory.successCount / proceduralMemory.totalCount,
           conditions: proceduralMemory.conditions,
           usageCount: proceduralMemory.totalCount
         }
@@ -111,10 +116,15 @@ export function calculateCombinedRelevance(
   textScore: number = 0,
   temporalScore: number = 0,
   proceduralScore: number = 0,
-  weights: { vector: number; text: number; temporal: number; procedural: number }
+  weights: {
+    vector: number;
+    text: number;
+    temporal: number;
+    procedural: number;
+  }
 ): number {
   const normalizedWeights = normalizeWeights(weights);
-  
+
   return (
     vectorScore * normalizedWeights.vector +
     textScore * normalizedWeights.text +
@@ -141,14 +151,15 @@ export function calculateTemporalRelevance(
   }
 
   // Otherwise, use recency decay
-  const daysSinceCreation = (currentTime - memoryTimestamp) / (24 * 60 * 60 * 1000);
-  
+  const daysSinceCreation =
+    (currentTime - memoryTimestamp) / (24 * 60 * 60 * 1000);
+
   // Exponential decay with different rates for different memory types
   if (daysSinceCreation <= 1) return 1.0; // Recent memories get full score
   if (daysSinceCreation <= 7) return 0.8; // Last week
   if (daysSinceCreation <= 30) return 0.6; // Last month
   if (daysSinceCreation <= 90) return 0.4; // Last quarter
-  
+
   return Math.max(0.1, 1 / Math.log(daysSinceCreation + 1)); // Logarithmic decay
 }
 
@@ -162,7 +173,7 @@ export function calculateTextRelevance(
 ): number {
   const queryTerms = extractQueryTerms(query);
   const contentTerms = extractContentTerms(content);
-  
+
   let score = 0;
   let maxScore = 0;
 
@@ -203,7 +214,12 @@ export function mergeHybridResults(
   vectorResults: VectorSearchResult[],
   textResults: TextSearchResult[],
   proceduralResults: ProceduralMatchResult[],
-  weights: { vector: number; text: number; temporal: number; procedural: number }
+  weights: {
+    vector: number;
+    text: number;
+    temporal: number;
+    procedural: number;
+  }
 ): UnifiedMemoryResult[] {
   const resultMap = new Map<string, UnifiedMemoryResult>();
   const scoreMap = new Map<string, number>();
@@ -219,11 +235,11 @@ export function mergeHybridResults(
   for (const result of textResults) {
     const id = result.memory.id;
     const existing = resultMap.get(id);
-    
+
     if (existing) {
       // Combine scores
       const currentScore = scoreMap.get(id) || 0;
-      scoreMap.set(id, currentScore + (result.relevance * weights.text));
+      scoreMap.set(id, currentScore + result.relevance * weights.text);
     } else {
       resultMap.set(id, result.memory);
       scoreMap.set(id, result.relevance * weights.text);
@@ -234,11 +250,12 @@ export function mergeHybridResults(
   for (const result of proceduralResults) {
     const id = result.memory.id;
     const existing = resultMap.get(id);
-    const proceduralScore = (result.patternMatch + result.contextMatch + result.usageScore) / 3;
-    
+    const proceduralScore =
+      (result.patternMatch + result.contextMatch + result.usageScore) / 3;
+
     if (existing) {
       const currentScore = scoreMap.get(id) || 0;
-      scoreMap.set(id, currentScore + (proceduralScore * weights.procedural));
+      scoreMap.set(id, currentScore + proceduralScore * weights.procedural);
     } else {
       resultMap.set(id, result.memory);
       scoreMap.set(id, proceduralScore * weights.procedural);
@@ -268,7 +285,10 @@ export function findMemoryRelationships(
     if (other.id === memory.id) continue;
 
     // Same session relationship
-    if (memory.type === MemoryType.EPISODIC && other.type === MemoryType.EPISODIC) {
+    if (
+      memory.type === MemoryType.EPISODIC &&
+      other.type === MemoryType.EPISODIC
+    ) {
       if (memory.context.sessionId === other.context.sessionId) {
         relationships.push({
           id: other.id,
@@ -281,8 +301,14 @@ export function findMemoryRelationships(
     }
 
     // Semantic similarity
-    if (memory.type === MemoryType.SEMANTIC || other.type === MemoryType.SEMANTIC) {
-      const similarity = calculateContentSimilarity(memory.content, other.content);
+    if (
+      memory.type === MemoryType.SEMANTIC ||
+      other.type === MemoryType.SEMANTIC
+    ) {
+      const similarity = calculateContentSimilarity(
+        memory.content,
+        other.content
+      );
       if (similarity > 0.6) {
         relationships.push({
           id: other.id,
@@ -297,9 +323,10 @@ export function findMemoryRelationships(
     // Temporal proximity
     const timeDiff = Math.abs(memory.timestamp - other.timestamp);
     const hoursDiff = timeDiff / (60 * 60 * 1000);
-    
-    if (hoursDiff <= 24) { // Within 24 hours
-      const temporalStrength = Math.max(0.3, 1 - (hoursDiff / 24));
+
+    if (hoursDiff <= 24) {
+      // Within 24 hours
+      const temporalStrength = Math.max(0.3, 1 - hoursDiff / 24);
       relationships.push({
         id: other.id,
         type: other.type,
@@ -310,12 +337,15 @@ export function findMemoryRelationships(
     }
 
     // Pattern relationships for procedural memories
-    if (memory.type === MemoryType.PROCEDURAL && other.type === MemoryType.PROCEDURAL) {
+    if (
+      memory.type === MemoryType.PROCEDURAL &&
+      other.type === MemoryType.PROCEDURAL
+    ) {
       const patternSimilarity = calculatePatternSimilarity(
         memory.context.pattern || '',
         other.context.pattern || ''
       );
-      
+
       if (patternSimilarity > 0.5) {
         relationships.push({
           id: other.id,
@@ -350,12 +380,27 @@ export function optimizeQuery(query: string): string {
  * Extract meaningful terms from query
  */
 function extractQueryTerms(query: string): string[] {
-  const stopWords = new Set(['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by']);
-  
+  const stopWords = new Set([
+    'the',
+    'a',
+    'an',
+    'and',
+    'or',
+    'but',
+    'in',
+    'on',
+    'at',
+    'to',
+    'for',
+    'of',
+    'with',
+    'by'
+  ]);
+
   return query
     .toLowerCase()
     .split(/\s+/)
-    .filter(term => term.length > 2 && !stopWords.has(term));
+    .filter((term) => term.length > 2 && !stopWords.has(term));
 }
 
 /**
@@ -365,7 +410,7 @@ function extractContentTerms(content: string): string[] {
   return content
     .toLowerCase()
     .split(/\s+/)
-    .filter(term => term.length > 2);
+    .filter((term) => term.length > 2);
 }
 
 /**
@@ -374,77 +419,89 @@ function extractContentTerms(content: string): string[] {
 function calculateTermFrequency(content: string, terms: string[]): number {
   const contentLower = content.toLowerCase();
   let totalMatches = 0;
-  
+
   for (const term of terms) {
     const matches = (contentLower.match(new RegExp(term, 'g')) || []).length;
     totalMatches += matches;
   }
-  
+
   return Math.min(1.0, totalMatches / (content.length / 100));
 }
 
 /**
  * Calculate content similarity using simple word overlap
  */
-function calculateContentSimilarity(content1: string, content2: string): number {
+function calculateContentSimilarity(
+  content1: string,
+  content2: string
+): number {
   const terms1 = new Set(extractContentTerms(content1));
   const terms2 = new Set(extractContentTerms(content2));
-  
-  const intersection = new Set(
-    Array.from(terms1).filter(x => terms2.has(x))
-  );
+
+  const intersection = new Set(Array.from(terms1).filter((x) => terms2.has(x)));
   const union = new Set(Array.from(terms1).concat(Array.from(terms2)));
-  
+
   return union.size > 0 ? intersection.size / union.size : 0;
 }
 
 /**
  * Calculate pattern similarity for procedural memories
  */
-function calculatePatternSimilarity(pattern1: string, pattern2: string): number {
+function calculatePatternSimilarity(
+  pattern1: string,
+  pattern2: string
+): number {
   if (!pattern1 || !pattern2) return 0;
-  
+
   // Simple Levenshtein-based similarity
   const maxLen = Math.max(pattern1.length, pattern2.length);
   if (maxLen === 0) return 1.0;
-  
+
   const distance = levenshteinDistance(pattern1, pattern2);
-  return 1 - (distance / maxLen);
+  return 1 - distance / maxLen;
 }
 
 /**
  * Calculate Levenshtein distance
  */
 function levenshteinDistance(str1: string, str2: string): number {
-  const matrix = Array(str2.length + 1).fill(null).map(() => Array(str1.length + 1).fill(null));
-  
+  const matrix = Array(str2.length + 1)
+    .fill(null)
+    .map(() => Array(str1.length + 1).fill(null));
+
   for (let i = 0; i <= str1.length; i++) matrix[0][i] = i;
   for (let j = 0; j <= str2.length; j++) matrix[j][0] = j;
-  
+
   for (let j = 1; j <= str2.length; j++) {
     for (let i = 1; i <= str1.length; i++) {
       const cost = str1[i - 1] === str2[j - 1] ? 0 : 1;
       matrix[j][i] = Math.min(
-        matrix[j][i - 1] + 1,     // deletion
-        matrix[j - 1][i] + 1,     // insertion
+        matrix[j][i - 1] + 1, // deletion
+        matrix[j - 1][i] + 1, // insertion
         matrix[j - 1][i - 1] + cost // substitution
       );
     }
   }
-  
+
   return matrix[str2.length][str1.length];
 }
 
 /**
  * Normalize weights to sum to 1.0
  */
-function normalizeWeights(weights: { vector: number; text: number; temporal: number; procedural: number }): typeof weights {
-  const total = weights.vector + weights.text + weights.temporal + weights.procedural;
-  
+function normalizeWeights(weights: {
+  vector: number;
+  text: number;
+  temporal: number;
+  procedural: number;
+}): typeof weights {
+  const total =
+    weights.vector + weights.text + weights.temporal + weights.procedural;
+
   if (total === 0) {
     return { vector: 0.25, text: 0.25, temporal: 0.25, procedural: 0.25 };
   }
-  
+
   return {
     vector: weights.vector / total,
     text: weights.text / total,
@@ -457,9 +514,11 @@ function normalizeWeights(weights: { vector: number; text: number; temporal: num
  * Validate recall query
  */
 export function validateRecallQuery(query: RecallQuery): boolean {
-  return query.agentId?.length > 0 &&
-         query.query?.length > 0 &&
-         (query.limit || 0) <= 1000 &&
-         (query.minRelevance || 0) >= 0 &&
-         (query.minRelevance || 1) <= 1;
+  return (
+    query.agentId?.length > 0 &&
+    query.query?.length > 0 &&
+    (query.limit || 0) <= 1000 &&
+    (query.minRelevance || 0) >= 0 &&
+    (query.minRelevance || 1) <= 1
+  );
 }

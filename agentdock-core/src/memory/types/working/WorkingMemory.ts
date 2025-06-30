@@ -1,18 +1,18 @@
 /**
  * WorkingMemory - Thin wrapper for ephemeral memory storage
- * 
+ *
  * Delegates ALL operations to storage layer - NO reimplementation
  */
 
-import { StorageProvider } from '../../../storage/types';
-import { MemoryType } from '../../../shared/types/memory';
 import { LogCategory, logger } from '../../../logging';
-import { BaseMemoryType } from '../base/BaseMemoryType';
+import { MemoryType } from '../../../shared/types/memory';
+import { StorageProvider } from '../../../storage/types';
 import { IntelligenceLayerConfig } from '../../intelligence/types';
-import { 
-  WorkingMemoryConfig, 
-  WorkingMemoryData,
+import { BaseMemoryType } from '../base/BaseMemoryType';
+import {
   StoreOptions,
+  WorkingMemoryConfig,
+  WorkingMemoryData,
   WorkingMemoryStats
 } from './WorkingMemoryTypes';
 
@@ -38,12 +38,14 @@ export class WorkingMemory extends BaseMemoryType {
     options?: StoreOptions
   ): Promise<string> {
     if (!userId || typeof userId !== 'string' || !userId.trim()) {
-      throw new Error('userId must be a non-empty string for working memory operations');
+      throw new Error(
+        'userId must be a non-empty string for working memory operations'
+      );
     }
-    
+
     const id = `wm_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
     const now = Date.now();
-    
+
     // Create COMPLETE data at write time
     const memoryData = {
       id,
@@ -57,20 +59,22 @@ export class WorkingMemory extends BaseMemoryType {
       createdAt: now,
       updatedAt: now,
       lastAccessedAt: now,
-      
+
       // Required fields
       sessionId: options?.sessionId || `session_${Date.now()}`,
       tokenCount: 0, // TODO: Add proper token counting service
-      
+
       // Type-specific metadata
       metadata: {
         ...options?.metadata, // User metadata FIRST
-        contextWindow: options?.contextWindow ?? this.workingConfig.maxContextItems,
-        expiresAt: now + ((options?.ttlSeconds ?? this.workingConfig.ttlSeconds) * 1000)
+        contextWindow:
+          options?.contextWindow ?? this.workingConfig.maxContextItems,
+        expiresAt:
+          now + (options?.ttlSeconds ?? this.workingConfig.ttlSeconds) * 1000
         // System fields LAST - cannot be overridden
       }
     };
-    
+
     await this.storage.memory!.store(userId, agentId, memoryData);
     return memoryData.id;
   }
@@ -85,9 +89,11 @@ export class WorkingMemory extends BaseMemoryType {
     limit: number = 10
   ): Promise<WorkingMemoryData[]> {
     if (!userId || typeof userId !== 'string' || !userId.trim()) {
-      throw new Error('userId must be a non-empty string for working memory operations');
+      throw new Error(
+        'userId must be a non-empty string for working memory operations'
+      );
     }
-    
+
     // DELEGATE TO STORAGE
     const result = await this.storage.memory!.recall(userId, agentId, query, {
       type: MemoryType.WORKING,
@@ -99,36 +105,45 @@ export class WorkingMemory extends BaseMemoryType {
   /**
    * Clear working memory - Uses storage operations
    */
-  async clear(userId: string, agentId: string, sessionId?: string): Promise<void> {
+  async clear(
+    userId: string,
+    agentId: string,
+    sessionId?: string
+  ): Promise<void> {
     if (!userId || typeof userId !== 'string' || !userId.trim()) {
-      throw new Error('userId must be a non-empty string for working memory operations');
+      throw new Error(
+        'userId must be a non-empty string for working memory operations'
+      );
     }
-    
+
     // Use storage recall to find memories to delete
     const memories = await this.storage.memory!.recall(userId, agentId, '', {
       type: MemoryType.WORKING,
       limit: 1000 // Get all working memories
     });
-    
+
     // Filter by sessionId if provided
-    const toDelete = sessionId 
-      ? memories.filter(m => m.sessionId === sessionId)
+    const toDelete = sessionId
+      ? memories.filter((m) => m.sessionId === sessionId)
       : memories;
-    
+
     // Batch delete through storage
     await Promise.all(
-      toDelete.map(m => this.storage.memory!.delete(userId, agentId, m.id!))
+      toDelete.map((m) => this.storage.memory!.delete(userId, agentId, m.id!))
     );
   }
 
   /**
    * Get stats - DELEGATES to storage
    */
-  async getStats(userId: string, agentId?: string): Promise<WorkingMemoryStats> {
+  async getStats(
+    userId: string,
+    agentId?: string
+  ): Promise<WorkingMemoryStats> {
     if (!userId || !userId.trim()) {
       throw new Error('userId is required for working memory operations');
     }
-    
+
     const stats = await this.storage.memory!.getStats(userId, agentId);
     return {
       totalMemories: stats.byType?.working || 0,
@@ -144,18 +159,21 @@ export class WorkingMemory extends BaseMemoryType {
   /**
    * Get by ID - DELEGATES to storage
    */
-  async getById(userId: string, memoryId: string): Promise<WorkingMemoryData | null> {
+  async getById(
+    userId: string,
+    memoryId: string
+  ): Promise<WorkingMemoryData | null> {
     if (!userId || !userId.trim()) {
       throw new Error('userId is required for working memory operations');
     }
-    
+
     if (!this.storage.memory?.getById) {
       return null;
     }
 
     const result = await this.storage.memory.getById(userId, memoryId);
     if (!result) return null;
-    
+
     // Validate type
     if (result.type !== MemoryType.WORKING) {
       logger.error(
@@ -170,18 +188,18 @@ export class WorkingMemory extends BaseMemoryType {
       );
       return null;
     }
-    
+
     // Validate required fields exist
     if (!result.sessionId) {
       logger.error(
         LogCategory.STORAGE,
-        'WorkingMemory', 
+        'WorkingMemory',
         'Missing required sessionId',
         { memoryId }
       );
       return null;
     }
-    
+
     // Return ONLY validated data - NO SYNTHESIS
     return {
       id: result.id,
@@ -190,7 +208,8 @@ export class WorkingMemory extends BaseMemoryType {
       createdAt: result.createdAt,
       importance: result.importance,
       sessionId: result.sessionId,
-      contextWindow: result.metadata?.contextWindow ?? this.workingConfig.maxContextItems,
+      contextWindow:
+        result.metadata?.contextWindow ?? this.workingConfig.maxContextItems,
       tokenCount: result.tokenCount ?? 0, // Use stored value or 0
       expiresAt: result.metadata?.expiresAt ?? 0, // Use stored value or 0
       metadata: result.metadata

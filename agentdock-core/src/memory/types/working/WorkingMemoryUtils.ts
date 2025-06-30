@@ -1,4 +1,4 @@
-import { WorkingMemoryData } from './WorkingMemoryTypes'
+import { WorkingMemoryData } from './WorkingMemoryTypes';
 
 /**
  * Utility functions for WorkingMemory operations
@@ -27,8 +27,8 @@ export function consolidateSimilarMemories(
 ): WorkingMemoryData[] {
   // Simple consolidation: group by similar content length and importance
   const groups = new Map<string, WorkingMemoryData[]>();
-  
-  memories.forEach(memory => {
+
+  memories.forEach((memory) => {
     const key = `${Math.floor(memory.importance * 10)}_${Math.floor(memory.tokenCount / 100)}`;
     if (!groups.has(key)) {
       groups.set(key, []);
@@ -37,7 +37,7 @@ export function consolidateSimilarMemories(
   });
 
   const consolidated: WorkingMemoryData[] = [];
-  
+
   for (const group of Array.from(groups.values())) {
     if (group.length === 1) {
       consolidated.push(group[0]);
@@ -45,12 +45,12 @@ export function consolidateSimilarMemories(
       // Merge group into single memory
       const merged = {
         ...group[0],
-        content: group.map(m => m.content).join('\n\n'),
+        content: group.map((m) => m.content).join('\n\n'),
         tokenCount: group.reduce((sum, m) => sum + m.tokenCount, 0),
-        importance: Math.max(...group.map(m => m.importance)),
+        importance: Math.max(...group.map((m) => m.importance)),
         metadata: {
           ...group[0].metadata,
-          consolidatedFrom: group.map(m => m.id),
+          consolidatedFrom: group.map((m) => m.id),
           originalCount: group.length
         }
       };
@@ -65,9 +65,9 @@ export function consolidateSimilarMemories(
  * Check if content is suitable for working memory
  */
 export function isWorkingMemoryWorthy(content: string): boolean {
-  return content.length > 10 && 
-         content.length < 5000 && 
-         !isBoilerplate(content);
+  return (
+    content.length > 10 && content.length < 5000 && !isBoilerplate(content)
+  );
 }
 
 /**
@@ -79,13 +79,16 @@ function isBoilerplate(content: string): boolean {
     /^(ok|okay|yes|no)$/i,
     /^(please|can you|could you)$/i
   ];
-  return boilerplatePatterns.some(pattern => pattern.test(content.trim()));
+  return boilerplatePatterns.some((pattern) => pattern.test(content.trim()));
 }
 
 /**
  * Calculate importance based on content characteristics
  */
-export function calculateImportance(content: string, position: number = 0): number {
+export function calculateImportance(
+  content: string,
+  position: number = 0
+): number {
   let importance = 0.5;
 
   // Recent messages are more important for working memory
@@ -109,8 +112,12 @@ export function calculateImportance(content: string, position: number = 0): numb
  * Check if content contains a question
  */
 function containsQuestion(content: string): boolean {
-  return content.includes('?') || 
-         /^(what|how|why|when|where|who|which|can|could|would|should|is|are|do|does|did)/i.test(content);
+  return (
+    content.includes('?') ||
+    /^(what|how|why|when|where|who|which|can|could|would|should|is|are|do|does|did)/i.test(
+      content
+    )
+  );
 }
 
 /**
@@ -131,8 +138,10 @@ export function getTableName(namespace: string): string {
  * Validate working memory configuration
  */
 export function validateConfig(config: any): boolean {
-  return config.maxTokens > 0 &&
-         config.ttlSeconds > 0 &&
-         config.maxContextItems > 0 &&
-         typeof config.encryptSensitive === 'boolean';
+  return (
+    config.maxTokens > 0 &&
+    config.ttlSeconds > 0 &&
+    config.maxContextItems > 0 &&
+    typeof config.encryptSensitive === 'boolean'
+  );
 }

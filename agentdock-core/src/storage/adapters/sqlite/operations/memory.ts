@@ -4,15 +4,16 @@
  */
 
 import { Database } from 'better-sqlite3';
+
 import { LogCategory, logger } from '../../../../logging';
-import { nanoid as generateId } from '../../../utils';
-import { 
-  MemoryData, 
-  MemoryOperations, 
-  MemoryRecallOptions, 
-  MemoryOperationStats 
-} from '../../../types';
 import { MemoryType } from '../../../../shared/types/memory';
+import {
+  MemoryData,
+  MemoryOperations,
+  MemoryOperationStats,
+  MemoryRecallOptions
+} from '../../../types';
+import { nanoid as generateId } from '../../../utils';
 
 interface SqliteRow {
   id: string;
@@ -42,13 +43,17 @@ export class SqliteMemoryOperations implements MemoryOperations {
   /**
    * Store memory with user isolation and atomic transaction
    */
-  async store(userId: string, agentId: string, memory: MemoryData): Promise<string> {
+  async store(
+    userId: string,
+    agentId: string,
+    memory: MemoryData
+  ): Promise<string> {
     if (!userId?.trim()) {
       throw new Error('userId is required for memory operations');
     }
 
     const id = memory.id || generateId();
-    
+
     // Use atomic transaction to prevent race conditions
     const transaction = this.db.transaction(() => {
       const stmt = this.db.prepare(`
@@ -80,17 +85,19 @@ export class SqliteMemoryOperations implements MemoryOperations {
         JSON.stringify([]),
         memory.embeddingId || null,
         null, // embedding_model
-        null  // embedding_dimension
+        null // embedding_dimension
       );
-      
+
       return id;
     });
-    
+
     try {
       return transaction();
     } catch (error) {
-      logger.error(LogCategory.STORAGE, 'SQLiteMemoryOps', 'Store failed', { 
-        userId, agentId, error: error instanceof Error ? error.message : String(error) 
+      logger.error(LogCategory.STORAGE, 'SQLiteMemoryOps', 'Store failed', {
+        userId,
+        agentId,
+        error: error instanceof Error ? error.message : String(error)
       });
       throw error;
     }
@@ -99,7 +106,12 @@ export class SqliteMemoryOperations implements MemoryOperations {
   /**
    * Recall memories with user filtering
    */
-  async recall(userId: string, agentId: string, query: string, options?: MemoryRecallOptions): Promise<MemoryData[]> {
+  async recall(
+    userId: string,
+    agentId: string,
+    query: string,
+    options?: MemoryRecallOptions
+  ): Promise<MemoryData[]> {
     if (!userId?.trim()) {
       throw new Error('userId is required for memory operations');
     }
@@ -115,13 +127,22 @@ export class SqliteMemoryOperations implements MemoryOperations {
 
       const queryPattern = `%${query}%`;
       const limit = options?.limit || 20;
-      
-      const rows = stmt.all(userId, agentId, queryPattern, queryPattern, limit) as SqliteRow[];
-      
-      return rows.map(row => this.convertRowToMemoryData(row));
+
+      const rows = stmt.all(
+        userId,
+        agentId,
+        queryPattern,
+        queryPattern,
+        limit
+      ) as SqliteRow[];
+
+      return rows.map((row) => this.convertRowToMemoryData(row));
     } catch (error) {
-      logger.error(LogCategory.STORAGE, 'SQLiteMemoryOps', 'Recall failed', { 
-        userId, agentId, query, error: error instanceof Error ? error.message : String(error) 
+      logger.error(LogCategory.STORAGE, 'SQLiteMemoryOps', 'Recall failed', {
+        userId,
+        agentId,
+        query,
+        error: error instanceof Error ? error.message : String(error)
       });
       throw error;
     }
@@ -130,7 +151,12 @@ export class SqliteMemoryOperations implements MemoryOperations {
   /**
    * Update memory with user validation and atomic transaction
    */
-  async update(userId: string, agentId: string, memoryId: string, updates: Partial<MemoryData>): Promise<void> {
+  async update(
+    userId: string,
+    agentId: string,
+    memoryId: string,
+    updates: Partial<MemoryData>
+  ): Promise<void> {
     if (!userId?.trim()) {
       throw new Error('userId is required for memory operations');
     }
@@ -144,7 +170,7 @@ export class SqliteMemoryOperations implements MemoryOperations {
             updated_at = ?
         WHERE user_id = ? AND agent_id = ? AND id = ?
       `);
-      
+
       stmt.run(
         updates.importance,
         updates.resonance,
@@ -154,14 +180,18 @@ export class SqliteMemoryOperations implements MemoryOperations {
         memoryId
       );
     });
-    
+
     transaction();
   }
 
   /**
    * Delete memory with user validation and atomic transaction
    */
-  async delete(userId: string, agentId: string, memoryId: string): Promise<void> {
+  async delete(
+    userId: string,
+    agentId: string,
+    memoryId: string
+  ): Promise<void> {
     if (!userId?.trim()) {
       throw new Error('userId is required for memory operations');
     }
@@ -172,10 +202,10 @@ export class SqliteMemoryOperations implements MemoryOperations {
         DELETE FROM memories 
         WHERE user_id = ? AND agent_id = ? AND id = ?
       `);
-      
+
       stmt.run(userId, agentId, memoryId);
     });
-    
+
     transaction();
   }
 
@@ -187,28 +217,31 @@ export class SqliteMemoryOperations implements MemoryOperations {
       throw new Error('userId is required for memory operations');
     }
 
-      const stmt = this.db.prepare(`
+    const stmt = this.db.prepare(`
       SELECT * FROM memories 
       WHERE user_id = ? AND id = ?
       `);
 
     const row = stmt.get(userId, memoryId) as SqliteRow | undefined;
     if (!row) return null;
-    
+
     return this.convertRowToMemoryData(row);
   }
 
   /**
    * Get stats with user filtering
    */
-  async getStats(userId: string, agentId?: string): Promise<MemoryOperationStats> {
+  async getStats(
+    userId: string,
+    agentId?: string
+  ): Promise<MemoryOperationStats> {
     if (!userId?.trim()) {
       throw new Error('userId is required for memory operations');
     }
 
-    const whereClause = agentId ? 
-      'WHERE user_id = ? AND agent_id = ?' : 
-      'WHERE user_id = ?';
+    const whereClause = agentId
+      ? 'WHERE user_id = ? AND agent_id = ?'
+      : 'WHERE user_id = ?';
     const params = agentId ? [userId, agentId] : [userId];
 
     const stmt = this.db.prepare(`
@@ -217,28 +250,34 @@ export class SqliteMemoryOperations implements MemoryOperations {
       ${whereClause}
       GROUP BY type
     `);
-    
-    const rows = stmt.all(...params) as Array<{ type: string; count: number; avg_importance: number }>;
-    
+
+    const rows = stmt.all(...params) as Array<{
+      type: string;
+      count: number;
+      avg_importance: number;
+    }>;
+
     const byType: Record<string, number> = {};
     let totalMemories = 0;
     let totalImportance = 0;
-    
-    rows.forEach(row => {
+
+    rows.forEach((row) => {
       byType[row.type] = row.count;
       totalMemories += row.count;
       totalImportance += row.avg_importance * row.count;
     });
-    
+
     // Calculate approximate size based on content length
     const totalSizeStmt = this.db.prepare(`
       SELECT SUM(LENGTH(content) + LENGTH(COALESCE(keywords, '')) + LENGTH(COALESCE(metadata, ''))) as total_bytes
       FROM memories 
       ${whereClause}
     `);
-    const sizeResult = totalSizeStmt.get(...params) as { total_bytes: number | null };
+    const sizeResult = totalSizeStmt.get(...params) as {
+      total_bytes: number | null;
+    };
     const totalBytes = sizeResult.total_bytes || 0;
-    const totalSizeKB = Math.round(totalBytes / 1024 * 100) / 100; // Round to 2 decimal places
+    const totalSizeKB = Math.round((totalBytes / 1024) * 100) / 100; // Round to 2 decimal places
 
     return {
       totalMemories,
@@ -251,16 +290,27 @@ export class SqliteMemoryOperations implements MemoryOperations {
   /**
    * Optional extended operations with user context
    */
-  async applyDecay(userId: string, agentId: string, decayRules: unknown): Promise<unknown> {
+  async applyDecay(
+    userId: string,
+    agentId: string,
+    decayRules: unknown
+  ): Promise<unknown> {
     return { processed: 0, decayed: 0, removed: 0 };
-            }
+  }
 
-  async createConnections(userId: string, connections: unknown[]): Promise<void> {
+  async createConnections(
+    userId: string,
+    connections: unknown[]
+  ): Promise<void> {
     // Minimal implementation for interface compliance
   }
 
-  async findConnectedMemories(userId: string, memoryId: string, depth?: number): Promise<unknown> {
-      return { memories: [], connections: [] };
+  async findConnectedMemories(
+    userId: string,
+    memoryId: string,
+    depth?: number
+  ): Promise<unknown> {
+    return { memories: [], connections: [] };
   }
 
   /**
@@ -273,11 +323,16 @@ export class SqliteMemoryOperations implements MemoryOperations {
       try {
         keywords = JSON.parse(row.keywords);
       } catch (error) {
-        logger.error(LogCategory.STORAGE, 'SQLiteMemoryOps', 'Failed to parse keywords JSON', { 
-          memoryId: row.id, 
-          keywords: row.keywords,
-          error: error instanceof Error ? error.message : String(error)
-        });
+        logger.error(
+          LogCategory.STORAGE,
+          'SQLiteMemoryOps',
+          'Failed to parse keywords JSON',
+          {
+            memoryId: row.id,
+            keywords: row.keywords,
+            error: error instanceof Error ? error.message : String(error)
+          }
+        );
         keywords = [];
       }
     }
@@ -287,11 +342,16 @@ export class SqliteMemoryOperations implements MemoryOperations {
       try {
         metadata = JSON.parse(row.metadata);
       } catch (error) {
-        logger.error(LogCategory.STORAGE, 'SQLiteMemoryOps', 'Failed to parse metadata JSON', { 
-          memoryId: row.id, 
-          metadata: row.metadata,
-          error: error instanceof Error ? error.message : String(error)
-        });
+        logger.error(
+          LogCategory.STORAGE,
+          'SQLiteMemoryOps',
+          'Failed to parse metadata JSON',
+          {
+            memoryId: row.id,
+            metadata: row.metadata,
+            error: error instanceof Error ? error.message : String(error)
+          }
+        );
         metadata = {};
       }
     }

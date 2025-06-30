@@ -105,7 +105,7 @@ export class TransactionManager {
       if (transaction.timeoutId) {
         clearTimeout(transaction.timeoutId);
       }
-      
+
       // CRITICAL FIX: Immediate cleanup for completed transactions
       // Only delay cleanup for potentially stuck active transactions
       if (transaction.state !== 'active') {

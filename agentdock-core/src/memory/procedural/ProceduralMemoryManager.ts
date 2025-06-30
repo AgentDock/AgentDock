@@ -1,29 +1,29 @@
 /**
  * @fileoverview ProceduralMemoryManager - Learn and suggest tool patterns
- * 
+ *
  * Learns from successful tool usage patterns and provides intelligent suggestions
  * for tool sequences. Key differentiator for AgentDock.
- * 
+ *
  * @author AgentDock Core Team
  */
 
-import { StorageProvider } from '../../storage';
-import { LogCategory, logger } from '../../logging';
-import { generateId } from '../../storage/utils';
 import { createLLM } from '../../llm';
+import { LogCategory, logger } from '../../logging';
+import { StorageProvider } from '../../storage';
+import { generateId } from '../../storage/utils';
 import {
-  ProceduralMemory,
+  LearningResult,
   ProceduralConfig,
+  ProceduralMemory,
+  SuggestionContext,
   ToolCall,
   ToolPattern,
-  LearningResult,
-  SuggestionContext,
   ToolSuggestion
 } from './types';
 
 /**
  * Manages procedural memory for tool pattern learning and suggestions.
- * 
+ *
  * Key features:
  * - Learns from successful tool execution patterns
  * - Provides intelligent tool sequence suggestions
@@ -50,9 +50,14 @@ export class ProceduralMemoryManager {
       this.llm = null;
     }
 
-    logger.debug(LogCategory.STORAGE, 'ProceduralMemoryManager', 'Initialized', {
-      minSuccessRate: config.minSuccessRate
-    });
+    logger.debug(
+      LogCategory.STORAGE,
+      'ProceduralMemoryManager',
+      'Initialized',
+      {
+        minSuccessRate: config.minSuccessRate
+      }
+    );
   }
 
   /**
@@ -83,7 +88,10 @@ export class ProceduralMemoryManager {
 
       // Find similar existing pattern
       const existingPatterns = await this.getExistingPatterns(agentId);
-      const similarPattern = this.findSimilarPattern(toolSequence, existingPatterns);
+      const similarPattern = this.findSimilarPattern(
+        toolSequence,
+        existingPatterns
+      );
 
       if (similarPattern) {
         return await this.updatePattern(similarPattern, success);
@@ -96,12 +104,16 @@ export class ProceduralMemoryManager {
         patternUpdated: false,
         reason: 'No learning criteria met'
       };
-
     } catch (error) {
-      logger.error(LogCategory.STORAGE, 'ProceduralMemoryManager', 'Record execution failed', {
-        agentId,
-        error: error instanceof Error ? error.message : String(error)
-      });
+      logger.error(
+        LogCategory.STORAGE,
+        'ProceduralMemoryManager',
+        'Record execution failed',
+        {
+          agentId,
+          error: error instanceof Error ? error.message : String(error)
+        }
+      );
       throw error;
     }
   }
@@ -114,19 +126,28 @@ export class ProceduralMemoryManager {
     suggestionContext: SuggestionContext
   ): Promise<ToolSuggestion[]> {
     try {
-      const patterns = await this.getRelevantPatterns(agentId, suggestionContext);
+      const patterns = await this.getRelevantPatterns(
+        agentId,
+        suggestionContext
+      );
 
       if (patterns.length === 0) {
         return [];
       }
 
-      return patterns.slice(0, 3).map(pattern => this.createSuggestionFromPattern(pattern));
-
+      return patterns
+        .slice(0, 3)
+        .map((pattern) => this.createSuggestionFromPattern(pattern));
     } catch (error) {
-      logger.error(LogCategory.STORAGE, 'ProceduralMemoryManager', 'Suggestion failed', {
-        agentId,
-        error: error instanceof Error ? error.message : String(error)
-      });
+      logger.error(
+        LogCategory.STORAGE,
+        'ProceduralMemoryManager',
+        'Suggestion failed',
+        {
+          agentId,
+          error: error instanceof Error ? error.message : String(error)
+        }
+      );
       return [];
     }
   }
@@ -134,19 +155,21 @@ export class ProceduralMemoryManager {
   /**
    * Get existing patterns for an agent.
    */
-  private async getExistingPatterns(agentId: string): Promise<ProceduralMemory[]> {
+  private async getExistingPatterns(
+    agentId: string
+  ): Promise<ProceduralMemory[]> {
     const patterns: ProceduralMemory[] = [];
-    
+
     try {
       const patternKeys = await this.storage.list(`procedural:${agentId}:`);
-      
+
       for (const key of patternKeys) {
         const pattern = await this.storage.get<ProceduralMemory>(key);
         if (pattern) {
           patterns.push(pattern);
         }
       }
-      
+
       return patterns;
     } catch (error) {
       return patterns;
@@ -165,7 +188,7 @@ export class ProceduralMemoryManager {
         toolSequence,
         pattern.pattern.sequence
       );
-      
+
       if (similarity > this.config.contextSimilarityThreshold) {
         return pattern;
       }
@@ -176,12 +199,15 @@ export class ProceduralMemoryManager {
   /**
    * Calculate sequence similarity.
    */
-  private calculateSequenceSimilarity(seq1: ToolCall[], seq2: ToolCall[]): number {
+  private calculateSequenceSimilarity(
+    seq1: ToolCall[],
+    seq2: ToolCall[]
+  ): number {
     if (seq1.length === 0 && seq2.length === 0) return 1.0;
     if (seq1.length === 0 || seq2.length === 0) return 0.0;
 
-    const tools1 = seq1.map(t => t.tool);
-    const tools2 = seq2.map(t => t.tool);
+    const tools1 = seq1.map((t) => t.tool);
+    const tools2 = seq2.map((t) => t.tool);
 
     let matches = 0;
     const maxLength = Math.max(tools1.length, tools2.length);
@@ -207,7 +233,10 @@ export class ProceduralMemoryManager {
       name: this.generatePatternName(toolSequence),
       sequence: toolSequence,
       context,
-      avgExecutionTime: toolSequence.reduce((sum, tool) => sum + tool.duration, 0)
+      avgExecutionTime: toolSequence.reduce(
+        (sum, tool) => sum + tool.duration,
+        0
+      )
     };
 
     const proceduralMemory: ProceduralMemory = {
@@ -247,7 +276,8 @@ export class ProceduralMemoryManager {
   ): Promise<LearningResult> {
     const newUseCount = pattern.useCount + 1;
     const successValue = success ? 1.0 : 0.0;
-    const newSuccessRate = (pattern.successRate * pattern.useCount + successValue) / newUseCount;
+    const newSuccessRate =
+      (pattern.successRate * pattern.useCount + successValue) / newUseCount;
 
     const updatedPattern: ProceduralMemory = {
       ...pattern,
@@ -279,14 +309,16 @@ export class ProceduralMemoryManager {
     const allPatterns = await this.getExistingPatterns(agentId);
 
     return allPatterns
-      .filter(pattern => pattern.successRate >= this.config.minSuccessRate)
+      .filter((pattern) => pattern.successRate >= this.config.minSuccessRate)
       .sort((a, b) => b.successRate - a.successRate);
   }
 
   /**
    * Create suggestion from pattern.
    */
-  private createSuggestionFromPattern(pattern: ProceduralMemory): ToolSuggestion {
+  private createSuggestionFromPattern(
+    pattern: ProceduralMemory
+  ): ToolSuggestion {
     return {
       toolSequence: pattern.pattern.sequence,
       confidence: pattern.successRate,
@@ -300,7 +332,7 @@ export class ProceduralMemoryManager {
    * Generate pattern name.
    */
   private generatePatternName(toolSequence: ToolCall[]): string {
-    const toolNames = toolSequence.map(t => t.tool).join(' → ');
+    const toolNames = toolSequence.map((t) => t.tool).join(' → ');
     return `${toolNames}`;
   }
 
@@ -311,10 +343,7 @@ export class ProceduralMemoryManager {
     return context
       .toLowerCase()
       .split(/\s+/)
-      .filter(word => word.length > 3)
+      .filter((word) => word.length > 3)
       .slice(0, 5);
   }
-} 
- 
- 
- 
+}

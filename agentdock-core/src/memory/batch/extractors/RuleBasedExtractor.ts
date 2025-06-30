@@ -1,32 +1,32 @@
 /**
  * @fileoverview RuleBasedExtractor - Zero-Cost Memory Extraction
- * 
+ *
  * Provides pattern-based memory extraction with ZERO AI costs.
  * All patterns are user-defined - no hardcoded business logic.
  * Achieves 60% extraction coverage at zero cost through configurable rules.
- * 
+ *
  * @author AgentDock Core Team
  */
 
 import { LogCategory, logger } from '../../../logging';
-import { Memory, MemoryMessage, MemoryType } from '../../types';
 import { generateId } from '../../../storage/utils';
-import { IExtractor, ExtractionRule, ExtractionContext } from '../types';
+import { Memory, MemoryMessage, MemoryType } from '../../types';
+import { ExtractionContext, ExtractionRule, IExtractor } from '../types';
 
 /**
  * Rule-based memory extractor that uses user-defined patterns
  * to extract memories at zero cost. No hardcoded patterns - everything
  * is configurable by the end user.
- * 
+ *
  * This is the foundation of the cost-reduction strategy, providing
  * 60% of memory extraction value without any AI API calls.
- * 
+ *
  * @class RuleBasedExtractor
  * @implements {IExtractor}
  * @example
  * ```typescript
  * const extractor = new RuleBasedExtractor();
- * 
+ *
  * // User creates their own rules
  * const userRules: ExtractionRule[] = [
  *   {
@@ -38,29 +38,28 @@ import { IExtractor, ExtractionRule, ExtractionContext } from '../types';
  *     createdAt: new Date()
  *   }
  * ];
- * 
+ *
  * const context = { agentId: 'agent1', userRules, config, availableBudget: 0 };
  * const memories = await extractor.extract(message, context);
  * ```
  */
 export class RuleBasedExtractor implements IExtractor {
-  
   /**
    * Extract memories from a message using user-defined patterns.
    * NO HARDCODED PATTERNS - everything comes from user configuration.
-   * 
+   *
    * @param message - The message to extract memories from
    * @param context - Extraction context containing user-defined rules
    * @returns Promise resolving to extracted memories (empty if no patterns match)
-   * 
+   *
    * @example
    * ```typescript
-   * const message = { 
-   *   content: "I prefer dark mode for coding", 
-   *   agentId: "agent1", 
-   *   timestamp: new Date() 
+   * const message = {
+   *   content: "I prefer dark mode for coding",
+   *   agentId: "agent1",
+   *   timestamp: new Date()
    * };
-   * 
+   *
    * // User has defined this rule:
    * const userRule = {
    *   id: 'preferences',
@@ -68,21 +67,29 @@ export class RuleBasedExtractor implements IExtractor {
    *   type: 'semantic',
    *   importance: 0.8
    * };
-   * 
+   *
    * const memories = await extractor.extract(message, { userRules: [userRule] });
    * // Result: [{ content: "prefer dark mode for coding", type: "semantic", ... }]
    * ```
    */
-  async extract(message: MemoryMessage, context: ExtractionContext): Promise<Memory[]> {
+  async extract(
+    message: MemoryMessage,
+    context: ExtractionContext
+  ): Promise<Memory[]> {
     const memories: Memory[] = [];
     const { userRules, agentId } = context;
 
     // If no user rules defined, return empty (no hardcoded fallbacks!)
     if (!userRules || userRules.length === 0) {
-      logger.debug(LogCategory.STORAGE, 'RuleBasedExtractor', 'No user rules defined', {
-        agentId,
-        messageLength: message.content.length
-      });
+      logger.debug(
+        LogCategory.STORAGE,
+        'RuleBasedExtractor',
+        'No user rules defined',
+        {
+          agentId,
+          messageLength: message.content.length
+        }
+      );
       return memories;
     }
 
@@ -95,12 +102,12 @@ export class RuleBasedExtractor implements IExtractor {
       try {
         // SECURITY FIX: ReDoS protection with timeout-based regex execution
         const extractedContent = await this.safeRegexMatch(
-          message.content, 
-          rule.pattern, 
+          message.content,
+          rule.pattern,
           rule.id,
           agentId
         );
-        
+
         if (extractedContent && extractedContent.length > 0) {
           // Only create memory if content is meaningful
           for (const content of extractedContent) {
@@ -129,33 +136,48 @@ export class RuleBasedExtractor implements IExtractor {
               };
 
               memories.push(memory);
-              
-              logger.debug(LogCategory.STORAGE, 'RuleBasedExtractor', 'Memory extracted', {
-                agentId,
-                ruleId: rule.id,
-                memoryType: rule.type,
-                importance: rule.importance
-              });
+
+              logger.debug(
+                LogCategory.STORAGE,
+                'RuleBasedExtractor',
+                'Memory extracted',
+                {
+                  agentId,
+                  ruleId: rule.id,
+                  memoryType: rule.type,
+                  importance: rule.importance
+                }
+              );
             }
           }
         }
       } catch (error) {
         // Invalid regex pattern or timeout - log warning but continue
-        logger.warn(LogCategory.STORAGE, 'RuleBasedExtractor', 'Regex execution failed', {
-          agentId,
-          ruleId: rule.id,
-          pattern: rule.pattern,
-          error: error instanceof Error ? error.message : String(error)
-        });
+        logger.warn(
+          LogCategory.STORAGE,
+          'RuleBasedExtractor',
+          'Regex execution failed',
+          {
+            agentId,
+            ruleId: rule.id,
+            pattern: rule.pattern,
+            error: error instanceof Error ? error.message : String(error)
+          }
+        );
       }
     }
 
-    logger.info(LogCategory.STORAGE, 'RuleBasedExtractor', 'Rule extraction complete', {
-      agentId,
-      rulesProcessed: userRules.length,
-      memoriesExtracted: memories.length,
-      cost: 0
-    });
+    logger.info(
+      LogCategory.STORAGE,
+      'RuleBasedExtractor',
+      'Rule extraction complete',
+      {
+        agentId,
+        rulesProcessed: userRules.length,
+        memoriesExtracted: memories.length,
+        cost: 0
+      }
+    );
 
     return memories;
   }
@@ -163,7 +185,7 @@ export class RuleBasedExtractor implements IExtractor {
   /**
    * Safely execute regex with timeout protection against ReDoS attacks.
    * Protects against catastrophic backtracking by limiting execution time.
-   * 
+   *
    * @param content - Content to match against
    * @param pattern - User-provided regex pattern
    * @param ruleId - Rule ID for logging
@@ -172,34 +194,44 @@ export class RuleBasedExtractor implements IExtractor {
    * @private
    */
   private async safeRegexMatch(
-    content: string, 
-    pattern: string, 
+    content: string,
+    pattern: string,
     ruleId: string,
     agentId: string
   ): Promise<string[]> {
     return new Promise((resolve, reject) => {
       // Set timeout to prevent ReDoS attacks
       const timeout = setTimeout(() => {
-        logger.warn(LogCategory.STORAGE, 'RuleBasedExtractor', 'Regex timeout - potential ReDoS attack', {
-          agentId,
-          ruleId,
-          pattern: pattern.substring(0, 50) + '...', // Log only first 50 chars
-          timeoutMs: 100
-        });
-        reject(new Error(`Regex execution timeout for rule ${ruleId} - potential ReDoS pattern`));
+        logger.warn(
+          LogCategory.STORAGE,
+          'RuleBasedExtractor',
+          'Regex timeout - potential ReDoS attack',
+          {
+            agentId,
+            ruleId,
+            pattern: pattern.substring(0, 50) + '...', // Log only first 50 chars
+            timeoutMs: 100
+          }
+        );
+        reject(
+          new Error(
+            `Regex execution timeout for rule ${ruleId} - potential ReDoS pattern`
+          )
+        );
       }, 100); // 100ms timeout
 
       try {
         // Validate regex pattern first
         const regex = new RegExp(pattern, 'gi');
-        
+
         // Execute regex with content length limits
-        const truncatedContent = content.length > 10000 ? content.substring(0, 10000) : content;
+        const truncatedContent =
+          content.length > 10000 ? content.substring(0, 10000) : content;
         const matches = truncatedContent.match(regex);
-        
+
         // Clear timeout on successful execution
         clearTimeout(timeout);
-        
+
         if (matches && matches.length > 0) {
           // Process matches to extract meaningful content
           const extractedContent: string[] = [];
@@ -215,17 +247,25 @@ export class RuleBasedExtractor implements IExtractor {
         }
       } catch (error) {
         clearTimeout(timeout);
-        
+
         // Log specific error details for debugging
-        if (error instanceof Error && error.message.includes('Invalid regular expression')) {
-          logger.warn(LogCategory.STORAGE, 'RuleBasedExtractor', 'Invalid regex pattern detected', {
-            agentId,
-            ruleId,
-            pattern: pattern.substring(0, 50) + '...',
-            error: error.message
-          });
+        if (
+          error instanceof Error &&
+          error.message.includes('Invalid regular expression')
+        ) {
+          logger.warn(
+            LogCategory.STORAGE,
+            'RuleBasedExtractor',
+            'Invalid regex pattern detected',
+            {
+              agentId,
+              ruleId,
+              pattern: pattern.substring(0, 50) + '...',
+              error: error.message
+            }
+          );
         }
-        
+
         reject(error);
       }
     });
@@ -234,7 +274,7 @@ export class RuleBasedExtractor implements IExtractor {
   /**
    * Estimate cost for rule-based extraction.
    * Always returns 0 since rules are free to execute.
-   * 
+   *
    * @param messages - Messages to estimate cost for (unused for rules)
    * @returns Promise resolving to 0 (always free)
    */
@@ -244,7 +284,7 @@ export class RuleBasedExtractor implements IExtractor {
 
   /**
    * Get the type identifier for this extractor.
-   * 
+   *
    * @returns The string 'rules'
    */
   getType(): string {
@@ -254,7 +294,7 @@ export class RuleBasedExtractor implements IExtractor {
   /**
    * Process a regex match to extract meaningful content.
    * Handles capture groups and cleans up the extracted text.
-   * 
+   *
    * @param match - The regex match result
    * @param pattern - The original pattern to understand capture groups
    * @returns Cleaned extracted content
@@ -263,12 +303,12 @@ export class RuleBasedExtractor implements IExtractor {
   private processMatch(match: string, pattern: string): string {
     // If pattern has capture groups, try to extract the most relevant part
     const captureGroupMatch = match.match(new RegExp(pattern, 'i'));
-    
+
     if (captureGroupMatch && captureGroupMatch.length > 1) {
       // Use the first capture group if available
       return this.cleanExtractedContent(captureGroupMatch[1]);
     }
-    
+
     // Otherwise use the full match
     return this.cleanExtractedContent(match);
   }
@@ -276,7 +316,7 @@ export class RuleBasedExtractor implements IExtractor {
   /**
    * Clean and normalize extracted content.
    * Removes extra whitespace, normalizes formatting.
-   * 
+   *
    * @param content - Raw extracted content
    * @returns Cleaned content
    * @private
@@ -292,10 +332,10 @@ export class RuleBasedExtractor implements IExtractor {
 /**
  * Factory function to create user-defined extraction rules.
  * Provides a convenient way for users to create rules with validation.
- * 
+ *
  * @param options - Rule creation options
  * @returns A valid ExtractionRule object
- * 
+ *
  * @example
  * ```typescript
  * const userPreferenceRule = createExtractionRule({
@@ -341,4 +381,4 @@ export function createExtractionRule(options: {
     tags: options.tags,
     isActive: true
   };
-} 
+}

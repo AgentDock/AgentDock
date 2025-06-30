@@ -1,11 +1,11 @@
 /**
  * @fileoverview Therapy Agent Configuration - Trauma memory preservation
- * 
+ *
  * Example configuration for therapy agents that need to preserve critical
  * trauma-related memories indefinitely while allowing routine memories to decay.
- * 
+ *
  * Copy-paste template for therapy and mental health applications.
- * 
+ *
  * @author AgentDock Core Team
  */
 
@@ -13,7 +13,7 @@ import { LifecycleConfig } from '../types';
 
 /**
  * Therapy agent lifecycle configuration.
- * 
+ *
  * Key features:
  * - Critical trauma memories never decay
  * - Suicide risk indicators preserved indefinitely
@@ -28,55 +28,61 @@ export const therapyAgentConfig: LifecycleConfig = {
       {
         id: 'trauma_preservation',
         name: 'Trauma Memory Preservation',
-        condition: "keywords.includes('trauma') || keywords.includes('abuse') || keywords.includes('ptsd')",
+        condition:
+          "keywords.includes('trauma') || keywords.includes('abuse') || keywords.includes('ptsd')",
         decayRate: 0.0,
         minImportance: 0.9,
         neverDecay: true,
         enabled: true,
-        description: 'Preserve trauma-related memories indefinitely for continuity of care'
+        description:
+          'Preserve trauma-related memories indefinitely for continuity of care'
       },
-      
+
       // Rule 2: Suicide risk indicators never decay
       {
         id: 'suicide_risk_preservation',
         name: 'Suicide Risk Preservation',
-        condition: "keywords.includes('suicide') || keywords.includes('self-harm') || keywords.includes('ideation')",
+        condition:
+          "keywords.includes('suicide') || keywords.includes('self-harm') || keywords.includes('ideation')",
         decayRate: 0.0,
         minImportance: 1.0,
         neverDecay: true,
         enabled: true,
         description: 'Critical safety information must never be lost'
       },
-      
+
       // Rule 3: Medication and diagnosis information preserved
       {
         id: 'medical_info_preservation',
         name: 'Medical Information Preservation',
-        condition: "keywords.includes('medication') || keywords.includes('diagnosis') || keywords.includes('prescription')",
+        condition:
+          "keywords.includes('medication') || keywords.includes('diagnosis') || keywords.includes('prescription')",
         decayRate: 0.01, // Very slow decay (1% per day)
         minImportance: 0.8,
         neverDecay: false,
         enabled: true,
         description: 'Medical information decays very slowly'
       },
-      
+
       // Rule 4: Session goals and treatment plans persist
       {
         id: 'treatment_plan_persistence',
         name: 'Treatment Plan Persistence',
-        condition: "keywords.includes('goal') || keywords.includes('plan') || keywords.includes('objective')",
+        condition:
+          "keywords.includes('goal') || keywords.includes('plan') || keywords.includes('objective')",
         decayRate: 0.02, // Slow decay (2% per day)
         minImportance: 0.6,
         neverDecay: false,
         enabled: true,
-        description: 'Treatment plans and goals decay slowly to maintain therapeutic continuity'
+        description:
+          'Treatment plans and goals decay slowly to maintain therapeutic continuity'
       },
-      
+
       // Rule 5: High importance memories decay slowly
       {
         id: 'high_importance_slow_decay',
         name: 'High Importance Slow Decay',
-        condition: "importance > 0.7",
+        condition: 'importance > 0.7',
         decayRate: 0.03, // 3% per day
         minImportance: 0.5,
         neverDecay: false,
@@ -89,7 +95,7 @@ export const therapyAgentConfig: LifecycleConfig = {
     deleteThreshold: 0.05, // Only delete memories below 5% resonance
     verbose: true // Log decay operations for compliance
   },
-  
+
   promotionConfig: {
     episodicToSemanticDays: 14, // Promote after 2 weeks for pattern recognition
     minImportanceForPromotion: 0.6,
@@ -106,7 +112,7 @@ export const therapyAgentConfig: LifecycleConfig = {
       }
     ]
   },
-  
+
   cleanupConfig: {
     deleteThreshold: 0.05, // Very conservative deletion threshold
     archiveEnabled: true, // Archive for compliance and backup
@@ -147,7 +153,4 @@ export const therapyScheduleConfig = {
     backoffMs: 30000, // 30 second backoff
     exponential: true
   }
-}; 
- 
- 
- 
+};

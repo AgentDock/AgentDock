@@ -1,11 +1,12 @@
 /**
  * @fileoverview PostgreSQL memory-specific schema for AgentDock Memory System
- * 
+ *
  * This extends the base PostgreSQL adapter with memory-specific tables
  * optimized for sub-100ms recalls and production scale.
  */
 
 import { Pool } from 'pg';
+
 import { LogCategory, logger } from '../../../logging';
 
 /**
@@ -13,7 +14,7 @@ import { LogCategory, logger } from '../../../logging';
  */
 export enum MemoryType {
   WORKING = 'working',
-  EPISODIC = 'episodic', 
+  EPISODIC = 'episodic',
   SEMANTIC = 'semantic',
   PROCEDURAL = 'procedural'
 }
@@ -124,15 +125,19 @@ export async function initializeMemorySchema(
     for (let i = 0; i < quarters.length; i++) {
       const quarter = quarters[i];
       const endYear = i === 3 ? currentYear + 1 : currentYear;
-      
-      await client.query(`
+
+      await client
+        .query(
+          `
         CREATE TABLE IF NOT EXISTS ${schema}.memories_${currentYear}_q${i + 1} 
         PARTITION OF ${schema}.memories
         FOR VALUES FROM ('${currentYear}-${quarter.start}') 
         TO ('${endYear}-${quarter.end}');
-      `).catch(() => {
-        // Partition might already exist
-      });
+      `
+        )
+        .catch(() => {
+          // Partition might already exist
+        });
     }
 
     // High-performance indexes - Updated for user isolation
@@ -288,9 +293,9 @@ export async function createMemoryPartition(
 ): Promise<void> {
   const startDate = new Date(year, month - 1, 1);
   const endDate = new Date(year, month, 1);
-  
+
   const partitionName = `memories_${year}_${month.toString().padStart(2, '0')}`;
-  
+
   const client = await pool.connect();
   try {
     await client.query(`
@@ -299,7 +304,7 @@ export async function createMemoryPartition(
       FOR VALUES FROM ('${startDate.toISOString().split('T')[0]}') 
       TO ('${endDate.toISOString().split('T')[0]}')
     `);
-    
+
     logger.debug(
       LogCategory.STORAGE,
       'MemorySchema',
@@ -378,7 +383,7 @@ export async function getMemoryStats(
   try {
     const whereClause = agentId ? `WHERE agent_id = $1` : '';
     const params = agentId ? [agentId] : [];
-    
+
     const statsResult = await client.query(
       `
       SELECT 
@@ -397,11 +402,15 @@ export async function getMemoryStats(
       `
       SELECT COUNT(*) as total
       FROM ${schema}.memory_connections mc
-      ${agentId ? `WHERE EXISTS (
+      ${
+        agentId
+          ? `WHERE EXISTS (
         SELECT 1 FROM ${schema}.memories m 
         WHERE m.id = mc.source_memory_id 
         AND m.agent_id = $1
-      )` : ''}
+      )`
+          : ''
+      }
     `,
       params
     );
@@ -411,7 +420,7 @@ export async function getMemoryStats(
     let totalImportance = 0;
     let totalResonance = 0;
 
-    statsResult.rows.forEach(row => {
+    statsResult.rows.forEach((row) => {
       byType[row.type] = parseInt(row.total);
       totalMemories += parseInt(row.total);
       totalImportance += parseFloat(row.avg_importance) * parseInt(row.total);

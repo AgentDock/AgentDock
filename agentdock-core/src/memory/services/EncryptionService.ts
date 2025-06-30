@@ -24,7 +24,7 @@ export interface EncryptionKey {
 /**
  * Production-grade encryption service using PostgreSQL's pgcrypto extension.
  * Provides column-level encryption for sensitive memory data.
- * 
+ *
  * Note: PostgreSQL community edition does NOT have native TDE.
  * This service uses pgcrypto extension for field-level encryption.
  */
@@ -47,14 +47,16 @@ export class EncryptionService {
     try {
       // Ensure pgcrypto extension is available
       await this.pool.query('CREATE EXTENSION IF NOT EXISTS pgcrypto');
-      
+
       // Load encryption keys
       await this.loadEncryptionKeys();
-      
+
       console.log('EncryptionService initialized with pgcrypto extension');
     } catch (error) {
       console.error('Failed to initialize encryption service:', error);
-      throw new Error(`Encryption initialization failed: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Encryption initialization failed: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
@@ -62,11 +64,11 @@ export class EncryptionService {
    * Encrypt sensitive content using pgcrypto
    */
   async encrypt(
-    plaintext: string, 
+    plaintext: string,
     keyId: string = this.defaultKeyId
   ): Promise<EncryptedData> {
     const key = this.getKey(keyId);
-    
+
     try {
       // Use pgp_sym_encrypt for AES encryption
       const result = await this.pool.query(
@@ -82,7 +84,9 @@ export class EncryptionService {
       };
     } catch (error) {
       console.error(`Encryption failed for keyId ${keyId}:`, error);
-      throw new Error(`Failed to encrypt data: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to encrypt data: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
@@ -91,7 +95,7 @@ export class EncryptionService {
    */
   async decrypt(encryptedData: EncryptedData): Promise<string> {
     const key = this.getKey(encryptedData.keyId);
-    
+
     try {
       // Use pgp_sym_decrypt for AES decryption
       const result = await this.pool.query(
@@ -101,8 +105,13 @@ export class EncryptionService {
 
       return result.rows[0].decrypted_data;
     } catch (error) {
-      console.error(`Decryption failed for keyId ${encryptedData.keyId}:`, error);
-      throw new Error(`Failed to decrypt data: ${error instanceof Error ? error.message : String(error)}`);
+      console.error(
+        `Decryption failed for keyId ${encryptedData.keyId}:`,
+        error
+      );
+      throw new Error(
+        `Failed to decrypt data: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
@@ -110,11 +119,11 @@ export class EncryptionService {
    * Batch encrypt multiple values for performance
    */
   async batchEncrypt(
-    plaintexts: string[], 
+    plaintexts: string[],
     keyId: string = this.defaultKeyId
   ): Promise<EncryptedData[]> {
     const key = this.getKey(keyId);
-    
+
     try {
       // Build parameterized query for batch encryption
       const values = plaintexts.map((_, idx) => `($${idx + 2}, $1)`).join(', ');
@@ -127,16 +136,18 @@ export class EncryptionService {
 
       const result = await this.pool.query(sql, [key.key, ...plaintexts]);
 
-      return result.rows.map(row => ({
+      return result.rows.map((row) => ({
         data: row.encrypted_data,
         keyId,
         algorithm: 'pgp_sym_encrypt' as const,
         version: 1
       }));
-          } catch (error) {
-        console.error(`Batch encryption failed for keyId ${keyId}:`, error);
-        throw new Error(`Failed to batch encrypt data: ${error instanceof Error ? error.message : String(error)}`);
-      }
+    } catch (error) {
+      console.error(`Batch encryption failed for keyId ${keyId}:`, error);
+      throw new Error(
+        `Failed to batch encrypt data: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
   }
 
   /**
@@ -145,8 +156,8 @@ export class EncryptionService {
   async batchDecrypt(encryptedData: EncryptedData[]): Promise<string[]> {
     // Group by keyId for efficient processing
     const keyGroups = new Map<string, EncryptedData[]>();
-    
-    encryptedData.forEach(data => {
+
+    encryptedData.forEach((data) => {
       if (!keyGroups.has(data.keyId)) {
         keyGroups.set(data.keyId, []);
       }
@@ -154,13 +165,15 @@ export class EncryptionService {
     });
 
     const results: string[] = new Array(encryptedData.length);
-    
+
     // Process each key group
     for (const [keyId, dataGroup] of Array.from(keyGroups.entries())) {
       const key = this.getKey(keyId);
-      
+
       try {
-        const values = dataGroup.map((_, idx) => `($${idx + 2}, $1)`).join(', ');
+        const values = dataGroup
+          .map((_, idx) => `($${idx + 2}, $1)`)
+          .join(', ');
         const sql = `
           SELECT pgp_sym_decrypt(encrypted_data, $1) as decrypted_data,
                  row_number() OVER () as idx
@@ -168,10 +181,10 @@ export class EncryptionService {
           ORDER BY idx
         `;
 
-        const result = await this.pool.query(
-          sql, 
-          [key.key, ...dataGroup.map(d => d.data)]
-        );
+        const result = await this.pool.query(sql, [
+          key.key,
+          ...dataGroup.map((d) => d.data)
+        ]);
 
         // Map results back to original positions
         result.rows.forEach((row, idx) => {
@@ -180,7 +193,9 @@ export class EncryptionService {
         });
       } catch (error) {
         console.error(`Batch decryption failed for keyId ${keyId}:`, error);
-        throw new Error(`Failed to batch decrypt data: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(
+          `Failed to batch decrypt data: ${error instanceof Error ? error.message : String(error)}`
+        );
       }
     }
 
@@ -191,7 +206,7 @@ export class EncryptionService {
    * Create encrypted memory table columns
    */
   async createEncryptedColumn(
-    tableName: string, 
+    tableName: string,
     columnName: string
   ): Promise<void> {
     try {
@@ -203,17 +218,19 @@ export class EncryptionService {
         ADD COLUMN IF NOT EXISTS ${columnName}_algorithm TEXT DEFAULT 'pgp_sym_encrypt',
         ADD COLUMN IF NOT EXISTS ${columnName}_version INTEGER DEFAULT 1
       `);
-      
+
       // Create index for key lookups
       await this.pool.query(`
         CREATE INDEX IF NOT EXISTS idx_${tableName}_${columnName}_key_id 
         ON ${tableName}(${columnName}_key_id)
       `);
-      
+
       console.log(`Encrypted column ${columnName} added to ${tableName}`);
     } catch (error) {
       console.error(`Failed to create encrypted column:`, error);
-      throw new Error(`Failed to create encrypted column: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to create encrypted column: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
@@ -224,7 +241,7 @@ export class EncryptionService {
     try {
       const newKeyId = `${keyId}_${Date.now()}`;
       const newKey = await this.generateKey();
-      
+
       // Store new key
       this.keys.set(newKeyId, {
         keyId: newKeyId,
@@ -232,24 +249,26 @@ export class EncryptionService {
         createdAt: new Date(),
         active: true
       });
-      
+
       // Mark old key as inactive
       const oldKey = this.keys.get(keyId);
       if (oldKey) {
         oldKey.active = false;
         oldKey.expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
       }
-      
+
       // Update default key if rotating default
       if (keyId === this.defaultKeyId) {
         this.defaultKeyId = newKeyId;
       }
-      
+
       console.log(`Key rotated: ${keyId} -> ${newKeyId}`);
       return newKeyId;
     } catch (error) {
       console.error(`Key rotation failed for ${keyId}:`, error);
-      throw new Error(`Failed to rotate key: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to rotate key: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
@@ -263,12 +282,12 @@ export class EncryptionService {
     defaultKeyId: string;
   }> {
     const now = new Date();
-    
+
     return {
       totalKeys: this.keys.size,
-      activeKeys: Array.from(this.keys.values()).filter(k => k.active).length,
+      activeKeys: Array.from(this.keys.values()).filter((k) => k.active).length,
       expiredKeys: Array.from(this.keys.values()).filter(
-        k => k.expiresAt && k.expiresAt < now
+        (k) => k.expiresAt && k.expiresAt < now
       ).length,
       defaultKeyId: this.defaultKeyId
     };
@@ -289,7 +308,9 @@ export class EncryptionService {
         await this.loadFromVault();
         break;
       default:
-        throw new Error(`Unsupported key management: ${this.config.keyManagement}`);
+        throw new Error(
+          `Unsupported key management: ${this.config.keyManagement}`
+        );
     }
   }
 

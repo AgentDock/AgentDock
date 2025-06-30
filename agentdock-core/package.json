@@ -9,7 +9,7 @@
       "require": "./dist/index.js"
     },
     "./server": {
-      "import": "./dist/server.mjs", 
+      "import": "./dist/server.mjs",
       "require": "./dist/server.js"
     }
   },

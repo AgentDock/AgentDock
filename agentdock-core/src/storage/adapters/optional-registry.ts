@@ -7,7 +7,7 @@
  * Usage:
  * import { registerMongoDBAdapter } from 'agentdock-core/storage/adapters/optional-registry';
  * import { getStorageFactory } from 'agentdock-core';
- * 
+ *
  * const factory = getStorageFactory();
  * await registerMongoDBAdapter(factory);
  */
@@ -254,4 +254,4 @@ export async function registerVectorAdapters(
     );
     throw error;
   }
-} 
+}

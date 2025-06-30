@@ -1,9 +1,9 @@
 /**
  * @fileoverview Lifecycle Module - Memory evolution and lifecycle management
- * 
+ *
  * Exports for the memory lifecycle management system including evolution tracking,
  * automated promotion, cleanup, and scheduling.
- * 
+ *
  * @author AgentDock Core Team
  */
 
@@ -26,7 +26,4 @@ export type {
 } from './types';
 
 // Scheduler configuration
-export type { ScheduleConfig } from './LifecycleScheduler'; 
- 
- 
- 
+export type { ScheduleConfig } from './LifecycleScheduler';

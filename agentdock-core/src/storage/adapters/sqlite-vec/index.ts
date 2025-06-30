@@ -11,11 +11,11 @@ import { SQLiteConnectionManager } from '../sqlite/connection';
 import { SQLiteConnection } from '../sqlite/types';
 import {
   deleteVector,
+  getCollectionStats,
   getVector,
   insertVector,
   searchVectors,
-  updateVector,
-  getCollectionStats
+  updateVector
 } from './operations/vector';
 import {
   checkCollectionExists,
@@ -29,11 +29,11 @@ import {
 import {
   SQLiteVecAdapterOptions,
   VectorCollectionConfig,
-  VectorSearchOptions,
-  VectorSearchResult,
   VectorData,
   VectorInsertOptions,
-  VectorMetric
+  VectorMetric,
+  VectorSearchOptions,
+  VectorSearchResult
 } from './types';
 
 // Export types
@@ -200,7 +200,7 @@ export class SQLiteVecAdapter
     vectors: VectorData[]
   ): Promise<void> {
     const connection = await this.getVectorConnection();
-    
+
     // Insert each vector individually using the new API
     for (const vector of vectors) {
       await insertVector(connection.db, collection, vector.id, vector.vector, {
@@ -217,7 +217,7 @@ export class SQLiteVecAdapter
     vectors: VectorData[]
   ): Promise<void> {
     const connection = await this.getVectorConnection();
-    
+
     // Update each vector individually using the new API
     for (const vector of vectors) {
       await updateVector(connection.db, collection, vector.id, vector.vector);
@@ -229,7 +229,7 @@ export class SQLiteVecAdapter
    */
   async deleteVectors(collection: string, ids: string[]): Promise<void> {
     const connection = await this.getVectorConnection();
-    
+
     // Delete each vector individually using the new API
     for (const id of ids) {
       await deleteVector(connection.db, collection, id);
@@ -254,11 +254,11 @@ export class SQLiteVecAdapter
   async getVector(collection: string, id: string): Promise<VectorData | null> {
     const connection = await this.getVectorConnection();
     const vector = await getVector(connection.db, collection, id);
-    
+
     if (!vector) {
       return null;
     }
-    
+
     // Convert the returned number[] to VectorData format
     return {
       id: id,
@@ -275,19 +275,25 @@ export class SQLiteVecAdapter
     vectors: VectorData[]
   ): Promise<void> {
     const connection = await this.getVectorConnection();
-    
+
     for (const vector of vectors) {
       // Try to get existing vector
       const existing = await getVector(connection.db, collection, vector.id);
-      
+
       if (existing) {
         // Update existing
         await updateVector(connection.db, collection, vector.id, vector.vector);
       } else {
         // Insert new
-        await insertVector(connection.db, collection, vector.id, vector.vector, {
-          metadata: vector.metadata
-        });
+        await insertVector(
+          connection.db,
+          collection,
+          vector.id,
+          vector.vector,
+          {
+            metadata: vector.metadata
+          }
+        );
       }
     }
   }

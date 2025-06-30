@@ -1,11 +1,11 @@
 /**
  * @fileoverview Storage adapters - Essential only
- * 
+ *
  * This file exports ONLY the essential storage adapters that should be bundled:
  * - SQLite/SQLite-vec for development (zero external dependencies)
  * - PostgreSQL/PostgreSQL-Vector for production (single database solution)
- * 
- * Optional adapters (MongoDB, S3, DynamoDB, CloudflareKV, CloudflareD1, 
+ *
+ * Optional adapters (MongoDB, S3, DynamoDB, CloudflareKV, CloudflareD1,
  * Pinecone, Qdrant, ChromaDB) are NOT exported here to prevent bundling.
  * They must be imported directly from their specific paths when needed.
  */

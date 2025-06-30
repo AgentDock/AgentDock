@@ -1,12 +1,15 @@
 /**
  * @fileoverview Memory batch processing utilities
- * 
+ *
  * High-performance batch processors for memory operations including
  * streaming, parallel processing, and consolidation.
  */
 
 import { LogCategory, logger } from '../../logging';
-import { Memory, MemoryConnection } from '../adapters/postgresql/operations/memory';
+import {
+  Memory,
+  MemoryConnection
+} from '../adapters/postgresql/operations/memory';
 import { MemoryType } from '../adapters/postgresql/schema-memory';
 
 /**
@@ -63,7 +66,7 @@ export class StreamingMemoryBatchProcessor {
   async process(memory: Memory): Promise<void> {
     // CRITICAL FIX: Enforce hard buffer limit to prevent OOM crashes
     const MAX_BUFFER_SIZE = this.config.maxBatchSize * 3;
-    
+
     if (this.buffer.length >= MAX_BUFFER_SIZE) {
       logger.warn(
         LogCategory.STORAGE,
@@ -71,18 +74,20 @@ export class StreamingMemoryBatchProcessor {
         'Buffer overflow detected - applying backpressure',
         { bufferSize: this.buffer.length, maxSize: MAX_BUFFER_SIZE }
       );
-      
+
       // Force flush to make room
       await this.flush();
-      
+
       // If still at limit after flush, system cannot keep up
       if (this.buffer.length >= MAX_BUFFER_SIZE) {
-        throw new Error(`Buffer overflow - system cannot keep up with load (buffer: ${this.buffer.length}, max: ${MAX_BUFFER_SIZE})`);
+        throw new Error(
+          `Buffer overflow - system cannot keep up with load (buffer: ${this.buffer.length}, max: ${MAX_BUFFER_SIZE})`
+        );
       }
     }
-    
+
     this.buffer.push(memory);
-    
+
     if (this.shouldFlush()) {
       await this.flush();
     } else {
@@ -96,19 +101,23 @@ export class StreamingMemoryBatchProcessor {
   async processMany(memories: Memory[]): Promise<void> {
     // CRITICAL FIX: Check if we can handle the batch size before processing
     const MAX_BUFFER_SIZE = this.config.maxBatchSize * 3;
-    
+
     if (this.buffer.length + memories.length > MAX_BUFFER_SIZE) {
       logger.warn(
         LogCategory.STORAGE,
         'StreamingBatchProcessor',
         'Large batch would overflow buffer - forcing flush first',
-        { currentBuffer: this.buffer.length, incomingBatch: memories.length, maxSize: MAX_BUFFER_SIZE }
+        {
+          currentBuffer: this.buffer.length,
+          incomingBatch: memories.length,
+          maxSize: MAX_BUFFER_SIZE
+        }
       );
-      
+
       // Force flush to make room
       await this.flush();
     }
-    
+
     for (const memory of memories) {
       await this.process(memory);
     }
@@ -122,16 +131,17 @@ export class StreamingMemoryBatchProcessor {
     if (this.buffer.length >= this.config.maxBatchSize) {
       return true;
     }
-    
+
     // Memory-based flush
-    const estimatedSize = this.buffer.reduce((sum, m) => 
-      sum + JSON.stringify(m).length, 0
+    const estimatedSize = this.buffer.reduce(
+      (sum, m) => sum + JSON.stringify(m).length,
+      0
     );
-    
+
     if (estimatedSize > this.config.maxMemoryMB * 1024 * 1024) {
       return true;
     }
-    
+
     return false;
   }
 
@@ -141,7 +151,7 @@ export class StreamingMemoryBatchProcessor {
   private scheduleFlush(): void {
     if (!this.flushTimer) {
       this.flushTimer = setTimeout(() => {
-        this.flush().catch(error => {
+        this.flush().catch((error) => {
           logger.error(
             LogCategory.STORAGE,
             'StreamingBatchProcessor',
@@ -159,26 +169,26 @@ export class StreamingMemoryBatchProcessor {
    */
   async flush(): Promise<void> {
     if (this.buffer.length === 0) return;
-    
+
     // Clear timer
     if (this.flushTimer) {
       clearTimeout(this.flushTimer);
       this.flushTimer = undefined;
     }
-    
+
     // Get buffer and reset
     const batch = [...this.buffer];
     this.buffer = [];
-    
+
     try {
       // Process batch
       await this.processor(batch);
-      
+
       // Update stats
       this.stats.totalProcessed += batch.length;
       this.stats.batches++;
       this.stats.avgBatchSize = this.stats.totalProcessed / this.stats.batches;
-      
+
       logger.debug(
         LogCategory.STORAGE,
         'StreamingBatchProcessor',
@@ -238,7 +248,9 @@ export class ParallelBatchProcessor {
     private config: BatchProcessorConfig
   ) {
     this.WORKER_COUNT = config.maxConcurrent || 4;
-    this.queues = Array(this.WORKER_COUNT).fill(null).map(() => []);
+    this.queues = Array(this.WORKER_COUNT)
+      .fill(null)
+      .map(() => []);
   }
 
   /**
@@ -248,12 +260,12 @@ export class ParallelBatchProcessor {
     memories: AsyncIterable<Memory>
   ): Promise<BatchStats> {
     const startTime = Date.now();
-    
+
     // Distribute memories across queues
     for await (const memory of memories) {
       this.queues[this.currentQueue].push(memory);
       this.currentQueue = (this.currentQueue + 1) % this.WORKER_COUNT;
-      
+
       // Process when any queue is full
       for (let i = 0; i < this.WORKER_COUNT; i++) {
         if (this.queues[i].length >= this.config.maxBatchSize) {
@@ -261,15 +273,14 @@ export class ParallelBatchProcessor {
         }
       }
     }
-    
+
     // Process remaining
-    await Promise.all(
-      this.queues.map((_, idx) => this.processQueue(idx))
-    );
-    
+    await Promise.all(this.queues.map((_, idx) => this.processQueue(idx)));
+
     this.stats.duration = Date.now() - startTime;
-    this.stats.throughput = this.stats.totalProcessed / (this.stats.duration / 1000);
-    
+    this.stats.throughput =
+      this.stats.totalProcessed / (this.stats.duration / 1000);
+
     return this.stats;
   }
 
@@ -279,10 +290,10 @@ export class ParallelBatchProcessor {
   private async processQueue(queueIdx: number): Promise<void> {
     const queue = this.queues[queueIdx];
     if (queue.length === 0) return;
-    
+
     const batch = [...queue];
     this.queues[queueIdx] = [];
-    
+
     try {
       await this.processor(batch);
       this.stats.totalProcessed += batch.length;
@@ -337,10 +348,10 @@ export class MemoryConsolidator {
   ): Memory[][] {
     const groups: Memory[][] = [];
     const processed = new Set<string>();
-    
+
     for (const memory of memories) {
       if (processed.has(memory.id)) continue;
-      
+
       // Find similar memories
       const group = this.findSimilarMemories(
         memory,
@@ -348,13 +359,13 @@ export class MemoryConsolidator {
         processed,
         options
       );
-      
+
       if (group.length >= options.minGroupSize) {
         groups.push(group.slice(0, options.maxGroupSize));
-        group.forEach(m => processed.add(m.id));
+        group.forEach((m) => processed.add(m.id));
       }
     }
-    
+
     return groups;
   }
 
@@ -368,24 +379,24 @@ export class MemoryConsolidator {
     options: ConsolidationOptions
   ): Memory[] {
     const similar: Memory[] = [target];
-    
+
     for (const candidate of candidates) {
       if (candidate.id === target.id || processed.has(candidate.id)) {
         continue;
       }
-      
+
       // Skip important memories if preservation is enabled
       if (options.preserveImportant && candidate.importance > 0.8) {
         continue;
       }
-      
+
       const similarity = this.similarityCalculator(target, candidate);
-      
+
       if (similarity >= options.similarityThreshold) {
         similar.push(candidate);
       }
     }
-    
+
     return similar;
   }
 
@@ -395,45 +406,47 @@ export class MemoryConsolidator {
   consolidateGroup(group: Memory[]): Memory {
     // Sort by importance and recency
     group.sort((a, b) => {
-      const scoreA = a.importance * 0.7 + (1 / (Date.now() - a.createdAt)) * 0.3;
-      const scoreB = b.importance * 0.7 + (1 / (Date.now() - b.createdAt)) * 0.3;
+      const scoreA =
+        a.importance * 0.7 + (1 / (Date.now() - a.createdAt)) * 0.3;
+      const scoreB =
+        b.importance * 0.7 + (1 / (Date.now() - b.createdAt)) * 0.3;
       return scoreB - scoreA;
     });
-    
+
     // Merge content intelligently
-    const consolidatedContent = this.mergeContent(group.map(m => m.content));
-    
+    const consolidatedContent = this.mergeContent(group.map((m) => m.content));
+
     // Combine metadata
     const keywords = new Set<string>();
     let totalImportance = 0;
     let totalResonance = 0;
     let totalTokens = 0;
-    
-    group.forEach(m => {
-      m.keywords?.forEach(k => keywords.add(k));
+
+    group.forEach((m) => {
+      m.keywords?.forEach((k) => keywords.add(k));
       totalImportance += m.importance;
       totalResonance += m.resonance;
       totalTokens += m.tokenCount || 0;
     });
-    
+
     return {
       id: `consolidated_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       agentId: group[0].agentId,
       userId: group[0].userId,
       type: group[0].type,
       content: consolidatedContent,
-      importance: Math.min(1, totalImportance / group.length * 1.2), // Boost
-      resonance: Math.max(...group.map(m => m.resonance)),
-      accessCount: Math.max(...group.map(m => m.accessCount)),
+      importance: Math.min(1, (totalImportance / group.length) * 1.2), // Boost
+      resonance: Math.max(...group.map((m) => m.resonance)),
+      accessCount: Math.max(...group.map((m) => m.accessCount)),
       keywords: Array.from(keywords),
       metadata: {
-        consolidatedFrom: group.map(m => m.id),
+        consolidatedFrom: group.map((m) => m.id),
         consolidationDate: Date.now(),
         originalCount: group.length
       },
-      createdAt: Math.min(...group.map(m => m.createdAt)),
+      createdAt: Math.min(...group.map((m) => m.createdAt)),
       updatedAt: Date.now(),
-      lastAccessedAt: Math.max(...group.map(m => m.lastAccessedAt)),
+      lastAccessedAt: Math.max(...group.map((m) => m.lastAccessedAt)),
       extractionMethod: 'consolidation',
       tokenCount: totalTokens,
       sessionId: group[0].sessionId
@@ -447,16 +460,16 @@ export class MemoryConsolidator {
     // Simple deduplication and concatenation
     // In production, use more sophisticated NLP techniques
     const sentences = new Set<string>();
-    
-    contents.forEach(content => {
-      content.split(/[.!?]+/).forEach(sentence => {
+
+    contents.forEach((content) => {
+      content.split(/[.!?]+/).forEach((sentence) => {
         const trimmed = sentence.trim();
         if (trimmed) {
           sentences.add(trimmed);
         }
       });
     });
-    
+
     return Array.from(sentences).join('. ') + '.';
   }
 }
@@ -481,21 +494,22 @@ export class BulkDecayProcessor {
   }> {
     const decayed: Memory[] = [];
     const removed: string[] = [];
-    
+
     for (const memory of memories) {
       const ageMs = Date.now() - memory.lastAccessedAt;
       const ageDays = ageMs / (24 * 60 * 60 * 1000);
-      
+
       // Apply decay formula
       const decayFactor = Math.exp(-decayRules.decayRate * ageDays);
       const importanceBoost = memory.importance * decayRules.importanceWeight;
-      const accessBoost = Math.log(memory.accessCount + 1) * decayRules.accessBoost;
-      
+      const accessBoost =
+        Math.log(memory.accessCount + 1) * decayRules.accessBoost;
+
       const newResonance = Math.max(
         0,
         memory.resonance * decayFactor + importanceBoost + accessBoost
       );
-      
+
       if (newResonance <= 0.01) {
         removed.push(memory.id);
       } else if (newResonance !== memory.resonance) {
@@ -506,7 +520,7 @@ export class BulkDecayProcessor {
         });
       }
     }
-    
+
     return { decayed, removed };
   }
 }
@@ -529,32 +543,29 @@ export class MemoryBatchUtils {
   /**
    * Create batches based on memory constraints
    */
-  static createMemoryBatches(
-    items: any[],
-    maxMemoryMB: number
-  ): any[][] {
+  static createMemoryBatches(items: any[], maxMemoryMB: number): any[][] {
     const batches: any[][] = [];
     let currentBatch: any[] = [];
     let currentSize = 0;
     const maxBytes = maxMemoryMB * 1024 * 1024;
-    
+
     for (const item of items) {
       const itemSize = JSON.stringify(item).length;
-      
+
       if (currentSize + itemSize > maxBytes && currentBatch.length > 0) {
         batches.push(currentBatch);
         currentBatch = [];
         currentSize = 0;
       }
-      
+
       currentBatch.push(item);
       currentSize += itemSize;
     }
-    
+
     if (currentBatch.length > 0) {
       batches.push(currentBatch);
     }
-    
+
     return batches;
   }
 
@@ -568,20 +579,23 @@ export class MemoryBatchUtils {
   ): Promise<R[]> {
     const results: R[] = [];
     const executing: Promise<void>[] = [];
-    
+
     for (const item of items) {
-      const promise = processor(item).then(result => {
+      const promise = processor(item).then((result) => {
         results.push(result);
       });
-      
+
       executing.push(promise);
-      
+
       if (executing.length >= maxConcurrent) {
         await Promise.race(executing);
-        executing.splice(executing.findIndex(p => p), 1);
+        executing.splice(
+          executing.findIndex((p) => p),
+          1
+        );
       }
     }
-    
+
     await Promise.all(executing);
     return results;
   }

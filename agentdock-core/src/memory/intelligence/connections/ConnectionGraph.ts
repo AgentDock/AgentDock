@@ -1,15 +1,15 @@
 /**
  * @fileoverview ConnectionGraph - Graph algorithms for memory relationships
- * 
+ *
  * Provides graph traversal, pathfinding, and analysis capabilities
  * for the memory connection network.
- * 
+ *
  * @author AgentDock Core Team
  */
 
 import { LogCategory, logger } from '../../../logging';
 import { Memory } from '../../types/common';
-import { MemoryConnection, ConnectionType } from '../types';
+import { ConnectionType, MemoryConnection } from '../types';
 
 /**
  * Graph node representing a memory with its connections
@@ -74,9 +74,12 @@ export class ConnectionGraph {
 
       const visited = new Set<string>();
       const nodes: MemoryNode[] = [];
-      const queue: Array<{ id: string; depth: number }> = [{ id: memoryId, depth: 0 }];
+      const queue: Array<{ id: string; depth: number }> = [
+        { id: memoryId, depth: 0 }
+      ];
 
-      while (queue.length > 0 && nodes.length < 100) { // Safety limit
+      while (queue.length > 0 && nodes.length < 100) {
+        // Safety limit
         const { id, depth } = queue.shift()!;
 
         if (visited.has(id) || depth > options.maxDepth) {
@@ -87,11 +90,14 @@ export class ConnectionGraph {
 
         // Get memory and its connections
         const { memory, connections } = await this.getMemoryWithConnections(id);
-        
+
         if (!memory) continue;
 
         // Filter connections based on options
-        const filteredConnections = this.filterConnections(connections, options);
+        const filteredConnections = this.filterConnections(
+          connections,
+          options
+        );
 
         nodes.push({
           memory,
@@ -102,10 +108,11 @@ export class ConnectionGraph {
         // Add connected memories to queue
         if (depth < options.maxDepth) {
           for (const connection of filteredConnections) {
-            const nextId = connection.sourceId === id 
-              ? connection.targetId 
-              : connection.sourceId;
-            
+            const nextId =
+              connection.sourceId === id
+                ? connection.targetId
+                : connection.sourceId;
+
             if (!visited.has(nextId)) {
               queue.push({ id: nextId, depth: depth + 1 });
             }
@@ -120,7 +127,7 @@ export class ConnectionGraph {
         {
           memoryId,
           totalFound: nodes.length,
-          maxDepthReached: Math.max(...nodes.map(n => n.depth))
+          maxDepthReached: Math.max(...nodes.map((n) => n.depth))
         }
       );
 
@@ -166,9 +173,10 @@ export class ConnectionGraph {
       const { connections } = await this.getMemoryWithConnections(id);
 
       for (const connection of connections) {
-        const nextId = connection.sourceId === id 
-          ? connection.targetId 
-          : connection.sourceId;
+        const nextId =
+          connection.sourceId === id
+            ? connection.targetId
+            : connection.sourceId;
 
         if (nextId === targetId) {
           return [...path, nextId];
@@ -217,7 +225,8 @@ export class ConnectionGraph {
 
       const totalNodes = memoryConnectionCounts.size;
       const totalConnections = allConnections.length;
-      const averageConnections = totalNodes > 0 ? totalConnections / totalNodes : 0;
+      const averageConnections =
+        totalNodes > 0 ? totalConnections / totalNodes : 0;
 
       // Find most connected memory
       let mostConnectedMemory = '';
@@ -278,19 +287,22 @@ export class ConnectionGraph {
     connections: MemoryConnection[];
   }> {
     try {
-             // Use PostgreSQL memory adapter if available
-       if (this.storage.findConnectedMemories) {
-         const result = await this.storage.findConnectedMemories(memoryId, 1);
-         return {
-           memory: result.memories.find((m: Memory) => m.id === memoryId) || null,
-           connections: result.connections
-         };
-       }
+      // Use PostgreSQL memory adapter if available
+      if (this.storage.findConnectedMemories) {
+        const result = await this.storage.findConnectedMemories(memoryId, 1);
+        return {
+          memory:
+            result.memories.find((m: Memory) => m.id === memoryId) || null,
+          connections: result.connections
+        };
+      }
 
-       // Fallback to basic storage
-       const memory = await this.storage.get(`memory:${memoryId}`) as Memory | null;
+      // Fallback to basic storage
+      const memory = (await this.storage.get(
+        `memory:${memoryId}`
+      )) as Memory | null;
       const connections = await this.getConnectionsForMemory(memoryId);
-      
+
       return { memory, connections };
     } catch (error) {
       logger.warn(
@@ -309,18 +321,22 @@ export class ConnectionGraph {
   /**
    * Get all connections for a memory
    */
-  private async getConnectionsForMemory(memoryId: string): Promise<MemoryConnection[]> {
+  private async getConnectionsForMemory(
+    memoryId: string
+  ): Promise<MemoryConnection[]> {
     try {
       const connections: MemoryConnection[] = [];
       const keys = await this.storage.list(`connection:${memoryId}:`);
-      
-             for (const key of keys) {
-         const connection = await this.storage.get(key) as MemoryConnection | null;
-         if (connection) {
-           connections.push(connection);
-         }
-       }
-      
+
+      for (const key of keys) {
+        const connection = (await this.storage.get(
+          key
+        )) as MemoryConnection | null;
+        if (connection) {
+          connections.push(connection);
+        }
+      }
+
       return connections;
     } catch (error) {
       return [];
@@ -330,7 +346,9 @@ export class ConnectionGraph {
   /**
    * Get all connections for an agent
    */
-  private async getAllConnections(agentId: string): Promise<MemoryConnection[]> {
+  private async getAllConnections(
+    agentId: string
+  ): Promise<MemoryConnection[]> {
     try {
       // This would need to be implemented based on storage adapter capabilities
       // For now, return empty array
@@ -351,14 +369,14 @@ export class ConnectionGraph {
 
     // Filter by connection types
     if (options.connectionTypes && options.connectionTypes.length > 0) {
-      filtered = filtered.filter(c => 
+      filtered = filtered.filter((c) =>
         options.connectionTypes!.includes(c.type)
       );
     }
 
     // Filter by minimum strength
     if (options.minStrength !== undefined) {
-      filtered = filtered.filter(c => c.strength >= options.minStrength!);
+      filtered = filtered.filter((c) => c.strength >= options.minStrength!);
     }
 
     return filtered;
@@ -367,13 +385,13 @@ export class ConnectionGraph {
   /**
    * Find clusters in the connection graph (simplified implementation)
    */
-  private async findClusters(
-    connections: MemoryConnection[]
-  ): Promise<Array<{
-    size: number;
-    members: string[];
-    avgStrength: number;
-  }>> {
+  private async findClusters(connections: MemoryConnection[]): Promise<
+    Array<{
+      size: number;
+      members: string[];
+      avgStrength: number;
+    }>
+  > {
     // Simple clustering based on connected components
     const components: Array<{
       size: number;
@@ -385,4 +403,4 @@ export class ConnectionGraph {
     // For now, return empty array
     return components;
   }
-} 
+}

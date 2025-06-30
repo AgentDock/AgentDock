@@ -1,23 +1,23 @@
 import { Memory } from '../types/common';
 
 // Connection types between memories
-export type ConnectionType = 
-  | 'similar'        // Semantically similar content
-  | 'contradicts'    // Conflicting information
-  | 'extends'        // Builds upon
-  | 'references'     // Explicitly references
-  | 'temporal'       // Time-based relationship
-  | 'causal'         // Cause-effect relationship
-  | 'derived'        // Derived from other memory
-  | 'corrects'       // Corrects previous memory
-  | 'updates';       // Updates previous memory
+export type ConnectionType =
+  | 'similar' // Semantically similar content
+  | 'contradicts' // Conflicting information
+  | 'extends' // Builds upon
+  | 'references' // Explicitly references
+  | 'temporal' // Time-based relationship
+  | 'causal' // Cause-effect relationship
+  | 'derived' // Derived from other memory
+  | 'corrects' // Corrects previous memory
+  | 'updates'; // Updates previous memory
 
 export interface MemoryConnection {
   id: string;
   sourceId: string;
   targetId: string;
   type: ConnectionType;
-  strength: number;      // 0-1, where 1 is strongest
+  strength: number; // 0-1, where 1 is strongest
   reason?: string;
   createdAt: number;
   method: 'embedding' | 'user-rules' | 'small-llm' | 'hybrid';
@@ -38,35 +38,35 @@ export interface IntelligenceLayerConfig {
     similarityThreshold: number; // 0.7 default
     model?: string; // Which embedding model to use
   };
-  
+
   // Optional enhancement layers
   connectionDetection: {
     method: 'embedding-only' | 'user-rules' | 'small-llm' | 'hybrid';
-    
+
     // User-defined rules (free, configurable)
     userRules?: {
       enabled?: boolean;
       patterns?: ConnectionRule[];
     };
-    
+
     // LLM enhancement (optional, cost-aware)
     llmEnhancement?: {
       enabled?: boolean;
-      provider?: string;      // User's choice
-      model?: string;         // Small model (claude-3-haiku, gemini-flash, etc)
-      apiKey?: string;       // Or use env var
+      provider?: string; // User's choice
+      model?: string; // Small model (claude-3-haiku, gemini-flash, etc)
+      apiKey?: string; // Or use env var
       maxTokensPerAnalysis?: number;
-      temperature?: number;   // 0.1-0.3 for consistency
+      temperature?: number; // 0.1-0.3 for consistency
       validateResponses?: true; // Always validate with Zod
       fallbackToEmbedding?: true; // When validation fails
       minConfidence?: number; // LLM confidence threshold
-      
+
       // Cost configuration - user defines based on their provider/model
-      costPerToken?: number;     // e.g., 0.0000002 for input tokens
+      costPerToken?: number; // e.g., 0.0000002 for input tokens
       costPerOperation?: number; // Alternative: flat rate per analysis
     };
   };
-  
+
   // Cost control
   costControl: {
     maxLLMCallsPerBatch: number;
@@ -81,10 +81,10 @@ export interface ConnectionRule {
   id: string;
   name: string;
   description: string;
-  pattern: string;           // Regex or simple string match
+  pattern: string; // Regex or simple string match
   connectionType: ConnectionType;
-  confidence: number;        // 0-1
-  language?: string;         // Optional language hint
+  confidence: number; // 0-1
+  language?: string; // Optional language hint
   caseSensitive?: boolean;
   enabled: boolean;
   createdBy: string;
@@ -94,7 +94,7 @@ export interface ConnectionRule {
 export interface ConnectionGraph {
   nodes: Map<string, Memory>;
   edges: Map<string, MemoryConnection[]>;
-  
+
   // Graph operations
   addNode(memory: Memory): void;
   addEdge(connection: MemoryConnection): void;
@@ -162,7 +162,7 @@ export interface ConsolidationResult {
 export interface ConsolidationConfig {
   similarityThreshold: number;
   maxAge: number; // Max age for episodic memories (ms)
-    preserveOriginals: boolean;
+  preserveOriginals: boolean;
   strategies: ('merge' | 'synthesize' | 'abstract' | 'hierarchy')[];
   batchSize: number;
   enableLLMSummarization?: boolean; // Optional LLM enhancement
@@ -176,17 +176,17 @@ export interface ConsolidationConfig {
 
 // Importance scoring for memories
 export interface ImportanceFactors {
-  frequency: number;      // How often accessed
-  recency: number;        // How recent
-  connections: number;    // Number of connections
-  centrality: number;     // Graph centrality
-  userMarked: boolean;    // User flagged as important
-  consolidated: boolean;  // Result of consolidation
+  frequency: number; // How often accessed
+  recency: number; // How recent
+  connections: number; // Number of connections
+  centrality: number; // Graph centrality
+  userMarked: boolean; // User flagged as important
+  consolidated: boolean; // Result of consolidation
 }
 
 export interface ImportanceScore {
-  total: number;         // 0-1 overall score
+  total: number; // 0-1 overall score
   factors: ImportanceFactors;
   confidence: number;
   explanation?: string;
-} 
+}

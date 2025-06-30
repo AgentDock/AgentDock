@@ -1,9 +1,9 @@
 /**
  * @fileoverview Configuration Examples - Copy-paste templates for memory lifecycle
- * 
+ *
  * Ready-to-use configuration templates for different agent types and use cases.
  * Users can copy these configurations and customize them for their specific needs.
- * 
+ *
  * @author AgentDock Core Team
  */
 
@@ -28,7 +28,4 @@ export {
   researchProceduralConfig,
   researchScheduleConfig,
   researchDomainConfigs
-} from './research-agent-config'; 
- 
- 
- 
+} from './research-agent-config';

@@ -1,7 +1,7 @@
 /**
  * @fileoverview CostOptimizer - Intelligent extraction routing for 5x cost reduction
  * Routes messages through 3-tier system: rules → small LLM → large LLM
- * 
+ *
  * @example
  * ```typescript
  * const config = {
@@ -13,17 +13,17 @@
  *   costBudget: 0.50,
  *   targetCoverage: 0.85
  * };
- * 
+ *
  * const optimizer = new CostOptimizer(config);
  * const plan = await optimizer.createPlan(messages, userRules, 0.50);
  * ```
- * 
+ *
  * @author AgentDock Core Team
  */
 
+import { LogCategory, logger } from '../../../logging';
 import { MemoryMessage } from '../../types';
 import { BatchProcessorConfig, ExtractionRule } from '../types';
-import { LogCategory, logger } from '../../../logging';
 
 /**
  * Plan for optimized extraction routing
@@ -77,16 +77,20 @@ export class CostOptimizer {
 
     // Step 1: Route all messages through rules first (free)
     const rulesMessages = this.shouldUseRules() ? [...messages] : [];
-    
+
     // Step 2: Estimate what rules won't cover based on complexity
-    const uncoveredMessages = this.estimateUncoveredByRules(messages, userRules);
-    
-    // Step 3: Route uncovered messages optimally between small/large LLM
-    const { smallLLMMessages, largeLLMMessages } = await this.optimizeUncoveredRouting(
-      uncoveredMessages,
-      budget,
-      targetCoverage
+    const uncoveredMessages = this.estimateUncoveredByRules(
+      messages,
+      userRules
     );
+
+    // Step 3: Route uncovered messages optimally between small/large LLM
+    const { smallLLMMessages, largeLLMMessages } =
+      await this.optimizeUncoveredRouting(
+        uncoveredMessages,
+        budget,
+        targetCoverage
+      );
 
     // Step 4: Calculate costs and metrics
     const estimatedCost = await this.calculateTotalCost(
@@ -114,12 +118,17 @@ export class CostOptimizer {
       }
     };
 
-    logger.info(LogCategory.STORAGE, 'CostOptimizer', 'Optimization plan created', {
-      estimatedCost,
-      coverage,
-      totalMessages: messages.length,
-      distribution: `${rulesMessages.length}R/${smallLLMMessages.length}S/${largeLLMMessages.length}L`
-    });
+    logger.info(
+      LogCategory.STORAGE,
+      'CostOptimizer',
+      'Optimization plan created',
+      {
+        estimatedCost,
+        coverage,
+        totalMessages: messages.length,
+        distribution: `${rulesMessages.length}R/${smallLLMMessages.length}S/${largeLLMMessages.length}L`
+      }
+    );
 
     return {
       rulesMessages,
@@ -135,21 +144,24 @@ export class CostOptimizer {
    * Check if rules extractor is enabled
    */
   private shouldUseRules(): boolean {
-    const rulesConfig = this.config.extractors.find(e => e.type === 'rules');
+    const rulesConfig = this.config.extractors.find((e) => e.type === 'rules');
     return rulesConfig?.enabled ?? true;
   }
 
   /**
    * Estimate which messages rules won't cover based on user patterns
    */
-  private estimateUncoveredByRules(messages: MemoryMessage[], userRules: ExtractionRule[]): MemoryMessage[] {
+  private estimateUncoveredByRules(
+    messages: MemoryMessage[],
+    userRules: ExtractionRule[]
+  ): MemoryMessage[] {
     if (!userRules || userRules.length === 0) {
       return messages; // No rules = all messages uncovered
     }
 
     // Check if any rule pattern might match
-    return messages.filter(msg => {
-      const hasMatchingRule = userRules.some(rule => {
+    return messages.filter((msg) => {
+      const hasMatchingRule = userRules.some((rule) => {
         try {
           const regex = new RegExp(rule.pattern, 'i');
           return regex.test(msg.content);
@@ -169,13 +181,20 @@ export class CostOptimizer {
     uncoveredMessages: MemoryMessage[],
     budget: number,
     targetCoverage: number
-  ): Promise<{ smallLLMMessages: MemoryMessage[]; largeLLMMessages: MemoryMessage[] }> {
+  ): Promise<{
+    smallLLMMessages: MemoryMessage[];
+    largeLLMMessages: MemoryMessage[];
+  }> {
     if (uncoveredMessages.length === 0) {
       return { smallLLMMessages: [], largeLLMMessages: [] };
     }
 
-    const smallLLMEnabled = this.config.extractors.find(e => e.type === 'small-llm')?.enabled ?? true;
-    const largeLLMEnabled = this.config.extractors.find(e => e.type === 'large-llm')?.enabled ?? false;
+    const smallLLMEnabled =
+      this.config.extractors.find((e) => e.type === 'small-llm')?.enabled ??
+      true;
+    const largeLLMEnabled =
+      this.config.extractors.find((e) => e.type === 'large-llm')?.enabled ??
+      false;
 
     // Route based on configured preferences and budget
     if (!largeLLMEnabled) {
@@ -211,27 +230,35 @@ export class CostOptimizer {
     const rulesCost = 0; // Always free
     const smallLLMCost = await this.estimateSmallLLMCost(smallLLMMessages);
     const largeLLMCost = await this.estimateLargeLLMCost(largeLLMMessages);
-    
+
     return rulesCost + smallLLMCost + largeLLMCost;
   }
 
   /**
    * Estimate cost for small LLM processing
    */
-  private async estimateSmallLLMCost(messages: MemoryMessage[]): Promise<number> {
+  private async estimateSmallLLMCost(
+    messages: MemoryMessage[]
+  ): Promise<number> {
     if (messages.length === 0) return 0;
-    
-    const smallLLMConfig = this.config.extractors.find(e => e.type === 'small-llm');
+
+    const smallLLMConfig = this.config.extractors.find(
+      (e) => e.type === 'small-llm'
+    );
     return (smallLLMConfig?.costPerMemory || 0) * messages.length;
   }
 
   /**
    * Estimate cost for large LLM processing
    */
-  private async estimateLargeLLMCost(messages: MemoryMessage[]): Promise<number> {
+  private async estimateLargeLLMCost(
+    messages: MemoryMessage[]
+  ): Promise<number> {
     if (messages.length === 0) return 0;
-    
-    const largeLLMConfig = this.config.extractors.find(e => e.type === 'large-llm');
+
+    const largeLLMConfig = this.config.extractors.find(
+      (e) => e.type === 'large-llm'
+    );
     return (largeLLMConfig?.costPerMemory || 0) * messages.length;
   }
 
@@ -247,4 +274,4 @@ export class CostOptimizer {
     const coveredMessages = rulesCount + smallLLMCount + largeLLMCount;
     return totalMessages > 0 ? coveredMessages / totalMessages : 0;
   }
-} 
+}

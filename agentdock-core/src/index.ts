@@ -53,7 +53,7 @@ import {
  */
 /**
  * Basic type definitions used throughout the framework
- * 
+ *
  * NOTE: Some type names are exported from multiple modules (Tool, ToolResult, TextContent, etc.)
  * This creates linter warnings but does not affect functionality. TypeScript will use the last
  * export in the resolution order.
@@ -79,7 +79,7 @@ export type {
 
 /**
  * Complete node system including BaseNode, AgentNode, and tool registry
- * 
+ *
  * NOTE: This exports Tool, ToolResult, ToolRegistrationOptions which conflict with ./types/tools
  * but both are needed for different use cases. Linter warnings can be ignored.
  */
@@ -153,7 +153,7 @@ export type {
 
 /**
  * Browser-compatible storage providers and utilities
- * 
+ *
  * For server-only adapters (SQLite, PostgreSQL), import from:
  * import { SQLiteAdapter, PostgreSQLAdapter } from '@agentdock/core/server'
  */
@@ -189,7 +189,7 @@ export * from './logging';
 /**
  * Language model implementations and utilities
  * Includes CoreLLM, createLLM, and provider-specific model creation functions
- * 
+ *
  * NOTE: This exports CoreMessage, LanguageModel which are also explicitly re-exported below.
  * Linter warnings can be ignored.
  */
@@ -216,11 +216,11 @@ export * from './session';
  * - Episodic Memory (time-ordered experiences)
  * - Semantic Memory (long-term knowledge)
  * - Procedural Memory (learned patterns)
- * 
+ *
  * @todo SUGGESTED: Add top-level convenience exports for easier library usage
  * ```typescript
  * // Export convenience factory functions at top level for better DX:
- * export { 
+ * export {
  *   createMemorySystem,     // From ./memory - complete memory system setup
  *   createRecallService,    // From ./memory/services - standalone recall service
  *   createQuickRecall,      // From ./memory - fastest setup for recall
@@ -228,15 +228,15 @@ export * from './session';
  *   RECALL_CONFIG_PRESETS,  // From ./memory/services - preset configurations
  *   MEMORY_CONFIG_PRESETS   // From ./memory/services - preset configurations
  * } from './memory';
- * 
+ *
  * // This would enable simple usage like:
  * import { createMemorySystem, createRecallService } from 'agentdock-core';
- * 
+ *
  * // Instead of current complex setup:
- * import { 
- *   MemoryManager, 
- *   RecallService, 
- *   SQLiteAdapter 
+ * import {
+ *   MemoryManager,
+ *   RecallService,
+ *   SQLiteAdapter
  * } from 'agentdock-core';
  * const storage = new SQLiteAdapter('./db');
  * const memoryManager = new MemoryManager(storage, complexConfig);
@@ -249,13 +249,13 @@ export type {
   Memory,
   MemoryMessage,
   MemoryType,
-  
+
   // Working Memory
   WorkingMemory,
   WorkingMemoryData,
   WorkingMemoryConfig,
   WorkingMemoryOptions,
-  
+
   // Episodic Memory
   EpisodicMemory,
   EpisodicMemoryData,
@@ -263,14 +263,14 @@ export type {
   EpisodicMemoryOptions,
   ConsolidationResult,
   DecayResult,
-  
+
   // Semantic Memory
   SemanticMemory,
   SemanticMemoryData,
   SemanticMemoryConfig,
   SemanticMemoryOptions,
   VectorSearchResult,
-  
+
   // Procedural Memory
   ProceduralMemory,
   ProceduralMemoryData,
@@ -278,12 +278,12 @@ export type {
   ProceduralMemoryOptions,
   ProceduralPattern,
   LearningResult,
-  
+
   // Configuration
   MemoryManagerConfig
 } from './memory';
 
-// Export memory system classes and services 
+// Export memory system classes and services
 export {
   MemoryManager,
   RecallService,

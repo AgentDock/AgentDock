@@ -7,7 +7,11 @@
 
 import { LogCategory, logger } from '../../../logging';
 import { BaseStorageAdapter } from '../../base-adapter';
-import { ListOptions, StorageOptions, MemoryOperations as IMemoryOperations } from '../../types';
+import {
+  MemoryOperations as IMemoryOperations,
+  ListOptions,
+  StorageOptions
+} from '../../types';
 import { SQLiteConnectionManager } from './connection';
 import { BatchOperations } from './operations/batch';
 import { KVOperations } from './operations/kv';
@@ -63,14 +67,18 @@ export class SQLiteAdapter extends BaseStorageAdapter {
 
     try {
       // Check if memory tables exist
-      const result = this.connection.db.prepare(`
+      const result = this.connection.db
+        .prepare(
+          `
         SELECT name FROM sqlite_master 
         WHERE type='table' AND name='memories'
-      `).get();
+      `
+        )
+        .get();
 
-             if (result) {
-         // Tables exist - initialize memory operations directly (no bridge)
-         this.memory = new SqliteMemoryOperations(this.connection.db);
+      if (result) {
+        // Tables exist - initialize memory operations directly (no bridge)
+        this.memory = new SqliteMemoryOperations(this.connection.db);
 
         logger.info(
           LogCategory.STORAGE,
@@ -84,12 +92,12 @@ export class SQLiteAdapter extends BaseStorageAdapter {
           'SQLiteAdapter',
           'Memory tables not found - creating them automatically'
         );
-        
+
         await this.createMemoryTables();
-        
+
         // Now initialize memory operations
         this.memory = new SqliteMemoryOperations(this.connection.db);
-        
+
         logger.info(
           LogCategory.STORAGE,
           'SQLiteAdapter',
@@ -101,7 +109,7 @@ export class SQLiteAdapter extends BaseStorageAdapter {
         LogCategory.STORAGE,
         'SQLiteAdapter',
         'Failed to check for memory tables',
-        { 
+        {
           error: error instanceof Error ? error.message : String(error)
         }
       );
@@ -154,7 +162,7 @@ export class SQLiteAdapter extends BaseStorageAdapter {
     try {
       // Create the memories table
       this.connection.db.exec(createMemoriesTable);
-      
+
       // Create indexes for better performance
       for (const indexSQL of createIndexes) {
         this.connection.db.exec(indexSQL);

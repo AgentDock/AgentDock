@@ -1,4 +1,4 @@
-import { EpisodicMemoryData } from './EpisodicMemoryTypes'
+import { EpisodicMemoryData } from './EpisodicMemoryTypes';
 
 /**
  * Utility functions for EpisodicMemory operations
@@ -50,9 +50,9 @@ export function calculateEpisodicImportance(
  */
 export function extractTags(content: string): string[] {
   const tags: string[] = [];
-  
+
   const lowerContent = content.toLowerCase();
-  
+
   // Topic-based tags
   if (lowerContent.includes('question')) tags.push('question');
   if (lowerContent.includes('problem')) tags.push('problem');
@@ -70,8 +70,16 @@ export function extractTags(content: string): string[] {
  * Check if content represents problem-solving
  */
 function isProblemSolving(content: string): boolean {
-  const problemKeywords = ['problem', 'issue', 'error', 'bug', 'fix', 'solve', 'solution'];
-  return problemKeywords.some(keyword => 
+  const problemKeywords = [
+    'problem',
+    'issue',
+    'error',
+    'bug',
+    'fix',
+    'solve',
+    'solution'
+  ];
+  return problemKeywords.some((keyword) =>
     content.toLowerCase().includes(keyword)
   );
 }
@@ -80,8 +88,15 @@ function isProblemSolving(content: string): boolean {
  * Check if content represents learning
  */
 function isLearningContent(content: string): boolean {
-  const learningKeywords = ['learn', 'understand', 'explain', 'how to', 'tutorial', 'guide'];
-  return learningKeywords.some(keyword => 
+  const learningKeywords = [
+    'learn',
+    'understand',
+    'explain',
+    'how to',
+    'tutorial',
+    'guide'
+  ];
+  return learningKeywords.some((keyword) =>
     content.toLowerCase().includes(keyword)
   );
 }
@@ -95,13 +110,13 @@ export function groupByTimeWindow(
 ): EpisodicMemoryData[][] {
   const windowMs = windowHours * 60 * 60 * 1000;
   const groups: EpisodicMemoryData[][] = [];
-  
+
   // Sort by creation time
   const sorted = [...memories].sort((a, b) => a.createdAt - b.createdAt);
-  
+
   let currentGroup: EpisodicMemoryData[] = [];
   let groupStartTime = 0;
-  
+
   for (const memory of sorted) {
     if (currentGroup.length === 0) {
       currentGroup = [memory];
@@ -116,11 +131,11 @@ export function groupByTimeWindow(
       groupStartTime = memory.createdAt;
     }
   }
-  
+
   if (currentGroup.length > 0) {
     groups.push(currentGroup);
   }
-  
+
   return groups;
 }
 
@@ -134,8 +149,8 @@ export function convertToSemantic(group: EpisodicMemoryData[]): any {
   const allTags = new Set<string>();
   let totalImportance = 0;
 
-  group.forEach(m => {
-    m.tags.forEach(tag => allTags.add(tag));
+  group.forEach((m) => {
+    m.tags.forEach((tag) => allTags.add(tag));
     totalImportance += m.importance;
   });
 
@@ -147,17 +162,17 @@ export function convertToSemantic(group: EpisodicMemoryData[]): any {
     agentId: group[0].agentId,
     content: summary,
     category: 'learned_experience',
-    importance: Math.min(totalImportance / group.length * 1.2, 1.0), // Boost compressed importance
+    importance: Math.min((totalImportance / group.length) * 1.2, 1.0), // Boost compressed importance
     confidence: 0.8,
     createdAt: Date.now(),
     lastAccessedAt: Date.now(),
     accessCount: 0,
-    sourceIds: group.map(m => m.id),
+    sourceIds: group.map((m) => m.id),
     keywords: Array.from(allTags),
     metadata: {
       compressed: true,
       originalCount: group.length,
-      originalMemoryIds: group.map(m => m.id),
+      originalMemoryIds: group.map((m) => m.id),
       compressionDate: Date.now()
     },
     facts: [],
@@ -175,15 +190,15 @@ export function applyDecayFormula(
 ): number {
   const age = Date.now() - memory.lastAccessedAt;
   const ageDays = age / (24 * 60 * 60 * 1000);
-  
+
   // Apply decay formula
   const decayFactor = Math.exp(-decayRate * ageDays);
   const newResonance = memory.resonance * decayFactor;
-  
+
   // Importance affects decay rate
   const importanceBoost = memory.importance * importanceWeight;
   const finalResonance = Math.max(newResonance + importanceBoost, 0);
-  
+
   return finalResonance;
 }
 
@@ -223,20 +238,22 @@ export function calculateRelevanceScore(
  * Validate episodic memory configuration
  */
 export function validateEpisodicConfig(config: any): boolean {
-  return config.maxMemoriesPerSession > 0 &&
-         config.decayRate > 0 &&
-         config.importanceThreshold >= 0 &&
-         config.compressionAge > 0 &&
-         typeof config.encryptSensitive === 'boolean';
+  return (
+    config.maxMemoriesPerSession > 0 &&
+    config.decayRate > 0 &&
+    config.importanceThreshold >= 0 &&
+    config.compressionAge > 0 &&
+    typeof config.encryptSensitive === 'boolean'
+  );
 }
 
 /**
  * Check if content is suitable for episodic memory
  */
 export function isEpisodicWorthy(content: string): boolean {
-  return content.length > 20 && 
-         content.length < 10000 && 
-         !isBoilerplate(content);
+  return (
+    content.length > 20 && content.length < 10000 && !isBoilerplate(content)
+  );
 }
 
 /**
@@ -248,5 +265,5 @@ function isBoilerplate(content: string): boolean {
     /^(ok|okay|yes|no)$/i,
     /^(please|can you|could you)$/i
   ];
-  return boilerplatePatterns.some(pattern => pattern.test(content.trim()));
+  return boilerplatePatterns.some((pattern) => pattern.test(content.trim()));
 }

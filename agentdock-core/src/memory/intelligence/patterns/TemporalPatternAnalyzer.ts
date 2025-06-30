@@ -1,27 +1,34 @@
 /**
  * @fileoverview TemporalPatternAnalyzer - Language-agnostic temporal pattern recognition
- * 
+ *
  * Analyzes memory access patterns, temporal clusters, and time-based relationships.
  * Uses progressive enhancement: statistical analysis (free) + optional LLM insights (configurable).
- * 
+ *
  * @author AgentDock Core Team
  */
 
 import { z } from 'zod';
+
+import { CoreLLM } from '../../../llm/core-llm';
+import { createLLM } from '../../../llm/create-llm';
 import { LogCategory, logger } from '../../../logging';
 import { Memory } from '../../types/common';
-import { TemporalPattern, ActivityCluster, IntelligenceLayerConfig } from '../types';
-import { createLLM } from '../../../llm/create-llm';
-import { CoreLLM } from '../../../llm/core-llm';
+import {
+  ActivityCluster,
+  IntelligenceLayerConfig,
+  TemporalPattern
+} from '../types';
 
 // Zod schema for LLM temporal analysis validation
 const TemporalAnalysisSchema = z.object({
-  patterns: z.array(z.object({
-    type: z.enum(['daily', 'weekly', 'monthly', 'periodic', 'burst']),
-    description: z.string(),
-    confidence: z.number().min(0).max(1),
-    frequency: z.number().optional()
-  })),
+  patterns: z.array(
+    z.object({
+      type: z.enum(['daily', 'weekly', 'monthly', 'periodic', 'burst']),
+      description: z.string(),
+      confidence: z.number().min(0).max(1),
+      frequency: z.number().optional()
+    })
+  ),
   insights: z.string().optional()
 });
 
@@ -31,14 +38,17 @@ type TemporalAnalysis = z.infer<typeof TemporalAnalysisSchema>;
  * Cost tracker interface - following batch processing pattern
  */
 interface CostTracker {
-  trackExtraction(agentId: string, data: {
-    extractorType: string;
-    cost: number;
-    memoriesExtracted: number;
-    messagesProcessed: number;
-    metadata: Record<string, any>;
-  }): Promise<void>;
-  
+  trackExtraction(
+    agentId: string,
+    data: {
+      extractorType: string;
+      cost: number;
+      memoriesExtracted: number;
+      messagesProcessed: number;
+      metadata: Record<string, any>;
+    }
+  ): Promise<void>;
+
   checkBudget(agentId: string, monthlyBudget: number): Promise<boolean>;
 }
 
@@ -55,17 +65,23 @@ export class TemporalPatternAnalyzer {
     costTracker?: CostTracker
   ) {
     // Only create LLM if enhancement is enabled and required fields are provided
-    if (config.connectionDetection.llmEnhancement?.enabled && 
-        config.connectionDetection.llmEnhancement.provider && 
-        config.connectionDetection.llmEnhancement.model) {
+    if (
+      config.connectionDetection.llmEnhancement?.enabled &&
+      config.connectionDetection.llmEnhancement.provider &&
+      config.connectionDetection.llmEnhancement.model
+    ) {
       this.llm = createLLM({
         provider: config.connectionDetection.llmEnhancement.provider as any,
         model: config.connectionDetection.llmEnhancement.model,
-        apiKey: config.connectionDetection.llmEnhancement.apiKey || 
-                process.env[`${config.connectionDetection.llmEnhancement.provider.toUpperCase()}_API_KEY`] || ''
+        apiKey:
+          config.connectionDetection.llmEnhancement.apiKey ||
+          process.env[
+            `${config.connectionDetection.llmEnhancement.provider.toUpperCase()}_API_KEY`
+          ] ||
+          ''
       });
     }
-    
+
     // Use provided cost tracker or create mock
     this.costTracker = costTracker || this.createMockCostTracker();
 
@@ -94,13 +110,15 @@ export class TemporalPatternAnalyzer {
         'Analyzing temporal patterns (language-agnostic)',
         {
           agentId: agentId.substring(0, 8),
-          timeRange: timeRange ? `${timeRange.start.toISOString()} to ${timeRange.end.toISOString()}` : 'all time'
+          timeRange: timeRange
+            ? `${timeRange.start.toISOString()} to ${timeRange.end.toISOString()}`
+            : 'all time'
         }
       );
 
       // Get memories for analysis
       const memories = await this.getMemoriesInTimeRange(agentId, timeRange);
-      
+
       if (memories.length < 5) {
         logger.info(
           LogCategory.STORAGE,
@@ -119,7 +137,10 @@ export class TemporalPatternAnalyzer {
 
       // Level 2: LLM enhancement for deeper insights (optional, cost-aware)
       if (this.shouldUseLLMEnhancement(memories)) {
-        const llmPatterns = await this.analyzePatternsWithLLM(agentId, memories);
+        const llmPatterns = await this.analyzePatternsWithLLM(
+          agentId,
+          memories
+        );
         patterns.push(...llmPatterns);
       }
 
@@ -162,14 +183,14 @@ export class TemporalPatternAnalyzer {
   ): Promise<ActivityCluster[]> {
     try {
       const memories = await this.getMemoriesInTimeRange(agentId, timeRange);
-      
+
       if (memories.length < 3) {
         return [];
       }
 
       // Sort memories by timestamp
       const sortedMemories = memories.sort((a, b) => a.createdAt - b.createdAt);
-      
+
       // Define cluster window (1 hour by default)
       const clusterWindow = 60 * 60 * 1000; // 1 hour in milliseconds
       const clusters: ActivityCluster[] = [];
@@ -182,10 +203,11 @@ export class TemporalPatternAnalyzer {
           currentCluster.push(memory);
         } else {
           // Create cluster from current memories and start new cluster
-          if (currentCluster.length >= 3) { // Minimum 3 memories for a cluster
+          if (currentCluster.length >= 3) {
+            // Minimum 3 memories for a cluster
             clusters.push(this.createActivityCluster(currentCluster));
           }
-          
+
           currentCluster = [memory];
           clusterStart = memory.createdAt;
         }
@@ -237,8 +259,8 @@ export class TemporalPatternAnalyzer {
    */
   private analyzeHourlyPattern(memories: Memory[]): TemporalPattern | null {
     const hourCounts = new Array(24).fill(0);
-    
-    memories.forEach(memory => {
+
+    memories.forEach((memory) => {
       const hour = new Date(memory.createdAt).getHours();
       hourCounts[hour]++;
     });
@@ -259,9 +281,9 @@ export class TemporalPatternAnalyzer {
     return {
       type: 'daily',
       confidence,
-      memories: memories.map(m => m.id),
+      memories: memories.map((m) => m.id),
       metadata: {
-        peakTimes: peakHours.map(hour => new Date(2024, 0, 1, hour)),
+        peakTimes: peakHours.map((hour) => new Date(2024, 0, 1, hour)),
         description: `Most active during hours: ${peakHours.join(', ')}`
       }
     };
@@ -272,9 +294,17 @@ export class TemporalPatternAnalyzer {
    */
   private analyzeWeeklyPattern(memories: Memory[]): TemporalPattern | null {
     const dayCounts = new Array(7).fill(0);
-    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    
-    memories.forEach(memory => {
+    const dayNames = [
+      'Sunday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday'
+    ];
+
+    memories.forEach((memory) => {
       const day = new Date(memory.createdAt).getDay();
       dayCounts[day]++;
     });
@@ -294,9 +324,9 @@ export class TemporalPatternAnalyzer {
     return {
       type: 'weekly',
       confidence,
-      memories: memories.map(m => m.id),
+      memories: memories.map((m) => m.id),
       metadata: {
-        description: `Most active on: ${peakDays.map(d => dayNames[d]).join(', ')}`
+        description: `Most active on: ${peakDays.map((d) => dayNames[d]).join(', ')}`
       }
     };
   }
@@ -309,41 +339,44 @@ export class TemporalPatternAnalyzer {
 
     const sorted = memories.sort((a, b) => a.createdAt - b.createdAt);
     const patterns: TemporalPattern[] = [];
-    
+
     // Define burst as 5+ memories within 30 minutes
     const burstWindow = 30 * 60 * 1000; // 30 minutes
     const minBurstSize = 5;
-    
+
     let windowStart = 0;
-    
+
     for (let i = 0; i < sorted.length; i++) {
       // Move window start forward
-      while (windowStart < i && sorted[i].createdAt - sorted[windowStart].createdAt > burstWindow) {
+      while (
+        windowStart < i &&
+        sorted[i].createdAt - sorted[windowStart].createdAt > burstWindow
+      ) {
         windowStart++;
       }
-      
+
       const windowSize = i - windowStart + 1;
-      
+
       if (windowSize >= minBurstSize) {
         const burstMemories = sorted.slice(windowStart, i + 1);
         const confidence = Math.min(0.8, windowSize / 10);
-        
+
         patterns.push({
           type: 'burst',
           confidence,
-          memories: burstMemories.map(m => m.id),
+          memories: burstMemories.map((m) => m.id),
           metadata: {
             description: `Burst of ${windowSize} memories in 30 minutes`,
             interval: burstWindow
           }
         });
-        
+
         // Skip ahead to avoid overlapping burst detections
         i += Math.floor(windowSize / 2);
         windowStart = i;
       }
     }
-    
+
     return patterns;
   }
 
@@ -353,8 +386,8 @@ export class TemporalPatternAnalyzer {
   private shouldUseLLMEnhancement(memories: Memory[]): boolean {
     // Only use LLM for substantial datasets to justify cost
     return !!(
-      this.llm && 
-      memories.length >= 20 && 
+      this.llm &&
+      memories.length >= 20 &&
       this.config.costControl.preferEmbeddingWhenSimilar
     );
   }
@@ -374,7 +407,7 @@ export class TemporalPatternAnalyzer {
         agentId,
         this.config.costControl.monthlyBudget || Infinity
       );
-      
+
       if (!withinBudget) {
         logger.info(
           LogCategory.STORAGE,
@@ -386,7 +419,7 @@ export class TemporalPatternAnalyzer {
       }
 
       // Prepare memory data for LLM analysis (anonymized)
-      const timeData = memories.map(m => ({
+      const timeData = memories.map((m) => ({
         timestamp: new Date(m.createdAt).toISOString(),
         importance: m.importance,
         type: m.type
@@ -394,9 +427,10 @@ export class TemporalPatternAnalyzer {
 
       const { object: result } = await this.llm.generateObject({
         schema: TemporalAnalysisSchema,
-        messages: [{
-          role: 'user',
-          content: `Analyze these memory creation timestamps for temporal patterns:
+        messages: [
+          {
+            role: 'user',
+            content: `Analyze these memory creation timestamps for temporal patterns:
 
 ${JSON.stringify(timeData, null, 2)}
 
@@ -408,22 +442,22 @@ Identify recurring patterns such as:
 - Burst activities
 
 Focus on statistically significant patterns with confidence scores.`
-        }],
+          }
+        ],
         temperature: 0.3
       });
 
-             // Convert LLM results to TemporalPattern format
-       return result.patterns.map((pattern: any) => ({
+      // Convert LLM results to TemporalPattern format
+      return result.patterns.map((pattern: any) => ({
         type: pattern.type,
         confidence: pattern.confidence,
         frequency: pattern.frequency,
-        memories: memories.map(m => m.id),
+        memories: memories.map((m) => m.id),
         metadata: {
           description: pattern.description,
           llmGenerated: true
         }
       }));
-
     } catch (error) {
       logger.warn(
         LogCategory.STORAGE,
@@ -441,7 +475,7 @@ Focus on statistically significant patterns with confidence scores.`
   private deduplicatePatterns(patterns: TemporalPattern[]): TemporalPattern[] {
     const seen = new Set<string>();
     const unique: TemporalPattern[] = [];
-    
+
     for (const pattern of patterns) {
       const key = `${pattern.type}_${pattern.frequency || 'none'}`;
       if (!seen.has(key)) {
@@ -449,7 +483,7 @@ Focus on statistically significant patterns with confidence scores.`
         unique.push(pattern);
       }
     }
-    
+
     return unique.sort((a, b) => b.confidence - a.confidence);
   }
 
@@ -457,21 +491,22 @@ Focus on statistically significant patterns with confidence scores.`
    * Create activity cluster from memories
    */
   private createActivityCluster(memories: Memory[]): ActivityCluster {
-    const times = memories.map(m => m.createdAt);
+    const times = memories.map((m) => m.createdAt);
     const startTime = new Date(Math.min(...times));
     const endTime = new Date(Math.max(...times));
-    
+
     // Calculate intensity (memories per hour)
-    const durationHours = (endTime.getTime() - startTime.getTime()) / (60 * 60 * 1000);
+    const durationHours =
+      (endTime.getTime() - startTime.getTime()) / (60 * 60 * 1000);
     const intensity = memories.length / Math.max(durationHours, 0.5); // Min 0.5 hours
-    
+
     // Extract topics from memory content (simplified)
     const topics = this.extractTopics(memories);
-    
+
     return {
       startTime,
       endTime,
-      memoryIds: memories.map(m => m.id),
+      memoryIds: memories.map((m) => m.id),
       topics,
       intensity: Math.min(1.0, intensity / 10) // Normalize to 0-1
     };
@@ -482,13 +517,13 @@ Focus on statistically significant patterns with confidence scores.`
    */
   private extractTopics(memories: Memory[]): string[] {
     const allKeywords = new Set<string>();
-    
-    memories.forEach(memory => {
+
+    memories.forEach((memory) => {
       if (memory.keywords) {
-        memory.keywords.forEach(keyword => allKeywords.add(keyword));
+        memory.keywords.forEach((keyword) => allKeywords.add(keyword));
       }
     });
-    
+
     return Array.from(allKeywords).slice(0, 5); // Top 5 topics
   }
 
@@ -517,6 +552,4 @@ Focus on statistically significant patterns with confidence scores.`
       }
     };
   }
-} 
- 
- 
+}

@@ -1,6 +1,6 @@
 /**
  * Test Configuration - NO HARDCODED DEFAULTS
- * 
+ *
  * All test configurations must be explicitly defined to verify
  * the system is configuration-driven, not relying on defaults.
  */
@@ -11,17 +11,17 @@ export const testConfig = {
   // Test user IDs for isolation testing
   users: {
     alice: 'user-alice-test-123',
-    bob: 'user-bob-test-456', 
+    bob: 'user-bob-test-456',
     charlie: 'user-charlie-test-789'
   },
-  
+
   // Test agent IDs for cross-agent isolation
   agents: {
     shared: 'agent-shared-test-abc',
     personal: 'agent-personal-test-def',
     published: 'agent-published-test-ghi'
   },
-  
+
   // Memory configurations - EXPLICITLY DEFINED (no defaults)
   memory: {
     working: {
@@ -55,7 +55,7 @@ export const testConfig = {
       patternMerging: true
     }
   },
-  
+
   // Batch processing test configuration
   batch: {
     maxBatchSize: 20,
@@ -87,7 +87,7 @@ export const testConfig = {
       minMessageLength: 10
     }
   },
-  
+
   // Performance testing targets
   performance: {
     storeLatencyMs: 50,
@@ -95,14 +95,26 @@ export const testConfig = {
     batchLatencyPerMemoryMs: 25,
     maxMemoriesForTest: 1000
   },
-  
+
   // Test data patterns
   testData: {
     sampleMemories: [
-      { content: 'User prefers dark mode interface', type: MemoryType.SEMANTIC },
-      { content: 'Had productive meeting about Q3 planning', type: MemoryType.EPISODIC },
-      { content: 'Successfully used git rebase command', type: MemoryType.PROCEDURAL },
-      { content: 'Currently working on memory system testing', type: MemoryType.WORKING }
+      {
+        content: 'User prefers dark mode interface',
+        type: MemoryType.SEMANTIC
+      },
+      {
+        content: 'Had productive meeting about Q3 planning',
+        type: MemoryType.EPISODIC
+      },
+      {
+        content: 'Successfully used git rebase command',
+        type: MemoryType.PROCEDURAL
+      },
+      {
+        content: 'Currently working on memory system testing',
+        type: MemoryType.WORKING
+      }
     ],
     sensitiveData: [
       'password123',
@@ -139,13 +151,18 @@ export function createTestMemory(overrides: any = {}) {
 /**
  * Generate multiple test memories with staggered creation times
  */
-export function createTestMemories(count: number, userIdPattern?: (i: number) => string) {
-  return Array.from({ length: count }, (_, i) => createTestMemory({
-    userId: userIdPattern ? userIdPattern(i) : testConfig.users.alice,
-    content: `Test memory ${i + 1}`,
-    createdAt: Date.now() - (i * 1000), // Stagger creation times
-    importance: 0.5 + (i % 5) * 0.1 // Vary importance 0.5-0.9
-  }));
+export function createTestMemories(
+  count: number,
+  userIdPattern?: (i: number) => string
+) {
+  return Array.from({ length: count }, (_, i) =>
+    createTestMemory({
+      userId: userIdPattern ? userIdPattern(i) : testConfig.users.alice,
+      content: `Test memory ${i + 1}`,
+      createdAt: Date.now() - i * 1000, // Stagger creation times
+      importance: 0.5 + (i % 5) * 0.1 // Vary importance 0.5-0.9
+    })
+  );
 }
 
 /**
@@ -154,18 +171,26 @@ export function createTestMemories(count: number, userIdPattern?: (i: number) =>
 export const isolationTestPatterns = {
   // Different users, same agent
   multiUserSameAgent: {
-    users: [testConfig.users.alice, testConfig.users.bob, testConfig.users.charlie],
+    users: [
+      testConfig.users.alice,
+      testConfig.users.bob,
+      testConfig.users.charlie
+    ],
     agent: testConfig.agents.shared,
     expectedIsolation: true
   },
-  
-  // Same user, different agents  
+
+  // Same user, different agents
   sameUserMultiAgent: {
     user: testConfig.users.alice,
-    agents: [testConfig.agents.personal, testConfig.agents.shared, testConfig.agents.published],
+    agents: [
+      testConfig.agents.personal,
+      testConfig.agents.shared,
+      testConfig.agents.published
+    ],
     expectedIsolation: true
   },
-  
+
   // Cross-contamination test data
   contaminationTests: [
     {
@@ -177,4 +202,4 @@ export const isolationTestPatterns = {
       shouldNotCrossContaminate: true
     }
   ]
-}; 
+};

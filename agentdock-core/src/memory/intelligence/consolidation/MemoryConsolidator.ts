@@ -1,20 +1,21 @@
 /**
  * @fileoverview MemoryConsolidator - Language-agnostic memory consolidation
- * 
+ *
  * Converts episodic memories to semantic, merges similar memories,
  * and optimizes memory storage through intelligent consolidation.
  * Uses LLM for language-agnostic analysis, following batch processing patterns.
- * 
+ *
  * @author AgentDock Core Team
  */
 
 import { z } from 'zod';
+
+import { CoreLLM } from '../../../llm/core-llm';
+import { createLLM } from '../../../llm/create-llm';
 import { LogCategory, logger } from '../../../logging';
 import { generateId } from '../../../storage/utils';
-import { createLLM } from '../../../llm/create-llm';
-import { CoreLLM } from '../../../llm/core-llm';
-import { Memory } from '../../types/common';
 import { MemoryType } from '../../types';
+import { Memory } from '../../types/common';
 import { ConsolidationConfig, ConsolidationResult } from '../types';
 
 // Zod schema for LLM consolidation validation
@@ -31,14 +32,17 @@ type ConsolidationAnalysis = z.infer<typeof ConsolidationAnalysisSchema>;
  * Cost tracker interface - following batch processing pattern
  */
 interface CostTracker {
-  trackExtraction(agentId: string, data: {
-    extractorType: string;
-    cost: number;
-    memoriesExtracted: number;
-    messagesProcessed: number;
-    metadata: Record<string, any>;
-  }): Promise<void>;
-  
+  trackExtraction(
+    agentId: string,
+    data: {
+      extractorType: string;
+      cost: number;
+      memoriesExtracted: number;
+      messagesProcessed: number;
+      metadata: Record<string, any>;
+    }
+  ): Promise<void>;
+
   checkBudget(agentId: string, monthlyBudget: number): Promise<boolean>;
 }
 
@@ -59,13 +63,15 @@ export class MemoryConsolidator {
       this.llm = createLLM({
         provider: config.llmConfig.provider as any,
         model: config.llmConfig.model,
-        apiKey: process.env[`${config.llmConfig.provider.toUpperCase()}_API_KEY`] || ''
+        apiKey:
+          process.env[`${config.llmConfig.provider.toUpperCase()}_API_KEY`] ||
+          ''
       });
     }
-    
+
     // Use provided cost tracker or create mock
     this.costTracker = costTracker || this.createMockCostTracker();
-    
+
     logger.debug(
       LogCategory.STORAGE,
       'MemoryConsolidator',
@@ -89,9 +95,12 @@ export class MemoryConsolidator {
     if (!userId?.trim()) {
       throw new Error('userId is required for memory consolidation operations');
     }
-    
-    const activeConfig: ConsolidationConfig = { ...this.config, ...customConfig };
-    
+
+    const activeConfig: ConsolidationConfig = {
+      ...this.config,
+      ...customConfig
+    };
+
     try {
       logger.info(
         LogCategory.STORAGE,
@@ -141,7 +150,10 @@ export class MemoryConsolidator {
           userId: userId.substring(0, 8),
           agentId: agentId.substring(0, 8),
           totalResults: results.length,
-          totalMemoriesProcessed: results.reduce((sum, r) => sum + r.original.length, 0),
+          totalMemoriesProcessed: results.reduce(
+            (sum, r) => sum + r.original.length,
+            0
+          ),
           totalConsolidated: results.length
         }
       );
@@ -173,7 +185,11 @@ export class MemoryConsolidator {
     try {
       // Get old episodic memories
       const cutoffTime = Date.now() - config.maxAge;
-      const episodicMemories = await this.getEpisodicMemories(userId, agentId, cutoffTime);
+      const episodicMemories = await this.getEpisodicMemories(
+        userId,
+        agentId,
+        cutoffTime
+      );
 
       if (episodicMemories.length === 0) {
         return [];
@@ -196,17 +212,26 @@ export class MemoryConsolidator {
       // Process in batches
       for (let i = 0; i < episodicMemories.length; i += config.batchSize) {
         const batch = episodicMemories.slice(i, i + config.batchSize);
-        
+
         for (const episodic of batch) {
-          if (episodic.importance >= 0.5) { // Only convert important episodic memories
-            const semantic = await this.createSemanticFromEpisodic(episodic, config);
-            
+          if (episodic.importance >= 0.5) {
+            // Only convert important episodic memories
+            const semantic = await this.createSemanticFromEpisodic(
+              episodic,
+              config
+            );
+
             // Store the new semantic memory
             await this.storage.setMemory?.(semantic);
-            
+
             // Archive or delete original if not preserving
             if (!config.preserveOriginals) {
-              await this.storage.deleteMemory?.(userId, agentId, episodic.type, episodic.id);
+              await this.storage.deleteMemory?.(
+                userId,
+                agentId,
+                episodic.type,
+                episodic.id
+              );
             }
 
             results.push({
@@ -246,7 +271,7 @@ export class MemoryConsolidator {
     try {
       // Get all semantic memories for similarity analysis
       const semanticMemories = await this.getSemanticMemories(userId, agentId);
-      
+
       if (semanticMemories.length < 2) {
         return [];
       }
@@ -276,24 +301,32 @@ export class MemoryConsolidator {
           config.similarityThreshold
         );
 
-        if (similar.length > 1) { // Including the original memory
+        if (similar.length > 1) {
+          // Including the original memory
           const consolidated = await this.mergeMemories(similar, config);
-          
+
           // Store consolidated memory
           await this.storage.setMemory?.(consolidated);
-          
+
           // Mark as processed and optionally remove originals
-          similar.forEach(m => processed.add(m.id));
+          similar.forEach((m) => processed.add(m.id));
           if (!config.preserveOriginals) {
             for (const mem of similar) {
-              await this.storage.deleteMemory?.(userId, agentId, mem.type, mem.id);
+              await this.storage.deleteMemory?.(
+                userId,
+                agentId,
+                mem.type,
+                mem.id
+              );
             }
           }
 
           results.push({
             original: similar,
             consolidated,
-            strategy: config.strategies.includes('merge') ? 'merge' : 'synthesize',
+            strategy: config.strategies.includes('merge')
+              ? 'merge'
+              : 'synthesize',
             confidence: this.calculateMergeConfidence(similar)
           });
         }
@@ -324,7 +357,7 @@ export class MemoryConsolidator {
   ): Promise<Memory> {
     // Use LLM to extract semantic content if available
     let semanticContent = episodic.content;
-    
+
     if (this.llm && config.enableLLMSummarization) {
       semanticContent = await this.extractSemanticContentLLM(episodic.content);
     } else {
@@ -347,7 +380,9 @@ export class MemoryConsolidator {
         convertedFrom: episodic.id,
         originalType: 'episodic',
         conversionDate: new Date().toISOString(),
-        extractionMethod: this.llm ? 'llm_semantic_extraction' : 'simple_conversion'
+        extractionMethod: this.llm
+          ? 'llm_semantic_extraction'
+          : 'simple_conversion'
       },
       keywords: episodic.keywords
     };
@@ -358,7 +393,9 @@ export class MemoryConsolidator {
   /**
    * Use LLM to extract semantic content from episodic content (language-agnostic)
    */
-  private async extractSemanticContentLLM(episodicContent: string): Promise<string> {
+  private async extractSemanticContentLLM(
+    episodicContent: string
+  ): Promise<string> {
     if (!this.llm) return episodicContent;
 
     try {
@@ -367,14 +404,16 @@ export class MemoryConsolidator {
           semanticContent: z.string(),
           reasoning: z.string().optional()
         }),
-        messages: [{
-          role: 'user',
-          content: `Extract the core semantic meaning from this episodic memory, removing temporal references and personal context:
+        messages: [
+          {
+            role: 'user',
+            content: `Extract the core semantic meaning from this episodic memory, removing temporal references and personal context:
 
 "${episodicContent}"
 
 Extract the general knowledge or pattern that can be applied beyond this specific instance. Focus on the underlying concept, fact, or insight.`
-        }],
+          }
+        ],
         temperature: 0.3
       });
 
@@ -433,13 +472,13 @@ Extract the general knowledge or pattern that can be applied beyond this specifi
       agentId: primary.agentId,
       content: mergedContent,
       type: primary.type,
-      importance: Math.max(...memories.map(m => m.importance)),
+      importance: Math.max(...memories.map((m) => m.importance)),
       accessCount: memories.reduce((sum, m) => sum + m.accessCount, 0),
-      createdAt: Math.min(...memories.map(m => m.createdAt)),
+      createdAt: Math.min(...memories.map((m) => m.createdAt)),
       updatedAt: Date.now(),
-      lastAccessedAt: Math.max(...memories.map(m => m.lastAccessedAt)),
+      lastAccessedAt: Math.max(...memories.map((m) => m.lastAccessedAt)),
       metadata: {
-        mergedFrom: memories.map(m => m.id),
+        mergedFrom: memories.map((m) => m.id),
         mergeDate: new Date().toISOString(),
         mergeStrategy: config.strategies[0] || 'merge',
         mergeMethod: this.llm ? 'llm_synthesis' : 'simple_concatenation'
@@ -457,21 +496,25 @@ Extract the general knowledge or pattern that can be applied beyond this specifi
     if (!this.llm) return this.synthesizeContentSimple(memories);
 
     try {
-      const contents = memories.map((m, i) => `${i + 1}. ${m.content}`).join('\n');
-      
+      const contents = memories
+        .map((m, i) => `${i + 1}. ${m.content}`)
+        .join('\n');
+
       const { object: result } = await this.llm.generateObject({
         schema: z.object({
           synthesizedContent: z.string(),
           reasoning: z.string().optional()
         }),
-        messages: [{
-          role: 'user',
-          content: `Synthesize these related memories into a single coherent summary that captures all key information:
+        messages: [
+          {
+            role: 'user',
+            content: `Synthesize these related memories into a single coherent summary that captures all key information:
 
 ${contents}
 
 Create a comprehensive summary that preserves all important details while eliminating redundancy.`
-        }],
+          }
+        ],
         temperature: 0.3
       });
 
@@ -491,13 +534,13 @@ Create a comprehensive summary that preserves all important details while elimin
    * Simple content synthesis fallback
    */
   private synthesizeContentSimple(memories: Memory[]): string {
-    const contents = memories.map(m => m.content);
+    const contents = memories.map((m) => m.content);
     const uniqueContents = Array.from(new Set(contents));
-    
+
     if (uniqueContents.length === 1) {
       return uniqueContents[0];
     }
-    
+
     return uniqueContents.join('. ');
   }
 
@@ -506,13 +549,13 @@ Create a comprehensive summary that preserves all important details while elimin
    */
   private mergeKeywords(memories: Memory[]): string[] {
     const allKeywords = new Set<string>();
-    
-    memories.forEach(memory => {
+
+    memories.forEach((memory) => {
       if (memory.keywords) {
-        memory.keywords.forEach(keyword => allKeywords.add(keyword));
+        memory.keywords.forEach((keyword) => allKeywords.add(keyword));
       }
     });
-    
+
     return Array.from(allKeywords).slice(0, 20); // Limit to 20 keywords
   }
 
@@ -521,9 +564,10 @@ Create a comprehensive summary that preserves all important details while elimin
    */
   private calculateMergeConfidence(memories: Memory[]): number {
     // Base confidence on number of memories and their importance
-    const avgImportance = memories.reduce((sum, m) => sum + m.importance, 0) / memories.length;
+    const avgImportance =
+      memories.reduce((sum, m) => sum + m.importance, 0) / memories.length;
     const countFactor = Math.min(1, memories.length / 5); // Boost for more memories
-    
+
     return Math.min(0.95, avgImportance * 0.7 + countFactor * 0.3);
   }
 
@@ -551,14 +595,14 @@ Create a comprehensive summary that preserves all important details while elimin
     if (!userId?.trim()) {
       throw new Error('userId is required for memory retrieval operations');
     }
-    
+
     // Use storage memory operations if available
     if (this.storage.memory?.getByType) {
-      return this.storage.memory.getByType(userId, agentId, 'episodic', { 
-        createdBefore: cutoffTime 
+      return this.storage.memory.getByType(userId, agentId, 'episodic', {
+        createdBefore: cutoffTime
       });
     }
-    
+
     // Fallback: return empty array (would need proper storage query implementation)
     logger.warn(
       LogCategory.STORAGE,
@@ -572,16 +616,19 @@ Create a comprehensive summary that preserves all important details while elimin
   /**
    * Get semantic memories for an agent
    */
-  private async getSemanticMemories(userId: string, agentId: string): Promise<Memory[]> {
+  private async getSemanticMemories(
+    userId: string,
+    agentId: string
+  ): Promise<Memory[]> {
     if (!userId?.trim()) {
       throw new Error('userId is required for memory retrieval operations');
     }
-    
+
     // Use storage memory operations if available
     if (this.storage.memory?.getByType) {
       return this.storage.memory.getByType(userId, agentId, 'semantic');
     }
-    
+
     // Fallback: return empty array (would need proper storage query implementation)
     logger.warn(
       LogCategory.STORAGE,
@@ -605,6 +652,4 @@ Create a comprehensive summary that preserves all important details while elimin
       }
     };
   }
-} 
- 
- 
+}

@@ -1,10 +1,10 @@
 /**
  * ProceduralMemory Tests - ACTUAL IMPLEMENTATION VALIDATION
- * 
+ *
  * Tests the REAL features that are implemented, not the OG vision.
  * The actual ProceduralMemory is much more sophisticated than originally planned:
  * - Advanced tool pattern learning and optimization
- * - Success rate tracking and adaptive learning  
+ * - Success rate tracking and adaptive learning
  * - Context-aware pattern matching and suggestions
  * - Pattern evolution with merging and categorization
  * - User isolation enforcement
@@ -12,9 +12,9 @@
  * - Configuration-driven behavior
  */
 
-import { ProceduralMemory, MemoryType } from '../../../types';
+import { MemoryType, ProceduralMemory } from '../../../types';
+import { createTestMemory, testConfig } from '../../config/test-config';
 import { MockStorageProvider } from '../../mocks/MockStorageProvider';
-import { testConfig, createTestMemory } from '../../config/test-config';
 
 describe('ProceduralMemory - Actual Implementation', () => {
   let storage: MockStorageProvider;
@@ -22,7 +22,10 @@ describe('ProceduralMemory - Actual Implementation', () => {
 
   beforeEach(() => {
     storage = new MockStorageProvider();
-    proceduralMemory = new ProceduralMemory(storage, testConfig.memory.procedural);
+    proceduralMemory = new ProceduralMemory(
+      storage,
+      testConfig.memory.procedural
+    );
   });
 
   afterEach(() => {
@@ -31,25 +34,37 @@ describe('ProceduralMemory - Actual Implementation', () => {
 
   describe('Configuration Requirements (NO DEFAULTS)', () => {
     test('requires storage with memory operations', () => {
-      const storageWithoutMemory = { 
-        get: jest.fn(), 
-        set: jest.fn() 
+      const storageWithoutMemory = {
+        get: jest.fn(),
+        set: jest.fn()
         // No memory operations
       } as any;
-      
-      expect(() => new ProceduralMemory(storageWithoutMemory, testConfig.memory.procedural))
-        .toThrow('Storage must support memory operations');
+
+      expect(
+        () =>
+          new ProceduralMemory(
+            storageWithoutMemory,
+            testConfig.memory.procedural
+          )
+      ).toThrow('Storage must support memory operations');
     });
 
     test('uses confidenceThreshold from configuration in learn method', async () => {
       // BUG TEST: ProceduralMemory should use config.confidenceThreshold, not hardcoded 0.8
       const userId = testConfig.users.alice;
       const agentId = testConfig.agents.shared;
-      
-      const result = await proceduralMemory.learn(userId, agentId, 'test trigger', 'test action');
-      
+
+      const result = await proceduralMemory.learn(
+        userId,
+        agentId,
+        'test trigger',
+        'test action'
+      );
+
       // Should use testConfig.memory.procedural.confidenceThreshold (0.7), not hardcoded 0.8
-      expect(result.confidence).toBe(testConfig.memory.procedural.confidenceThreshold);
+      expect(result.confidence).toBe(
+        testConfig.memory.procedural.confidenceThreshold
+      );
       expect(result.confidence).not.toBe(0.8); // Should NOT be hardcoded value
     });
 
@@ -68,18 +83,18 @@ describe('ProceduralMemory - Actual Implementation', () => {
         'Alice learned pattern: search -> analyze',
         { trigger: 'search', action: 'analyze' }
       );
-      
+
       const bobMemoryId = await proceduralMemory.store(
         testConfig.users.bob,
         testConfig.agents.shared,
         'Bob learned pattern: search -> summarize',
         { trigger: 'search', action: 'summarize' }
       );
-      
+
       expect(aliceMemoryId).toBeDefined();
       expect(bobMemoryId).toBeDefined();
       expect(aliceMemoryId).not.toBe(bobMemoryId);
-      
+
       // Verify stored under correct users
       expect(storage.getUserMemoryCount(testConfig.users.alice)).toBe(1);
       expect(storage.getUserMemoryCount(testConfig.users.bob)).toBe(1);
@@ -88,19 +103,19 @@ describe('ProceduralMemory - Actual Implementation', () => {
     test('enforces user isolation on learn operations', async () => {
       // Different users learning same pattern should be isolated
       const aliceResult = await proceduralMemory.learn(
-        testConfig.users.alice, 
-        testConfig.agents.shared, 
-        'analysis request', 
+        testConfig.users.alice,
+        testConfig.agents.shared,
+        'analysis request',
         'run analysis tool'
       );
-      
+
       const bobResult = await proceduralMemory.learn(
-        testConfig.users.bob, 
-        testConfig.agents.shared, 
-        'analysis request', 
+        testConfig.users.bob,
+        testConfig.agents.shared,
+        'analysis request',
         'use different analysis'
       );
-      
+
       expect(aliceResult.patternId).toBeDefined();
       expect(bobResult.patternId).toBeDefined();
       expect(aliceResult.patternId).not.toBe(bobResult.patternId);
@@ -108,38 +123,43 @@ describe('ProceduralMemory - Actual Implementation', () => {
 
     test('requires userId for ALL operations', async () => {
       const agentId = testConfig.agents.shared;
-      
-      await expect(proceduralMemory.store('', agentId, 'content'))
-        .rejects.toThrow('userId is required for procedural memory operations');
-      
-      await expect(proceduralMemory.learn('', agentId, 'trigger', 'action'))
-        .rejects.toThrow('userId is required for procedural memory operations');
-      
-      await expect(proceduralMemory.getRecommendedActions('', agentId, 'trigger'))
-        .rejects.toThrow('userId is required for procedural memory operations');
-      
-      await expect(proceduralMemory.getStats(''))
-        .rejects.toThrow('userId is required for procedural memory operations');
-      
-      await expect(proceduralMemory.getById('', 'memoryId'))
-        .rejects.toThrow('userId is required for procedural memory operations');
+
+      await expect(
+        proceduralMemory.store('', agentId, 'content')
+      ).rejects.toThrow('userId is required for procedural memory operations');
+
+      await expect(
+        proceduralMemory.learn('', agentId, 'trigger', 'action')
+      ).rejects.toThrow('userId is required for procedural memory operations');
+
+      await expect(
+        proceduralMemory.getRecommendedActions('', agentId, 'trigger')
+      ).rejects.toThrow('userId is required for procedural memory operations');
+
+      await expect(proceduralMemory.getStats('')).rejects.toThrow(
+        'userId is required for procedural memory operations'
+      );
+
+      await expect(proceduralMemory.getById('', 'memoryId')).rejects.toThrow(
+        'userId is required for procedural memory operations'
+      );
     });
   });
 
   describe('Storage Delegation - Core Architecture', () => {
     test('delegates store operations to storage layer', async () => {
       const storeSpy = jest.spyOn(storage.memory, 'store');
-      
+
       const userId = testConfig.users.alice;
       const agentId = testConfig.agents.shared;
       const content = 'Tool pattern: git status -> git add -> git commit';
-      
+
       await proceduralMemory.store(userId, agentId, content, {
         trigger: 'code changes',
         action: 'git workflow',
         success: true
       });
-      
+
       expect(storeSpy).toHaveBeenCalledWith(
         userId,
         agentId,
@@ -158,33 +178,36 @@ describe('ProceduralMemory - Actual Implementation', () => {
 
     test('delegates recall operations to storage layer in getRecommendedActions', async () => {
       const recallSpy = jest.spyOn(storage.memory, 'recall');
-      
+
       const userId = testConfig.users.alice;
       const agentId = testConfig.agents.shared;
-      
-      await proceduralMemory.getRecommendedActions(userId, agentId, 'test trigger');
-      
-      expect(recallSpy).toHaveBeenCalledWith(
+
+      await proceduralMemory.getRecommendedActions(
         userId,
         agentId,
-        'test trigger',
-        {
-          type: MemoryType.PROCEDURAL,
-          limit: 5
-        }
+        'test trigger'
       );
+
+      expect(recallSpy).toHaveBeenCalledWith(userId, agentId, 'test trigger', {
+        type: MemoryType.PROCEDURAL,
+        limit: 5
+      });
     });
 
     test('delegates getById operations to storage layer', async () => {
       const getByIdSpy = jest.spyOn(storage.memory, 'getById');
-      
+
       // First store a memory
       const userId = testConfig.users.alice;
-      const memoryId = await proceduralMemory.store(userId, testConfig.agents.shared, 'Test procedural pattern');
-      
+      const memoryId = await proceduralMemory.store(
+        userId,
+        testConfig.agents.shared,
+        'Test procedural pattern'
+      );
+
       // Then retrieve it
       await proceduralMemory.getById(userId, memoryId);
-      
+
       expect(getByIdSpy).toHaveBeenCalledWith(userId, memoryId);
     });
   });
@@ -194,16 +217,16 @@ describe('ProceduralMemory - Actual Implementation', () => {
       const userId = testConfig.users.alice;
       const agentId = testConfig.agents.shared;
       const content = 'Code review workflow';
-      
+
       const memoryId = await proceduralMemory.store(userId, agentId, content, {
         trigger: 'pull request created',
         action: 'run automated checks',
         outcome: 'review suggestions generated',
         success: true
       });
-      
+
       const stored = await storage.memory.getById!(userId, memoryId);
-      
+
       expect(stored).toMatchObject({
         id: memoryId,
         userId,
@@ -224,16 +247,21 @@ describe('ProceduralMemory - Actual Implementation', () => {
     test('learn method creates pattern and returns learning result', async () => {
       const userId = testConfig.users.alice;
       const agentId = testConfig.agents.shared;
-      
-      const result = await proceduralMemory.learn(userId, agentId, 'user asks question', 'search knowledge base');
-      
+
+      const result = await proceduralMemory.learn(
+        userId,
+        agentId,
+        'user asks question',
+        'search knowledge base'
+      );
+
       expect(result).toMatchObject({
         patternId: expect.any(String),
         learned: true,
         confidence: expect.any(Number),
         reason: 'Pattern learned successfully'
       });
-      
+
       // Should have stored the pattern
       expect(storage.getUserMemoryCount(userId)).toBe(1);
     });
@@ -241,16 +269,25 @@ describe('ProceduralMemory - Actual Implementation', () => {
     test('getRecommendedActions returns pattern recommendations', async () => {
       const userId = testConfig.users.alice;
       const agentId = testConfig.agents.shared;
-      
+
       // First store a pattern
-      await proceduralMemory.store(userId, agentId, 'debugging -> check logs -> identify issue', {
-        trigger: 'error reported',
-        action: 'debugging workflow'
-      });
-      
+      await proceduralMemory.store(
+        userId,
+        agentId,
+        'debugging -> check logs -> identify issue',
+        {
+          trigger: 'error reported',
+          action: 'debugging workflow'
+        }
+      );
+
       // Get recommendations
-      const recommendations = await proceduralMemory.getRecommendedActions(userId, agentId, 'error');
-      
+      const recommendations = await proceduralMemory.getRecommendedActions(
+        userId,
+        agentId,
+        'error'
+      );
+
       expect(Array.isArray(recommendations)).toBe(true);
       if (recommendations.length > 0) {
         expect(recommendations[0]).toHaveProperty('pattern');
@@ -264,15 +301,20 @@ describe('ProceduralMemory - Actual Implementation', () => {
     test('handles trigger and action metadata correctly', async () => {
       const userId = testConfig.users.alice;
       const agentId = testConfig.agents.shared;
-      
-      const memoryId = await proceduralMemory.store(userId, agentId, 'Custom workflow pattern', {
-        trigger: 'specific business event',
-        action: 'execute workflow steps',
-        outcome: 'business process completed'
-      });
-      
+
+      const memoryId = await proceduralMemory.store(
+        userId,
+        agentId,
+        'Custom workflow pattern',
+        {
+          trigger: 'specific business event',
+          action: 'execute workflow steps',
+          outcome: 'business process completed'
+        }
+      );
+
       const stored = await storage.memory.getById!(userId, memoryId);
-      
+
       expect(stored?.metadata?.trigger).toBe('specific business event');
       expect(stored?.metadata?.action).toBe('execute workflow steps');
       expect(stored?.metadata?.outcome).toBe('business process completed');
@@ -282,9 +324,9 @@ describe('ProceduralMemory - Actual Implementation', () => {
       const userId = testConfig.users.alice;
       const agentId = testConfig.agents.shared;
       const content = 'Default trigger pattern';
-      
+
       const memoryId = await proceduralMemory.store(userId, agentId, content);
-      
+
       const stored = await storage.memory.getById!(userId, memoryId);
       expect(stored?.metadata?.trigger).toBe(content); // Should default to content
       expect(stored?.metadata?.action).toBe('unknown'); // Default action
@@ -295,15 +337,20 @@ describe('ProceduralMemory - Actual Implementation', () => {
     test('properly maps storage data to ProceduralMemoryData on getById', async () => {
       const userId = testConfig.users.alice;
       const agentId = testConfig.agents.shared;
-      
-      const memoryId = await proceduralMemory.store(userId, agentId, 'test trigger -> test action', {
-        trigger: 'test trigger',
-        action: 'test action',
-        outcome: 'test outcome'
-      });
-      
+
+      const memoryId = await proceduralMemory.store(
+        userId,
+        agentId,
+        'test trigger -> test action',
+        {
+          trigger: 'test trigger',
+          action: 'test action',
+          outcome: 'test outcome'
+        }
+      );
+
       const retrieved = await proceduralMemory.getById(userId, memoryId);
-      
+
       expect(retrieved).toMatchObject({
         id: memoryId,
         agentId,
@@ -329,7 +376,7 @@ describe('ProceduralMemory - Actual Implementation', () => {
 
     test('extracts trigger and action from content when metadata missing', async () => {
       const userId = testConfig.users.alice;
-      
+
       // Manually store a memory with content in "trigger -> action" format
       const memoryWithContent = createTestMemory({
         userId,
@@ -337,11 +384,18 @@ describe('ProceduralMemory - Actual Implementation', () => {
         content: 'code error -> run debugger',
         metadata: {} // No trigger/action in metadata
       });
-      
-      await storage.memory.store(userId, testConfig.agents.shared, memoryWithContent);
-      
-      const retrieved = await proceduralMemory.getById(userId, memoryWithContent.id);
-      
+
+      await storage.memory.store(
+        userId,
+        testConfig.agents.shared,
+        memoryWithContent
+      );
+
+      const retrieved = await proceduralMemory.getById(
+        userId,
+        memoryWithContent.id
+      );
+
       expect(retrieved).not.toBeNull();
       expect(retrieved?.trigger).toBe('code error'); // Extracted from content
       expect(retrieved?.action).toBe('run debugger'); // Extracted from content
@@ -349,7 +403,7 @@ describe('ProceduralMemory - Actual Implementation', () => {
 
     test('handles missing metadata gracefully with defaults', async () => {
       const userId = testConfig.users.alice;
-      
+
       // Manually store a memory with minimal metadata
       const minimalMemory = createTestMemory({
         userId,
@@ -357,11 +411,18 @@ describe('ProceduralMemory - Actual Implementation', () => {
         content: 'minimal pattern',
         metadata: {} // Minimal metadata
       });
-      
-      await storage.memory.store(userId, testConfig.agents.shared, minimalMemory);
-      
-      const retrieved = await proceduralMemory.getById(userId, minimalMemory.id);
-      
+
+      await storage.memory.store(
+        userId,
+        testConfig.agents.shared,
+        minimalMemory
+      );
+
+      const retrieved = await proceduralMemory.getById(
+        userId,
+        minimalMemory.id
+      );
+
       expect(retrieved).not.toBeNull();
       expect(retrieved?.confidence).toBe(0.5); // Default confidence
       expect(retrieved?.successCount).toBe(1); // Default
@@ -371,7 +432,10 @@ describe('ProceduralMemory - Actual Implementation', () => {
     });
 
     test('returns null for non-existent memory', async () => {
-      const result = await proceduralMemory.getById(testConfig.users.alice, 'non-existent-id');
+      const result = await proceduralMemory.getById(
+        testConfig.users.alice,
+        'non-existent-id'
+      );
       expect(result).toBeNull();
     });
   });
@@ -380,13 +444,17 @@ describe('ProceduralMemory - Actual Implementation', () => {
     test('returns procedural memory stats through storage', async () => {
       const userId = testConfig.users.alice;
       const agentId = testConfig.agents.shared;
-      
+
       // Store some procedural memories
-      await proceduralMemory.store(userId, agentId, 'Pattern 1', { trigger: 'test1' });
-      await proceduralMemory.store(userId, agentId, 'Pattern 2', { trigger: 'test2' });
-      
+      await proceduralMemory.store(userId, agentId, 'Pattern 1', {
+        trigger: 'test1'
+      });
+      await proceduralMemory.store(userId, agentId, 'Pattern 2', {
+        trigger: 'test2'
+      });
+
       const stats = await proceduralMemory.getStats(userId, agentId);
-      
+
       expect(stats).toMatchObject({
         totalPatterns: expect.any(Number),
         patternsByCategory: expect.any(Object),
@@ -402,13 +470,17 @@ describe('ProceduralMemory - Actual Implementation', () => {
     test('inherits automatic connection discovery from BaseMemoryType', async () => {
       // The actual test for connection discovery is in zettelkasten-e2e.test.ts
       // This test just verifies the integration is set up correctly
-      
+
       const userId = testConfig.users.alice;
       const agentId = testConfig.agents.shared;
-      
+
       // Should use BaseMemoryType.store() which triggers connection discovery
-      const memoryId = await proceduralMemory.store(userId, agentId, 'Procedural pattern for connection test');
-      
+      const memoryId = await proceduralMemory.store(
+        userId,
+        agentId,
+        'Procedural pattern for connection test'
+      );
+
       expect(memoryId).toBeDefined();
       expect(typeof memoryId).toBe('string');
     });
@@ -417,10 +489,17 @@ describe('ProceduralMemory - Actual Implementation', () => {
   describe('Error Handling', () => {
     test('handles storage errors gracefully', async () => {
       // Mock storage to throw error
-      jest.spyOn(storage.memory, 'store').mockRejectedValueOnce(new Error('Storage failure'));
-      
-      await expect(proceduralMemory.store(testConfig.users.alice, testConfig.agents.shared, 'Test'))
-        .rejects.toThrow('Storage failure');
+      jest
+        .spyOn(storage.memory, 'store')
+        .mockRejectedValueOnce(new Error('Storage failure'));
+
+      await expect(
+        proceduralMemory.store(
+          testConfig.users.alice,
+          testConfig.agents.shared,
+          'Test'
+        )
+      ).rejects.toThrow('Storage failure');
     });
 
     test('handles storage without getById method', async () => {
@@ -432,10 +511,16 @@ describe('ProceduralMemory - Actual Implementation', () => {
           getById: undefined
         }
       } as any;
-      
-      const limitedProceduralMemory = new ProceduralMemory(limitedStorage, testConfig.memory.procedural);
-      
-      const result = await limitedProceduralMemory.getById(testConfig.users.alice, 'any-id');
+
+      const limitedProceduralMemory = new ProceduralMemory(
+        limitedStorage,
+        testConfig.memory.procedural
+      );
+
+      const result = await limitedProceduralMemory.getById(
+        testConfig.users.alice,
+        'any-id'
+      );
       expect(result).toBeNull();
     });
   });
@@ -444,20 +529,28 @@ describe('ProceduralMemory - Actual Implementation', () => {
     test('respects adaptiveLearning configuration', () => {
       // Adaptive learning should be configurable
       expect(testConfig.memory.procedural.adaptiveLearning).toBeDefined();
-      expect(typeof testConfig.memory.procedural.adaptiveLearning).toBe('boolean');
+      expect(typeof testConfig.memory.procedural.adaptiveLearning).toBe(
+        'boolean'
+      );
     });
 
     test('respects patternMerging configuration', () => {
       // Pattern merging should be configurable
       expect(testConfig.memory.procedural.patternMerging).toBeDefined();
-      expect(typeof testConfig.memory.procedural.patternMerging).toBe('boolean');
+      expect(typeof testConfig.memory.procedural.patternMerging).toBe(
+        'boolean'
+      );
     });
 
     test('respects maxPatternsPerCategory configuration', () => {
       // Should enforce limits on patterns per category
       expect(testConfig.memory.procedural.maxPatternsPerCategory).toBeDefined();
-      expect(typeof testConfig.memory.procedural.maxPatternsPerCategory).toBe('number');
-      expect(testConfig.memory.procedural.maxPatternsPerCategory).toBeGreaterThan(0);
+      expect(typeof testConfig.memory.procedural.maxPatternsPerCategory).toBe(
+        'number'
+      );
+      expect(
+        testConfig.memory.procedural.maxPatternsPerCategory
+      ).toBeGreaterThan(0);
     });
   });
-}); 
+});

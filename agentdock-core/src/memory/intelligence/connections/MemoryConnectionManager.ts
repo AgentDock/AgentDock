@@ -1,30 +1,41 @@
 /**
  * @fileoverview MemoryConnectionManager - Language-agnostic memory connection discovery
- * 
+ *
  * Uses progressive enhancement: embeddings (free) -> user rules (free) -> LLM (configurable)
  * Following AgentDock's proven batch processing cost optimization patterns.
- * 
+ *
  * @author AgentDock Core Team
  */
 
+import { openai } from '@ai-sdk/openai';
 import { z } from 'zod';
-import { LogCategory, logger } from '../../../logging';
-import { generateId } from '../../../storage/utils';
+
 import { CoreLLM } from '../../../llm/core-llm';
 import { createLLM } from '../../../llm/create-llm';
+import { LogCategory, logger } from '../../../logging';
+import { generateId } from '../../../storage/utils';
 import { Memory } from '../../types/common';
-import { 
-  MemoryConnection, 
-  ConnectionType, 
-  IntelligenceLayerConfig,
-  ConnectionRule 
-} from '../types';
 import { EmbeddingService } from '../embeddings/EmbeddingService';
-import { openai } from '@ai-sdk/openai';
+import {
+  ConnectionRule,
+  ConnectionType,
+  IntelligenceLayerConfig,
+  MemoryConnection
+} from '../types';
 
 // Zod schema for LLM response validation
 const ConnectionAnalysisSchema = z.object({
-  connectionType: z.enum(['similar', 'causal', 'temporal', 'references', 'contradicts', 'extends', 'derived', 'corrects', 'updates']),
+  connectionType: z.enum([
+    'similar',
+    'causal',
+    'temporal',
+    'references',
+    'contradicts',
+    'extends',
+    'derived',
+    'corrects',
+    'updates'
+  ]),
   confidence: z.number().min(0).max(1),
   reasoning: z.string().optional()
 });
@@ -35,14 +46,17 @@ type ConnectionAnalysis = z.infer<typeof ConnectionAnalysisSchema>;
  * Cost tracker interface - following batch processing pattern
  */
 interface CostTracker {
-  trackExtraction(agentId: string, data: {
-    extractorType: string;
-    cost: number;
-    memoriesExtracted: number;
-    messagesProcessed: number;
-    metadata: Record<string, any>;
-  }): Promise<void>;
-  
+  trackExtraction(
+    agentId: string,
+    data: {
+      extractorType: string;
+      cost: number;
+      memoriesExtracted: number;
+      messagesProcessed: number;
+      metadata: Record<string, any>;
+    }
+  ): Promise<void>;
+
   checkBudget(agentId: string, monthlyBudget: number): Promise<boolean>;
 }
 
@@ -53,24 +67,30 @@ export class MemoryConnectionManager {
   private llm?: CoreLLM;
   private costTracker: CostTracker;
   private embeddingService: EmbeddingService;
-  
+
   constructor(
     private storage: any,
     private config: IntelligenceLayerConfig,
     costTracker?: CostTracker
   ) {
     // Only create LLM if enhancement is enabled and required fields are provided
-    if (config.connectionDetection.llmEnhancement?.enabled && 
-        config.connectionDetection.llmEnhancement.provider && 
-        config.connectionDetection.llmEnhancement.model) {
+    if (
+      config.connectionDetection.llmEnhancement?.enabled &&
+      config.connectionDetection.llmEnhancement.provider &&
+      config.connectionDetection.llmEnhancement.model
+    ) {
       this.llm = createLLM({
         provider: config.connectionDetection.llmEnhancement.provider as any,
         model: config.connectionDetection.llmEnhancement.model,
-        apiKey: config.connectionDetection.llmEnhancement.apiKey || 
-                process.env[`${config.connectionDetection.llmEnhancement.provider.toUpperCase()}_API_KEY`] || ''
+        apiKey:
+          config.connectionDetection.llmEnhancement.apiKey ||
+          process.env[
+            `${config.connectionDetection.llmEnhancement.provider.toUpperCase()}_API_KEY`
+          ] ||
+          ''
       });
     }
-    
+
     // Initialize embedding service with OpenAI model
     const embeddingModel = openai.embedding('text-embedding-3-small');
     const embeddingConfig = {
@@ -80,11 +100,14 @@ export class MemoryConnectionManager {
       cacheEnabled: true,
       batchSize: 100
     };
-    this.embeddingService = new EmbeddingService(embeddingModel, embeddingConfig);
-    
+    this.embeddingService = new EmbeddingService(
+      embeddingModel,
+      embeddingConfig
+    );
+
     // Use provided cost tracker or create mock
     this.costTracker = costTracker || this.createMockCostTracker();
-    
+
     logger.debug(
       LogCategory.STORAGE,
       'MemoryConnectionManager',
@@ -102,13 +125,13 @@ export class MemoryConnectionManager {
    */
   async discoverConnections(
     userId: string,
-    agentId: string, 
+    agentId: string,
     newMemory: Memory
   ): Promise<MemoryConnection[]> {
     if (!userId?.trim()) {
       throw new Error('userId is required for connection discovery operations');
     }
-    
+
     try {
       logger.debug(
         LogCategory.STORAGE,
@@ -125,43 +148,58 @@ export class MemoryConnectionManager {
       // Get recent memories for comparison
       const recentMemories = await this.getRecentMemories(userId, agentId, 50);
       const connections: MemoryConnection[] = [];
-      
+
       // Generate embedding for new memory (always done - base layer)
       const newEmbedding = await this.generateEmbedding(newMemory.content);
-      
+
       for (const existingMemory of recentMemories) {
         if (existingMemory.id === newMemory.id) continue;
-        
+
         // Level 1: Embedding similarity (always calculated)
-        const existingEmbedding = await this.generateEmbedding(existingMemory.content);
-        const similarity = this.calculateCosineSimilarity(newEmbedding, existingEmbedding);
-        
+        const existingEmbedding = await this.generateEmbedding(
+          existingMemory.content
+        );
+        const similarity = this.calculateCosineSimilarity(
+          newEmbedding,
+          existingEmbedding
+        );
+
         if (similarity < this.config.embedding.similarityThreshold) {
           continue; // Skip if below base threshold
         }
-        
+
         // Level 2: Progressive enhancement to determine connection type
         const connectionAnalysis = await this.analyzeConnectionType(
           newMemory,
           existingMemory,
           similarity
         );
-        
-        if (connectionAnalysis.connectionType !== 'similar' || similarity > this.config.embedding.similarityThreshold) {
+
+        if (
+          connectionAnalysis.connectionType !== 'similar' ||
+          similarity > this.config.embedding.similarityThreshold
+        ) {
           connections.push({
             id: generateId(),
             sourceId: newMemory.id,
             targetId: existingMemory.id,
             type: connectionAnalysis.connectionType,
             strength: Math.max(similarity, connectionAnalysis.confidence),
-            reason: connectionAnalysis.reasoning || 'Similarity-based connection',
+            reason:
+              connectionAnalysis.reasoning || 'Similarity-based connection',
             createdAt: Date.now(),
-            method: this.config.connectionDetection.method as 'embedding' | 'user-rules' | 'small-llm' | 'hybrid',
+            method: this.config.connectionDetection.method as
+              | 'embedding'
+              | 'user-rules'
+              | 'small-llm'
+              | 'hybrid',
             metadata: {
               confidence: connectionAnalysis.confidence,
               algorithm: 'progressive_enhancement',
               embeddingSimilarity: similarity,
-              llmUsed: this.config.connectionDetection.llmEnhancement?.enabled && similarity < 0.9
+              llmUsed:
+                this.config.connectionDetection.llmEnhancement?.enabled &&
+                similarity < 0.9
             }
           });
         }
@@ -212,7 +250,10 @@ export class MemoryConnectionManager {
     embeddingSimilarity: number
   ): Promise<ConnectionAnalysis> {
     // Optimization: Skip expensive analysis for very similar content
-    if (this.config.costControl.preferEmbeddingWhenSimilar && embeddingSimilarity > 0.9) {
+    if (
+      this.config.costControl.preferEmbeddingWhenSimilar &&
+      embeddingSimilarity > 0.9
+    ) {
       return {
         connectionType: 'similar',
         confidence: embeddingSimilarity,
@@ -234,7 +275,7 @@ export class MemoryConnectionManager {
         memory1.agentId,
         this.config.costControl.monthlyBudget || Infinity
       );
-      
+
       if (withinBudget) {
         const llmResult = await this.analyzeConnectionTypeLLM(memory1, memory2);
         if (llmResult) {
@@ -244,24 +285,31 @@ export class MemoryConnectionManager {
     }
 
     // Level 3: Fallback to embedding-based heuristics
-    return this.analyzeConnectionTypeByEmbedding(memory1, memory2, embeddingSimilarity);
+    return this.analyzeConnectionTypeByEmbedding(
+      memory1,
+      memory2,
+      embeddingSimilarity
+    );
   }
 
   /**
    * Apply user-defined rules (language-agnostic, user-configurable)
    */
-  private applyUserRules(memory1: Memory, memory2: Memory): ConnectionAnalysis | null {
+  private applyUserRules(
+    memory1: Memory,
+    memory2: Memory
+  ): ConnectionAnalysis | null {
     const rules = this.config.connectionDetection.userRules?.patterns || [];
-    
+
     for (const rule of rules) {
       if (!rule.enabled) continue;
-      
+
       const content1 = memory1.content.toLowerCase();
       const content2 = memory2.content.toLowerCase();
-      
+
       // Simple pattern matching - user configures for their language
       const regex = new RegExp(rule.pattern, rule.caseSensitive ? 'g' : 'gi');
-      
+
       if (regex.test(content1) && regex.test(content2)) {
         return {
           connectionType: rule.connectionType,
@@ -270,7 +318,7 @@ export class MemoryConnectionManager {
         };
       }
     }
-    
+
     return null;
   }
 
@@ -282,15 +330,16 @@ export class MemoryConnectionManager {
     memory2: Memory
   ): Promise<ConnectionAnalysis | null> {
     if (!this.llm) return null;
-    
+
     const startTime = Date.now();
-    
+
     try {
       const { object: result, usage } = await this.llm.generateObject({
         schema: ConnectionAnalysisSchema,
-        messages: [{
-          role: 'user',
-          content: `Analyze the relationship between these two pieces of information:
+        messages: [
+          {
+            role: 'user',
+            content: `Analyze the relationship between these two pieces of information:
 
 Memory 1: "${memory1.content}"
 Memory 2: "${memory2.content}"
@@ -307,8 +356,10 @@ Determine the connection type:
 - updates: One updates the other
 
 Provide confidence score (0-1) and brief reasoning.`
-        }],
-                 temperature: this.config.connectionDetection.llmEnhancement!.temperature || 0.2
+          }
+        ],
+        temperature:
+          this.config.connectionDetection.llmEnhancement!.temperature || 0.2
       });
 
       // Track costs using configured pricing (following batch processing pattern)
@@ -331,7 +382,6 @@ Provide confidence score (0-1) and brief reasoning.`
       // Refer to AgentDock observability documentation when available
 
       return result;
-      
     } catch (error) {
       logger.warn(
         LogCategory.STORAGE,
@@ -356,16 +406,17 @@ Provide confidence score (0-1) and brief reasoning.`
     // Time-based analysis (language-agnostic)
     const timeDiff = memory2.createdAt - memory1.createdAt;
     const hoursDiff = timeDiff / (1000 * 60 * 60);
-    
+
     // Heuristics based on timing and similarity
     if (similarity > 0.85 && Math.abs(hoursDiff) < 24) {
       return {
         connectionType: 'updates',
         confidence: similarity * 0.8,
-        reasoning: 'High similarity and temporal proximity suggest update relationship'
+        reasoning:
+          'High similarity and temporal proximity suggest update relationship'
       };
     }
-    
+
     if (similarity > 0.75 && hoursDiff > 0 && hoursDiff < 1) {
       return {
         connectionType: 'temporal',
@@ -373,7 +424,7 @@ Provide confidence score (0-1) and brief reasoning.`
         reasoning: 'Temporal sequence with good similarity'
       };
     }
-    
+
     // Default to similar
     return {
       connectionType: 'similar',
@@ -425,20 +476,20 @@ Provide confidence score (0-1) and brief reasoning.`
    */
   private calculateCost(usage?: any): number {
     if (!usage) return 0;
-    
+
     const config = this.config.connectionDetection.llmEnhancement!;
-    
+
     // Option 1: Cost per token (user configures based on their provider)
     if (config.costPerToken) {
       const totalTokens = usage.totalTokens || 0;
       return totalTokens * config.costPerToken;
     }
-    
+
     // Option 2: Flat rate per operation
     if (config.costPerOperation) {
       return config.costPerOperation;
     }
-    
+
     // Fallback: zero cost (user should configure)
     logger.warn(
       LogCategory.STORAGE,
@@ -461,36 +512,40 @@ Provide confidence score (0-1) and brief reasoning.`
    */
   private calculateCosineSimilarity(vec1: number[], vec2: number[]): number {
     if (vec1.length !== vec2.length) return 0;
-    
+
     let dotProduct = 0;
     let norm1 = 0;
     let norm2 = 0;
-    
+
     for (let i = 0; i < vec1.length; i++) {
       dotProduct += vec1[i] * vec2[i];
       norm1 += vec1[i] * vec1[i];
       norm2 += vec2[i] * vec2[i];
     }
-    
+
     if (norm1 === 0 || norm2 === 0) return 0;
-    
+
     return dotProduct / (Math.sqrt(norm1) * Math.sqrt(norm2));
   }
 
   /**
    * Get recent memories for comparison
    */
-  private async getRecentMemories(userId: string, agentId: string, limit: number): Promise<Memory[]> {
+  private async getRecentMemories(
+    userId: string,
+    agentId: string,
+    limit: number
+  ): Promise<Memory[]> {
     if (!userId?.trim()) {
       throw new Error('userId is required for memory retrieval operations');
     }
-    
+
     // Use storage memory operations if available
     if (this.storage.memory?.recall) {
       try {
-        const memories = await this.storage.memory.recall(userId, agentId, "", { 
+        const memories = await this.storage.memory.recall(userId, agentId, '', {
           limit,
-          includeMetadata: true 
+          includeMetadata: true
         });
         return memories;
       } catch (error) {
@@ -498,7 +553,7 @@ Provide confidence score (0-1) and brief reasoning.`
           LogCategory.STORAGE,
           'MemoryConnectionManager',
           'Memory recall failed, returning empty array',
-          { 
+          {
             error: error instanceof Error ? error.message : String(error),
             userId: userId.substring(0, 8),
             agentId: agentId.substring(0, 8)
@@ -507,7 +562,7 @@ Provide confidence score (0-1) and brief reasoning.`
         return [];
       }
     }
-    
+
     // Fallback if storage doesn't support recall
     return [];
   }
@@ -525,4 +580,4 @@ Provide confidence score (0-1) and brief reasoning.`
       }
     };
   }
-} 
+}

@@ -1,15 +1,15 @@
 /**
  * @fileoverview ConnectionGraph - Memory connection graph management
- * 
+ *
  * Manages a graph of memory connections with efficient traversal and analysis.
  * Language-agnostic graph operations focusing on relationships, not content.
- * 
+ *
  * @author AgentDock Core Team
  */
 
 import { LogCategory, logger } from '../../../logging';
 import { Memory } from '../../types/common';
-import { MemoryConnection, ConnectionType } from '../types';
+import { ConnectionType, MemoryConnection } from '../types';
 
 /**
  * Graph configuration for traversal and analysis
@@ -39,16 +39,14 @@ export class ConnectionGraph {
   private nodes: Map<string, Memory>;
   private edges: Map<string, MemoryConnection[]>;
   private incomingEdges: Map<string, MemoryConnection[]>;
-  
+
   private defaultConfig: GraphConfig = {
     maxDepth: 5,
     maxConnections: 50,
     strengthThreshold: 0.3
   };
 
-  constructor(
-    private config: Partial<GraphConfig> = {}
-  ) {
+  constructor(private config: Partial<GraphConfig> = {}) {
     this.nodes = new Map();
     this.edges = new Map();
     this.incomingEdges = new Map();
@@ -67,24 +65,19 @@ export class ConnectionGraph {
    */
   addNode(memory: Memory): void {
     this.nodes.set(memory.id, memory);
-    
+
     if (!this.edges.has(memory.id)) {
       this.edges.set(memory.id, []);
     }
-    
+
     if (!this.incomingEdges.has(memory.id)) {
       this.incomingEdges.set(memory.id, []);
     }
 
-    logger.debug(
-      LogCategory.STORAGE,
-      'ConnectionGraph',
-      'Added memory node',
-      {
-        memoryId: memory.id,
-        nodeCount: this.nodes.size
-      }
-    );
+    logger.debug(LogCategory.STORAGE, 'ConnectionGraph', 'Added memory node', {
+      memoryId: memory.id,
+      nodeCount: this.nodes.size
+    });
   }
 
   /**
@@ -92,7 +85,10 @@ export class ConnectionGraph {
    */
   addEdge(connection: MemoryConnection): void {
     // Validate nodes exist
-    if (!this.nodes.has(connection.sourceId) || !this.nodes.has(connection.targetId)) {
+    if (
+      !this.nodes.has(connection.sourceId) ||
+      !this.nodes.has(connection.targetId)
+    ) {
       logger.warn(
         LogCategory.STORAGE,
         'ConnectionGraph',
@@ -148,17 +144,19 @@ export class ConnectionGraph {
     }
 
     const visited = new Set<string>();
-    const queue: { id: string; path: string[] }[] = [{ id: sourceId, path: [sourceId] }];
-    
+    const queue: { id: string; path: string[] }[] = [
+      { id: sourceId, path: [sourceId] }
+    ];
+
     while (queue.length > 0) {
       const current = queue.shift()!;
-      
+
       if (visited.has(current.id)) {
         continue;
       }
-      
+
       visited.add(current.id);
-      
+
       // Check if we've reached max depth
       if (current.path.length >= this.config.maxDepth!) {
         continue;
@@ -166,12 +164,12 @@ export class ConnectionGraph {
 
       // Get neighbors
       const neighbors = this.getDirectNeighbors(current.id);
-      
+
       for (const neighbor of neighbors) {
         if (neighbor.targetId === targetId) {
           return [...current.path, targetId];
         }
-        
+
         if (!visited.has(neighbor.targetId)) {
           queue.push({
             id: neighbor.targetId,
@@ -190,13 +188,13 @@ export class ConnectionGraph {
   getNeighbors(memoryId: string, type?: ConnectionType): MemoryConnection[] {
     const outgoing = this.edges.get(memoryId) || [];
     const incoming = this.incomingEdges.get(memoryId) || [];
-    
+
     let allConnections = [...outgoing, ...incoming];
-    
+
     if (type) {
-      allConnections = allConnections.filter(conn => conn.type === type);
+      allConnections = allConnections.filter((conn) => conn.type === type);
     }
-    
+
     // Sort by strength descending
     return allConnections
       .sort((a, b) => b.strength - a.strength)
@@ -220,7 +218,8 @@ export class ConnectionGraph {
     for (const nodeId of Array.from(this.nodes.keys())) {
       if (!visited.has(nodeId)) {
         const cluster = this.dfsCluster(nodeId, visited);
-        if (cluster.length > 1) { // Only return clusters with multiple nodes
+        if (cluster.length > 1) {
+          // Only return clusters with multiple nodes
           clusters.push(cluster);
         }
       }
@@ -239,14 +238,14 @@ export class ConnectionGraph {
 
     while (stack.length > 0) {
       const currentId = stack.pop()!;
-      
+
       if (visited.has(currentId)) {
         continue;
       }
-      
+
       visited.add(currentId);
       cluster.push(currentId);
-      
+
       // Add all connected neighbors to stack
       const neighbors = this.getDirectNeighbors(currentId);
       for (const neighbor of neighbors) {
@@ -254,7 +253,7 @@ export class ConnectionGraph {
           stack.push(neighbor.targetId);
         }
       }
-      
+
       // Also check incoming connections
       const incoming = this.incomingEdges.get(currentId) || [];
       for (const connection of incoming) {
@@ -270,14 +269,16 @@ export class ConnectionGraph {
   /**
    * Find the most central memories in the graph
    */
-  findCentralMemories(limit: number = 10): Array<{ memoryId: string; centrality: number }> {
+  findCentralMemories(
+    limit: number = 10
+  ): Array<{ memoryId: string; centrality: number }> {
     const centralities: Array<{ memoryId: string; centrality: number }> = [];
-    
+
     for (const nodeId of Array.from(this.nodes.keys())) {
       const centrality = this.calculateCentrality(nodeId);
       centralities.push({ memoryId: nodeId, centrality });
     }
-    
+
     return centralities
       .sort((a, b) => b.centrality - a.centrality)
       .slice(0, limit);
@@ -289,11 +290,17 @@ export class ConnectionGraph {
   private calculateCentrality(nodeId: string): number {
     const outgoing = this.edges.get(nodeId) || [];
     const incoming = this.incomingEdges.get(nodeId) || [];
-    
+
     // Weighted degree centrality (sum of connection strengths)
-    const outgoingStrength = outgoing.reduce((sum, conn) => sum + conn.strength, 0);
-    const incomingStrength = incoming.reduce((sum, conn) => sum + conn.strength, 0);
-    
+    const outgoingStrength = outgoing.reduce(
+      (sum, conn) => sum + conn.strength,
+      0
+    );
+    const incomingStrength = incoming.reduce(
+      (sum, conn) => sum + conn.strength,
+      0
+    );
+
     return outgoingStrength + incomingStrength;
   }
 
@@ -306,7 +313,7 @@ export class ConnectionGraph {
     let totalStrength = 0;
     let minStrength = 1;
     let maxStrength = 0;
-    
+
     for (const connections of Array.from(this.edges.values())) {
       edgeCount += connections.length;
       for (const conn of connections) {
@@ -315,10 +322,10 @@ export class ConnectionGraph {
         maxStrength = Math.max(maxStrength, conn.strength);
       }
     }
-    
+
     const averageDegree = nodeCount > 0 ? edgeCount / nodeCount : 0;
     const clusters = this.getClusters();
-    
+
     return {
       nodeCount,
       edgeCount,
@@ -335,21 +342,23 @@ export class ConnectionGraph {
   removeNode(memoryId: string): void {
     // Remove the node
     this.nodes.delete(memoryId);
-    
+
     // Remove all outgoing connections
     this.edges.delete(memoryId);
-    
+
     // Remove all incoming connections
     this.incomingEdges.delete(memoryId);
-    
+
     // Remove references from other nodes
     for (const [nodeId, connections] of Array.from(this.edges.entries())) {
-      const filtered = connections.filter(conn => conn.targetId !== memoryId);
+      const filtered = connections.filter((conn) => conn.targetId !== memoryId);
       this.edges.set(nodeId, filtered);
     }
-    
-    for (const [nodeId, connections] of Array.from(this.incomingEdges.entries())) {
-      const filtered = connections.filter(conn => conn.sourceId !== memoryId);
+
+    for (const [nodeId, connections] of Array.from(
+      this.incomingEdges.entries()
+    )) {
+      const filtered = connections.filter((conn) => conn.sourceId !== memoryId);
       this.incomingEdges.set(nodeId, filtered);
     }
 
@@ -368,7 +377,7 @@ export class ConnectionGraph {
     this.nodes.clear();
     this.edges.clear();
     this.incomingEdges.clear();
-    
+
     logger.debug(
       LogCategory.STORAGE,
       'ConnectionGraph',
@@ -396,6 +405,4 @@ export class ConnectionGraph {
   getAllMemoryIds(): string[] {
     return Array.from(this.nodes.keys());
   }
-} 
- 
- 
+}

@@ -1,21 +1,21 @@
 /**
  * EpisodicMemory - Handles time-based sequential memories
- * 
+ *
  * THIN wrapper - delegates all operations to storage layer
  */
 
-import { StorageProvider } from '../../../storage/types';
-import { MemoryType } from '../../../shared/types/memory';
 // Remove circular dependency - generate ID inline
 import { LogCategory, logger } from '../../../logging';
-import { BaseMemoryType } from '../base/BaseMemoryType';
+import { MemoryType } from '../../../shared/types/memory';
+import { StorageProvider } from '../../../storage/types';
 import { IntelligenceLayerConfig } from '../../intelligence/types';
-import { 
-  EpisodicMemoryConfig, 
+import { BaseMemoryType } from '../base/BaseMemoryType';
+import {
+  DecayResult,
+  EpisodicMemoryConfig,
   EpisodicMemoryData,
-  StoreEpisodicOptions,
   EpisodicMemoryStats,
-  DecayResult
+  StoreEpisodicOptions
 } from './EpisodicMemoryTypes';
 
 export class EpisodicMemory extends BaseMemoryType {
@@ -42,10 +42,10 @@ export class EpisodicMemory extends BaseMemoryType {
     if (!userId || !userId.trim()) {
       throw new Error('userId is required for episodic memory operations');
     }
-    
+
     const id = `ep_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
     const now = Date.now();
-    
+
     // Create COMPLETE data at write time
     const memoryData = {
       id,
@@ -59,18 +59,18 @@ export class EpisodicMemory extends BaseMemoryType {
       createdAt: now,
       updatedAt: now,
       lastAccessedAt: now,
-      
+
       // Required fields
       sessionId: `session_${Date.now()}`,
       tokenCount: 0, // TODO: Add proper token counting
-      
+
       // Type-specific
       metadata: {
         tags: options?.tags || [],
-        expiresAt: now + (this.episodicConfig.compressionAge * 86400000)
+        expiresAt: now + this.episodicConfig.compressionAge * 86400000
       }
     };
-    
+
     await this.storage.memory!.store(userId, agentId, memoryData);
     return memoryData.id;
   }
@@ -87,13 +87,13 @@ export class EpisodicMemory extends BaseMemoryType {
     if (!userId || !userId.trim()) {
       throw new Error('userId is required for episodic memory operations');
     }
-    
+
     const result = await this.storage.memory!.recall(userId, agentId, query, {
       type: MemoryType.EPISODIC,
       limit: options?.limit || 20,
       timeRange: options?.timeRange
     });
-    
+
     return result as unknown as EpisodicMemoryData[];
   }
 
@@ -117,11 +117,14 @@ export class EpisodicMemory extends BaseMemoryType {
   /**
    * Get stats - DELEGATES to storage
    */
-  async getStats(userId: string, agentId?: string): Promise<EpisodicMemoryStats> {
+  async getStats(
+    userId: string,
+    agentId?: string
+  ): Promise<EpisodicMemoryStats> {
     if (!userId || !userId.trim()) {
       throw new Error('userId is required for episodic memory operations');
     }
-    
+
     const stats = await this.storage.memory!.getStats(userId, agentId);
     return {
       totalMemories: stats.byType?.episodic || 0,
@@ -137,18 +140,21 @@ export class EpisodicMemory extends BaseMemoryType {
   /**
    * Get by ID - DELEGATES to storage
    */
-  async getById(userId: string, memoryId: string): Promise<EpisodicMemoryData | null> {
+  async getById(
+    userId: string,
+    memoryId: string
+  ): Promise<EpisodicMemoryData | null> {
     if (!userId || !userId.trim()) {
       throw new Error('userId is required for episodic memory operations');
     }
-    
+
     if (!this.storage.memory?.getById) {
       return null;
     }
 
     const result = await this.storage.memory.getById(userId, memoryId);
     if (!result) return null;
-    
+
     // Validate type
     if (result.type !== MemoryType.EPISODIC) {
       logger.error(
@@ -163,18 +169,18 @@ export class EpisodicMemory extends BaseMemoryType {
       );
       return null;
     }
-    
+
     // Validate required fields exist
     if (!result.sessionId) {
       logger.error(
         LogCategory.STORAGE,
-        'EpisodicMemory', 
+        'EpisodicMemory',
         'Missing required sessionId',
         { memoryId }
       );
       return null;
     }
-    
+
     // Return ONLY validated data - NO SYNTHESIS
     return {
       id: result.id,

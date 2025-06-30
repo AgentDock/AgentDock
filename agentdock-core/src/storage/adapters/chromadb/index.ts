@@ -48,7 +48,10 @@ export type {
 
 // Export embedding functions
 export { DefaultEmbeddingFunction } from './types';
-export { AISDKEmbeddingFunction, createAISDKEmbeddingFunction } from './ai-sdk-embedding';
+export {
+  AISDKEmbeddingFunction,
+  createAISDKEmbeddingFunction
+} from './ai-sdk-embedding';
 
 /**
  * Default collection name for storage operations

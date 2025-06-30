@@ -1,10 +1,10 @@
 /**
  * @fileoverview LifecycleScheduler - Automated memory lifecycle scheduling
- * 
+ *
  * Manages periodic execution of memory lifecycle operations including decay,
  * promotion, and cleanup. Provides configurable scheduling with proper cleanup
  * and error handling.
- * 
+ *
  * @example
  * ```typescript
  * const scheduleConfig: ScheduleConfig = {
@@ -13,14 +13,14 @@
  *   cleanupInterval: 24 * 60 * 60 * 1000,  // Clean up daily
  *   enabled: true
  * };
- * 
+ *
  * const scheduler = new LifecycleScheduler(lifecycleManager, scheduleConfig);
  * scheduler.start('therapy_agent');
- * 
+ *
  * // Later...
  * scheduler.stop('therapy_agent');
  * ```
- * 
+ *
  * @author AgentDock Core Team
  */
 
@@ -33,22 +33,22 @@ import { MemoryLifecycleManager } from './MemoryLifecycleManager';
 export interface ScheduleConfig {
   /** Run decay operations every N milliseconds (0 = disabled) */
   decayInterval: number;
-  
+
   /** Check for memory promotions every N milliseconds (0 = disabled) */
   promotionInterval: number;
-  
+
   /** Run cleanup operations every N milliseconds (0 = disabled) */
   cleanupInterval: number;
-  
+
   /** Whether scheduling is enabled */
   enabled: boolean;
-  
+
   /** Maximum number of operations to run concurrently */
   maxConcurrentOperations?: number;
-  
+
   /** Whether to run operations on startup */
   runOnStartup?: boolean;
-  
+
   /** Error retry configuration */
   retryConfig?: {
     maxRetries: number;
@@ -59,7 +59,7 @@ export interface ScheduleConfig {
 
 /**
  * Manages automated scheduling of memory lifecycle operations.
- * 
+ *
  * Key features:
  * - Configurable intervals for different operations
  * - Per-agent scheduling management
@@ -75,7 +75,7 @@ export class LifecycleScheduler {
 
   /**
    * Creates a new LifecycleScheduler.
-   * 
+   *
    * @param lifecycleManager - Manager for executing lifecycle operations
    * @param config - Scheduling configuration
    */
@@ -95,26 +95,36 @@ export class LifecycleScheduler {
       ...config
     };
 
-    logger.debug(LogCategory.STORAGE, 'LifecycleScheduler', 'Initialized scheduler', {
-      decayInterval: this.config.decayInterval,
-      promotionInterval: this.config.promotionInterval,
-      cleanupInterval: this.config.cleanupInterval,
-      enabled: this.config.enabled
-    });
+    logger.debug(
+      LogCategory.STORAGE,
+      'LifecycleScheduler',
+      'Initialized scheduler',
+      {
+        decayInterval: this.config.decayInterval,
+        promotionInterval: this.config.promotionInterval,
+        cleanupInterval: this.config.cleanupInterval,
+        enabled: this.config.enabled
+      }
+    );
   }
 
   /**
    * Start lifecycle scheduling for an agent.
-   * 
+   *
    * @param userId - User identifier
    * @param agentId - Agent identifier
    */
   start(userId: string, agentId: string): void {
     if (!this.config.enabled) {
-      logger.info(LogCategory.STORAGE, 'LifecycleScheduler', 'Scheduler disabled, not starting', {
-        userId,
-        agentId
-      });
+      logger.info(
+        LogCategory.STORAGE,
+        'LifecycleScheduler',
+        'Scheduler disabled, not starting',
+        {
+          userId,
+          agentId
+        }
+      );
       return;
     }
 
@@ -153,16 +163,23 @@ export class LifecycleScheduler {
       this.intervals.set(`cleanup:${userId}:${agentId}`, cleanupInterval);
     }
 
-    logger.info(LogCategory.STORAGE, 'LifecycleScheduler', 'Started lifecycle scheduler', {
-      userId,
-      agentId,
-      intervals: Array.from(this.intervals.keys()).filter(key => key.includes(`${userId}:${agentId}`))
-    });
+    logger.info(
+      LogCategory.STORAGE,
+      'LifecycleScheduler',
+      'Started lifecycle scheduler',
+      {
+        userId,
+        agentId,
+        intervals: Array.from(this.intervals.keys()).filter((key) =>
+          key.includes(`${userId}:${agentId}`)
+        )
+      }
+    );
   }
 
   /**
    * Stop lifecycle scheduling for an agent.
-   * 
+   *
    * @param userId - User identifier
    * @param agentId - Agent identifier
    */
@@ -181,11 +198,16 @@ export class LifecycleScheduler {
       }
     }
 
-    logger.info(LogCategory.STORAGE, 'LifecycleScheduler', 'Stopped lifecycle scheduler', {
-      userId,
-      agentId,
-      stoppedIntervals: stoppedCount
-    });
+    logger.info(
+      LogCategory.STORAGE,
+      'LifecycleScheduler',
+      'Stopped lifecycle scheduler',
+      {
+        userId,
+        agentId,
+        stoppedIntervals: stoppedCount
+      }
+    );
   }
 
   /**
@@ -197,27 +219,36 @@ export class LifecycleScheduler {
     }
     this.intervals.clear();
 
-    logger.info(LogCategory.STORAGE, 'LifecycleScheduler', 'Stopped all scheduling operations');
+    logger.info(
+      LogCategory.STORAGE,
+      'LifecycleScheduler',
+      'Stopped all scheduling operations'
+    );
   }
 
   /**
    * Get scheduler status for an agent.
-   * 
+   *
    * @param userId - User identifier
    * @param agentId - Agent identifier
    * @returns Scheduler status information
    */
-  getStatus(userId: string, agentId: string): {
+  getStatus(
+    userId: string,
+    agentId: string
+  ): {
     active: boolean;
     intervals: string[];
     runningOperations: string[];
   } {
     const userAgentKey = `${userId}:${agentId}`;
-    const intervals = Array.from(this.intervals.keys())
-      .filter(key => key.includes(userAgentKey));
-    
-    const runningOperations = Array.from(this.runningOperations)
-      .filter(op => op.includes(userAgentKey));
+    const intervals = Array.from(this.intervals.keys()).filter((key) =>
+      key.includes(userAgentKey)
+    );
+
+    const runningOperations = Array.from(this.runningOperations).filter((op) =>
+      op.includes(userAgentKey)
+    );
 
     return {
       active: intervals.length > 0,
@@ -228,88 +259,124 @@ export class LifecycleScheduler {
 
   /**
    * Run decay operation for an agent.
-   * 
+   *
    * @private
    */
   private async runDecay(userId: string, agentId: string): Promise<void> {
     await this.executeWithConcurrencyControl(
       `decay:${userId}:${agentId}`,
       async () => {
-        const result = await this.lifecycleManager.runLifecycle(userId, agentId);
-        logger.debug(LogCategory.STORAGE, 'LifecycleScheduler', 'Scheduled decay completed', {
+        const result = await this.lifecycleManager.runLifecycle(
           userId,
-          agentId,
-          updated: result.decay.updated,
-          deleted: result.decay.deleted
-        });
+          agentId
+        );
+        logger.debug(
+          LogCategory.STORAGE,
+          'LifecycleScheduler',
+          'Scheduled decay completed',
+          {
+            userId,
+            agentId,
+            updated: result.decay.updated,
+            deleted: result.decay.deleted
+          }
+        );
       }
     );
   }
 
   /**
    * Run promotion operation for an agent.
-   * 
+   *
    * @private
    */
   private async runPromotion(userId: string, agentId: string): Promise<void> {
     await this.executeWithConcurrencyControl(
       `promotion:${userId}:${agentId}`,
       async () => {
-        const result = await this.lifecycleManager.runLifecycle(userId, agentId);
-        logger.debug(LogCategory.STORAGE, 'LifecycleScheduler', 'Scheduled promotion completed', {
+        const result = await this.lifecycleManager.runLifecycle(
           userId,
-          agentId,
-          promoted: result.promotion.promotedCount
-        });
+          agentId
+        );
+        logger.debug(
+          LogCategory.STORAGE,
+          'LifecycleScheduler',
+          'Scheduled promotion completed',
+          {
+            userId,
+            agentId,
+            promoted: result.promotion.promotedCount
+          }
+        );
       }
     );
   }
 
   /**
    * Run cleanup operation for an agent.
-   * 
+   *
    * @private
    */
   private async runCleanup(userId: string, agentId: string): Promise<void> {
     await this.executeWithConcurrencyControl(
       `cleanup:${userId}:${agentId}`,
       async () => {
-        const result = await this.lifecycleManager.runLifecycle(userId, agentId);
-        logger.debug(LogCategory.STORAGE, 'LifecycleScheduler', 'Scheduled cleanup completed', {
+        const result = await this.lifecycleManager.runLifecycle(
           userId,
-          agentId,
-          cleaned: result.cleanup.deletedCount
-        });
+          agentId
+        );
+        logger.debug(
+          LogCategory.STORAGE,
+          'LifecycleScheduler',
+          'Scheduled cleanup completed',
+          {
+            userId,
+            agentId,
+            cleaned: result.cleanup.deletedCount
+          }
+        );
       }
     );
   }
 
   /**
    * Run complete lifecycle operation for an agent.
-   * 
+   *
    * @private
    */
-  private async runLifecycle(userId: string, agentId: string, reason: string = 'scheduled'): Promise<void> {
+  private async runLifecycle(
+    userId: string,
+    agentId: string,
+    reason: string = 'scheduled'
+  ): Promise<void> {
     await this.executeWithConcurrencyControl(
       `lifecycle:${userId}:${agentId}`,
       async () => {
-        const result = await this.lifecycleManager.runLifecycle(userId, agentId);
-        logger.info(LogCategory.STORAGE, 'LifecycleScheduler', 'Complete lifecycle operation completed', {
+        const result = await this.lifecycleManager.runLifecycle(
           userId,
-          agentId,
-          reason,
-          decayUpdated: result.decay.updated,
-          promoted: result.promotion.promotedCount,
-          cleaned: result.cleanup.deletedCount,
-          durationMs: result.durationMs
-        });
+          agentId
+        );
+        logger.info(
+          LogCategory.STORAGE,
+          'LifecycleScheduler',
+          'Complete lifecycle operation completed',
+          {
+            userId,
+            agentId,
+            reason,
+            decayUpdated: result.decay.updated,
+            promoted: result.promotion.promotedCount,
+            cleaned: result.cleanup.deletedCount,
+            durationMs: result.durationMs
+          }
+        );
       }
     );
   }
 
   /**
    * Execute operation with concurrency control and error handling.
-   * 
+   *
    * @private
    */
   private async executeWithConcurrencyControl(
@@ -318,25 +385,37 @@ export class LifecycleScheduler {
   ): Promise<void> {
     // Check if operation is already running
     if (this.runningOperations.has(operationKey)) {
-      logger.debug(LogCategory.STORAGE, 'LifecycleScheduler', 'Operation already running, skipping', {
-        operationKey
-      });
+      logger.debug(
+        LogCategory.STORAGE,
+        'LifecycleScheduler',
+        'Operation already running, skipping',
+        {
+          operationKey
+        }
+      );
       return;
     }
 
     // Check concurrent operation limit
-    if (this.runningOperations.size >= (this.config.maxConcurrentOperations || 3)) {
-      logger.warn(LogCategory.STORAGE, 'LifecycleScheduler', 'Max concurrent operations reached, skipping', {
-        operationKey,
-        currentCount: this.runningOperations.size,
-        maxConcurrent: this.config.maxConcurrentOperations
-      });
+    if (
+      this.runningOperations.size >= (this.config.maxConcurrentOperations || 3)
+    ) {
+      logger.warn(
+        LogCategory.STORAGE,
+        'LifecycleScheduler',
+        'Max concurrent operations reached, skipping',
+        {
+          operationKey,
+          currentCount: this.runningOperations.size,
+          maxConcurrent: this.config.maxConcurrentOperations
+        }
+      );
       return;
     }
 
     // Execute operation with retry logic
     this.runningOperations.add(operationKey);
-    
+
     try {
       await this.executeWithRetry(operation, operationKey);
     } finally {
@@ -346,7 +425,7 @@ export class LifecycleScheduler {
 
   /**
    * Execute operation with retry logic.
-   * 
+   *
    * @private
    */
   private async executeWithRetry(
@@ -362,33 +441,40 @@ export class LifecycleScheduler {
         return; // Success
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
-        
+
         if (attempt < retryConfig.maxRetries) {
-          const delay = retryConfig.exponential 
+          const delay = retryConfig.exponential
             ? retryConfig.backoffMs * Math.pow(2, attempt)
             : retryConfig.backoffMs;
 
-          logger.warn(LogCategory.STORAGE, 'LifecycleScheduler', 'Operation failed, retrying', {
-            operationKey,
-            attempt: attempt + 1,
-            maxRetries: retryConfig.maxRetries,
-            retryInMs: delay,
-            error: lastError.message
-          });
+          logger.warn(
+            LogCategory.STORAGE,
+            'LifecycleScheduler',
+            'Operation failed, retrying',
+            {
+              operationKey,
+              attempt: attempt + 1,
+              maxRetries: retryConfig.maxRetries,
+              retryInMs: delay,
+              error: lastError.message
+            }
+          );
 
-          await new Promise(resolve => setTimeout(resolve, delay));
+          await new Promise((resolve) => setTimeout(resolve, delay));
         }
       }
     }
 
     // All retries exhausted
-    logger.error(LogCategory.STORAGE, 'LifecycleScheduler', 'Operation failed after all retries', {
-      operationKey,
-      attempts: retryConfig.maxRetries + 1,
-      error: lastError?.message || 'Unknown error'
-    });
+    logger.error(
+      LogCategory.STORAGE,
+      'LifecycleScheduler',
+      'Operation failed after all retries',
+      {
+        operationKey,
+        attempts: retryConfig.maxRetries + 1,
+        error: lastError?.message || 'Unknown error'
+      }
+    );
   }
-} 
- 
- 
- 
+}

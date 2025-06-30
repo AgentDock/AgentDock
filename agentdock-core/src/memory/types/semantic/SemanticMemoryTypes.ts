@@ -31,13 +31,13 @@ export interface SemanticMemoryConfig {
 export const SEMANTIC_MEMORY_DEFAULTS = {
   // OpenAI 2025: 0.5 = moderate similarity threshold for text-embedding-3 models
   confidenceThreshold: 0.5,
-  
-  // OpenAI 2025: 0.8+ = high similarity, good for deduplication  
+
+  // OpenAI 2025: 0.8+ = high similarity, good for deduplication
   deduplicationThreshold: 0.8,
-  
+
   // Reasonable category limits for knowledge management
   maxMemoriesPerCategory: 500,
-  
+
   // Standard configuration defaults
   vectorSearchEnabled: true,
   encryptSensitive: false,

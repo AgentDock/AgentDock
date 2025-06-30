@@ -1,6 +1,6 @@
 /**
  * Validated Intelligence Layer Configuration
- * 
+ *
  * These thresholds have been tested and validated for production use:
  * - 0.70 similarity threshold for OpenAI embeddings
  * - 0.6 minimum confidence for LLM connection detection
@@ -11,18 +11,18 @@ import { IntelligenceLayerConfig } from '../intelligence/types';
 export const DEFAULT_INTELLIGENCE_CONFIG: IntelligenceLayerConfig = {
   embedding: {
     enabled: true,
-    similarityThreshold: 0.70,  // ← VALIDATED OpenAI threshold
+    similarityThreshold: 0.7, // ← VALIDATED OpenAI threshold
     model: 'text-embedding-3-small'
   },
-  
+
   connectionDetection: {
     method: 'hybrid',
-    
+
     userRules: {
       enabled: true,
       patterns: [] // User can configure domain-specific rules
     },
-    
+
     llmEnhancement: {
       enabled: true,
       provider: 'openai',
@@ -32,11 +32,11 @@ export const DEFAULT_INTELLIGENCE_CONFIG: IntelligenceLayerConfig = {
       temperature: 0.2,
       validateResponses: true,
       fallbackToEmbedding: true,
-      minConfidence: 0.6,  // ← VALIDATED LLM threshold
+      minConfidence: 0.6, // ← VALIDATED LLM threshold
       costPerToken: 0.000002 // $0.000002 per token for gpt-4o-mini
     }
   },
-  
+
   costControl: {
     maxLLMCallsPerBatch: 10,
     monthlyBudget: 50,
@@ -75,4 +75,4 @@ export function createIntelligenceConfig(
       ...overrides?.costControl
     }
   };
-} 
+}

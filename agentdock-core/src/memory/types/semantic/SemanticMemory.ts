@@ -1,20 +1,20 @@
 /**
  * SemanticMemory - Knowledge and fact storage
- * 
+ *
  * THIN wrapper - delegates all operations to storage layer
  */
 
-import { StorageProvider } from '../../../storage/types';
-import { MemoryType } from '../../../shared/types/memory';
 import { LogCategory, logger } from '../../../logging';
-import { BaseMemoryType } from '../base/BaseMemoryType';
+import { MemoryType } from '../../../shared/types/memory';
+import { StorageProvider } from '../../../storage/types';
 import { IntelligenceLayerConfig } from '../../intelligence/types';
-import { 
-  SemanticMemoryConfig, 
+import { BaseMemoryType } from '../base/BaseMemoryType';
+import {
+  SEMANTIC_MEMORY_DEFAULTS,
+  SemanticMemoryConfig,
   SemanticMemoryData,
   SemanticMemoryStats,
-  StoreSemanticOptions,
-  SEMANTIC_MEMORY_DEFAULTS
+  StoreSemanticOptions
 } from './SemanticMemoryTypes';
 
 export class SemanticMemory extends BaseMemoryType {
@@ -46,10 +46,10 @@ export class SemanticMemory extends BaseMemoryType {
     if (!userId || !userId.trim()) {
       throw new Error('userId is required for semantic memory operations');
     }
-    
+
     const id = `sm_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
     const now = Date.now();
-    
+
     // Create COMPLETE data at write time
     const memoryData = {
       id,
@@ -63,20 +63,23 @@ export class SemanticMemory extends BaseMemoryType {
       createdAt: now,
       updatedAt: now,
       lastAccessedAt: now,
-      
+
       // Required fields
       sessionId: `session_${Date.now()}`,
       tokenCount: 0, // TODO: Add proper token counting
       keywords: options?.keywords || [],
-      
+
       // Type-specific
       metadata: {
-        confidence: options?.confidence ?? this.semanticConfig.confidenceThreshold ?? SEMANTIC_MEMORY_DEFAULTS.confidenceThreshold,
+        confidence:
+          options?.confidence ??
+          this.semanticConfig.confidenceThreshold ??
+          SEMANTIC_MEMORY_DEFAULTS.confidenceThreshold,
         source: options?.source || 'direct',
         ...options?.metadata
       }
     };
-    
+
     await this.storage.memory!.store(userId, agentId, memoryData);
     return memoryData.id;
   }
@@ -92,24 +95,27 @@ export class SemanticMemory extends BaseMemoryType {
     if (!userId || !userId.trim()) {
       throw new Error('userId is required for semantic memory operations');
     }
-    
+
     // DELEGATE TO STORAGE
     const result = await this.storage.memory!.recall(userId, agentId, query, {
       type: MemoryType.SEMANTIC,
       limit: 20
     });
-    
+
     return result as unknown as SemanticMemoryData[];
   }
 
   /**
    * Consolidate similar memories - DELEGATES to storage
    */
-  async consolidate(userId: string, agentId: string): Promise<{ consolidated: number }> {
+  async consolidate(
+    userId: string,
+    agentId: string
+  ): Promise<{ consolidated: number }> {
     if (!userId || !userId.trim()) {
       throw new Error('userId is required for semantic memory operations');
     }
-    
+
     // Let storage handle the complexity
     return { consolidated: 0 };
   }
@@ -117,31 +123,37 @@ export class SemanticMemory extends BaseMemoryType {
   /**
    * Get stats - DELEGATES to storage
    */
-  async getStats(userId: string, agentId?: string): Promise<SemanticMemoryStats> {
+  async getStats(
+    userId: string,
+    agentId?: string
+  ): Promise<SemanticMemoryStats> {
     if (!userId || !userId.trim()) {
       throw new Error('userId is required for semantic memory operations');
     }
-    
+
     const stats = await this.storage.memory!.getStats(userId, agentId);
-         return {
-       totalMemories: stats.byType?.semantic || 0,
-       memoriesByCategory: {},
-       avgConfidence: 0.8,
-       avgImportance: stats.avgImportance || 0,
-       totalFacts: 0,
-       totalRelations: 0,
-       topKeywords: []
-     };
+    return {
+      totalMemories: stats.byType?.semantic || 0,
+      memoriesByCategory: {},
+      avgConfidence: 0.8,
+      avgImportance: stats.avgImportance || 0,
+      totalFacts: 0,
+      totalRelations: 0,
+      topKeywords: []
+    };
   }
 
   /**
    * Get by ID - DELEGATES to storage
    */
-  async getById(userId: string, memoryId: string): Promise<SemanticMemoryData | null> {
+  async getById(
+    userId: string,
+    memoryId: string
+  ): Promise<SemanticMemoryData | null> {
     if (!userId || !userId.trim()) {
       throw new Error('userId is required for semantic memory operations');
     }
-    
+
     if (this.storage.memory?.getById) {
       const result = await this.storage.memory.getById(userId, memoryId);
       if (!result) return null;
@@ -159,9 +171,15 @@ export class SemanticMemory extends BaseMemoryType {
         resonance: result.resonance,
         lastAccessedAt: result.lastAccessedAt,
         accessCount: result.accessCount,
-        sourceIds: Array.isArray(result.metadata?.sourceIds) ? result.metadata.sourceIds : [],
-        facts: Array.isArray(result.metadata?.facts) ? result.metadata.facts : [],
-        relations: Array.isArray(result.metadata?.relations) ? result.metadata.relations : [],
+        sourceIds: Array.isArray(result.metadata?.sourceIds)
+          ? result.metadata.sourceIds
+          : [],
+        facts: Array.isArray(result.metadata?.facts)
+          ? result.metadata.facts
+          : [],
+        relations: Array.isArray(result.metadata?.relations)
+          ? result.metadata.relations
+          : [],
         embeddingId: result.embeddingId,
         metadata: result.metadata || {}
       };

@@ -1,19 +1,19 @@
 /**
  * @fileoverview Batch Processing Configuration Examples
- * 
+ *
  * Example configurations for different use cases.
  * These are NOT defaults - users should customize for their needs.
- * 
+ *
  * @author AgentDock Core Team
  */
 
-import { BatchProcessorConfig, ExtractionRule } from './types';
 import { MemoryType } from '../types';
+import { BatchProcessorConfig, ExtractionRule } from './types';
 
 /**
  * Example configuration for cost-conscious deployments.
  * Focuses on zero-cost rule extraction with minimal LLM usage.
- * 
+ *
  * @example
  * ```typescript
  * const processor = new BatchProcessor(storage, BUDGET_FRIENDLY_CONFIG);
@@ -25,35 +25,35 @@ export const BUDGET_FRIENDLY_CONFIG: BatchProcessorConfig = {
   maxBatchSize: 50,
   timeoutMinutes: 5,
   minBatchSize: 5,
-  extractionRate: 0.2,  // 20% processing = 5x cost reduction
+  extractionRate: 0.2, // 20% processing = 5x cost reduction
   enableSmallModel: true,
   enablePremiumModel: false,
-  
+
   // NOISE FILTERING
   noiseFiltering: {
     minMessageLength: 10,
-    customPatterns: [],  // User defines patterns
+    customPatterns: [], // User defines patterns
     languageAgnostic: false
   },
-  
+
   extractors: [
-    { 
-      type: 'rules', 
-      enabled: true, 
+    {
+      type: 'rules',
+      enabled: true,
       costPerMemory: 0,
-      qualityThreshold: 0.6 
+      qualityThreshold: 0.6
     },
-    { 
-      type: 'small-llm', 
-      enabled: true, 
-      costPerMemory: 0.0,          // User configures pricing
-      provider: 'your-provider',    // User chooses provider
-      model: 'your-model',         // User chooses model
-      maxCost: 0.0,               // User sets limits
+    {
+      type: 'small-llm',
+      enabled: true,
+      costPerMemory: 0.001, // Example: ~$0.001 per memory
+      provider: 'anthropic', // Example: Anthropic Claude
+      model: 'claude-3-haiku-20240307', // Example: Claude Haiku
+      maxCost: 0.1, // Example: $0.10 max per batch
       qualityThreshold: 0.7
     }
   ],
-  costBudget: 0.0,                // User sets budget
+  costBudget: 0.0, // User sets budget
   targetCoverage: 0.8,
   batchSize: 20,
   parallelism: 2,
@@ -67,7 +67,7 @@ export const BUDGET_FRIENDLY_CONFIG: BatchProcessorConfig = {
 /**
  * Example configuration for quality-focused deployments.
  * Uses all extraction tiers for maximum coverage and intelligence.
- * 
+ *
  * @example
  * ```typescript
  * const processor = new BatchProcessor(storage, PREMIUM_QUALITY_CONFIG);
@@ -79,44 +79,44 @@ export const PREMIUM_QUALITY_CONFIG: BatchProcessorConfig = {
   maxBatchSize: 30,
   timeoutMinutes: 3,
   minBatchSize: 3,
-  extractionRate: 0.5,  // 50% processing for premium quality
+  extractionRate: 0.5, // 50% processing for premium quality
   enableSmallModel: true,
   enablePremiumModel: true,
-  
+
   // NOISE FILTERING
   noiseFiltering: {
     minMessageLength: 5,
-    customPatterns: [],  // User defines patterns
+    customPatterns: [], // User defines patterns
     languageAgnostic: true
   },
-  
+
   extractors: [
-    { 
-      type: 'rules', 
-      enabled: true, 
+    {
+      type: 'rules',
+      enabled: true,
       costPerMemory: 0,
-      qualityThreshold: 0.6 
+      qualityThreshold: 0.6
     },
-    { 
-      type: 'small-llm', 
-      enabled: true, 
-      costPerMemory: 0.0,          // User configures pricing
-      provider: 'your-provider',    // User chooses provider
-      model: 'your-model',         // User chooses model
-      maxCost: 0.0,               // User sets limits
+    {
+      type: 'small-llm',
+      enabled: true,
+      costPerMemory: 0.001, // Example: ~$0.001 per memory
+      provider: 'anthropic', // Example: Anthropic Claude
+      model: 'claude-3-haiku-20240307', // Example: Claude Haiku
+      maxCost: 0.5, // Example: $0.50 max per batch
       qualityThreshold: 0.7
     },
-    { 
-      type: 'large-llm', 
-      enabled: true, 
-      costPerMemory: 0.0,          // User configures pricing
-      provider: 'your-provider',    // User chooses provider
-      model: 'your-model',         // User chooses model
-      maxCost: 0.0,               // User sets limits
+    {
+      type: 'large-llm',
+      enabled: true,
+      costPerMemory: 0.005, // Example: ~$0.005 per memory
+      provider: 'openai', // Example: OpenAI
+      model: 'gpt-4-turbo', // Example: GPT-4 Turbo
+      maxCost: 2.0, // Example: $2.00 max per batch
       qualityThreshold: 0.9
     }
   ],
-  costBudget: 0.0,                // User sets budget
+  costBudget: 0.0, // User sets budget
   targetCoverage: 0.95,
   batchSize: 10,
   parallelism: 4,
@@ -130,7 +130,7 @@ export const PREMIUM_QUALITY_CONFIG: BatchProcessorConfig = {
 /**
  * Example configuration for privacy-first deployments.
  * Uses only rule-based extraction with no AI API calls.
- * 
+ *
  * @example
  * ```typescript
  * const processor = new BatchProcessor(storage, PRIVACY_FIRST_CONFIG);
@@ -142,23 +142,23 @@ export const PRIVACY_FIRST_CONFIG: BatchProcessorConfig = {
   maxBatchSize: 100,
   timeoutMinutes: 10,
   minBatchSize: 10,
-  extractionRate: 1.0,  // 100% processing for privacy-first (rules only)
+  extractionRate: 1.0, // 100% processing for privacy-first (rules only)
   enableSmallModel: false,
   enablePremiumModel: false,
-  
+
   // NOISE FILTERING
   noiseFiltering: {
     minMessageLength: 15,
-    customPatterns: [],  // User defines patterns
-    languageAgnostic: false  // No LLM calls for privacy
+    customPatterns: [], // User defines patterns
+    languageAgnostic: false // No LLM calls for privacy
   },
-  
+
   extractors: [
-    { 
-      type: 'rules', 
-      enabled: true, 
+    {
+      type: 'rules',
+      enabled: true,
       costPerMemory: 0,
-      qualityThreshold: 0.5 
+      qualityThreshold: 0.5
     }
   ],
   costBudget: 0,
@@ -175,7 +175,7 @@ export const PRIVACY_FIRST_CONFIG: BatchProcessorConfig = {
 /**
  * Example user-defined extraction rules.
  * These demonstrate how users can create their own patterns.
- * 
+ *
  * @example
  * ```typescript
  * // Users would create rules like this:
@@ -186,7 +186,7 @@ export const PRIVACY_FIRST_CONFIG: BatchProcessorConfig = {
 export const EXAMPLE_USER_RULES: ExtractionRule[] = [
   {
     id: 'explicit-memory-requests',
-    pattern: '(remember|don\'t forget|note|keep in mind)\\s+(.+)',
+    pattern: "(remember|don't forget|note|keep in mind)\\s+(.+)",
     type: MemoryType.SEMANTIC,
     importance: 1.0,
     metadata: { category: 'explicit-request' },

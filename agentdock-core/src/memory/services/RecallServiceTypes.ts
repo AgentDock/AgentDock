@@ -1,8 +1,8 @@
-import { EpisodicMemoryData } from '../types/episodic/EpisodicMemoryTypes'
-import { SemanticMemoryData } from '../types/semantic/SemanticMemoryTypes'
-import { ProceduralMemoryData } from '../types/procedural/ProceduralMemoryTypes'
-import { WorkingMemoryData } from '../types/working/WorkingMemoryTypes'
-import { MemoryType } from '../types/common'
+import { MemoryType } from '../types/common';
+import { EpisodicMemoryData } from '../types/episodic/EpisodicMemoryTypes';
+import { ProceduralMemoryData } from '../types/procedural/ProceduralMemoryTypes';
+import { SemanticMemoryData } from '../types/semantic/SemanticMemoryTypes';
+import { WorkingMemoryData } from '../types/working/WorkingMemoryTypes';
 
 /**
  * RecallService provides unified cross-memory search and retrieval

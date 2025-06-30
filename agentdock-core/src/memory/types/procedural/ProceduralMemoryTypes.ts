@@ -34,16 +34,16 @@ export const PROCEDURAL_MEMORY_DEFAULTS = {
   // OpenAI 2025: 0.7 = high confidence threshold for procedural patterns
   // Procedural learning needs higher confidence than semantic similarity
   confidenceThreshold: 0.7,
-  
+
   // Pattern learning: 60% success rate minimum for reliable patterns
   minSuccessRate: 0.6,
-  
+
   // Pattern organization: reasonable limits per category
   maxPatternsPerCategory: 100,
-  
+
   // Gradual decay for outdated patterns (5% per period)
   decayRate: 0.05,
-  
+
   // Advanced features
   adaptiveLearning: true,
   patternMerging: true

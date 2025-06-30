@@ -1,24 +1,25 @@
 import { Pool } from 'pg';
-import { WorkingMemory } from '../types/working/WorkingMemory';
-import { EpisodicMemory } from '../types/episodic/EpisodicMemory';
-import { SemanticMemory } from '../types/semantic/SemanticMemory';
-import { ProceduralMemory } from '../types/procedural/ProceduralMemory';
+
 import { MemoryType } from '../types/common';
-import { 
-  RecallQuery, 
-  RecallResult, 
-  RecallConfig, 
-  UnifiedMemoryResult,
+import { EpisodicMemory } from '../types/episodic/EpisodicMemory';
+import { ProceduralMemory } from '../types/procedural/ProceduralMemory';
+import { SemanticMemory } from '../types/semantic/SemanticMemory';
+import { WorkingMemory } from '../types/working/WorkingMemory';
+import {
   HybridSearchResult,
-  RecallMetrics
+  RecallConfig,
+  RecallMetrics,
+  RecallQuery,
+  RecallResult,
+  UnifiedMemoryResult
 } from './RecallServiceTypes';
-import { 
-  convertToUnifiedResult,
+import {
   calculateCombinedRelevance,
   calculateTemporalRelevance,
   calculateTextRelevance,
-  mergeHybridResults,
+  convertToUnifiedResult,
   findMemoryRelationships,
+  mergeHybridResults,
   optimizeQuery,
   validateRecallQuery
 } from './RecallServiceUtils';
@@ -27,14 +28,14 @@ import {
  * RecallService provides unified cross-memory search and retrieval.
  * It orchestrates searches across all memory types and provides
  * intelligent ranking and relationship discovery.
- * 
+ *
  * Features:
  * - Hybrid search across all memory types
  * - Intelligent relevance scoring
  * - Related memory discovery
  * - Performance optimization with caching
  * - Search analytics and metrics
- * 
+ *
  * @example Basic usage with manual setup
  * ```typescript
  * const storage = new SQLiteAdapter(dbPath);
@@ -47,7 +48,7 @@ import {
  *   recallConfig
  * );
  * ```
- * 
+ *
  * @todo Add convenience factory for easier setup
  * ```typescript
  * // SUGGESTED: Add createRecallService factory function
@@ -66,18 +67,21 @@ import {
  *   // 4. Instantiate RecallService with optimized config
  *   // 5. Return ready-to-use RecallService instance
  * }
- * 
+ *
  * // Usage examples:
  * const quickRecall = await createRecallService({ preset: 'fast' });
- * const productionRecall = await createRecallService({ 
- *   storage: 'postgresql', 
+ * const productionRecall = await createRecallService({
+ *   storage: 'postgresql',
  *   preset: 'production',
- *   vectorSearch: true 
+ *   vectorSearch: true
  * });
  * ```
  */
 export class RecallService {
-  private cache = new Map<string, { result: RecallResult; timestamp: number }>();
+  private cache = new Map<
+    string,
+    { result: RecallResult; timestamp: number }
+  >();
   private metrics: RecallMetrics = {
     totalQueries: 0,
     avgResponseTime: 0,
@@ -104,7 +108,7 @@ export class RecallService {
    */
   async recall(query: RecallQuery): Promise<RecallResult> {
     const startTime = Date.now();
-    
+
     if (!validateRecallQuery(query)) {
       throw new Error('Invalid recall query');
     }
@@ -130,7 +134,7 @@ export class RecallService {
     ];
 
     // Execute parallel searches
-    const searchPromises = memoryTypes.map(type => 
+    const searchPromises = memoryTypes.map((type) =>
       this.searchMemoryType(type, query)
     );
 
@@ -141,14 +145,19 @@ export class RecallService {
     const rankedMemories = this.applyHybridScoring(allMemories, query);
 
     // Enhance with stored connections from database
-    const enhancedMemories = await this.enhanceWithStoredConnections(rankedMemories, query.userId);
+    const enhancedMemories = await this.enhanceWithStoredConnections(
+      rankedMemories,
+      query.userId
+    );
 
     // TEMPORAL FIX: Extract conversation date context for AgentNode-style injection
-    const conversationContext = this.extractConversationDateContext(enhancedMemories);
+    const conversationContext =
+      this.extractConversationDateContext(enhancedMemories);
 
     // Add relationships if requested
     if (query.includeRelated !== false && this.config.enableRelatedMemories) {
-      for (const memory of enhancedMemories.slice(0, 10)) { // Only for top 10
+      for (const memory of enhancedMemories.slice(0, 10)) {
+        // Only for top 10
         memory.relationships = findMemoryRelationships(
           memory,
           enhancedMemories,
@@ -159,11 +168,16 @@ export class RecallService {
 
     // Filter by relevance threshold
     const filteredMemories = enhancedMemories.filter(
-      memory => memory.relevance >= (query.minRelevance || this.config.minRelevanceThreshold)
+      (memory) =>
+        memory.relevance >=
+        (query.minRelevance || this.config.minRelevanceThreshold)
     );
 
     // Apply limit
-    const limitedMemories = filteredMemories.slice(0, query.limit || this.config.defaultLimit);
+    const limitedMemories = filteredMemories.slice(
+      0,
+      query.limit || this.config.defaultLimit
+    );
 
     // Cache result
     const result: RecallResult = {
@@ -188,11 +202,13 @@ export class RecallService {
    * NATURAL TEMPORAL CONTEXT: Extract conversation date context from memories
    * This provides temporal context naturally without directing the LLM's reasoning
    */
-  private extractConversationDateContext(memories: UnifiedMemoryResult[]): string | undefined {
+  private extractConversationDateContext(
+    memories: UnifiedMemoryResult[]
+  ): string | undefined {
     // Find memories with original conversation dates
     const conversationDates = memories
-      .map(memory => memory.context?.originalConversationDate)
-      .filter(date => date) as string[];
+      .map((memory) => memory.context?.originalConversationDate)
+      .filter((date) => date) as string[];
 
     if (conversationDates.length === 0) return undefined;
 
@@ -224,9 +240,12 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
             query.query,
             Math.ceil((query.limit || this.config.defaultLimit) / 4)
           );
-          
+
           for (const memory of workingResults) {
-            const relevance = calculateTextRelevance(memory.content, query.query);
+            const relevance = calculateTextRelevance(
+              memory.content,
+              query.query
+            );
             if (relevance > 0.1) {
               results.push(convertToUnifiedResult(memory, type, relevance));
             }
@@ -241,24 +260,33 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
             query.query,
             {
               limit: Math.ceil((query.limit || this.config.defaultLimit) / 2),
-              timeRange: query.timeRange ? {
-                start: new Date(query.timeRange.start),
-                end: new Date(query.timeRange.end)
-              } : undefined
+              timeRange: query.timeRange
+                ? {
+                    start: new Date(query.timeRange.start),
+                    end: new Date(query.timeRange.end)
+                  }
+                : undefined
             }
           );
-          
+
           for (const memory of episodicResults) {
-            const textRelevance = calculateTextRelevance(memory.content, query.query, memory.tags);
+            const textRelevance = calculateTextRelevance(
+              memory.content,
+              query.query,
+              memory.tags
+            );
             const temporalRelevance = calculateTemporalRelevance(
               memory.createdAt,
               Date.now(),
               query.timeRange
             );
-            const combinedRelevance = (textRelevance * 0.7) + (temporalRelevance * 0.3);
-            
+            const combinedRelevance =
+              textRelevance * 0.7 + temporalRelevance * 0.3;
+
             if (combinedRelevance > 0.1) {
-              results.push(convertToUnifiedResult(memory, type, combinedRelevance));
+              results.push(
+                convertToUnifiedResult(memory, type, combinedRelevance)
+              );
             }
           }
           break;
@@ -270,7 +298,7 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
             query.agentId,
             query.query
           );
-          
+
           for (const memory of semanticResults) {
             const textRelevance = calculateTextRelevance(
               memory.content,
@@ -278,29 +306,38 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
               memory.keywords
             );
             const confidenceBoost = memory.confidence * 0.2;
-            const combinedRelevance = Math.min(1.0, textRelevance + confidenceBoost);
-            
+            const combinedRelevance = Math.min(
+              1.0,
+              textRelevance + confidenceBoost
+            );
+
             if (combinedRelevance > 0.1) {
-              results.push(convertToUnifiedResult(memory, type, combinedRelevance));
+              results.push(
+                convertToUnifiedResult(memory, type, combinedRelevance)
+              );
             }
           }
           break;
         }
 
         case MemoryType.PROCEDURAL: {
-          const proceduralResults = await this.proceduralMemory.getRecommendedActions(
-            query.userId,
-            query.agentId,
-            query.query,
-            query.context || {}
-          );
-          
+          const proceduralResults =
+            await this.proceduralMemory.getRecommendedActions(
+              query.userId,
+              query.agentId,
+              query.query,
+              query.context || {}
+            );
+
           for (const matchResult of proceduralResults) {
             const memory = matchResult.pattern;
-            const proceduralRelevance = (matchResult.confidence + matchResult.contextMatch) / 2;
-            
+            const proceduralRelevance =
+              (matchResult.confidence + matchResult.contextMatch) / 2;
+
             if (proceduralRelevance > 0.1) {
-              results.push(convertToUnifiedResult(memory, type, proceduralRelevance));
+              results.push(
+                convertToUnifiedResult(memory, type, proceduralRelevance)
+              );
             }
           }
           break;
@@ -323,35 +360,38 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
   ): UnifiedMemoryResult[] {
     const weights = this.config.hybridSearchWeights;
 
-    return memories.map(memory => {
-      const textScore = calculateTextRelevance(memory.content, query.query);
-      const temporalScore = calculateTemporalRelevance(
-        memory.timestamp,
-        Date.now(),
-        query.timeRange
-      );
-      
-      // Vector score would come from embedding similarity
-      const vectorScore = this.config.enableVectorSearch ? 0.5 : 0;
-      
-      // Procedural score based on pattern match and usage
-      const proceduralScore = memory.type === MemoryType.PROCEDURAL
-        ? memory.context.usageCount || 0 / 100 // Normalize usage count
-        : 0;
+    return memories
+      .map((memory) => {
+        const textScore = calculateTextRelevance(memory.content, query.query);
+        const temporalScore = calculateTemporalRelevance(
+          memory.timestamp,
+          Date.now(),
+          query.timeRange
+        );
 
-      const combinedRelevance = calculateCombinedRelevance(
-        vectorScore,
-        textScore,
-        temporalScore,
-        proceduralScore,
-        weights
-      );
+        // Vector score would come from embedding similarity
+        const vectorScore = this.config.enableVectorSearch ? 0.5 : 0;
 
-      return {
-        ...memory,
-        relevance: Math.max(memory.relevance, combinedRelevance)
-      };
-    }).sort((a, b) => b.relevance - a.relevance);
+        // Procedural score based on pattern match and usage
+        const proceduralScore =
+          memory.type === MemoryType.PROCEDURAL
+            ? memory.context.usageCount || 0 / 100 // Normalize usage count
+            : 0;
+
+        const combinedRelevance = calculateCombinedRelevance(
+          vectorScore,
+          textScore,
+          temporalScore,
+          proceduralScore,
+          weights
+        );
+
+        return {
+          ...memory,
+          relevance: Math.max(memory.relevance, combinedRelevance)
+        };
+      })
+      .sort((a, b) => b.relevance - a.relevance);
   }
 
   /**
@@ -362,13 +402,13 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
     userId: string
   ): Promise<UnifiedMemoryResult[]> {
     if (memories.length === 0) return memories;
-    
+
     // Get all connections for these memories if storage supports it
-    const memoryIds = memories.map(m => m.id);
-    
+    const memoryIds = memories.map((m) => m.id);
+
     // Access storage through one of the memory types (they all share the same storage)
     const storage = (this.workingMemory as any).storage;
-    
+
     // Check if storage has the getConnectionsForMemories method
     if (storage?.memory?.getConnectionsForMemories) {
       try {
@@ -376,10 +416,10 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
           userId,
           memoryIds
         );
-        
+
         // Create a map for quick lookup
         const connectionMap = new Map<string, any[]>();
-        
+
         for (const conn of connections) {
           // Add to source memory
           if (!connectionMap.has(conn.sourceMemoryId)) {
@@ -389,7 +429,7 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
             ...conn,
             direction: 'outgoing'
           });
-          
+
           // Add to target memory
           if (!connectionMap.has(conn.targetMemoryId)) {
             connectionMap.set(conn.targetMemoryId, []);
@@ -399,12 +439,12 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
             direction: 'incoming'
           });
         }
-        
+
         // Attach connections to memories and boost relevance
-        return memories.map(memory => {
+        return memories.map((memory) => {
           const memoryConnections = connectionMap.get(memory.id) || [];
           const connectionBoost = Math.min(memoryConnections.length * 0.1, 0.3);
-          
+
           return {
             ...memory,
             connections: memoryConnections,
@@ -416,7 +456,7 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
         return memories;
       }
     }
-    
+
     return memories;
   }
 
@@ -489,16 +529,19 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
 
   private determineSearchStrategy(query: RecallQuery): string {
     const strategies: string[] = [];
-    
+
     if (this.config.enableVectorSearch) strategies.push('vector');
     strategies.push('text');
     if (query.timeRange) strategies.push('temporal');
-    if (query.memoryTypes?.includes(MemoryType.PROCEDURAL)) strategies.push('procedural');
-    
+    if (query.memoryTypes?.includes(MemoryType.PROCEDURAL))
+      strategies.push('procedural');
+
     return strategies.join('+');
   }
 
-  private calculateSourceDistribution(memories: UnifiedMemoryResult[]): RecallResult['sources'] {
+  private calculateSourceDistribution(
+    memories: UnifiedMemoryResult[]
+  ): RecallResult['sources'] {
     const sources = {
       working: 0,
       episodic: 0,
@@ -515,26 +558,27 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
 
   private updateMetrics(startTime: number, cacheHit: boolean): void {
     this.metrics.totalQueries++;
-    
+
     const executionTime = Date.now() - startTime;
-    this.metrics.avgResponseTime = (
-      (this.metrics.avgResponseTime * (this.metrics.totalQueries - 1)) + executionTime
-    ) / this.metrics.totalQueries;
+    this.metrics.avgResponseTime =
+      (this.metrics.avgResponseTime * (this.metrics.totalQueries - 1) +
+        executionTime) /
+      this.metrics.totalQueries;
 
     if (cacheHit) {
-      this.metrics.cacheHitRate = (
-        (this.metrics.cacheHitRate * (this.metrics.totalQueries - 1)) + 1
-      ) / this.metrics.totalQueries;
+      this.metrics.cacheHitRate =
+        (this.metrics.cacheHitRate * (this.metrics.totalQueries - 1) + 1) /
+        this.metrics.totalQueries;
     } else {
-      this.metrics.cacheHitRate = (
-        this.metrics.cacheHitRate * (this.metrics.totalQueries - 1)
-      ) / this.metrics.totalQueries;
+      this.metrics.cacheHitRate =
+        (this.metrics.cacheHitRate * (this.metrics.totalQueries - 1)) /
+        this.metrics.totalQueries;
     }
   }
 
   private updateQueryStats(query: string, relevance: number): void {
-    const existing = this.metrics.popularQueries.find(q => q.query === query);
-    
+    const existing = this.metrics.popularQueries.find((q) => q.query === query);
+
     if (existing) {
       existing.count++;
       existing.avgRelevance = (existing.avgRelevance + relevance) / 2;
@@ -555,9 +599,9 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
 
 /**
  * @todo SUGGESTED: Default RecallConfig presets for convenience factory
- * 
+ *
  * These preset configurations would provide sensible defaults for different use cases:
- * 
+ *
  * ```typescript
  * export const RECALL_CONFIG_PRESETS = {
  *   // Fast preset: Minimal features, maximum performance
@@ -571,7 +615,7 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
  *     cacheResults: true,
  *     cacheTTL: 60000 // 1 minute
  *   } as RecallConfig,
- * 
+ *
  *   // Balanced preset: Good performance with moderate features
  *   balanced: {
  *     defaultLimit: 10,
@@ -583,7 +627,7 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
  *     cacheResults: true,
  *     cacheTTL: 300000 // 5 minutes
  *   } as RecallConfig,
- * 
+ *
  *   // Accurate preset: Maximum features, thorough search
  *   accurate: {
  *     defaultLimit: 20,
@@ -595,7 +639,7 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
  *     cacheResults: true,
  *     cacheTTL: 600000 // 10 minutes
  *   } as RecallConfig,
- * 
+ *
  *   // Production preset: Enterprise-ready configuration
  *   production: {
  *     defaultLimit: 15,
@@ -608,7 +652,7 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
  *     cacheTTL: 900000 // 15 minutes
  *   } as RecallConfig
  * };
- * 
+ *
  * export const MEMORY_CONFIG_PRESETS = {
  *   fast: {
  *     working: { maxContextItems: 20, ttlSeconds: 1800 },

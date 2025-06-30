@@ -50,7 +50,9 @@ export async function initializeSqliteVec(
 
     // Verify extension is loaded by trying to create a test table
     try {
-      db.prepare('CREATE VIRTUAL TABLE IF NOT EXISTS _vec_test USING vec0(test_embedding float[3])').run();
+      db.prepare(
+        'CREATE VIRTUAL TABLE IF NOT EXISTS _vec_test USING vec0(test_embedding float[3])'
+      ).run();
       db.prepare('DROP TABLE _vec_test').run();
       logger.info(
         LogCategory.STORAGE,
@@ -87,7 +89,11 @@ export async function createVectorTables(db: Database.Database): Promise<void> {
   `
   ).run();
 
-  logger.info(LogCategory.STORAGE, 'SQLiteVec', 'Vector metadata tables created');
+  logger.info(
+    LogCategory.STORAGE,
+    'SQLiteVec',
+    'Vector metadata tables created'
+  );
 }
 
 /**
@@ -98,13 +104,13 @@ export async function createVectorCollection(
   config: VectorCollectionConfig
 ): Promise<void> {
   const { name, dimension, metric = VectorMetric.COSINE } = config;
-  
+
   // Create the vec0 virtual table
   const createTableSQL = `CREATE VIRTUAL TABLE IF NOT EXISTS ${name} USING vec0(embedding float[${dimension}])`;
-  
+
   try {
     db.prepare(createTableSQL).run();
-    
+
     // Track the collection in our metadata table
     const insertMetadata = db.prepare(
       `INSERT OR REPLACE INTO vec_collections (name, dimension, metric) VALUES (?, ?, ?)`
@@ -119,7 +125,7 @@ export async function createVectorCollection(
   } catch (error) {
     logger.error(
       LogCategory.STORAGE,
-      'SQLiteVec', 
+      'SQLiteVec',
       `Failed to create vector collection: ${name}`,
       { error: error instanceof Error ? error.message : String(error) }
     );
@@ -137,11 +143,15 @@ export async function dropVectorCollection(
   try {
     // Drop the virtual table
     db.prepare(`DROP TABLE IF EXISTS ${name}`).run();
-    
+
     // Remove from metadata
     db.prepare('DELETE FROM vec_collections WHERE name = ?').run(name);
 
-    logger.info(LogCategory.STORAGE, 'SQLiteVec', `Dropped collection: ${name}`);
+    logger.info(
+      LogCategory.STORAGE,
+      'SQLiteVec',
+      `Dropped collection: ${name}`
+    );
   } catch (error) {
     logger.error(
       LogCategory.STORAGE,

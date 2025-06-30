@@ -1,19 +1,19 @@
 /**
  * @fileoverview Intelligence Layer API - Language-agnostic memory intelligence
- * 
+ *
  * Provides configurable memory intelligence features following CTO's hybrid approach:
  * - Base embedding similarity (free)
  * - Optional user-configurable rules (free)
  * - Optional LLM enhancement (cost-controlled)
- * 
+ *
  * @author AgentDock Core Team
  */
 
 // Import types for internal use
 import type {
-  IntelligenceLayerConfig,
+  ConnectionRule,
   ConsolidationConfig,
-  ConnectionRule
+  IntelligenceLayerConfig
 } from './types';
 
 // Core intelligence services
@@ -28,24 +28,24 @@ export type {
   // Connection types
   ConnectionType,
   MemoryConnection,
-  
+
   // Configuration interfaces (CTO's hybrid approach)
   IntelligenceLayerConfig,
   ConnectionRule,
-  
+
   // Service configurations
   EmbeddingConfig,
   EmbeddingResult,
   ConsolidationConfig,
   ConsolidationResult,
-  
+
   // Pattern analysis types
   TemporalPattern,
   ActivityCluster,
-  
+
   // Graph types
   ConnectionGraph as ConnectionGraphInterface,
-  
+
   // Importance scoring
   ImportanceFactors,
   ImportanceScore
@@ -61,17 +61,17 @@ export const DEFAULT_INTELLIGENCE_CONFIG: IntelligenceLayerConfig = {
     similarityThreshold: 0.7,
     model: 'text-embedding-3-small' // Default embedding model
   },
-  
+
   // Progressive enhancement configuration
   connectionDetection: {
     method: 'hybrid', // Use all available methods
-    
+
     // User rules (free, configurable)
     userRules: {
       enabled: true,
       patterns: [] // Users can add their own patterns
     },
-    
+
     // LLM enhancement (optional, cost-aware)
     llmEnhancement: {
       enabled: false, // Disabled by default - user must opt-in
@@ -84,7 +84,7 @@ export const DEFAULT_INTELLIGENCE_CONFIG: IntelligenceLayerConfig = {
       costPerToken: 0.00000025 // User should configure based on their pricing
     }
   },
-  
+
   // Cost control - following batch processing patterns
   costControl: {
     maxLLMCallsPerBatch: 50,
@@ -170,20 +170,22 @@ export function createIntelligenceConfig(
     connectionDetection: {
       ...DEFAULT_INTELLIGENCE_CONFIG.connectionDetection,
       ...overrides.connectionDetection,
-      userRules: overrides.connectionDetection?.userRules ? {
-        ...DEFAULT_INTELLIGENCE_CONFIG.connectionDetection.userRules,
-        ...overrides.connectionDetection.userRules
-      } : DEFAULT_INTELLIGENCE_CONFIG.connectionDetection.userRules,
-      llmEnhancement: overrides.connectionDetection?.llmEnhancement ? {
-        ...DEFAULT_INTELLIGENCE_CONFIG.connectionDetection.llmEnhancement,
-        ...overrides.connectionDetection.llmEnhancement
-      } : DEFAULT_INTELLIGENCE_CONFIG.connectionDetection.llmEnhancement
+      userRules: overrides.connectionDetection?.userRules
+        ? {
+            ...DEFAULT_INTELLIGENCE_CONFIG.connectionDetection.userRules,
+            ...overrides.connectionDetection.userRules
+          }
+        : DEFAULT_INTELLIGENCE_CONFIG.connectionDetection.userRules,
+      llmEnhancement: overrides.connectionDetection?.llmEnhancement
+        ? {
+            ...DEFAULT_INTELLIGENCE_CONFIG.connectionDetection.llmEnhancement,
+            ...overrides.connectionDetection.llmEnhancement
+          }
+        : DEFAULT_INTELLIGENCE_CONFIG.connectionDetection.llmEnhancement
     },
     costControl: {
       ...DEFAULT_INTELLIGENCE_CONFIG.costControl,
       ...overrides.costControl
     }
   };
-} 
- 
- 
+}

@@ -1,4 +1,8 @@
-import { ProceduralMemoryData, ProceduralPattern, ProceduralOutcome } from './ProceduralMemoryTypes'
+import {
+  ProceduralMemoryData,
+  ProceduralOutcome,
+  ProceduralPattern
+} from './ProceduralMemoryTypes';
 
 /**
  * Utility functions for ProceduralMemory operations
@@ -28,8 +32,10 @@ export function extractActionPattern(
 ): string {
   // Create a pattern signature from trigger-action-context
   const contextKeys = Object.keys(context).sort();
-  const contextSig = contextKeys.map(k => `${k}:${typeof context[k]}`).join(',');
-  
+  const contextSig = contextKeys
+    .map((k) => `${k}:${typeof context[k]}`)
+    .join(',');
+
   return `${trigger}→${action}|${contextSig}`;
 }
 
@@ -42,12 +48,18 @@ export function calculatePatternConfidence(
   usageRecency: number
 ): number {
   if (totalCount === 0) return 0.5;
-  
+
   const successRate = successCount / totalCount;
-  const recencyFactor = Math.max(0.1, 1 - usageRecency / (30 * 24 * 60 * 60 * 1000)); // 30 days decay
+  const recencyFactor = Math.max(
+    0.1,
+    1 - usageRecency / (30 * 24 * 60 * 60 * 1000)
+  ); // 30 days decay
   const experienceFactor = Math.min(1.0, totalCount / 10); // More experience = higher confidence
-  
-  return Math.min(0.95, successRate * 0.6 + recencyFactor * 0.2 + experienceFactor * 0.2);
+
+  return Math.min(
+    0.95,
+    successRate * 0.6 + recencyFactor * 0.2 + experienceFactor * 0.2
+  );
 }
 
 /**
@@ -59,14 +71,15 @@ export function shouldLearnPattern(
   minAttempts: number = 3
 ): boolean {
   if (outcomes.length < minAttempts) return false;
-  
+
   const recentOutcomes = outcomes
-    .filter(o => Date.now() - o.timestamp < 7 * 24 * 60 * 60 * 1000) // Last 7 days
+    .filter((o) => Date.now() - o.timestamp < 7 * 24 * 60 * 60 * 1000) // Last 7 days
     .slice(-10); // Last 10 attempts
-  
+
   if (recentOutcomes.length === 0) return false;
-  
-  const successRate = recentOutcomes.filter(o => o.success).length / recentOutcomes.length;
+
+  const successRate =
+    recentOutcomes.filter((o) => o.success).length / recentOutcomes.length;
   return successRate >= minSuccessRate;
 }
 
@@ -79,16 +92,26 @@ export function arePatternsSimilar(
   threshold: number = 0.8
 ): boolean {
   // Compare triggers
-  const triggerSimilarity = calculateStringSimilarity(pattern1.trigger, pattern2.trigger);
-  
+  const triggerSimilarity = calculateStringSimilarity(
+    pattern1.trigger,
+    pattern2.trigger
+  );
+
   // Compare actions
-  const actionSimilarity = calculateStringSimilarity(pattern1.action, pattern2.action);
-  
+  const actionSimilarity = calculateStringSimilarity(
+    pattern1.action,
+    pattern2.action
+  );
+
   // Compare contexts
-  const contextSimilarity = calculateContextSimilarity(pattern1.metadata, pattern2.metadata);
-  
-  const overallSimilarity = (triggerSimilarity * 0.4) + (actionSimilarity * 0.4) + (contextSimilarity * 0.2);
-  
+  const contextSimilarity = calculateContextSimilarity(
+    pattern1.metadata,
+    pattern2.metadata
+  );
+
+  const overallSimilarity =
+    triggerSimilarity * 0.4 + actionSimilarity * 0.4 + contextSimilarity * 0.2;
+
   return overallSimilarity >= threshold;
 }
 
@@ -125,7 +148,7 @@ export function extractConditions(
   context: Record<string, any>
 ): string[] {
   const conditions: string[] = [];
-  
+
   // Extract conditions from trigger
   if (trigger.includes('if ')) {
     const conditionMatch = trigger.match(/if (.+)/);
@@ -133,7 +156,7 @@ export function extractConditions(
       conditions.push(conditionMatch[1]);
     }
   }
-  
+
   // Extract conditions from context
   Object.entries(context).forEach(([key, value]) => {
     if (typeof value === 'boolean') {
@@ -144,7 +167,7 @@ export function extractConditions(
       conditions.push(`${key} = ${value}`);
     }
   });
-  
+
   return conditions.slice(0, 5); // Limit to 5 conditions
 }
 
@@ -156,39 +179,47 @@ export function matchesConditions(
   currentContext: Record<string, any>
 ): number {
   if (conditions.length === 0) return 1.0;
-  
+
   let matchScore = 0;
   let totalConditions = conditions.length;
-  
+
   for (const condition of conditions) {
     if (evaluateCondition(condition, currentContext)) {
       matchScore++;
     }
   }
-  
+
   return matchScore / totalConditions;
 }
 
 /**
  * Evaluate a single condition against context
  */
-function evaluateCondition(condition: string, context: Record<string, any>): boolean {
+function evaluateCondition(
+  condition: string,
+  context: Record<string, any>
+): boolean {
   try {
     // Simple condition evaluation
     if (condition.includes(' is ')) {
       const [key, value] = condition.split(' is ');
       const contextValue = context[key.trim()];
-      const expectedValue = value.trim() === 'true' ? true : value.trim() === 'false' ? false : value.trim();
+      const expectedValue =
+        value.trim() === 'true'
+          ? true
+          : value.trim() === 'false'
+            ? false
+            : value.trim();
       return contextValue === expectedValue;
     }
-    
+
     if (condition.includes(' = ')) {
       const [key, value] = condition.split(' = ');
       const contextValue = context[key.trim()];
       const expectedValue = value.replace(/"/g, '').trim();
       return String(contextValue) === expectedValue;
     }
-    
+
     // Default: check if key exists in context
     return Object.prototype.hasOwnProperty.call(context, condition.trim());
   } catch (error) {
@@ -202,15 +233,17 @@ function evaluateCondition(condition: string, context: Record<string, any>): boo
 function calculateStringSimilarity(str1: string, str2: string): number {
   const len1 = str1.length;
   const len2 = str2.length;
-  
+
   if (len1 === 0) return len2 === 0 ? 1 : 0;
   if (len2 === 0) return 0;
-  
-  const matrix = Array(len1 + 1).fill(null).map(() => Array(len2 + 1).fill(null));
-  
+
+  const matrix = Array(len1 + 1)
+    .fill(null)
+    .map(() => Array(len2 + 1).fill(null));
+
   for (let i = 0; i <= len1; i++) matrix[i][0] = i;
   for (let j = 0; j <= len2; j++) matrix[0][j] = j;
-  
+
   for (let i = 1; i <= len1; i++) {
     for (let j = 1; j <= len2; j++) {
       const cost = str1[i - 1] === str2[j - 1] ? 0 : 1;
@@ -221,7 +254,7 @@ function calculateStringSimilarity(str1: string, str2: string): number {
       );
     }
   }
-  
+
   const maxLen = Math.max(len1, len2);
   return 1 - matrix[len1][len2] / maxLen;
 }
@@ -236,16 +269,16 @@ function calculateContextSimilarity(
   const keys1 = Object.keys(context1);
   const keys2 = Object.keys(context2);
   const allKeys = new Set([...keys1, ...keys2]);
-  
+
   if (allKeys.size === 0) return 1.0;
-  
+
   let matches = 0;
   for (const key of Array.from(allKeys)) {
     if (context1[key] === context2[key]) {
       matches++;
     }
   }
-  
+
   return matches / allKeys.size;
 }
 
@@ -253,15 +286,17 @@ function calculateContextSimilarity(
  * Validate procedural memory configuration
  */
 export function validateProceduralConfig(config: any): boolean {
-  return config.minSuccessRate >= 0 &&
-         config.minSuccessRate <= 1 &&
-         config.maxPatternsPerCategory > 0 &&
-         config.decayRate >= 0 &&
-         config.decayRate <= 1 &&
-         config.confidenceThreshold >= 0 &&
-         config.confidenceThreshold <= 1 &&
-         typeof config.adaptiveLearning === 'boolean' &&
-         typeof config.patternMerging === 'boolean';
+  return (
+    config.minSuccessRate >= 0 &&
+    config.minSuccessRate <= 1 &&
+    config.maxPatternsPerCategory > 0 &&
+    config.decayRate >= 0 &&
+    config.decayRate <= 1 &&
+    config.confidenceThreshold >= 0 &&
+    config.confidenceThreshold <= 1 &&
+    typeof config.adaptiveLearning === 'boolean' &&
+    typeof config.patternMerging === 'boolean'
+  );
 }
 
 /**
@@ -273,7 +308,7 @@ export function applyPatternDecay(
 ): number {
   const daysSinceUse = (Date.now() - pattern.lastUsed) / (24 * 60 * 60 * 1000);
   const decayFactor = Math.exp(-decayRate * daysSinceUse);
-  
+
   return Math.max(0.1, pattern.confidence * decayFactor);
 }
 
@@ -287,10 +322,12 @@ export function isPatternWorthy(
 ): boolean {
   const ageDays = (Date.now() - pattern.createdAt) / (24 * 60 * 60 * 1000);
   const daysSinceUse = (Date.now() - pattern.lastUsed) / (24 * 60 * 60 * 1000);
-  
-  return pattern.confidence >= minConfidence &&
-         pattern.totalCount >= 2 &&
-         (ageDays <= maxAgeDays || daysSinceUse <= 30);
+
+  return (
+    pattern.confidence >= minConfidence &&
+    pattern.totalCount >= 2 &&
+    (ageDays <= maxAgeDays || daysSinceUse <= 30)
+  );
 }
 
 /**
@@ -306,7 +343,7 @@ export function generatePatternKey(trigger: string, action: string): string {
 export function categorizePattern(trigger: string, action: string): string {
   const triggerLower = trigger.toLowerCase();
   const actionLower = action.toLowerCase();
-  
+
   if (triggerLower.includes('error') || actionLower.includes('fix')) {
     return 'error_handling';
   }
@@ -322,6 +359,6 @@ export function categorizePattern(trigger: string, action: string): string {
   if (actionLower.includes('analyze') || actionLower.includes('check')) {
     return 'analysis';
   }
-  
+
   return 'general';
 }

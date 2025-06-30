@@ -1,6 +1,12 @@
+// Import config types for MemoryManagerConfig
+import type { EpisodicMemoryConfig } from './episodic/EpisodicMemoryTypes';
+import type { ProceduralMemoryConfig } from './procedural/ProceduralMemoryTypes';
+import type { SemanticMemoryConfig } from './semantic/SemanticMemoryTypes';
+import type { WorkingMemoryConfig } from './working/WorkingMemoryTypes';
+
 /**
  * @fileoverview Memory Types - Clean exports with full type safety
- * 
+ *
  * NO any types - Full type safety enforced
  * Simple delegation to storage layer
  */
@@ -45,16 +51,10 @@ export { ProceduralMemory } from './procedural/ProceduralMemory';
 export { MemoryType } from './common';
 export type { Memory, MemoryMessage } from './common';
 
-// Import config types for MemoryManagerConfig
-import type { WorkingMemoryConfig } from './working/WorkingMemoryTypes';
-import type { EpisodicMemoryConfig } from './episodic/EpisodicMemoryTypes';
-import type { SemanticMemoryConfig } from './semantic/SemanticMemoryTypes';
-import type { ProceduralMemoryConfig } from './procedural/ProceduralMemoryTypes';
-
 export interface MemoryManagerConfig {
   working?: WorkingMemoryConfig;
   episodic?: EpisodicMemoryConfig;
   semantic?: SemanticMemoryConfig;
   procedural?: ProceduralMemoryConfig;
   debug?: boolean;
-} 
+}

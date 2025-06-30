@@ -1,23 +1,26 @@
 /**
  * @fileoverview Zod validation schemas for memory data
- * 
+ *
  * Provides type-safe validation for memory operations using Zod,
  * following patterns established in agent-config.ts
  */
 
 import { z } from 'zod';
+
 import { MemoryType } from '../../shared/types/memory';
 
 /**
  * Memory metadata schema with proper typing
  */
-export const MemoryMetadataSchema = z.object({
-  contextWindow: z.number().int().min(1).optional(),
-  expiresAt: z.number().int().min(0).optional(),
-  context: z.string().optional(),
-  category: z.string().optional(),
-  confidence: z.number().min(0).max(1).optional(),
-}).catchall(z.unknown());
+export const MemoryMetadataSchema = z
+  .object({
+    contextWindow: z.number().int().min(1).optional(),
+    expiresAt: z.number().int().min(0).optional(),
+    context: z.string().optional(),
+    category: z.string().optional(),
+    confidence: z.number().min(0).max(1).optional()
+  })
+  .catchall(z.unknown());
 
 /**
  * Core memory data validation schema
@@ -34,13 +37,13 @@ export const MemoryDataSchema = z.object({
   createdAt: z.number().int().min(0),
   updatedAt: z.number().int().min(0),
   lastAccessedAt: z.number().int().min(0),
-  
+
   // Optional fields that exist in storage
   sessionId: z.string().min(1).optional(),
   tokenCount: z.number().int().min(0).optional(),
   keywords: z.array(z.string()).optional(),
   embeddingId: z.string().optional(),
-  
+
   metadata: MemoryMetadataSchema.optional()
 });
 
@@ -58,19 +61,19 @@ export function validateMemoryData(data: unknown): {
   error?: string;
 } {
   const result = MemoryDataSchema.safeParse(data);
-  
+
   if (result.success) {
     return {
       success: true,
       data: result.data
     };
   }
-  
+
   return {
     success: false,
-    error: result.error.errors.map(err => 
-      `${err.path.join('.')}: ${err.message}`
-    ).join('; ')
+    error: result.error.errors
+      .map((err) => `${err.path.join('.')}: ${err.message}`)
+      .join('; ')
   };
 }
 
@@ -90,10 +93,12 @@ export const MemoryRecallOptionsSchema = z.object({
   threshold: z.number().min(0).max(1).optional(),
   minImportance: z.number().min(0).max(1).optional(),
   useVectorSearch: z.boolean().optional(),
-  timeRange: z.object({
-    start: z.date(),
-    end: z.date()
-  }).optional()
+  timeRange: z
+    .object({
+      start: z.date(),
+      end: z.date()
+    })
+    .optional()
 });
 
 /**
@@ -104,4 +109,4 @@ export const MemoryOperationStatsSchema = z.object({
   byType: z.record(z.string(), z.number().int().min(0)),
   avgImportance: z.number().min(0).max(1),
   totalSize: z.string()
-}); 
+});

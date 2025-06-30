@@ -1,22 +1,22 @@
 /**
  * ProceduralMemory - Action pattern storage
- * 
+ *
  * THIN wrapper - delegates all operations to storage layer
  */
 
-import { StorageProvider } from '../../../storage/types';
-import { MemoryType } from '../../../shared/types/memory';
 import { LogCategory, logger } from '../../../logging';
-import { BaseMemoryType } from '../base/BaseMemoryType';
+import { MemoryType } from '../../../shared/types/memory';
+import { StorageProvider } from '../../../storage/types';
 import { IntelligenceLayerConfig } from '../../intelligence/types';
-import { 
-  ProceduralMemoryConfig, 
-  ProceduralMemoryData,
-  StoreProceduralOptions,
-  ProceduralMemoryStats,
+import { BaseMemoryType } from '../base/BaseMemoryType';
+import {
   LearningResult,
   PatternMatchResult,
-  PROCEDURAL_MEMORY_DEFAULTS
+  PROCEDURAL_MEMORY_DEFAULTS,
+  ProceduralMemoryConfig,
+  ProceduralMemoryData,
+  ProceduralMemoryStats,
+  StoreProceduralOptions
 } from './ProceduralMemoryTypes';
 
 export class ProceduralMemory extends BaseMemoryType {
@@ -49,10 +49,10 @@ export class ProceduralMemory extends BaseMemoryType {
     if (!userId || !userId.trim()) {
       throw new Error('userId is required for procedural memory operations');
     }
-    
+
     const id = `pm_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
     const now = Date.now();
-    
+
     // Create COMPLETE data at write time
     const memoryData = {
       id,
@@ -66,11 +66,11 @@ export class ProceduralMemory extends BaseMemoryType {
       createdAt: now,
       updatedAt: now,
       lastAccessedAt: now,
-      
+
       // Required fields
       sessionId: `session_${Date.now()}`,
       tokenCount: 0, // TODO: Add proper token counting
-      
+
       // Type-specific
       metadata: {
         trigger: options?.trigger || content,
@@ -80,7 +80,7 @@ export class ProceduralMemory extends BaseMemoryType {
         ...options?.metadata
       }
     };
-    
+
     await this.storage.memory!.store(userId, agentId, memoryData);
     return memoryData.id;
   }
@@ -97,17 +97,21 @@ export class ProceduralMemory extends BaseMemoryType {
     if (!userId || !userId.trim()) {
       throw new Error('userId is required for procedural memory operations');
     }
-    
+
     const content = `${trigger} -> ${action}`;
     const patternId = await this.store(userId, agentId, content, {
-       pattern: content,
-      confidence: this.proceduralConfig.confidenceThreshold ?? PROCEDURAL_MEMORY_DEFAULTS.confidenceThreshold
-     });
-    
+      pattern: content,
+      confidence:
+        this.proceduralConfig.confidenceThreshold ??
+        PROCEDURAL_MEMORY_DEFAULTS.confidenceThreshold
+    });
+
     return {
       patternId,
       learned: true,
-      confidence: this.proceduralConfig.confidenceThreshold ?? PROCEDURAL_MEMORY_DEFAULTS.confidenceThreshold,
+      confidence:
+        this.proceduralConfig.confidenceThreshold ??
+        PROCEDURAL_MEMORY_DEFAULTS.confidenceThreshold,
       reason: 'Pattern learned successfully'
     };
   }
@@ -124,15 +128,17 @@ export class ProceduralMemory extends BaseMemoryType {
     if (!userId || !userId.trim()) {
       throw new Error('userId is required for procedural memory operations');
     }
-    
+
     // DELEGATE TO STORAGE
     const result = await this.storage.memory!.recall(userId, agentId, trigger, {
       type: MemoryType.PROCEDURAL,
       limit: 5
     });
-    return result.map(memory => ({
+    return result.map((memory) => ({
       pattern: memory,
-      confidence: this.proceduralConfig.confidenceThreshold ?? PROCEDURAL_MEMORY_DEFAULTS.confidenceThreshold,
+      confidence:
+        this.proceduralConfig.confidenceThreshold ??
+        PROCEDURAL_MEMORY_DEFAULTS.confidenceThreshold,
       contextMatch: 0.5
     }));
   }
@@ -140,30 +146,40 @@ export class ProceduralMemory extends BaseMemoryType {
   /**
    * Get stats - DELEGATES to storage
    */
-  async getStats(userId: string, agentId?: string): Promise<ProceduralMemoryStats> {
+  async getStats(
+    userId: string,
+    agentId?: string
+  ): Promise<ProceduralMemoryStats> {
     if (!userId || !userId.trim()) {
       throw new Error('userId is required for procedural memory operations');
     }
-    
+
     const stats = await this.storage.memory!.getStats(userId, agentId);
-         return {
-       totalPatterns: stats.byType?.procedural || 0,
-       patternsByCategory: {},
-       avgConfidence: this.proceduralConfig.confidenceThreshold ?? PROCEDURAL_MEMORY_DEFAULTS.confidenceThreshold,
-       avgSuccessRate: this.proceduralConfig.minSuccessRate ?? PROCEDURAL_MEMORY_DEFAULTS.minSuccessRate,
-       mostUsedPatterns: [],
-       recentOutcomes: []
-     };
+    return {
+      totalPatterns: stats.byType?.procedural || 0,
+      patternsByCategory: {},
+      avgConfidence:
+        this.proceduralConfig.confidenceThreshold ??
+        PROCEDURAL_MEMORY_DEFAULTS.confidenceThreshold,
+      avgSuccessRate:
+        this.proceduralConfig.minSuccessRate ??
+        PROCEDURAL_MEMORY_DEFAULTS.minSuccessRate,
+      mostUsedPatterns: [],
+      recentOutcomes: []
+    };
   }
 
   /**
    * Get by ID - DELEGATES to storage
    */
-  async getById(userId: string, memoryId: string): Promise<ProceduralMemoryData | null> {
+  async getById(
+    userId: string,
+    memoryId: string
+  ): Promise<ProceduralMemoryData | null> {
     if (!userId || !userId.trim()) {
       throw new Error('userId is required for procedural memory operations');
     }
-    
+
     if (this.storage.memory?.getById) {
       const result = await this.storage.memory.getById(userId, memoryId);
       if (!result) return null;
@@ -174,25 +190,34 @@ export class ProceduralMemory extends BaseMemoryType {
         agentId: result.agentId,
         createdAt: result.createdAt,
         // Extract procedural-specific properties from metadata and content
-        trigger: String(result.metadata?.trigger || (
-          result.content.split('->')[0] || 'unknown'
-        ).trim()),
-        action: String(result.metadata?.action || (
-          result.content.split('->')[1] || 'unknown'  
-        ).trim()),
+        trigger: String(
+          result.metadata?.trigger ||
+            (result.content.split('->')[0] || 'unknown').trim()
+        ),
+        action: String(
+          result.metadata?.action ||
+            (result.content.split('->')[1] || 'unknown').trim()
+        ),
         context: String(result.metadata?.context || ''),
         pattern: String(result.metadata?.pattern || result.content),
         confidence: Number(result.metadata?.confidence || 0.5),
         successCount: Number(result.metadata?.successCount || 1),
         totalCount: Number(result.metadata?.totalCount || 1),
-        lastUsed: typeof result.metadata?.lastUsed === 'number' 
-          ? result.metadata.lastUsed 
-          : Date.now(),
-        conditions: Array.isArray(result.metadata?.conditions) ? result.metadata.conditions : [],
-        outcomes: Array.isArray(result.metadata?.outcomes) ? result.metadata.outcomes : [{
-          success: true,
-          timestamp: Date.now()
-        }],
+        lastUsed:
+          typeof result.metadata?.lastUsed === 'number'
+            ? result.metadata.lastUsed
+            : Date.now(),
+        conditions: Array.isArray(result.metadata?.conditions)
+          ? result.metadata.conditions
+          : [],
+        outcomes: Array.isArray(result.metadata?.outcomes)
+          ? result.metadata.outcomes
+          : [
+              {
+                success: true,
+                timestamp: Date.now()
+              }
+            ],
         metadata: result.metadata || {}
       };
     }

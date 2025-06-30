@@ -1,9 +1,9 @@
 /**
  * @fileoverview AgentDock Core - Server-only exports
- * 
+ *
  * This module contains Node.js-specific adapters and functionality
  * that should only be used in server environments (API routes, server components).
- * 
+ *
  * Usage:
  * ```typescript
  * import { SQLiteAdapter, PostgreSQLAdapter } from '@agentdock/core/server';
@@ -48,4 +48,4 @@ export type {
   StorageProvider,
   StorageOptions,
   StorageProviderOptions
-} from './storage/types'; 
+} from './storage/types';

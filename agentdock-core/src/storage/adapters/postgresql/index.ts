@@ -4,7 +4,11 @@
 
 import { LogCategory, logger } from '../../../logging';
 import { BaseStorageAdapter } from '../../base-adapter';
-import { ListOptions, StorageOptions, MemoryOperations as IMemoryOperations } from '../../types';
+import {
+  MemoryOperations as IMemoryOperations,
+  ListOptions,
+  StorageOptions
+} from '../../types';
 import { PostgreSQLConnectionManager } from './connection';
 import { BatchOperations } from './operations/batch';
 import { KVOperations } from './operations/kv';
@@ -78,19 +82,22 @@ export class PostgreSQLAdapter extends BaseStorageAdapter {
       // Check if memory tables exist
       const client = await this.connection.pool.connect();
       try {
-        const result = await client.query(`
+        const result = await client.query(
+          `
           SELECT EXISTS (
             SELECT FROM information_schema.tables 
             WHERE table_schema = $1 AND table_name = 'memories'
           )
-        `, [this.connection.schema]);
+        `,
+          [this.connection.schema]
+        );
 
-                 if (result.rows[0].exists) {
-           // Initialize memory operations directly (no bridge)
-           this.memory = new MemoryOperations(
-             this.connection.pool, 
-             this.connection.schema
-           );
+        if (result.rows[0].exists) {
+          // Initialize memory operations directly (no bridge)
+          this.memory = new MemoryOperations(
+            this.connection.pool,
+            this.connection.schema
+          );
 
           logger.info(
             LogCategory.STORAGE,
@@ -114,7 +121,7 @@ export class PostgreSQLAdapter extends BaseStorageAdapter {
         LogCategory.STORAGE,
         'PostgreSQLAdapter',
         'Failed to check for memory tables',
-        { 
+        {
           error: error instanceof Error ? error.message : String(error),
           schema: this.connection.schema
         }

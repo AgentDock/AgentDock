@@ -1,15 +1,15 @@
 /**
  * MemoryManager - Simple orchestrator for AgentDock memory system
- * 
+ *
  * Delegates ALL operations to memory types and storage layer - NO complex logic
  */
 
 import { StorageProvider } from '../storage/types';
-import { WorkingMemory } from './types/working/WorkingMemory';
-import { EpisodicMemory } from './types/episodic/EpisodicMemory';
-import { SemanticMemory } from './types/semantic/SemanticMemory';
-import { ProceduralMemory } from './types/procedural/ProceduralMemory';
 import { MemoryManagerConfig, MemoryType } from './types';
+import { EpisodicMemory } from './types/episodic/EpisodicMemory';
+import { ProceduralMemory } from './types/procedural/ProceduralMemory';
+import { SemanticMemory } from './types/semantic/SemanticMemory';
+import { WorkingMemory } from './types/working/WorkingMemory';
 
 export class MemoryManager {
   private working: WorkingMemory;
@@ -55,7 +55,9 @@ export class MemoryManager {
     type: MemoryType = MemoryType.SEMANTIC
   ): Promise<string> {
     if (!userId || typeof userId !== 'string' || !userId.trim()) {
-      throw new Error('userId must be a non-empty string for memory operations');
+      throw new Error(
+        'userId must be a non-empty string for memory operations'
+      );
     }
     if (!agentId || !content?.trim()) {
       throw new Error('Agent ID and content are required');
@@ -86,7 +88,9 @@ export class MemoryManager {
     options: { type?: MemoryType; limit?: number } = {}
   ): Promise<any[]> {
     if (!userId || typeof userId !== 'string' || !userId.trim()) {
-      throw new Error('userId must be a non-empty string for memory operations');
+      throw new Error(
+        'userId must be a non-empty string for memory operations'
+      );
     }
     if (!agentId || !query?.trim()) {
       throw new Error('Agent ID and query are required');
@@ -102,9 +106,15 @@ export class MemoryManager {
   /**
    * Apply decay - DELEGATE to storage
    */
-  async decay(userId: string, agentId: string, decayConfig: any): Promise<void> {
+  async decay(
+    userId: string,
+    agentId: string,
+    decayConfig: any
+  ): Promise<void> {
     if (!userId || typeof userId !== 'string' || !userId.trim()) {
-      throw new Error('userId must be a non-empty string for memory operations');
+      throw new Error(
+        'userId must be a non-empty string for memory operations'
+      );
     }
     if (!agentId) {
       throw new Error('Agent ID is required');
@@ -129,7 +139,9 @@ export class MemoryManager {
     strength: number
   ): Promise<void> {
     if (!userId || typeof userId !== 'string' || !userId.trim()) {
-      throw new Error('userId must be a non-empty string for memory operations');
+      throw new Error(
+        'userId must be a non-empty string for memory operations'
+      );
     }
     if (!fromId || !toId) {
       throw new Error('Both memory IDs are required');
@@ -142,12 +154,14 @@ export class MemoryManager {
     }
 
     if (this.storage.memory?.createConnections) {
-      await this.storage.memory.createConnections(userId, [{
-        fromMemoryId: fromId,
-        toMemoryId: toId,
-        type: connectionType,
-        strength
-      }]);
+      await this.storage.memory.createConnections(userId, [
+        {
+          fromMemoryId: fromId,
+          toMemoryId: toId,
+          type: connectionType,
+          strength
+        }
+      ]);
     }
   }
 
@@ -156,7 +170,9 @@ export class MemoryManager {
    */
   async getStats(userId: string, agentId?: string): Promise<any> {
     if (!userId || typeof userId !== 'string' || !userId.trim()) {
-      throw new Error('userId must be a non-empty string for memory operations');
+      throw new Error(
+        'userId must be a non-empty string for memory operations'
+      );
     }
     return this.storage.memory!.getStats(userId, agentId);
   }
@@ -166,7 +182,9 @@ export class MemoryManager {
    */
   async clearWorkingMemory(userId: string, agentId: string): Promise<void> {
     if (!userId || typeof userId !== 'string' || !userId.trim()) {
-      throw new Error('userId must be a non-empty string for memory operations');
+      throw new Error(
+        'userId must be a non-empty string for memory operations'
+      );
     }
     if (!agentId) {
       throw new Error('Agent ID is required');
@@ -184,7 +202,9 @@ export class MemoryManager {
     action: string
   ): Promise<any> {
     if (!userId || typeof userId !== 'string' || !userId.trim()) {
-      throw new Error('userId must be a non-empty string for memory operations');
+      throw new Error(
+        'userId must be a non-empty string for memory operations'
+      );
     }
     if (!agentId || !trigger || !action) {
       throw new Error('Agent ID, trigger, and action are required');
@@ -201,7 +221,9 @@ export class MemoryManager {
     trigger: string
   ): Promise<any[]> {
     if (!userId || typeof userId !== 'string' || !userId.trim()) {
-      throw new Error('userId must be a non-empty string for memory operations');
+      throw new Error(
+        'userId must be a non-empty string for memory operations'
+      );
     }
     if (!agentId || !trigger) {
       throw new Error('Agent ID and trigger are required');
@@ -218,7 +240,9 @@ export class MemoryManager {
     query: string
   ): Promise<any[]> {
     if (!userId || typeof userId !== 'string' || !userId.trim()) {
-      throw new Error('userId must be a non-empty string for memory operations');
+      throw new Error(
+        'userId must be a non-empty string for memory operations'
+      );
     }
     if (!agentId || !query) {
       throw new Error('Agent ID and query are required');
@@ -229,9 +253,15 @@ export class MemoryManager {
   /**
    * Get working memory context - Simple delegation
    */
-  async getWorkingContext(userId: string, agentId: string, limit?: number): Promise<any[]> {
+  async getWorkingContext(
+    userId: string,
+    agentId: string,
+    limit?: number
+  ): Promise<any[]> {
     if (!userId || typeof userId !== 'string' || !userId.trim()) {
-      throw new Error('userId must be a non-empty string for memory operations');
+      throw new Error(
+        'userId must be a non-empty string for memory operations'
+      );
     }
     if (!agentId) {
       throw new Error('Agent ID is required');
@@ -248,4 +278,4 @@ export class MemoryManager {
       await this.storage.destroy();
     }
   }
-} 
+}

@@ -1,12 +1,19 @@
 /**
  * @fileoverview Memory-specific operations for PostgreSQL storage adapter
- * 
+ *
  * Extends the base PostgreSQL adapter with optimized memory operations
  * for the AgentDock Memory System.
  */
 
 import { Pool } from 'pg';
+
 import { LogCategory, logger } from '../../../../logging';
+import {
+  MemoryOperations as IMemoryOperations,
+  MemoryData,
+  MemoryOperationStats,
+  MemoryRecallOptions
+} from '../../../types';
 import { nanoid as generateId } from '../../../utils';
 import { ConnectionType, MemoryType } from '../schema-memory';
 
@@ -105,13 +112,6 @@ export interface BatchResult {
   error?: string;
 }
 
-import { 
-  MemoryData, 
-  MemoryOperations as IMemoryOperations, 
-  MemoryRecallOptions, 
-  MemoryOperationStats 
-} from '../../../types';
-
 /**
  * Memory operations for PostgreSQL - implements storage interface directly
  */
@@ -124,7 +124,11 @@ export class MemoryOperations implements IMemoryOperations {
   /**
    * Store a single memory - simple interface
    */
-  async store(userId: string, agentId: string, memory: MemoryData): Promise<string> {
+  async store(
+    userId: string,
+    agentId: string,
+    memory: MemoryData
+  ): Promise<string> {
     // Convert MemoryData to PostgreSQL Memory format and use batch operation
     const pgMemory = {
       id: memory.id || generateId(),
@@ -156,24 +160,36 @@ export class MemoryOperations implements IMemoryOperations {
   /**
    * Recall memories - simple interface
    */
-  async recall(userId: string, agentId: string, query: string, options?: MemoryRecallOptions): Promise<MemoryData[]> {
+  async recall(
+    userId: string,
+    agentId: string,
+    query: string,
+    options?: MemoryRecallOptions
+  ): Promise<MemoryData[]> {
     const memoryQuery = {
       types: options?.type ? [options.type] : undefined,
       minImportance: options?.minImportance,
       keywords: query ? [query] : undefined,
-      timeRange: options?.timeRange ? {
-        start: options.timeRange.start.getTime(),
-        end: options.timeRange.end.getTime()
-      } : undefined
+      timeRange: options?.timeRange
+        ? {
+            start: options.timeRange.start.getTime(),
+            end: options.timeRange.end.getTime()
+          }
+        : undefined
     };
 
-    const scoredMemories = await this.recallMemories(userId, agentId, memoryQuery, {
-      limit: options?.limit || 20,
-      updateAccessStats: true
-    });
+    const scoredMemories = await this.recallMemories(
+      userId,
+      agentId,
+      memoryQuery,
+      {
+        limit: options?.limit || 20,
+        updateAccessStats: true
+      }
+    );
 
     // Convert to MemoryData format
-    return scoredMemories.map(memory => ({
+    return scoredMemories.map((memory) => ({
       id: memory.id,
       userId: memory.userId!,
       agentId: memory.agentId,
@@ -196,14 +212,23 @@ export class MemoryOperations implements IMemoryOperations {
   /**
    * Update memory - simple interface
    */
-  async update(userId: string, agentId: string, memoryId: string, updates: Partial<MemoryData>): Promise<void> {
+  async update(
+    userId: string,
+    agentId: string,
+    memoryId: string,
+    updates: Partial<MemoryData>
+  ): Promise<void> {
     await this.updateMemory(userId, agentId, memoryId, updates);
   }
 
   /**
    * Delete memory - simple interface
    */
-  async delete(userId: string, agentId: string, memoryId: string): Promise<void> {
+  async delete(
+    userId: string,
+    agentId: string,
+    memoryId: string
+  ): Promise<void> {
     await this.deleteMemory(userId, agentId, memoryId);
   }
 
@@ -237,14 +262,24 @@ export class MemoryOperations implements IMemoryOperations {
   /**
    * Get memory statistics - simple interface
    */
-  async getStats(userId: string, agentId?: string): Promise<MemoryOperationStats> {
-    const whereClause = agentId ? 'WHERE m.user_id = $1 AND m.agent_id = $2' : 'WHERE m.user_id = $1';
+  async getStats(
+    userId: string,
+    agentId?: string
+  ): Promise<MemoryOperationStats> {
+    const whereClause = agentId
+      ? 'WHERE m.user_id = $1 AND m.agent_id = $2'
+      : 'WHERE m.user_id = $1';
     const params = agentId ? [userId, agentId] : [userId];
 
-    const memories = await this.recallMemories(userId, agentId || '', {}, { 
-      limit: 10000, 
-      updateAccessStats: false 
-    });
+    const memories = await this.recallMemories(
+      userId,
+      agentId || '',
+      {},
+      {
+        limit: 10000,
+        updateAccessStats: false
+      }
+    );
 
     const byType: Record<string, number> = {};
     let totalImportance = 0;
@@ -257,7 +292,8 @@ export class MemoryOperations implements IMemoryOperations {
     return {
       totalMemories: memories.length,
       byType,
-      avgImportance: memories.length > 0 ? totalImportance / memories.length : 0,
+      avgImportance:
+        memories.length > 0 ? totalImportance / memories.length : 0,
       totalSize: `${(JSON.stringify(memories).length / 1024).toFixed(2)} KB`
     };
   }
@@ -274,7 +310,7 @@ export class MemoryOperations implements IMemoryOperations {
   ): Promise<BatchResult> {
     const startTime = Date.now();
     const batchId = `batch_${Date.now()}_${generateId()}`;
-    
+
     const client = await this.pool.connect();
     try {
       await client.query('BEGIN');
@@ -286,7 +322,7 @@ export class MemoryOperations implements IMemoryOperations {
 
       memories.forEach((memory) => {
         memory.batchId = batchId;
-        
+
         placeholders.push(
           `($${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, 
            $${paramIndex++}::${this.schema}.memory_type, $${paramIndex++}, $${paramIndex++}, $${paramIndex++},
@@ -372,7 +408,7 @@ export class MemoryOperations implements IMemoryOperations {
       };
     } catch (error) {
       await client.query('ROLLBACK');
-      
+
       logger.error(
         LogCategory.STORAGE,
         'MemoryOperations',
@@ -407,11 +443,7 @@ export class MemoryOperations implements IMemoryOperations {
   ): Promise<ScoredMemory[]> {
     const client = await this.pool.connect();
     try {
-      const {
-        limit = 100,
-        offset = 0,
-        updateAccessStats = true
-      } = options;
+      const { limit = 100, offset = 0, updateAccessStats = true } = options;
 
       // Build dynamic query
       const conditions: string[] = ['m.user_id = $1', 'm.agent_id = $2'];
@@ -419,7 +451,9 @@ export class MemoryOperations implements IMemoryOperations {
       let paramIndex = 3;
 
       if (query.types && query.types.length > 0) {
-        conditions.push(`m.type = ANY($${paramIndex}::${this.schema}.memory_type[])`);
+        conditions.push(
+          `m.type = ANY($${paramIndex}::${this.schema}.memory_type[])`
+        );
         params.push(query.types);
         paramIndex++;
       }
@@ -446,7 +480,7 @@ export class MemoryOperations implements IMemoryOperations {
         conditions.push(`m.created_at >= to_timestamp($${paramIndex})`);
         params.push(query.timeRange.start / 1000);
         paramIndex++;
-        
+
         conditions.push(`m.created_at <= to_timestamp($${paramIndex})`);
         params.push(query.timeRange.end / 1000);
         paramIndex++;
@@ -484,7 +518,7 @@ export class MemoryOperations implements IMemoryOperations {
       const result = await client.query(queryStr, params);
 
       // Convert to Memory objects
-      const memories: ScoredMemory[] = result.rows.map(row => ({
+      const memories: ScoredMemory[] = result.rows.map((row) => ({
         id: row.id,
         agentId: row.agent_id,
         userId: row.user_id,
@@ -512,7 +546,7 @@ export class MemoryOperations implements IMemoryOperations {
 
       // Update access stats in background if requested
       if (updateAccessStats && memories.length > 0) {
-        this.updateAccessStats(memories.map(m => m.id)).catch(error => {
+        this.updateAccessStats(memories.map((m) => m.id)).catch((error) => {
           logger.warn(
             LogCategory.STORAGE,
             'MemoryOperations',
@@ -582,18 +616,22 @@ export class MemoryOperations implements IMemoryOperations {
 
       for (const row of result.rows) {
         processed++;
-        
+
         const ageMs = Date.now() - new Date(row.last_accessed_at).getTime();
         const ageDays = ageMs / (24 * 60 * 60 * 1000);
-        
+
         // Apply decay formula
         const decayFactor = Math.exp(-decayRules.decayRate * ageDays);
-        const importanceBoost = parseFloat(row.importance) * decayRules.importanceWeight;
-        const accessBoost = Math.log(row.access_count + 1) * decayRules.accessBoost;
-        
+        const importanceBoost =
+          parseFloat(row.importance) * decayRules.importanceWeight;
+        const accessBoost =
+          Math.log(row.access_count + 1) * decayRules.accessBoost;
+
         const newResonance = Math.max(
           0,
-          parseFloat(row.resonance) * decayFactor + importanceBoost + accessBoost
+          parseFloat(row.resonance) * decayFactor +
+            importanceBoost +
+            accessBoost
         );
 
         if (newResonance <= 0.01) {
@@ -619,17 +657,12 @@ export class MemoryOperations implements IMemoryOperations {
 
       await client.query('COMMIT');
 
-      logger.debug(
-        LogCategory.STORAGE,
-        'MemoryOperations',
-        'Decay applied',
-        {
-          agentId,
-          processed,
-          decayed,
-          removed
-        }
-      );
+      logger.debug(LogCategory.STORAGE, 'MemoryOperations', 'Decay applied', {
+        agentId,
+        processed,
+        decayed,
+        removed
+      });
 
       return { processed, decayed, removed };
     } catch (error) {
@@ -643,7 +676,10 @@ export class MemoryOperations implements IMemoryOperations {
   /**
    * Create memory connections in batch
    */
-  async createConnections(userId: string, connections: MemoryConnection[]): Promise<void> {
+  async createConnections(
+    userId: string,
+    connections: MemoryConnection[]
+  ): Promise<void> {
     if (connections.length === 0) return;
 
     const client = await this.pool.connect();
@@ -748,7 +784,7 @@ export class MemoryOperations implements IMemoryOperations {
       );
 
       // Get connections
-      const memoryIds = result.rows.map(r => r.id);
+      const memoryIds = result.rows.map((r) => r.id);
       const connectionsResult = await client.query(
         `
         SELECT *,
@@ -761,7 +797,7 @@ export class MemoryOperations implements IMemoryOperations {
         [memoryIds, minStrength]
       );
 
-      const memories = result.rows.map(row => ({
+      const memories = result.rows.map((row) => ({
         id: row.id,
         agentId: row.agent_id,
         userId: row.user_id,
@@ -785,7 +821,7 @@ export class MemoryOperations implements IMemoryOperations {
         embeddingDimension: row.embedding_dimension
       }));
 
-      const connections = connectionsResult.rows.map(row => ({
+      const connections = connectionsResult.rows.map((row) => ({
         id: row.id,
         sourceMemoryId: row.source_memory_id,
         targetMemoryId: row.target_memory_id,
@@ -804,7 +840,10 @@ export class MemoryOperations implements IMemoryOperations {
   /**
    * Get a single memory by ID
    */
-  async getMemoryById(userId: string, memoryId: string): Promise<Memory | null> {
+  async getMemoryById(
+    userId: string,
+    memoryId: string
+  ): Promise<Memory | null> {
     const client = await this.pool.connect();
     try {
       const result = await client.query(
@@ -855,7 +894,12 @@ export class MemoryOperations implements IMemoryOperations {
   /**
    * Update a memory with partial data
    */
-  async updateMemory(userId: string, agentId: string, memoryId: string, updates: Partial<Memory>): Promise<void> {
+  async updateMemory(
+    userId: string,
+    agentId: string,
+    memoryId: string,
+    updates: Partial<Memory>
+  ): Promise<void> {
     const client = await this.pool.connect();
     try {
       // Build dynamic update query
@@ -894,7 +938,9 @@ export class MemoryOperations implements IMemoryOperations {
               values.push(Number(value) / 1000);
               break;
             case 'lastAccessedAt':
-              updateFields.push(`last_accessed_at = to_timestamp($${paramIndex++})`);
+              updateFields.push(
+                `last_accessed_at = to_timestamp($${paramIndex++})`
+              );
               values.push(Number(value) / 1000);
               break;
             case 'keywords':
@@ -980,7 +1026,11 @@ export class MemoryOperations implements IMemoryOperations {
   /**
    * Delete a memory by ID
    */
-  async deleteMemory(userId: string, agentId: string, memoryId: string): Promise<void> {
+  async deleteMemory(
+    userId: string,
+    agentId: string,
+    memoryId: string
+  ): Promise<void> {
     const client = await this.pool.connect();
     try {
       await client.query('BEGIN');
@@ -1033,8 +1083,9 @@ export class MemoryOperations implements IMemoryOperations {
     const client = await this.pool.connect();
     try {
       const vectorStr = `[${embedding.join(',')}]`;
-      
-      const result = await client.query(`
+
+      const result = await client.query(
+        `
         SELECT m.*, 
                1 - (m.embedding <=> $4::vector) as similarity
         FROM ${this.schema}.memories m
@@ -1044,9 +1095,11 @@ export class MemoryOperations implements IMemoryOperations {
           AND 1 - (m.embedding <=> $4::vector) > $5
         ORDER BY m.embedding <=> $4::vector
         LIMIT $3
-      `, [userId, agentId, limit, vectorStr, threshold]);
-      
-      return result.rows.map(row => ({
+      `,
+        [userId, agentId, limit, vectorStr, threshold]
+      );
+
+      return result.rows.map((row) => ({
         id: row.id,
         agentId: row.agent_id,
         userId: row.user_id,
@@ -1082,10 +1135,11 @@ export class MemoryOperations implements IMemoryOperations {
     memoryIds: string[]
   ): Promise<MemoryConnection[]> {
     if (memoryIds.length === 0) return [];
-    
+
     const client = await this.pool.connect();
     try {
-      const result = await client.query(`
+      const result = await client.query(
+        `
         SELECT c.*,
                extract(epoch from c.created_at) * 1000 as created_at_ms
         FROM ${this.schema}.memory_connections c
@@ -1094,9 +1148,11 @@ export class MemoryOperations implements IMemoryOperations {
         WHERE (c.source_memory_id = ANY($1) OR c.target_memory_id = ANY($1))
           AND m1.user_id = $2
           AND m2.user_id = $2
-      `, [memoryIds, userId]);
-      
-      return result.rows.map(row => ({
+      `,
+        [memoryIds, userId]
+      );
+
+      return result.rows.map((row) => ({
         id: row.id,
         sourceMemoryId: row.source_memory_id,
         targetMemoryId: row.target_memory_id,

@@ -1,4 +1,4 @@
-import { SemanticMemoryData } from './SemanticMemoryTypes'
+import { SemanticMemoryData } from './SemanticMemoryTypes';
 
 /**
  * Utility functions for SemanticMemory operations
@@ -22,15 +22,16 @@ export function getSemanticTableName(namespace: string): string {
  * Extract keywords from content using simple frequency analysis
  */
 export function extractKeywords(content: string): string[] {
-  const words = content.toLowerCase()
+  const words = content
+    .toLowerCase()
     .replace(/[^\w\s]/g, ' ')
     .split(/\s+/)
-    .filter(word => word.length > 3)
-    .filter(word => !isStopWord(word));
+    .filter((word) => word.length > 3)
+    .filter((word) => !isStopWord(word));
 
   // Count frequency and return top keywords
   const wordCount = new Map<string, number>();
-  words.forEach(word => {
+  words.forEach((word) => {
     wordCount.set(word, (wordCount.get(word) || 0) + 1);
   });
 
@@ -45,7 +46,7 @@ export function extractKeywords(content: string): string[] {
  */
 export function extractFacts(content: string): string[] {
   const facts: string[] = [];
-  
+
   // Simple pattern matching for factual statements
   const factPatterns = [
     /(.+) is (.+)/g,
@@ -72,7 +73,7 @@ export function extractFacts(content: string): string[] {
  */
 export function categorizeContent(content: string): string {
   const lowerContent = content.toLowerCase();
-  
+
   if (lowerContent.includes('code') || lowerContent.includes('programming')) {
     return 'programming';
   }
@@ -88,7 +89,7 @@ export function categorizeContent(content: string): string {
   if (lowerContent.includes('procedure') || lowerContent.includes('how to')) {
     return 'procedure';
   }
-  
+
   return 'general_knowledge';
 }
 
@@ -104,7 +105,7 @@ export function calculateSemanticImportance(
 
   // More facts = more important
   importance += Math.min(facts.length * 0.1, 0.3);
-  
+
   // More keywords = more comprehensive
   importance += Math.min(keywords.length * 0.02, 0.2);
 
@@ -130,23 +131,23 @@ export function calculateSemanticConfidence(
   facts: string[] = []
 ): number {
   let confidence = 0.5;
-  
+
   // Assistant messages generally more reliable
   if (sourceRole === 'assistant') confidence += 0.2;
-  
+
   // More facts = higher confidence
   confidence += Math.min(facts.length * 0.05, 0.2);
-  
+
   // Definitive language increases confidence
   if (/definitely|certainly|always|never/i.test(content)) {
     confidence += 0.1;
   }
-  
+
   // Uncertain language decreases confidence
   if (/maybe|perhaps|might|could be|possibly/i.test(content)) {
     confidence -= 0.1;
   }
-  
+
   return Math.max(Math.min(confidence, 1.0), 0.1);
 }
 
@@ -154,21 +155,25 @@ export function calculateSemanticConfidence(
  * Check if content is a definition
  */
 export function isDefinition(content: string): boolean {
-  return /(.+) is (a|an|the) (.+)/i.test(content) ||
-         /(.+) refers to (.+)/i.test(content) ||
-         /(.+) means (.+)/i.test(content) ||
-         /define (.+)/i.test(content);
+  return (
+    /(.+) is (a|an|the) (.+)/i.test(content) ||
+    /(.+) refers to (.+)/i.test(content) ||
+    /(.+) means (.+)/i.test(content) ||
+    /define (.+)/i.test(content)
+  );
 }
 
 /**
  * Check if content is an explanation
  */
 export function isExplanation(content: string): boolean {
-  return content.includes('because') ||
-         content.includes('therefore') ||
-         content.includes('as a result') ||
-         /this (is|works|happens) because/i.test(content) ||
-         /the reason (.+) is/i.test(content);
+  return (
+    content.includes('because') ||
+    content.includes('therefore') ||
+    content.includes('as a result') ||
+    /this (is|works|happens) because/i.test(content) ||
+    /the reason (.+) is/i.test(content)
+  );
 }
 
 /**
@@ -176,10 +181,44 @@ export function isExplanation(content: string): boolean {
  */
 function isStopWord(word: string): boolean {
   const stopWords = new Set([
-    'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
-    'of', 'with', 'by', 'this', 'that', 'these', 'those', 'is', 'are',
-    'was', 'were', 'be', 'been', 'have', 'has', 'had', 'do', 'does', 'did',
-    'will', 'would', 'should', 'could', 'can', 'may', 'might', 'must'
+    'the',
+    'a',
+    'an',
+    'and',
+    'or',
+    'but',
+    'in',
+    'on',
+    'at',
+    'to',
+    'for',
+    'of',
+    'with',
+    'by',
+    'this',
+    'that',
+    'these',
+    'those',
+    'is',
+    'are',
+    'was',
+    'were',
+    'be',
+    'been',
+    'have',
+    'has',
+    'had',
+    'do',
+    'does',
+    'did',
+    'will',
+    'would',
+    'should',
+    'could',
+    'can',
+    'may',
+    'might',
+    'must'
   ]);
   return stopWords.has(word);
 }
@@ -196,15 +235,18 @@ export function calculateContentSimilarity(
   // Simple similarity based on keyword overlap
   const set1 = new Set(keywords1);
   const set2 = new Set(keywords2);
-  const intersection = new Set(Array.from(set1).filter(x => set2.has(x)));
+  const intersection = new Set(Array.from(set1).filter((x) => set2.has(x)));
   const union = new Set(Array.from(set1).concat(Array.from(set2)));
-  
+
   const jaccardSimilarity = intersection.size / union.size;
-  
+
   // Also consider content length similarity
-  const lengthSimilarity = 1 - Math.abs(content1.length - content2.length) / Math.max(content1.length, content2.length);
-  
-  return (jaccardSimilarity * 0.7) + (lengthSimilarity * 0.3);
+  const lengthSimilarity =
+    1 -
+    Math.abs(content1.length - content2.length) /
+      Math.max(content1.length, content2.length);
+
+  return jaccardSimilarity * 0.7 + lengthSimilarity * 0.3;
 }
 
 /**
@@ -219,9 +261,15 @@ export function mergeSemanticMemories(
   const secondary = primary === memory1 ? memory2 : memory1;
 
   // Merge keywords and facts
-  const mergedKeywords = Array.from(new Set([...primary.keywords, ...secondary.keywords]));
-  const mergedFacts = Array.from(new Set([...primary.facts, ...secondary.facts]));
-  const mergedSourceIds = Array.from(new Set([...primary.sourceIds, ...secondary.sourceIds]));
+  const mergedKeywords = Array.from(
+    new Set([...primary.keywords, ...secondary.keywords])
+  );
+  const mergedFacts = Array.from(
+    new Set([...primary.facts, ...secondary.facts])
+  );
+  const mergedSourceIds = Array.from(
+    new Set([...primary.sourceIds, ...secondary.sourceIds])
+  );
 
   return {
     ...primary,
@@ -243,24 +291,28 @@ export function mergeSemanticMemories(
  * Validate semantic memory configuration
  */
 export function validateSemanticConfig(config: any): boolean {
-  return config.deduplicationThreshold >= 0 &&
-         config.deduplicationThreshold <= 1 &&
-         config.maxMemoriesPerCategory > 0 &&
-         config.confidenceThreshold >= 0 &&
-         config.confidenceThreshold <= 1 &&
-         typeof config.vectorSearchEnabled === 'boolean' &&
-         typeof config.encryptSensitive === 'boolean' &&
-         typeof config.autoExtractFacts === 'boolean';
+  return (
+    config.deduplicationThreshold >= 0 &&
+    config.deduplicationThreshold <= 1 &&
+    config.maxMemoriesPerCategory > 0 &&
+    config.confidenceThreshold >= 0 &&
+    config.confidenceThreshold <= 1 &&
+    typeof config.vectorSearchEnabled === 'boolean' &&
+    typeof config.encryptSensitive === 'boolean' &&
+    typeof config.autoExtractFacts === 'boolean'
+  );
 }
 
 /**
  * Check if content is suitable for semantic memory
  */
 export function isSemanticWorthy(content: string): boolean {
-  return content.length > 20 && 
-         content.length < 5000 && 
-         !isBoilerplate(content) &&
-         hasSemanticValue(content);
+  return (
+    content.length > 20 &&
+    content.length < 5000 &&
+    !isBoilerplate(content) &&
+    hasSemanticValue(content)
+  );
 }
 
 /**
@@ -269,12 +321,25 @@ export function isSemanticWorthy(content: string): boolean {
 function hasSemanticValue(content: string): boolean {
   // Check for factual indicators
   const factualIndicators = [
-    'is', 'are', 'was', 'were', 'means', 'refers to', 'definition',
-    'because', 'therefore', 'how to', 'method', 'approach', 'solution'
+    'is',
+    'are',
+    'was',
+    'were',
+    'means',
+    'refers to',
+    'definition',
+    'because',
+    'therefore',
+    'how to',
+    'method',
+    'approach',
+    'solution'
   ];
-  
+
   const lowerContent = content.toLowerCase();
-  return factualIndicators.some(indicator => lowerContent.includes(indicator));
+  return factualIndicators.some((indicator) =>
+    lowerContent.includes(indicator)
+  );
 }
 
 /**
@@ -286,7 +351,7 @@ function isBoilerplate(content: string): boolean {
     /^(ok|okay|yes|no)$/i,
     /^(please|can you|could you)$/i
   ];
-  return boilerplatePatterns.some(pattern => pattern.test(content.trim()));
+  return boilerplatePatterns.some((pattern) => pattern.test(content.trim()));
 }
 
 /**
@@ -297,7 +362,7 @@ export function generateContentHash(content: string): string {
   let hash = 0;
   for (let i = 0; i < content.length; i++) {
     const char = content.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash; // Convert to 32-bit integer
   }
   return hash.toString();

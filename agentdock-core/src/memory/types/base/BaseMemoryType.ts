@@ -9,6 +9,7 @@ import { StorageProvider } from '../../../storage/types';
 import { generateId } from '../../../storage/utils';
 import { MemoryConnectionManager } from '../../intelligence/connections/MemoryConnectionManager';
 import { IntelligenceLayerConfig } from '../../intelligence/types';
+import { CostTracker } from '../../tracking/CostTracker';
 
 export abstract class BaseMemoryType {
   protected connectionManager?: MemoryConnectionManager;
@@ -20,9 +21,11 @@ export abstract class BaseMemoryType {
   ) {
     // Auto-instantiate connection manager if config provided
     if (intelligenceConfig?.connectionDetection) {
+      const costTracker = new CostTracker(storage);
       this.connectionManager = new MemoryConnectionManager(
         storage,
-        intelligenceConfig
+        intelligenceConfig,
+        costTracker
       );
     }
   }
@@ -53,7 +56,10 @@ export abstract class BaseMemoryType {
               );
 
             if (connections.length > 0) {
-              await this.connectionManager!.createConnections(connections);
+              await this.connectionManager!.createConnections(
+                userId,
+                connections
+              );
             }
           }
         } catch (error) {

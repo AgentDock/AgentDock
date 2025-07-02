@@ -29,11 +29,11 @@ export class PostgreSQLConnectionManager extends BaseConnectionManager<
       preparedStatements = true
     } = this.config;
 
-    // Create connection pool
+    // Create connection pool with improved performance settings
     const poolOptions: any = {
       connectionString,
-      max: poolConfig.max || 10,
-      idleTimeoutMillis: poolConfig.idleTimeoutMillis || 30000,
+      max: poolConfig.max || 50, // Increased from 10 to 50 connections
+      idleTimeoutMillis: poolConfig.idleTimeoutMillis || 300000, // Increased from 30s to 5 minutes
       connectionTimeoutMillis: poolConfig.connectionTimeoutMillis || 2000,
       ...connection
     };

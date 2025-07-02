@@ -13,52 +13,27 @@ import { z } from 'zod';
 import { CoreLLM } from '../../../llm/core-llm';
 import { createLLM } from '../../../llm/create-llm';
 import { LogCategory, logger } from '../../../logging';
+import { ConnectionType, MemoryConnection } from '../../../storage/types';
 import { generateId } from '../../../storage/utils';
+import { CostTracker } from '../../tracking/CostTracker';
 import { Memory } from '../../types/common';
 import { EmbeddingService } from '../embeddings/EmbeddingService';
-import {
-  ConnectionRule,
-  ConnectionType,
-  IntelligenceLayerConfig,
-  MemoryConnection
-} from '../types';
+import { ConnectionRule, IntelligenceLayerConfig } from '../types';
 
 // Zod schema for LLM response validation
 const ConnectionAnalysisSchema = z.object({
   connectionType: z.enum([
     'similar',
-    'causal',
-    'temporal',
-    'references',
-    'contradicts',
-    'extends',
-    'derived',
-    'corrects',
-    'updates'
+    'related',
+    'causes',
+    'part_of',
+    'opposite'
   ]),
   confidence: z.number().min(0).max(1),
   reasoning: z.string().optional()
 });
 
 type ConnectionAnalysis = z.infer<typeof ConnectionAnalysisSchema>;
-
-/**
- * Cost tracker interface - following batch processing pattern
- */
-interface CostTracker {
-  trackExtraction(
-    agentId: string,
-    data: {
-      extractorType: string;
-      cost: number;
-      memoriesExtracted: number;
-      messagesProcessed: number;
-      metadata: Record<string, any>;
-    }
-  ): Promise<void>;
-
-  checkBudget(agentId: string, monthlyBudget: number): Promise<boolean>;
-}
 
 /**
  * Language-agnostic memory connection manager using progressive enhancement
@@ -71,7 +46,7 @@ export class MemoryConnectionManager {
   constructor(
     private storage: any,
     private config: IntelligenceLayerConfig,
-    costTracker?: CostTracker
+    costTracker: CostTracker
   ) {
     // Only create LLM if enhancement is enabled and required fields are provided
     if (
@@ -105,8 +80,8 @@ export class MemoryConnectionManager {
       embeddingConfig
     );
 
-    // Use provided cost tracker or create mock
-    this.costTracker = costTracker || this.createMockCostTracker();
+    // Use provided cost tracker
+    this.costTracker = costTracker;
 
     logger.debug(
       LogCategory.STORAGE,
@@ -181,19 +156,19 @@ export class MemoryConnectionManager {
         ) {
           connections.push({
             id: generateId(),
-            sourceId: newMemory.id,
-            targetId: existingMemory.id,
-            type: connectionAnalysis.connectionType,
+            sourceMemoryId: newMemory.id,
+            targetMemoryId: existingMemory.id,
+            connectionType: connectionAnalysis.connectionType,
             strength: Math.max(similarity, connectionAnalysis.confidence),
             reason:
               connectionAnalysis.reasoning || 'Similarity-based connection',
             createdAt: Date.now(),
-            method: this.config.connectionDetection.method as
-              | 'embedding'
-              | 'user-rules'
-              | 'small-llm'
-              | 'hybrid',
             metadata: {
+              method: this.config.connectionDetection.method as
+                | 'embedding'
+                | 'user-rules'
+                | 'small-llm'
+                | 'hybrid',
               confidence: connectionAnalysis.confidence,
               algorithm: 'progressive_enhancement',
               embeddingSimilarity: similarity,
@@ -346,14 +321,10 @@ Memory 2: "${memory2.content}"
 
 Determine the connection type:
 - similar: Content is semantically similar
-- causal: One caused or led to the other
-- temporal: Related by time sequence
-- references: One explicitly mentions the other
-- contradicts: Information conflicts
-- extends: One builds upon the other
-- derived: One is derived from the other
-- corrects: One corrects the other
-- updates: One updates the other
+- causes: One caused or led to the other
+- related: General relationship or reference
+- part_of: One is part of a larger concept
+- opposite: Information conflicts or contradicts
 
 Provide confidence score (0-1) and brief reasoning.`
           }
@@ -410,18 +381,18 @@ Provide confidence score (0-1) and brief reasoning.`
     // Heuristics based on timing and similarity
     if (similarity > 0.85 && Math.abs(hoursDiff) < 24) {
       return {
-        connectionType: 'updates',
+        connectionType: 'related',
         confidence: similarity * 0.8,
         reasoning:
-          'High similarity and temporal proximity suggest update relationship'
+          'High similarity and temporal proximity suggest related content'
       };
     }
 
     if (similarity > 0.75 && hoursDiff > 0 && hoursDiff < 1) {
       return {
-        connectionType: 'temporal',
+        connectionType: 'related',
         confidence: similarity * 0.7,
-        reasoning: 'Temporal sequence with good similarity'
+        reasoning: 'Sequential content with good similarity'
       };
     }
 
@@ -434,19 +405,26 @@ Provide confidence score (0-1) and brief reasoning.`
   }
 
   /**
-   * Create connections in storage
+   * Create connections in storage with proper userId security
    */
-  async createConnections(connections: MemoryConnection[]): Promise<void> {
+  async createConnections(
+    userId: string,
+    connections: MemoryConnection[]
+  ): Promise<void> {
+    if (!userId?.trim()) {
+      throw new Error('userId is required for connection creation operations');
+    }
+
     if (connections.length === 0) return;
 
     try {
-      // Use PostgreSQL memory adapter if available
-      if (this.storage.createConnections) {
-        await this.storage.createConnections(connections);
+      // Use memory adapter's createConnections method if available (includes userId security)
+      if (this.storage.memory?.createConnections) {
+        await this.storage.memory.createConnections(userId, connections);
       } else {
-        // Fallback to individual storage
+        // Fallback to individual storage with userId prefix for security
         for (const connection of connections) {
-          const key = `connection:${connection.sourceId}:${connection.targetId}`;
+          const key = `user:${userId}:connection:${connection.sourceMemoryId}:${connection.targetMemoryId}`;
           await this.storage.set(key, connection);
         }
       }
@@ -454,8 +432,11 @@ Provide confidence score (0-1) and brief reasoning.`
       logger.info(
         LogCategory.STORAGE,
         'MemoryConnectionManager',
-        'Created connections',
-        { count: connections.length }
+        'Created connections with user isolation',
+        {
+          userId: userId.substring(0, 8),
+          count: connections.length
+        }
       );
     } catch (error) {
       logger.error(
@@ -463,6 +444,7 @@ Provide confidence score (0-1) and brief reasoning.`
         'MemoryConnectionManager',
         'Error creating connections',
         {
+          userId: userId.substring(0, 8),
           error: error instanceof Error ? error.message : String(error),
           connectionCount: connections.length
         }
@@ -565,19 +547,5 @@ Provide confidence score (0-1) and brief reasoning.`
 
     // Fallback if storage doesn't support recall
     return [];
-  }
-
-  /**
-   * Create mock cost tracker for testing
-   */
-  private createMockCostTracker(): CostTracker {
-    return {
-      async trackExtraction() {
-        // Mock implementation
-      },
-      async checkBudget() {
-        return true; // Always within budget for mock
-      }
-    };
   }
 }

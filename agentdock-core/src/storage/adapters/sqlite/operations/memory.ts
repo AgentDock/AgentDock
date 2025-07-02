@@ -8,6 +8,7 @@ import { Database } from 'better-sqlite3';
 import { LogCategory, logger } from '../../../../logging';
 import { MemoryType } from '../../../../shared/types/memory';
 import {
+  MemoryConnection,
   MemoryData,
   MemoryOperations,
   MemoryOperationStats,
@@ -300,17 +301,264 @@ export class SqliteMemoryOperations implements MemoryOperations {
 
   async createConnections(
     userId: string,
-    connections: unknown[]
+    connections: MemoryConnection[]
   ): Promise<void> {
-    // Minimal implementation for interface compliance
+    if (!userId?.trim()) {
+      throw new Error('userId is required for memory operations');
+    }
+
+    if (connections.length === 0) return;
+
+    // Use atomic transaction for batch insert with user validation
+    const transaction = this.db.transaction(() => {
+      // First, validate that both source and target memories belong to the user
+      const validateStmt = this.db.prepare(`
+        SELECT id FROM memories WHERE user_id = ? AND id = ?
+      `);
+
+      // Prepare batch insert statement for connections
+      const insertStmt = this.db.prepare(`
+        INSERT OR REPLACE INTO memory_connections (
+          id, source_memory_id, target_memory_id, connection_type, 
+          strength, reason, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+      `);
+
+      for (const connection of connections) {
+        // Validate source memory belongs to user
+        const sourceValid = validateStmt.get(userId, connection.sourceMemoryId);
+        if (!sourceValid) {
+          throw new Error(
+            `Source memory ${connection.sourceMemoryId} not found for user ${userId}`
+          );
+        }
+
+        // Validate target memory belongs to user
+        const targetValid = validateStmt.get(userId, connection.targetMemoryId);
+        if (!targetValid) {
+          throw new Error(
+            `Target memory ${connection.targetMemoryId} not found for user ${userId}`
+          );
+        }
+
+        // Insert connection
+        insertStmt.run(
+          connection.id,
+          connection.sourceMemoryId,
+          connection.targetMemoryId,
+          connection.connectionType,
+          connection.strength,
+          connection.reason,
+          connection.createdAt
+        );
+      }
+    });
+
+    try {
+      transaction();
+
+      logger.debug(
+        LogCategory.STORAGE,
+        'SQLiteMemoryOps',
+        'Memory connections created successfully',
+        {
+          userId: userId.substring(0, 8),
+          connectionCount: connections.length
+        }
+      );
+    } catch (error) {
+      logger.error(
+        LogCategory.STORAGE,
+        'SQLiteMemoryOps',
+        'Failed to create memory connections',
+        {
+          userId: userId.substring(0, 8),
+          connectionCount: connections.length,
+          error: error instanceof Error ? error.message : String(error)
+        }
+      );
+      throw error;
+    }
   }
 
   async findConnectedMemories(
     userId: string,
     memoryId: string,
-    depth?: number
-  ): Promise<unknown> {
-    return { memories: [], connections: [] };
+    depth: number = 2
+  ): Promise<{
+    memories: MemoryData[];
+    connections: MemoryConnection[];
+  }> {
+    if (!userId?.trim()) {
+      throw new Error('userId is required for memory operations');
+    }
+
+    try {
+      // First validate the starting memory belongs to the user
+      const startMemory = await this.getById(userId, memoryId);
+      if (!startMemory) {
+        return { memories: [], connections: [] };
+      }
+
+      // Use recursive CTE to find connected memories with depth limiting
+      const connectionsStmt = this.db.prepare(`
+        WITH RECURSIVE connected_memories(
+          memory_id, 
+          connection_id, 
+          source_id, 
+          target_id, 
+          connection_type, 
+          strength, 
+          reason, 
+          created_at,
+          depth
+        ) AS (
+          -- Base case: direct connections from starting memory
+          SELECT 
+            CASE 
+              WHEN mc.source_memory_id = ? THEN mc.target_memory_id
+              ELSE mc.source_memory_id
+            END as memory_id,
+            mc.id as connection_id,
+            mc.source_memory_id as source_id,
+            mc.target_memory_id as target_id,
+            mc.connection_type,
+            mc.strength,
+            mc.reason,
+            mc.created_at,
+            1 as depth
+          FROM memory_connections mc
+          WHERE (mc.source_memory_id = ? OR mc.target_memory_id = ?)
+          
+          UNION ALL
+          
+          -- Recursive case: connections from already found memories
+          SELECT 
+            CASE 
+              WHEN mc.source_memory_id = cm.memory_id THEN mc.target_memory_id
+              ELSE mc.source_memory_id
+            END as memory_id,
+            mc.id as connection_id,
+            mc.source_memory_id as source_id,
+            mc.target_memory_id as target_id,
+            mc.connection_type,
+            mc.strength,
+            mc.reason,
+            mc.created_at,
+            cm.depth + 1 as depth
+          FROM memory_connections mc
+          JOIN connected_memories cm ON (
+            mc.source_memory_id = cm.memory_id OR mc.target_memory_id = cm.memory_id
+          )
+          WHERE cm.depth < ? 
+            AND (
+              CASE 
+                WHEN mc.source_memory_id = cm.memory_id THEN mc.target_memory_id
+                ELSE mc.source_memory_id
+              END
+            ) != ?  -- Avoid returning to start memory
+        )
+        SELECT DISTINCT 
+          connection_id,
+          source_id,
+          target_id,
+          connection_type,
+          strength,
+          reason,
+          created_at
+        FROM connected_memories
+        ORDER BY strength DESC, created_at DESC
+      `);
+
+      const connectionRows = connectionsStmt.all(
+        memoryId,
+        memoryId,
+        memoryId,
+        depth,
+        memoryId
+      ) as Array<{
+        connection_id: string;
+        source_id: string;
+        target_id: string;
+        connection_type: string;
+        strength: number;
+        reason: string;
+        created_at: number;
+      }>;
+
+      // Convert to MemoryConnection objects
+      const connections: MemoryConnection[] = connectionRows.map((row) => ({
+        id: row.connection_id,
+        sourceMemoryId: row.source_id,
+        targetMemoryId: row.target_id,
+        connectionType: row.connection_type as any,
+        strength: row.strength,
+        reason: row.reason,
+        createdAt: row.created_at,
+        metadata: {}
+      }));
+
+      // Get unique memory IDs from connections (excluding the starting memory)
+      const memoryIds = new Set<string>();
+      connections.forEach((conn) => {
+        if (conn.sourceMemoryId !== memoryId) {
+          memoryIds.add(conn.sourceMemoryId);
+        }
+        if (conn.targetMemoryId !== memoryId) {
+          memoryIds.add(conn.targetMemoryId);
+        }
+      });
+
+      // Fetch connected memories with user validation
+      const memories: MemoryData[] = [];
+      if (memoryIds.size > 0) {
+        const placeholders = Array.from(memoryIds)
+          .map(() => '?')
+          .join(',');
+        const memoriesStmt = this.db.prepare(`
+          SELECT * FROM memories 
+          WHERE user_id = ? AND id IN (${placeholders})
+          ORDER BY importance DESC, created_at DESC
+        `);
+
+        const memoryRows = memoriesStmt.all(
+          userId,
+          ...Array.from(memoryIds)
+        ) as SqliteRow[];
+
+        memories.push(
+          ...memoryRows.map((row) => this.convertRowToMemoryData(row))
+        );
+      }
+
+      logger.debug(
+        LogCategory.STORAGE,
+        'SQLiteMemoryOps',
+        'Found connected memories successfully',
+        {
+          userId: userId.substring(0, 8),
+          memoryId,
+          depth,
+          memoriesFound: memories.length,
+          connectionsFound: connections.length
+        }
+      );
+
+      return { memories, connections };
+    } catch (error) {
+      logger.error(
+        LogCategory.STORAGE,
+        'SQLiteMemoryOps',
+        'Failed to find connected memories',
+        {
+          userId: userId.substring(0, 8),
+          memoryId,
+          depth,
+          error: error instanceof Error ? error.message : String(error)
+        }
+      );
+      throw error;
+    }
   }
 
   /**

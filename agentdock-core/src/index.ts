@@ -106,6 +106,26 @@ export { parseProviderError, normalizeError };
  */
 export { loadAgentConfig } from './config/agent-config';
 
+/**
+ * Configuration factory functions for different deployment scenarios
+ * No auto-detection - parent application explicitly chooses configuration
+ */
+export {
+  createLocalConfig,
+  createProductionConfig,
+  createCustomConfig,
+  validateConfig,
+  type AgentDockConfig,
+  type StorageConfigOptions
+} from './config/index';
+
+// Export presets for easy access
+export {
+  localPreset,
+  productionPreset,
+  productionAutoScalePreset
+} from './config/presets';
+
 //=============================================================================
 // Storage
 //=============================================================================
@@ -288,9 +308,10 @@ export {
   MemoryManager,
   RecallService,
   ConversationProcessor,
-  BatchProcessor,
-  RuleBasedExtractor,
-  createBatchProcessor
+  // PRIME extraction system
+  PRIMEExtractor,
+  PRIMEOrchestrator,
+  createPRIMEOrchestrator
 } from './memory';
 
 /**

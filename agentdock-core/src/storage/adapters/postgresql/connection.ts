@@ -14,54 +14,111 @@ export class PostgreSQLConnectionManager extends BaseConnectionManager<
   PostgreSQLConnection
 > {
   private cleanupInterval?: NodeJS.Timeout;
+  private options: PostgreSQLAdapterOptions;
+  private pool?: Pool;
+
+  constructor(options: PostgreSQLAdapterOptions = {}) {
+    super(options);
+    this.options = {
+      connectionString: options.connectionString || undefined,
+      connection: {
+        host:
+          options.connection?.host || process.env.POSTGRES_HOST || 'localhost',
+        port:
+          options.connection?.port ||
+          parseInt(process.env.POSTGRES_PORT || '5432'),
+        database:
+          options.connection?.database ||
+          process.env.POSTGRES_DB ||
+          'agentdock',
+        user:
+          options.connection?.user || process.env.POSTGRES_USER || 'postgres',
+        password:
+          options.connection?.password || process.env.POSTGRES_PASSWORD || ''
+      },
+      pool: {
+        max: options.pool?.max || 20, // Maximum pool size (prevent resource exhaustion)
+        idleTimeoutMillis: options.pool?.idleTimeoutMillis || 30000, // Close idle clients after 30 seconds
+        connectionTimeoutMillis: options.pool?.connectionTimeoutMillis || 2000 // 2 second timeout for acquiring connections
+      },
+      namespace: options.namespace || undefined,
+      schema: options.schema || process.env.POSTGRES_SCHEMA || 'public',
+      ssl:
+        options.ssl !== undefined
+          ? options.ssl
+          : process.env.NODE_ENV === 'production',
+      preparedStatements: options.preparedStatements ?? true,
+      ...options
+    };
+  }
 
   /**
    * Create a new database connection
    */
   protected async createConnection(): Promise<PostgreSQLConnection> {
-    const {
-      connectionString,
-      connection,
-      pool: poolConfig = {},
-      namespace,
-      schema = 'public',
-      ssl,
-      preparedStatements = true
-    } = this.config;
+    if (!this.pool) {
+      // Use connection string if provided, otherwise use individual connection options
+      const poolConfig = this.options.connectionString
+        ? { connectionString: this.options.connectionString }
+        : {
+            host: this.options.connection?.host,
+            port: this.options.connection?.port,
+            database: this.options.connection?.database,
+            user: this.options.connection?.user,
+            password: this.options.connection?.password
+          };
 
-    // Create connection pool with improved performance settings
-    const poolOptions: any = {
-      connectionString,
-      max: poolConfig.max || 50, // Increased from 10 to 50 connections
-      idleTimeoutMillis: poolConfig.idleTimeoutMillis || 300000, // Increased from 30s to 5 minutes
-      connectionTimeoutMillis: poolConfig.connectionTimeoutMillis || 2000,
-      ...connection
-    };
-
-    if (ssl !== undefined) {
-      poolOptions.ssl = ssl;
-    }
-
-    const pool = new Pool(poolOptions);
-
-    // Error handling for pool
-    pool.on('error', (err) => {
-      logger.error(LogCategory.STORAGE, 'PostgreSQLConnection', 'Pool error', {
-        error: err.message
+      this.pool = new Pool({
+        ...poolConfig,
+        ssl: this.options.ssl,
+        max: this.options.pool?.max,
+        idleTimeoutMillis: this.options.pool?.idleTimeoutMillis,
+        connectionTimeoutMillis: this.options.pool?.connectionTimeoutMillis,
+        // Additional security and performance settings
+        application_name: 'agentdock-core',
+        lock_timeout: 5000, // 5 second lock timeout
+        idle_in_transaction_session_timeout: 60000 // 1 minute idle transaction timeout
       });
-    });
+
+      // Handle pool events for monitoring
+      this.pool.on('connect', () => {
+        logger.debug(
+          LogCategory.STORAGE,
+          'PostgreSQLConnection',
+          'New client connected'
+        );
+      });
+
+      this.pool.on('remove', () => {
+        logger.debug(
+          LogCategory.STORAGE,
+          'PostgreSQLConnection',
+          'Client removed'
+        );
+      });
+
+      this.pool.on('error', (err) => {
+        logger.error(
+          LogCategory.STORAGE,
+          'PostgreSQLConnection',
+          'Pool error',
+          {
+            error: err.message
+          }
+        );
+      });
+    }
 
     // Create connection object
     const conn: PostgreSQLConnection = {
-      pool,
-      defaultNamespace: namespace,
-      schema,
-      preparedStatements,
+      pool: this.pool,
+      schema: this.options.schema || 'public',
+      preparedStatements: this.options.preparedStatements ?? true,
       initialized: false
     };
 
     // Initialize schema
-    await initializeSchema(pool, schema);
+    await initializeSchema(this.pool, this.options.schema || 'public');
     conn.initialized = true;
 
     // Start cleanup interval
@@ -72,9 +129,7 @@ export class PostgreSQLConnectionManager extends BaseConnectionManager<
       'PostgreSQLConnection',
       'Connection pool established',
       {
-        schema,
-        namespace,
-        preparedStatements
+        schema: this.options.schema
       }
     );
 
@@ -92,9 +147,9 @@ export class PostgreSQLConnectionManager extends BaseConnectionManager<
     }
 
     // Close pool
-    if (this.connection?.pool) {
+    if (this.pool) {
       try {
-        await this.connection.pool.end();
+        await this.pool.end();
         logger.debug(
           LogCategory.STORAGE,
           'PostgreSQLConnection',
@@ -117,7 +172,7 @@ export class PostgreSQLConnectionManager extends BaseConnectionManager<
    * Check if connected
    */
   isConnected(): boolean {
-    return !!(this.connection?.pool && !this.connection.pool.ending);
+    return !!(this.pool && !this.pool.ending);
   }
 
   /**
@@ -128,7 +183,9 @@ export class PostgreSQLConnectionManager extends BaseConnectionManager<
     this.cleanupInterval = setInterval(
       async () => {
         try {
-          await cleanupExpired(connection.pool, connection.schema);
+          if (this.pool) {
+            await cleanupExpired(this.pool, connection.schema);
+          }
         } catch (error) {
           logger.warn(
             LogCategory.STORAGE,

@@ -8,8 +8,8 @@
  */
 
 import { LogCategory, logger } from '../../../logging';
+import { ConnectionType, MemoryConnection } from '../../../storage/types';
 import { Memory } from '../../types/common';
-import { ConnectionType, MemoryConnection } from '../types';
 
 /**
  * Graph configuration for traversal and analysis
@@ -86,18 +86,18 @@ export class ConnectionGraph {
   addEdge(connection: MemoryConnection): void {
     // Validate nodes exist
     if (
-      !this.nodes.has(connection.sourceId) ||
-      !this.nodes.has(connection.targetId)
+      !this.nodes.has(connection.sourceMemoryId) ||
+      !this.nodes.has(connection.targetMemoryId)
     ) {
       logger.warn(
         LogCategory.STORAGE,
         'ConnectionGraph',
         'Cannot add edge - missing nodes',
         {
-          sourceExists: this.nodes.has(connection.sourceId),
-          targetExists: this.nodes.has(connection.targetId),
-          sourceId: connection.sourceId,
-          targetId: connection.targetId
+          sourceExists: this.nodes.has(connection.sourceMemoryId),
+          targetExists: this.nodes.has(connection.targetMemoryId),
+          sourceMemoryId: connection.sourceMemoryId,
+          targetMemoryId: connection.targetMemoryId
         }
       );
       return;
@@ -109,23 +109,23 @@ export class ConnectionGraph {
     }
 
     // Add to outgoing edges
-    const outgoing = this.edges.get(connection.sourceId) || [];
+    const outgoing = this.edges.get(connection.sourceMemoryId) || [];
     outgoing.push(connection);
-    this.edges.set(connection.sourceId, outgoing);
+    this.edges.set(connection.sourceMemoryId, outgoing);
 
     // Add to incoming edges
-    const incoming = this.incomingEdges.get(connection.targetId) || [];
+    const incoming = this.incomingEdges.get(connection.targetMemoryId) || [];
     incoming.push(connection);
-    this.incomingEdges.set(connection.targetId, incoming);
+    this.incomingEdges.set(connection.targetMemoryId, incoming);
 
     logger.debug(
       LogCategory.STORAGE,
       'ConnectionGraph',
       'Added connection edge',
       {
-        sourceId: connection.sourceId,
-        targetId: connection.targetId,
-        type: connection.type,
+        sourceMemoryId: connection.sourceMemoryId,
+        targetMemoryId: connection.targetMemoryId,
+        connectionType: connection.connectionType,
         strength: connection.strength
       }
     );
@@ -166,14 +166,14 @@ export class ConnectionGraph {
       const neighbors = this.getDirectNeighbors(current.id);
 
       for (const neighbor of neighbors) {
-        if (neighbor.targetId === targetId) {
+        if (neighbor.targetMemoryId === targetId) {
           return [...current.path, targetId];
         }
 
-        if (!visited.has(neighbor.targetId)) {
+        if (!visited.has(neighbor.targetMemoryId)) {
           queue.push({
-            id: neighbor.targetId,
-            path: [...current.path, neighbor.targetId]
+            id: neighbor.targetMemoryId,
+            path: [...current.path, neighbor.targetMemoryId]
           });
         }
       }
@@ -192,7 +192,9 @@ export class ConnectionGraph {
     let allConnections = [...outgoing, ...incoming];
 
     if (type) {
-      allConnections = allConnections.filter((conn) => conn.type === type);
+      allConnections = allConnections.filter(
+        (conn) => conn.connectionType === type
+      );
     }
 
     // Sort by strength descending
@@ -249,16 +251,16 @@ export class ConnectionGraph {
       // Add all connected neighbors to stack
       const neighbors = this.getDirectNeighbors(currentId);
       for (const neighbor of neighbors) {
-        if (!visited.has(neighbor.targetId)) {
-          stack.push(neighbor.targetId);
+        if (!visited.has(neighbor.targetMemoryId)) {
+          stack.push(neighbor.targetMemoryId);
         }
       }
 
       // Also check incoming connections
       const incoming = this.incomingEdges.get(currentId) || [];
       for (const connection of incoming) {
-        if (!visited.has(connection.sourceId)) {
-          stack.push(connection.sourceId);
+        if (!visited.has(connection.sourceMemoryId)) {
+          stack.push(connection.sourceMemoryId);
         }
       }
     }
@@ -351,14 +353,18 @@ export class ConnectionGraph {
 
     // Remove references from other nodes
     for (const [nodeId, connections] of Array.from(this.edges.entries())) {
-      const filtered = connections.filter((conn) => conn.targetId !== memoryId);
+      const filtered = connections.filter(
+        (conn) => conn.targetMemoryId !== memoryId
+      );
       this.edges.set(nodeId, filtered);
     }
 
     for (const [nodeId, connections] of Array.from(
       this.incomingEdges.entries()
     )) {
-      const filtered = connections.filter((conn) => conn.sourceId !== memoryId);
+      const filtered = connections.filter(
+        (conn) => conn.sourceMemoryId !== memoryId
+      );
       this.incomingEdges.set(nodeId, filtered);
     }
 

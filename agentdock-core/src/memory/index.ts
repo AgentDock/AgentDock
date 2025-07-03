@@ -68,8 +68,28 @@ export * from './types';
 // Memory Services - Processing and orchestration
 export * from './services';
 
-// Batch Processing System - Cost optimization and extraction
-export * from './batch';
+// PRIME Extraction System - Intelligent memory extraction
+export * from './extraction';
+
+// Tracking System - Cost and performance tracking
+export * from './tracking';
 
 // Main Memory System
 export { MemoryManager } from './MemoryManager';
+
+// Factory functions for easy setup
+export {
+  createMemorySystem,
+  createLocalMemory,
+  createProductionMemory,
+  type MemorySystem,
+  type MemorySystemOptions
+} from './create-memory-system';
+
+// Preset configurations for RecallService
+export {
+  RECALL_CONFIG_PRESETS,
+  getRecallPreset,
+  validateHybridWeights,
+  type RecallPresetName
+} from './config/recall-presets';

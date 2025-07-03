@@ -10,6 +10,11 @@
  */
 
 // Import types for internal use
+
+// Import connection types from storage layer
+import type { ConnectionType } from '../../storage/types';
+// Import ImportanceScore from memory base-types
+import type { ImportanceScore } from '../base-types';
 import type {
   ConnectionRule,
   ConsolidationConfig,
@@ -23,12 +28,11 @@ export { ConnectionGraph } from './graph/ConnectionGraph';
 export { TemporalPatternAnalyzer } from './patterns/TemporalPatternAnalyzer';
 export { MemoryConsolidator } from './consolidation/MemoryConsolidator';
 
+// Utility functions for migration
+export { MemoryConnectionManager as MemoryConnectionUtils } from './connections/MemoryConnectionManager';
+
 // Type definitions - all configuration interfaces from types.ts
 export type {
-  // Connection types
-  ConnectionType,
-  MemoryConnection,
-
   // Configuration interfaces (CTO's hybrid approach)
   IntelligenceLayerConfig,
   ConnectionRule,
@@ -37,19 +41,17 @@ export type {
   EmbeddingConfig,
   EmbeddingResult,
   ConsolidationConfig,
-  ConsolidationResult,
 
   // Pattern analysis types
   TemporalPattern,
   ActivityCluster,
 
   // Graph types
-  ConnectionGraph as ConnectionGraphInterface,
-
-  // Importance scoring
-  ImportanceFactors,
-  ImportanceScore
+  ConnectionGraph as ConnectionGraphInterface
 } from './types';
+
+// Re-export from memory base-types
+export type { ConsolidationResult, ImportanceScore } from '../base-types';
 
 /**
  * Default configuration following CTO's progressive enhancement pattern
@@ -113,17 +115,19 @@ export const DEFAULT_CONSOLIDATION_CONFIG: ConsolidationConfig = {
 };
 
 /**
- * Example user-configurable connection rules (language-agnostic examples)
+ * Example user-configurable connection rules (language-agnostic semantic approach)
  */
 export const EXAMPLE_CONNECTION_RULES: ConnectionRule[] = [
   {
     id: 'contradiction-pattern',
     name: 'Contradiction Detection',
     description: 'Detect contradictory information',
-    pattern: '(not|never|opposite|contrary|wrong|incorrect)',
-    connectionType: 'contradicts',
+    semanticDescription:
+      'content that contradicts, opposes, or states the opposite of previous information',
+    connectionType: 'opposite',
     confidence: 0.7,
-    caseSensitive: false,
+    semanticThreshold: 0.75,
+    requiresBothMemories: true,
     enabled: true,
     createdBy: 'system',
     createdAt: new Date()
@@ -132,22 +136,26 @@ export const EXAMPLE_CONNECTION_RULES: ConnectionRule[] = [
     id: 'reference-pattern',
     name: 'Reference Detection',
     description: 'Detect explicit references',
-    pattern: '(mentioned|discussed|said|wrote|stated)',
-    connectionType: 'references',
+    semanticDescription:
+      'content that references, mentions, or discusses something from previous conversations',
+    connectionType: 'related',
     confidence: 0.6,
-    caseSensitive: false,
+    semanticThreshold: 0.7,
+    requiresBothMemories: false,
     enabled: true,
     createdBy: 'system',
     createdAt: new Date()
   },
   {
-    id: 'update-pattern',
-    name: 'Update Detection',
-    description: 'Detect updates and corrections',
-    pattern: '(update|updated|changed|modified|corrected|revised)',
-    connectionType: 'updates',
+    id: 'causal-pattern',
+    name: 'Causal Detection',
+    description: 'Detect cause-effect relationships',
+    semanticDescription:
+      'content that shows one thing causing, leading to, or resulting in another',
+    connectionType: 'causes',
     confidence: 0.8,
-    caseSensitive: false,
+    semanticThreshold: 0.8,
+    requiresBothMemories: true,
     enabled: true,
     createdBy: 'system',
     createdAt: new Date()

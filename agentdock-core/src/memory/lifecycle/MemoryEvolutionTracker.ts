@@ -6,17 +6,7 @@
 import { LogCategory, logger } from '../../logging';
 import { StorageProvider } from '../../storage';
 import { generateId } from '../../storage/utils';
-
-export interface MemoryEvolution {
-  id: string;
-  memoryId: string;
-  timestamp: number;
-  changeType: 'creation' | 'promotion' | 'deletion' | 'decay' | 'update';
-  previousValue?: string;
-  newValue?: string;
-  reason?: string;
-  metadata?: Record<string, unknown>;
-}
+import { MemoryChangeType, MemoryEvolution } from './types';
 
 /**
  * Tracks memory evolution events for analytics and insights
@@ -35,7 +25,7 @@ export class MemoryEvolutionTracker {
       const evolutionRecord: MemoryEvolution = {
         id: generateId('evo'),
         memoryId,
-        timestamp: Date.now(),
+        timestamp: new Date(),
         ...evolution
       };
 
@@ -82,7 +72,9 @@ export class MemoryEvolutionTracker {
       }
 
       // Sort by timestamp
-      return evolutions.sort((a, b) => a.timestamp - b.timestamp);
+      return evolutions.sort(
+        (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
+      );
     } catch (error) {
       logger.error(
         LogCategory.STORAGE,

@@ -14,9 +14,10 @@ import { CoreLLM } from '../../../llm/core-llm';
 import { createLLM } from '../../../llm/create-llm';
 import { LogCategory, logger } from '../../../logging';
 import { generateId } from '../../../storage/utils';
+import { ConsolidationResult } from '../../base-types';
 import { MemoryType } from '../../types';
 import { Memory } from '../../types/common';
-import { ConsolidationConfig, ConsolidationResult } from '../types';
+import { ConsolidationConfig } from '../types';
 
 /**
  * Storage interface for MemoryConsolidator operations
@@ -266,7 +267,7 @@ export class MemoryConsolidator {
             results.push({
               original: [episodic],
               consolidated: semantic,
-              strategy: 'episodic_to_semantic',
+              strategy: 'synthesize', // Using synthesize for episodic to semantic conversion
               confidence: 0.8
             });
           }
@@ -396,10 +397,12 @@ export class MemoryConsolidator {
 
     const semantic: Memory = {
       id: generateId(),
+      userId: episodic.userId, // Preserve userId from original memory
       agentId: episodic.agentId,
       content: semanticContent,
       type: 'semantic' as MemoryType,
       importance: Math.min(1.0, episodic.importance + 0.1), // Boost importance slightly
+      resonance: episodic.resonance || 0, // Preserve resonance or default to 0
       accessCount: 0,
       createdAt: Date.now(),
       updatedAt: Date.now(),
@@ -630,10 +633,12 @@ Extract the general knowledge or pattern that can be applied beyond this specifi
 
     const merged: Memory = {
       id: generateId(),
+      userId: primary.userId, // Preserve userId from primary memory
       agentId: primary.agentId,
       content: mergedContent,
       type: primary.type,
       importance: Math.max(...memories.map((m) => m.importance)),
+      resonance: Math.max(...memories.map((m) => m.resonance || 0)), // Take max resonance
       accessCount: memories.reduce((sum, m) => sum + m.accessCount, 0),
       createdAt: Math.min(...memories.map((m) => m.createdAt)),
       updatedAt: Date.now(),

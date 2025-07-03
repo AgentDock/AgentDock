@@ -11,4 +11,5 @@
 export { ConfigurableDecayEngine } from './ConfigurableDecayEngine';
 
 // Type definitions
-export type { DecayRule, DecayConfiguration, DecayResult } from './types';
+export type { DecayRule, DecayConfiguration } from './types';
+export type { DecayResult } from '../base-types';

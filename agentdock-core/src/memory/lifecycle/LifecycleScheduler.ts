@@ -277,8 +277,8 @@ export class LifecycleScheduler {
           {
             userId,
             agentId,
-            updated: result.decay.updated,
-            deleted: result.decay.deleted
+            updated: result.decay.decayed,
+            deleted: result.decay.removed
           }
         );
       }
@@ -364,7 +364,7 @@ export class LifecycleScheduler {
             userId,
             agentId,
             reason,
-            decayUpdated: result.decay.updated,
+            decayUpdated: result.decay.decayed,
             promoted: result.promotion.promotedCount,
             cleaned: result.cleanup.deletedCount,
             durationMs: result.durationMs

@@ -7,6 +7,7 @@
  * @author AgentDock Core Team
  */
 
+import { EventEmitter } from 'events';
 import { openai } from '@ai-sdk/openai';
 import { z } from 'zod';
 
@@ -35,6 +36,117 @@ const ConnectionAnalysisSchema = z.object({
 
 type ConnectionAnalysis = z.infer<typeof ConnectionAnalysisSchema>;
 
+// Connection discovery task interface
+interface ConnectionTask {
+  key: string;
+  userId: string;
+  agentId: string;
+  memoryId: string;
+  resolve: (connections: MemoryConnection[]) => void;
+  reject: (error: Error) => void;
+}
+
+/**
+ * Async connection discovery queue to prevent race conditions
+ */
+class ConnectionDiscoveryQueue extends EventEmitter {
+  private processing = new Set<string>();
+  private queue: ConnectionTask[] = [];
+  private manager: MemoryConnectionManager | null = null;
+
+  setManager(manager: MemoryConnectionManager): void {
+    this.manager = manager;
+  }
+
+  async enqueue(
+    userId: string,
+    agentId: string,
+    memoryId: string
+  ): Promise<MemoryConnection[]> {
+    const key = `${userId}:${agentId}:${memoryId}`;
+
+    // Skip if already processing this exact memory
+    if (this.processing.has(key)) {
+      logger.debug(
+        LogCategory.STORAGE,
+        'ConnectionDiscoveryQueue',
+        'Skipping duplicate connection discovery',
+        { key }
+      );
+      return [];
+    }
+
+    return new Promise((resolve, reject) => {
+      const task: ConnectionTask = {
+        key,
+        userId,
+        agentId,
+        memoryId,
+        resolve,
+        reject
+      };
+
+      this.queue.push(task);
+      this.processNext();
+    });
+  }
+
+  private async processNext(): Promise<void> {
+    if (this.queue.length === 0 || !this.manager) return;
+
+    const task = this.queue.shift()!;
+
+    // Skip if already processing
+    if (this.processing.has(task.key)) {
+      task.resolve([]);
+      return;
+    }
+
+    this.processing.add(task.key);
+
+    try {
+      // Get the memory and process connections
+      const memory = await this.manager.getMemoryById(
+        task.userId,
+        task.memoryId
+      );
+      if (memory) {
+        const connections = await this.manager.discoverConnections(
+          task.userId,
+          task.agentId,
+          memory
+        );
+
+        if (connections.length > 0) {
+          await this.manager.createConnections(task.userId, connections);
+        }
+
+        task.resolve(connections);
+      } else {
+        task.resolve([]);
+      }
+    } catch (error) {
+      logger.error(
+        LogCategory.STORAGE,
+        'ConnectionDiscoveryQueue',
+        'Connection discovery failed',
+        {
+          key: task.key,
+          error: error instanceof Error ? error.message : String(error)
+        }
+      );
+      task.reject(error instanceof Error ? error : new Error(String(error)));
+    } finally {
+      this.processing.delete(task.key);
+
+      // Process next task after a small delay
+      if (this.queue.length > 0) {
+        setTimeout(() => this.processNext(), 10);
+      }
+    }
+  }
+}
+
 /**
  * Language-agnostic memory connection manager using progressive enhancement
  */
@@ -42,6 +154,7 @@ export class MemoryConnectionManager {
   private llm?: CoreLLM;
   private costTracker: CostTracker;
   private embeddingService: EmbeddingService;
+  private queue: ConnectionDiscoveryQueue;
 
   constructor(
     private storage: any,
@@ -83,6 +196,9 @@ export class MemoryConnectionManager {
     // Use provided cost tracker
     this.costTracker = costTracker;
 
+    this.queue = new ConnectionDiscoveryQueue();
+    this.queue.setManager(this);
+
     logger.debug(
       LogCategory.STORAGE,
       'MemoryConnectionManager',
@@ -120,8 +236,13 @@ export class MemoryConnectionManager {
         }
       );
 
-      // Get recent memories for comparison
-      const recentMemories = await this.getRecentMemories(userId, agentId, 50);
+      // Get recent memories for comparison (configurable limit)
+      const limit = this.config.connectionDetection.maxRecentMemories || 50;
+      const recentMemories = await this.getRecentMemories(
+        userId,
+        agentId,
+        limit
+      );
       const connections: MemoryConnection[] = [];
 
       // Generate embedding for new memory (always done - base layer)
@@ -238,7 +359,7 @@ export class MemoryConnectionManager {
 
     // Level 1: Try user-defined rules (free)
     if (this.config.connectionDetection.userRules?.enabled) {
-      const ruleResult = this.applyUserRules(memory1, memory2);
+      const ruleResult = await this.applyUserRules(memory1, memory2);
       if (ruleResult) {
         return ruleResult;
       }
@@ -268,33 +389,91 @@ export class MemoryConnectionManager {
   }
 
   /**
-   * Apply user-defined rules (language-agnostic, user-configurable)
+   * Apply user-defined rules using semantic understanding (no regex patterns)
    */
-  private applyUserRules(
+  private async applyUserRules(
     memory1: Memory,
     memory2: Memory
-  ): ConnectionAnalysis | null {
+  ): Promise<ConnectionAnalysis | null> {
     const rules = this.config.connectionDetection.userRules?.patterns || [];
 
     for (const rule of rules) {
       if (!rule.enabled) continue;
 
-      const content1 = memory1.content.toLowerCase();
-      const content2 = memory2.content.toLowerCase();
+      // Semantic-only approach - no legacy support
+      if (!rule.semanticDescription) {
+        throw new Error(
+          `Connection rule '${rule.name}' missing semantic description. Regex patterns not supported.`
+        );
+      }
 
-      // Simple pattern matching - user configures for their language
-      const regex = new RegExp(rule.pattern, rule.caseSensitive ? 'g' : 'gi');
+      // Semantic approach - understand meaning instead of matching patterns
+      const isMatch = await this.evaluateSemanticRule(rule, memory1, memory2);
 
-      if (regex.test(content1) && regex.test(content2)) {
+      if (isMatch) {
         return {
           connectionType: rule.connectionType,
           confidence: rule.confidence,
-          reasoning: `Matched user rule: ${rule.name}`
+          reasoning: `Semantic match: ${rule.name} - ${rule.description}`
         };
       }
     }
 
     return null;
+  }
+
+  /**
+   * Evaluate semantic rule using embedding similarity (language-agnostic)
+   */
+  private async evaluateSemanticRule(
+    rule: ConnectionRule,
+    memory1: Memory,
+    memory2: Memory
+  ): Promise<boolean> {
+    try {
+      // Get or generate semantic embedding for the rule
+      let ruleEmbedding = rule.semanticEmbedding;
+      if (!ruleEmbedding) {
+        ruleEmbedding = await this.generateEmbedding(rule.semanticDescription);
+      }
+
+      // Generate embeddings for memory content
+      const memory1Embedding = await this.generateEmbedding(memory1.content);
+      const memory2Embedding = await this.generateEmbedding(memory2.content);
+
+      // Calculate semantic similarities
+      const similarity1 = this.calculateCosineSimilarity(
+        ruleEmbedding,
+        memory1Embedding
+      );
+      const similarity2 = this.calculateCosineSimilarity(
+        ruleEmbedding,
+        memory2Embedding
+      );
+
+      const threshold = rule.semanticThreshold || 0.75;
+      const requiresBoth = rule.requiresBothMemories !== false; // Default true
+
+      // Determine if rule matches based on configuration
+      if (requiresBoth) {
+        // Both memories must match the semantic description
+        return similarity1 >= threshold && similarity2 >= threshold;
+      } else {
+        // At least one memory must match the semantic description
+        return similarity1 >= threshold || similarity2 >= threshold;
+      }
+    } catch (error) {
+      logger.warn(
+        LogCategory.STORAGE,
+        'MemoryConnectionManager',
+        'Semantic rule evaluation failed',
+        {
+          ruleId: rule.id,
+          error: error instanceof Error ? error.message : String(error)
+        }
+      );
+      return false;
+    }
   }
 
   /**
@@ -547,5 +726,62 @@ Provide confidence score (0-1) and brief reasoning.`
 
     // Fallback if storage doesn't support recall
     return [];
+  }
+
+  /**
+   * Get memory by ID for connection discovery
+   */
+  async getMemoryById(
+    userId: string,
+    memoryId: string
+  ): Promise<Memory | null> {
+    if (!userId?.trim()) {
+      throw new Error('userId is required for memory retrieval operations');
+    }
+
+    if (this.storage.memory?.getById) {
+      try {
+        return await this.storage.memory.getById(userId, memoryId);
+      } catch (error) {
+        logger.warn(
+          LogCategory.STORAGE,
+          'MemoryConnectionManager',
+          'Failed to get memory by ID',
+          {
+            userId: userId.substring(0, 8),
+            memoryId,
+            error: error instanceof Error ? error.message : String(error)
+          }
+        );
+        return null;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Enqueue connection discovery (async, non-blocking)
+   */
+  async enqueueConnectionDiscovery(
+    userId: string,
+    agentId: string,
+    memoryId: string
+  ): Promise<void> {
+    try {
+      await this.queue.enqueue(userId, agentId, memoryId);
+    } catch (error) {
+      logger.error(
+        LogCategory.STORAGE,
+        'MemoryConnectionManager',
+        'Failed to enqueue connection discovery',
+        {
+          userId: userId.substring(0, 8),
+          agentId: agentId.substring(0, 8),
+          memoryId,
+          error: error instanceof Error ? error.message : String(error)
+        }
+      );
+    }
   }
 }

@@ -1,10 +1,17 @@
 /**
- * MemoryManager - Simple orchestrator for AgentDock memory system
+ * MemoryManager - Orchestrates AgentDock memory system with vector-first approach
  *
- * Delegates ALL operations to memory types and storage layer - NO complex logic
+ * Integrates vector similarity search with traditional memory operations
  */
 
-import { StorageProvider } from '../storage/types';
+import { createEmbedding, getEmbeddingDimensions } from '../llm';
+import {
+  ConnectionType,
+  HybridSearchOptions,
+  StorageProvider,
+  VectorMemoryOperations
+} from '../storage/types';
+import { EmbeddingService } from './intelligence/embeddings/EmbeddingService';
 import { MemoryManagerConfig, MemoryType } from './types';
 import { EpisodicMemory } from './types/episodic/EpisodicMemory';
 import { ProceduralMemory } from './types/procedural/ProceduralMemory';
@@ -16,6 +23,7 @@ export class MemoryManager {
   private episodic: EpisodicMemory;
   private semantic: SemanticMemory;
   private procedural: ProceduralMemory;
+  private embeddingService: EmbeddingService | null = null;
 
   constructor(
     private storage: StorageProvider,
@@ -39,14 +47,65 @@ export class MemoryManager {
     }
 
     // Initialize all memory types - USER-CONFIGURED
-    this.working = new WorkingMemory(storage, config.working);
-    this.episodic = new EpisodicMemory(storage, config.episodic);
-    this.semantic = new SemanticMemory(storage, config.semantic);
-    this.procedural = new ProceduralMemory(storage, config.procedural);
+    this.working = new WorkingMemory(
+      storage,
+      config.working,
+      config.intelligence
+    );
+    this.episodic = new EpisodicMemory(
+      storage,
+      config.episodic,
+      config.intelligence
+    );
+    this.semantic = new SemanticMemory(
+      storage,
+      config.semantic,
+      config.intelligence
+    );
+    this.procedural = new ProceduralMemory(
+      storage,
+      config.procedural,
+      config.intelligence
+    );
+
+    // Initialize embedding service if intelligence config provides embedding settings
+    if (config.intelligence?.embedding?.enabled) {
+      // Build proper EmbeddingConfig from IntelligenceLayerConfig
+      const provider = 'openai'; // Default provider, could be made configurable
+      const model =
+        config.intelligence.embedding.model || 'text-embedding-3-small';
+      const dimensions = getEmbeddingDimensions(provider, model);
+
+      // Get API key from environment or config
+      const apiKey = process.env[`${provider.toUpperCase()}_API_KEY`] || '';
+
+      if (!apiKey) {
+        console.warn(
+          'No API key found for embedding provider. Embedding features will be disabled.'
+        );
+        return;
+      }
+
+      const embeddingModel = createEmbedding({
+        provider,
+        apiKey,
+        model,
+        dimensions
+      });
+
+      this.embeddingService = new EmbeddingService(embeddingModel, {
+        provider,
+        model,
+        dimensions,
+        cacheEnabled: true,
+        batchSize: 100,
+        cacheSize: 1000
+      });
+    }
   }
 
   /**
-   * Store memory - Simple delegation to memory types
+   * Store memory - Simple delegation to memory types with optional embedding generation
    */
   async store(
     userId: string,
@@ -63,7 +122,105 @@ export class MemoryManager {
       throw new Error('Agent ID and content are required');
     }
 
-    // SIMPLE DELEGATION - NO COMPLEX LOGIC
+    // Check if we have vector-enabled storage
+    const isVectorMemoryOps = (ops: any): ops is VectorMemoryOperations => {
+      return ops && typeof ops.storeMemoryWithEmbedding === 'function';
+    };
+
+    const hasVectorSupport =
+      this.storage.memory &&
+      isVectorMemoryOps(this.storage.memory) &&
+      this.embeddingService;
+
+    // Generate embedding if vector support is available
+    let memoryId: string;
+
+    if (hasVectorSupport && this.embeddingService) {
+      try {
+        // Generate embedding for the content
+        const embeddingResult =
+          await this.embeddingService.generateEmbedding(content);
+
+        // Store using the appropriate memory type handler
+        const memoryData = await this.prepareMemoryData(
+          userId,
+          agentId,
+          content,
+          type
+        );
+
+        // Store with embedding
+        const vectorMemoryOps = this.storage.memory as VectorMemoryOperations;
+        memoryId = await vectorMemoryOps.storeMemoryWithEmbedding(
+          userId,
+          agentId,
+          memoryData,
+          embeddingResult.embedding
+        );
+      } catch (error) {
+        // Fallback to traditional storage on error
+        console.error(
+          'Vector storage failed, falling back to traditional storage:',
+          error
+        );
+        memoryId = await this.delegateToMemoryType(
+          userId,
+          agentId,
+          content,
+          type
+        );
+      }
+    } else {
+      // Traditional storage without embeddings
+      memoryId = await this.delegateToMemoryType(
+        userId,
+        agentId,
+        content,
+        type
+      );
+    }
+
+    return memoryId;
+  }
+
+  /**
+   * Prepare memory data for storage
+   */
+  private async prepareMemoryData(
+    userId: string,
+    agentId: string,
+    content: string,
+    type: MemoryType
+  ): Promise<any> {
+    // Create basic memory data structure
+    const now = Date.now();
+    return {
+      id: `mem_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      userId,
+      agentId,
+      type,
+      content,
+      importance: 0.5, // Default importance
+      resonance: 0.5, // Default resonance
+      accessCount: 0,
+      createdAt: now,
+      updatedAt: now,
+      lastAccessedAt: now,
+      metadata: {
+        memoryType: type
+      }
+    };
+  }
+
+  /**
+   * Delegate storage to appropriate memory type
+   */
+  private async delegateToMemoryType(
+    userId: string,
+    agentId: string,
+    content: string,
+    type: MemoryType
+  ): Promise<string> {
     switch (type) {
       case 'working':
         return this.working.store(userId, agentId, content);
@@ -79,7 +236,7 @@ export class MemoryManager {
   }
 
   /**
-   * Recall memories - Let storage handle the complexity
+   * Recall memories - Vector-first approach with hybrid search
    */
   async recall(
     userId: string,
@@ -96,11 +253,74 @@ export class MemoryManager {
       throw new Error('Agent ID and query are required');
     }
 
-    // DELEGATE TO STORAGE - Don't reimplement recall logic
-    return this.storage.memory!.recall(userId, agentId, query, {
-      type: options.type,
-      limit: options.limit
-    });
+    // Check if we have vector-enabled storage
+    const isVectorMemoryOps = (ops: any): ops is VectorMemoryOperations => {
+      return ops && typeof ops.searchByVector === 'function';
+    };
+
+    const hasVectorSupport =
+      this.storage.memory &&
+      isVectorMemoryOps(this.storage.memory) &&
+      this.embeddingService;
+
+    if (!hasVectorSupport || !this.embeddingService) {
+      // Fallback to traditional recall if no vector support
+      return this.storage.memory!.recall(userId, agentId, query, {
+        type: options.type,
+        limit: options.limit
+      });
+    }
+
+    // Vector-first approach
+    try {
+      // Step 1: Generate query embedding
+      const queryEmbedding =
+        await this.embeddingService.generateEmbedding(query);
+
+      // Step 2: Perform hybrid search (vector + text)
+      const vectorMemoryOps = this.storage.memory as VectorMemoryOperations;
+
+      // Use hybrid search if available, otherwise fall back to vector-only
+      if ('hybridSearch' in vectorMemoryOps && vectorMemoryOps.hybridSearch) {
+        return await vectorMemoryOps.hybridSearch(
+          userId,
+          agentId,
+          query,
+          queryEmbedding.embedding,
+          {
+            limit: options.limit || 20,
+            threshold:
+              this.config.intelligence?.embedding?.similarityThreshold || 0.7,
+            textWeight: 0.3, // 30% text as per PRD
+            vectorWeight: 0.7, // 70% vector as per PRD
+            filter: options.type ? { type: options.type } : undefined
+          }
+        );
+      } else {
+        // Fallback to vector-only search
+        return await vectorMemoryOps.searchByVector(
+          userId,
+          agentId,
+          queryEmbedding.embedding,
+          {
+            limit: options.limit || 20,
+            threshold:
+              this.config.intelligence?.embedding?.similarityThreshold || 0.7,
+            filter: options.type ? { type: options.type } : undefined
+          }
+        );
+      }
+    } catch (error) {
+      // Fallback to traditional recall on error
+      console.error(
+        'Vector recall failed, falling back to traditional recall:',
+        error
+      );
+      return this.storage.memory!.recall(userId, agentId, query, {
+        type: options.type,
+        limit: options.limit
+      });
+    }
   }
 
   /**
@@ -135,7 +355,7 @@ export class MemoryManager {
     userId: string,
     fromId: string,
     toId: string,
-    connectionType: string,
+    connectionType: ConnectionType,
     strength: number
   ): Promise<void> {
     if (!userId || typeof userId !== 'string' || !userId.trim()) {
@@ -156,10 +376,12 @@ export class MemoryManager {
     if (this.storage.memory?.createConnections) {
       await this.storage.memory.createConnections(userId, [
         {
-          fromMemoryId: fromId,
-          toMemoryId: toId,
-          type: connectionType,
-          strength
+          id: `conn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          sourceMemoryId: fromId,
+          targetMemoryId: toId,
+          connectionType: connectionType,
+          strength,
+          createdAt: Date.now()
         }
       ]);
     }

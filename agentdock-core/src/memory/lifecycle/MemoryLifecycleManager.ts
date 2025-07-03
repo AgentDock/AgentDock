@@ -148,8 +148,8 @@ export class MemoryLifecycleManager {
         {
           userId,
           agentId,
-          decayUpdated: result.decay.updated,
-          decayDeleted: result.decay.deleted,
+          decayUpdated: result.decay.decayed,
+          decayDeleted: result.decay.removed,
           promoted: result.promotion.promotedCount,
           cleaned: result.cleanup.deletedCount,
           durationMs: result.durationMs

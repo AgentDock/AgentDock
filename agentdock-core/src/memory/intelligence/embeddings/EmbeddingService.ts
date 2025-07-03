@@ -205,6 +205,7 @@ export class EmbeddingService {
    * Find similar memories using vector similarity
    */
   async findSimilarMemories(
+    userId: string,
     agentId: string,
     queryText: string,
     threshold: number = 0.7,
@@ -212,12 +213,13 @@ export class EmbeddingService {
   ): Promise<Memory[]> {
     const embeddingResult = await this.generateEmbedding(queryText);
 
-    // Use storage adapter's vector search if available
-    if (storage.searchSimilar) {
-      return await storage.searchSimilar(
+    // Check if storage has vector memory operations
+    if (storage.memory && 'searchByVector' in storage.memory) {
+      return await storage.memory.searchByVector(
+        userId,
         agentId,
         embeddingResult.embedding,
-        threshold
+        { threshold }
       );
     }
 

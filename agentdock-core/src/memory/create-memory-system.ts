@@ -112,7 +112,7 @@ export async function createMemorySystem(
     primeConfig: {
       provider: config.intelligence?.provider || 'anthropic',
       apiKey:
-        config.intelligence?.apiKey || process.env.ANTHROPIC_API_KEY || '',
+        process.env.ANTHROPIC_API_KEY || config.intelligence?.apiKey || '',
       maxTokens: config.intelligence?.maxTokens || 4000,
       autoTierSelection: false,
       defaultTier: 'balanced',

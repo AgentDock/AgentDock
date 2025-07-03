@@ -320,11 +320,12 @@ JSON: [{content, type, importance, reasoning}]`;
    */
   private validateAndSetDefaults(config: PRIMEConfig): PRIMEConfig {
     return {
-      // LLM Configuration - Config takes precedence, environment fallback
-      provider: config.provider || process.env.PRIME_PROVIDER || 'openai',
-      apiKey: config.apiKey || process.env.PRIME_API_KEY || '',
-      maxTokens:
-        config.maxTokens || Number(process.env.PRIME_MAX_TOKENS) || 4000,
+      // LLM Configuration - Environment takes precedence, then config
+      provider: process.env.PRIME_PROVIDER || config.provider || 'openai',
+      apiKey: process.env.PRIME_API_KEY || config.apiKey || '',
+      maxTokens: process.env.PRIME_MAX_TOKENS
+        ? Number(process.env.PRIME_MAX_TOKENS)
+        : config.maxTokens || 4000,
 
       // Tier selection (optional)
       autoTierSelection:

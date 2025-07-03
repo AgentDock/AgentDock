@@ -105,7 +105,7 @@ export async function registerPostgreSQLAdapter(
     factory.registerAdapter('postgresql', (options = {}) => {
       return new PostgreSQLAdapter({
         connectionString:
-          options.config?.connectionString || process.env.DATABASE_URL,
+          process.env.DATABASE_URL || options.config?.connectionString,
         connection: options.config?.connection,
         pool: options.config?.pool,
         namespace: options.namespace,
@@ -150,7 +150,7 @@ export async function registerPostgreSQLVectorAdapter(
     factory.registerAdapter('postgresql-vector', (options = {}) => {
       return new PostgreSQLVectorAdapter({
         connectionString:
-          options.config?.connectionString || process.env.DATABASE_URL,
+          process.env.DATABASE_URL || options.config?.connectionString,
         connection: options.config?.connection,
         pool: options.config?.pool,
         namespace: options.namespace,

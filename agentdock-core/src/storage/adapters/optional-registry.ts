@@ -83,8 +83,8 @@ export async function registerCloudAdapters(
     const { S3Adapter } = await import('./s3');
     factory.registerAdapter('s3', (options = {}) => {
       return new S3Adapter({
-        bucket: options.config?.bucket || process.env.S3_BUCKET,
-        region: options.config?.region || process.env.AWS_REGION || 'us-east-1',
+        bucket: process.env.S3_BUCKET || options.config?.bucket,
+        region: process.env.AWS_REGION || options.config?.region || 'us-east-1',
         endpoint: options.config?.endpoint,
         credentials:
           options.config?.credentials ||

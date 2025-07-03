@@ -23,18 +23,18 @@ export class PostgreSQLConnectionManager extends BaseConnectionManager<
       connectionString: options.connectionString || undefined,
       connection: {
         host:
-          options.connection?.host || process.env.POSTGRES_HOST || 'localhost',
-        port:
-          options.connection?.port ||
-          parseInt(process.env.POSTGRES_PORT || '5432'),
+          process.env.POSTGRES_HOST || options.connection?.host || 'localhost',
+        port: process.env.POSTGRES_PORT
+          ? parseInt(process.env.POSTGRES_PORT)
+          : options.connection?.port || 5432,
         database:
-          options.connection?.database ||
           process.env.POSTGRES_DB ||
+          options.connection?.database ||
           'agentdock',
         user:
-          options.connection?.user || process.env.POSTGRES_USER || 'postgres',
+          process.env.POSTGRES_USER || options.connection?.user || 'postgres',
         password:
-          options.connection?.password || process.env.POSTGRES_PASSWORD || ''
+          process.env.POSTGRES_PASSWORD || options.connection?.password || ''
       },
       pool: {
         max: options.pool?.max || 20, // Maximum pool size (prevent resource exhaustion)
@@ -42,7 +42,7 @@ export class PostgreSQLConnectionManager extends BaseConnectionManager<
         connectionTimeoutMillis: options.pool?.connectionTimeoutMillis || 2000 // 2 second timeout for acquiring connections
       },
       namespace: options.namespace || undefined,
-      schema: options.schema || process.env.POSTGRES_SCHEMA || 'public',
+      schema: process.env.POSTGRES_SCHEMA || options.schema || 'public',
       ssl:
         options.ssl !== undefined
           ? options.ssl

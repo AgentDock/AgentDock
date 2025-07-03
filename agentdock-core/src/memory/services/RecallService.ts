@@ -462,6 +462,14 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
 
   /**
    * Get metrics for monitoring and optimization
+   *
+   * @todo Add comprehensive traceability system for preset performance monitoring:
+   * - Track query response times by preset type
+   * - Monitor relevance score distributions per preset
+   * - Log preset effectiveness metrics (success rates, user satisfaction)
+   * - Add preset recommendation engine based on query patterns
+   * - Implement A/B testing framework for preset optimization
+   * - Add telemetry for preset adoption rates and configuration overrides
    */
   getMetrics(): RecallMetrics {
     return { ...this.metrics };

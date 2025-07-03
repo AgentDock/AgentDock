@@ -1,8 +1,68 @@
+import { LogCategory, logger } from '../../../logging';
+import {
+  MemoryOperations,
+  VectorMemoryOperations
+} from '../../../storage/types';
+import { EmbeddingService } from '../../intelligence/embeddings/EmbeddingService';
 import { SemanticMemoryData } from './SemanticMemoryTypes';
 
 /**
  * Utility functions for SemanticMemory operations
+ * Works with memory-enabled adapters only - see index.ts for adapter compatibility
  */
+
+// Memory adapter infrastructure (validated at initialization)
+let embeddingService: EmbeddingService | null = null;
+let vectorMemoryOps: VectorMemoryOperations | null = null;
+let memoryOps: MemoryOperations | null = null;
+
+/**
+ * Initialize semantic analysis services with validated memory adapter
+ * @param embedding - Embedding service for semantic operations
+ * @param adapter - Validated storage adapter with memory operations
+ * @param adapterName - Name of adapter for logging
+ */
+export function initializeSemanticServices(
+  embedding: EmbeddingService,
+  adapter: any,
+  adapterName: string = 'unknown'
+): void {
+  embeddingService = embedding;
+
+  // Adapter is already validated by initializeMemoryUtilities
+  const memoryOperations = adapter.memory as MemoryOperations;
+
+  // Safe capability detection
+  const hasVectorSearch =
+    'searchByVector' in memoryOperations &&
+    typeof memoryOperations.searchByVector === 'function';
+  const hasHybridSearch =
+    hasVectorSearch &&
+    'hybridSearch' in memoryOperations &&
+    typeof memoryOperations.hybridSearch === 'function';
+
+  if (hasVectorSearch) {
+    vectorMemoryOps = memoryOperations as VectorMemoryOperations;
+  }
+
+  memoryOps = memoryOperations;
+
+  logger.info(
+    LogCategory.STORAGE,
+    'SemanticMemoryUtils',
+    'Semantic services initialized successfully',
+    {
+      adapterName,
+      hasVectorSearch,
+      hasHybridSearch,
+      capabilities: hasHybridSearch
+        ? 'hybrid'
+        : hasVectorSearch
+          ? 'vector'
+          : 'text'
+    }
+  );
+}
 
 /**
  * Generate unique semantic memory ID
@@ -42,42 +102,123 @@ export function extractKeywords(content: string): string[] {
 }
 
 /**
- * Extract facts from content using simple pattern matching
+ * Extract facts from content using tiered semantic search (MEMORY ADAPTERS)
+ * Tier 1: Hybrid search (PostgreSQL-Vector, SQLite-Vec)
+ * Tier 2: Vector search (if supported by memory adapter)
+ * Tier 3: Text search (all memory adapters)
+ * Tier 4: Simple content analysis (fallback)
  */
-export function extractFacts(content: string): string[] {
-  const facts: string[] = [];
-
-  // Simple pattern matching for factual statements
-  const factPatterns = [
-    /(.+) is (.+)/g,
-    /(.+) was (.+)/g,
-    /(.+) has (.+)/g,
-    /(.+) can (.+)/g,
-    /(.+) will (.+)/g
-  ];
-
-  for (const pattern of factPatterns) {
-    const matches = content.matchAll(pattern);
-    for (const match of Array.from(matches)) {
-      if (match[0].length > 10 && match[0].length < 200) {
-        facts.push(match[0].trim());
-      }
-    }
+export async function extractFacts(content: string): Promise<string[]> {
+  if (!embeddingService) {
+    // Tier 4: Simple content analysis fallback
+    return content.length > 50 ? [content.substring(0, 100)] : [];
   }
 
-  return facts.slice(0, 5); // Limit to 5 facts per content
+  try {
+    // Generate embedding for the content
+    const embedding = await embeddingService.generateEmbedding(content);
+    const factQuery =
+      'factual statements, definitions, objective information, things that are true';
+
+    // Tier 1: Try hybrid search (PostgreSQL-Vector, SQLite-Vec)
+    if (
+      vectorMemoryOps &&
+      'hybridSearch' in vectorMemoryOps &&
+      typeof vectorMemoryOps.hybridSearch === 'function'
+    ) {
+      const hybridResults = await vectorMemoryOps.hybridSearch(
+        'system',
+        'fact-extraction',
+        factQuery,
+        embedding.embedding,
+        {
+          threshold: 0.6,
+          limit: 5,
+          textWeight: 0.3,
+          vectorWeight: 0.7
+        }
+      );
+
+      if (hybridResults.length > 0) {
+        return hybridResults
+          .filter(
+            (result) =>
+              result.content.length > 10 && result.content.length < 200
+          )
+          .map((result) => result.content.trim())
+          .slice(0, 5);
+      }
+    }
+
+    // Tier 2: Try vector-only search (if supported by memory adapter)
+    if (vectorMemoryOps && 'searchByVector' in vectorMemoryOps) {
+      const vectorResults = await vectorMemoryOps.searchByVector(
+        'system',
+        'fact-extraction',
+        embedding.embedding,
+        {
+          threshold: 0.6,
+          limit: 5
+        }
+      );
+
+      if (vectorResults.length > 0) {
+        return vectorResults
+          .filter(
+            (result) =>
+              result.content.length > 10 && result.content.length < 200
+          )
+          .map((result) => result.content.trim())
+          .slice(0, 5);
+      }
+    }
+
+    // Tier 3: Try text search (all memory adapters)
+    if (memoryOps) {
+      const textResults = await memoryOps.recall(
+        'system',
+        'fact-extraction',
+        factQuery,
+        { limit: 5 }
+      );
+
+      if (textResults.length > 0) {
+        return textResults
+          .filter(
+            (result) =>
+              result.content.length > 10 && result.content.length < 200
+          )
+          .map((result) => result.content.trim())
+          .slice(0, 5);
+      }
+    }
+  } catch (error) {
+    logger.warn(
+      LogCategory.STORAGE,
+      'SemanticMemoryUtils',
+      'Semantic search failed, falling back to simple analysis',
+      {
+        error: error instanceof Error ? error.message : String(error),
+        operation: 'extractFacts',
+        fallback: 'simple content analysis'
+      }
+    );
+  }
+
+  // Tier 4: Simple content analysis fallback
+  return content.length > 50 ? [content.substring(0, 100)] : [];
 }
 
 /**
- * Categorize semantic content based on keywords and patterns
+ * Categorize semantic content based on keywords and patterns using tiered search
  */
-export function categorizeContent(content: string): string {
+export async function categorizeContent(content: string): Promise<string> {
   const lowerContent = content.toLowerCase();
 
   if (lowerContent.includes('code') || lowerContent.includes('programming')) {
     return 'programming';
   }
-  if (lowerContent.includes('definition') || isDefinition(content)) {
+  if (lowerContent.includes('definition') || (await isDefinition(content))) {
     return 'definition';
   }
   if (isExplanation(content)) {
@@ -96,11 +237,11 @@ export function categorizeContent(content: string): string {
 /**
  * Calculate semantic memory importance based on content characteristics
  */
-export function calculateSemanticImportance(
+export async function calculateSemanticImportance(
   content: string,
   facts: string[] = [],
   keywords: string[] = []
-): number {
+): Promise<number> {
   let importance = 0.4;
 
   // More facts = more important
@@ -110,7 +251,7 @@ export function calculateSemanticImportance(
   importance += Math.min(keywords.length * 0.02, 0.2);
 
   // Definitions and explanations are important
-  if (isDefinition(content) || isExplanation(content)) {
+  if ((await isDefinition(content)) || isExplanation(content)) {
     importance += 0.3;
   }
 
@@ -123,13 +264,17 @@ export function calculateSemanticImportance(
 }
 
 /**
- * Calculate confidence based on content quality indicators
+ * Calculate confidence based on content quality using tiered semantic analysis (MEMORY ADAPTERS)
+ * Tier 1: Hybrid search (PostgreSQL-Vector, SQLite-Vec)
+ * Tier 2: Vector search (if supported by memory adapter)
+ * Tier 3: Text search (all memory adapters)
+ * Tier 4: Simple heuristics (fallback)
  */
-export function calculateSemanticConfidence(
+export async function calculateSemanticConfidence(
   content: string,
   sourceRole: string = 'assistant',
   facts: string[] = []
-): number {
+): Promise<number> {
   let confidence = 0.5;
 
   // Assistant messages generally more reliable
@@ -138,28 +283,175 @@ export function calculateSemanticConfidence(
   // More facts = higher confidence
   confidence += Math.min(facts.length * 0.05, 0.2);
 
-  // Definitive language increases confidence
-  if (/definitely|certainly|always|never/i.test(content)) {
-    confidence += 0.1;
+  if (!embeddingService) {
+    // Tier 4: Simple heuristics fallback
+    return Math.max(Math.min(confidence, 1.0), 0.1);
   }
 
-  // Uncertain language decreases confidence
-  if (/maybe|perhaps|might|could be|possibly/i.test(content)) {
-    confidence -= 0.1;
+  try {
+    // Generate embedding for the content
+    const embedding = await embeddingService.generateEmbedding(content);
+
+    // Tier 1: Try hybrid search for confidence indicators
+    if (
+      vectorMemoryOps &&
+      'hybridSearch' in vectorMemoryOps &&
+      typeof vectorMemoryOps.hybridSearch === 'function'
+    ) {
+      const confidenceResults = await vectorMemoryOps.hybridSearch(
+        'system',
+        'confidence-analysis',
+        'definitive statements, certain information, confident assertions, clear facts',
+        embedding.embedding,
+        { threshold: 0.7, limit: 1, textWeight: 0.3, vectorWeight: 0.7 }
+      );
+
+      if (confidenceResults.length > 0) {
+        confidence += 0.1;
+      }
+
+      const uncertaintyResults = await vectorMemoryOps.hybridSearch(
+        'system',
+        'uncertainty-analysis',
+        'uncertain statements, maybe, perhaps, might be, possibly, unclear information',
+        embedding.embedding,
+        { threshold: 0.7, limit: 1, textWeight: 0.3, vectorWeight: 0.7 }
+      );
+
+      if (uncertaintyResults.length > 0) {
+        confidence -= 0.1;
+      }
+
+      return Math.max(Math.min(confidence, 1.0), 0.1);
+    }
+
+    // Tier 2: Try vector-only search for confidence indicators
+    if (vectorMemoryOps && 'searchByVector' in vectorMemoryOps) {
+      const confidenceResults = await vectorMemoryOps.searchByVector(
+        'system',
+        'confidence-analysis',
+        embedding.embedding,
+        { threshold: 0.7, limit: 1 }
+      );
+
+      if (confidenceResults.length > 0) {
+        confidence += 0.1;
+      }
+
+      return Math.max(Math.min(confidence, 1.0), 0.1);
+    }
+
+    // Tier 3: Text search for confidence patterns
+    if (memoryOps) {
+      const confidenceResults = await memoryOps.recall(
+        'system',
+        'confidence-analysis',
+        'definitive certain confident clear',
+        { limit: 1 }
+      );
+
+      if (confidenceResults.length > 0) {
+        confidence += 0.05;
+      }
+    }
+  } catch (error) {
+    logger.warn(
+      LogCategory.STORAGE,
+      'SemanticMemoryUtils',
+      'Confidence analysis failed, falling back to simple heuristics',
+      {
+        error: error instanceof Error ? error.message : String(error),
+        operation: 'calculateSemanticConfidence',
+        fallback: 'simple heuristics'
+      }
+    );
   }
 
+  // Tier 4: Simple heuristics
   return Math.max(Math.min(confidence, 1.0), 0.1);
 }
 
 /**
- * Check if content is a definition
+ * Check if content is a definition using tiered semantic analysis (MEMORY ADAPTERS)
+ * Tier 1: Hybrid search (PostgreSQL-Vector, SQLite-Vec)
+ * Tier 2: Vector search (if supported by memory adapter)
+ * Tier 3: Text search (all memory adapters)
+ * Tier 4: Simple keyword matching (fallback)
  */
-export function isDefinition(content: string): boolean {
+export async function isDefinition(content: string): Promise<boolean> {
+  if (!embeddingService) {
+    // Tier 4: Simple keyword matching fallback
+    const lowerContent = content.toLowerCase();
+    return (
+      lowerContent.includes('means') ||
+      lowerContent.includes('refers to') ||
+      lowerContent.includes('definition')
+    );
+  }
+
+  try {
+    // Generate embedding for the content
+    const embedding = await embeddingService.generateEmbedding(content);
+
+    // Tier 1: Try hybrid search for definition patterns
+    if (
+      vectorMemoryOps &&
+      'hybridSearch' in vectorMemoryOps &&
+      typeof vectorMemoryOps.hybridSearch === 'function'
+    ) {
+      const definitionResults = await vectorMemoryOps.hybridSearch(
+        'system',
+        'definition-detection',
+        'definitions, explanations of what something means, describes what something is',
+        embedding.embedding,
+        { threshold: 0.75, limit: 1, textWeight: 0.3, vectorWeight: 0.7 }
+      );
+
+      return definitionResults.length > 0;
+    }
+
+    // Tier 2: Try vector-only search for definition patterns
+    if (vectorMemoryOps && 'searchByVector' in vectorMemoryOps) {
+      const definitionResults = await vectorMemoryOps.searchByVector(
+        'system',
+        'definition-detection',
+        embedding.embedding,
+        { threshold: 0.75, limit: 1 }
+      );
+
+      return definitionResults.length > 0;
+    }
+
+    // Tier 3: Text search for definition patterns
+    if (memoryOps) {
+      const definitionResults = await memoryOps.recall(
+        'system',
+        'definition-detection',
+        'means refers definition explains describes',
+        { limit: 1 }
+      );
+
+      return definitionResults.length > 0;
+    }
+  } catch (error) {
+    logger.warn(
+      LogCategory.STORAGE,
+      'SemanticMemoryUtils',
+      'Definition detection failed, falling back to keyword matching',
+      {
+        error: error instanceof Error ? error.message : String(error),
+        operation: 'isDefinition',
+        fallback: 'simple keyword matching'
+      }
+    );
+  }
+
+  // Tier 4: Simple keyword matching fallback
+  const lowerContent = content.toLowerCase();
   return (
-    /(.+) is (a|an|the) (.+)/i.test(content) ||
-    /(.+) refers to (.+)/i.test(content) ||
-    /(.+) means (.+)/i.test(content) ||
-    /define (.+)/i.test(content)
+    lowerContent.includes('means') ||
+    lowerContent.includes('refers to') ||
+    lowerContent.includes('definition')
   );
 }
 
@@ -304,13 +596,13 @@ export function validateSemanticConfig(config: any): boolean {
 }
 
 /**
- * Check if content is suitable for semantic memory
+ * Check if content is suitable for semantic memory using tiered analysis
  */
-export function isSemanticWorthy(content: string): boolean {
+export async function isSemanticWorthy(content: string): Promise<boolean> {
   return (
     content.length > 20 &&
     content.length < 5000 &&
-    !isBoilerplate(content) &&
+    !(await isBoilerplate(content)) &&
     hasSemanticValue(content)
   );
 }
@@ -343,15 +635,101 @@ function hasSemanticValue(content: string): boolean {
 }
 
 /**
- * Check if content is boilerplate
+ * Check if content is boilerplate using tiered semantic analysis (MEMORY ADAPTERS)
+ * Tier 1: Hybrid search (PostgreSQL-Vector, SQLite-Vec)
+ * Tier 2: Vector search (if supported by memory adapter)
+ * Tier 3: Text search (all memory adapters)
+ * Tier 4: Simple keyword matching (fallback)
  */
-function isBoilerplate(content: string): boolean {
-  const boilerplatePatterns = [
-    /^(hi|hello|hey|thanks|thank you)$/i,
-    /^(ok|okay|yes|no)$/i,
-    /^(please|can you|could you)$/i
-  ];
-  return boilerplatePatterns.some((pattern) => pattern.test(content.trim()));
+async function isBoilerplate(content: string): Promise<boolean> {
+  if (!embeddingService) {
+    // Tier 4: Simple keyword matching fallback
+    const trimmed = content.trim().toLowerCase();
+    return (
+      trimmed.length < 4 ||
+      trimmed === 'hi' ||
+      trimmed === 'hello' ||
+      trimmed === 'hey' ||
+      trimmed === 'thanks' ||
+      trimmed === 'thank you' ||
+      trimmed === 'ok' ||
+      trimmed === 'okay' ||
+      trimmed === 'yes' ||
+      trimmed === 'no' ||
+      trimmed === 'please' ||
+      trimmed.startsWith('can you') ||
+      trimmed.startsWith('could you')
+    );
+  }
+
+  try {
+    // Generate embedding for the content
+    const embedding = await embeddingService.generateEmbedding(content);
+
+    // Tier 1: Try hybrid search for meaningful content
+    if (
+      vectorMemoryOps &&
+      'hybridSearch' in vectorMemoryOps &&
+      typeof vectorMemoryOps.hybridSearch === 'function'
+    ) {
+      const meaningfulResults = await vectorMemoryOps.hybridSearch(
+        'system',
+        'semantic-boilerplate-detection',
+        'meaningful knowledge, facts, definitions, valuable semantic information worth remembering',
+        embedding.embedding,
+        { threshold: 0.3, limit: 1, textWeight: 0.3, vectorWeight: 0.7 }
+      );
+
+      return meaningfulResults.length === 0;
+    }
+
+    // Tier 2: Try vector-only search for meaningful content
+    if (vectorMemoryOps && 'searchByVector' in vectorMemoryOps) {
+      const meaningfulResults = await vectorMemoryOps.searchByVector(
+        'system',
+        'semantic-boilerplate-detection',
+        embedding.embedding,
+        { threshold: 0.3, limit: 1 }
+      );
+
+      return meaningfulResults.length === 0;
+    }
+
+    // Tier 3: Text search for meaningful content
+    if (memoryOps) {
+      const meaningfulResults = await memoryOps.recall(
+        'system',
+        'semantic-boilerplate-detection',
+        'meaningful knowledge facts definitions valuable information',
+        { limit: 1 }
+      );
+
+      return meaningfulResults.length === 0;
+    }
+  } catch (error) {
+    logger.warn(
+      LogCategory.STORAGE,
+      'SemanticMemoryUtils',
+      'Boilerplate detection failed, falling back to keyword matching',
+      {
+        error: error instanceof Error ? error.message : String(error),
+        operation: 'isBoilerplate',
+        fallback: 'simple keyword matching'
+      }
+    );
+  }
+
+  // Tier 4: Simple keyword matching fallback
+  const trimmed = content.trim().toLowerCase();
+  return (
+    trimmed.length < 4 ||
+    trimmed === 'hi' ||
+    trimmed === 'hello' ||
+    trimmed === 'thanks' ||
+    trimmed === 'ok' ||
+    trimmed === 'yes' ||
+    trimmed === 'no'
+  );
 }
 
 /**

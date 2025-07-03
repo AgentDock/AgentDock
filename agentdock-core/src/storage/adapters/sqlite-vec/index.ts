@@ -6,9 +6,12 @@
  */
 
 import { LogCategory, logger } from '../../../logging';
+import { VectorOperations } from '../../base-types';
+import { MemoryOperations } from '../../types';
 import { SQLiteAdapter } from '../sqlite';
 import { SQLiteConnectionManager } from '../sqlite/connection';
 import { SQLiteConnection } from '../sqlite/types';
+import { SQLiteVecMemoryOperations } from './operations/memory';
 import {
   deleteVector,
   getCollectionStats,
@@ -26,6 +29,7 @@ import {
   initializeSqliteVec,
   listVectorCollections
 } from './schema';
+import { initializeMemorySchemaWithFTS5 } from './schema-memory';
 import {
   SQLiteVecAdapterOptions,
   VectorCollectionConfig,
@@ -45,26 +49,10 @@ export type {
   VectorSearchResult,
   VectorInsertOptions
 };
-export { VectorMetric };
+export type { VectorMetric };
 
-/**
- * Vector operations interface
- */
-export interface VectorOperations {
-  createCollection(config: VectorCollectionConfig): Promise<void>;
-  dropCollection(name: string): Promise<void>;
-  collectionExists(name: string): Promise<boolean>;
-  listCollections(): Promise<string[]>;
-  insertVectors(collection: string, vectors: VectorData[]): Promise<void>;
-  updateVectors(collection: string, vectors: VectorData[]): Promise<void>;
-  deleteVectors(collection: string, ids: string[]): Promise<void>;
-  searchVectors(
-    collection: string,
-    queryVector: number[],
-    options?: VectorSearchOptions
-  ): Promise<VectorSearchResult[]>;
-  getVector(collection: string, id: string): Promise<VectorData | null>;
-}
+// Re-export VectorOperations from base-types
+export type { VectorOperations } from '../../base-types';
 
 /**
  * SQLite storage adapter with vector similarity search capabilities
@@ -84,6 +72,7 @@ export class SQLiteVecAdapter
   private isVectorInitialized = false;
   private vectorConnectionManager: SQLiteConnectionManager;
   private vectorConnection?: SQLiteConnection;
+  public memory?: MemoryOperations;
 
   constructor(options: SQLiteVecAdapterOptions = {}) {
     super(options);
@@ -91,7 +80,7 @@ export class SQLiteVecAdapter
       ...options,
       enableVector: options.enableVector ?? true,
       defaultDimension: options.defaultDimension || 1536,
-      defaultMetric: options.defaultMetric || VectorMetric.COSINE
+      defaultMetric: options.defaultMetric || 'cosine'
     };
     // Create our own connection manager to access the connection
     this.vectorConnectionManager = new SQLiteConnectionManager(options);
@@ -118,11 +107,17 @@ export class SQLiteVecAdapter
         // Create vector tables
         await createVectorTables(this.vectorConnection.db);
 
+        // Initialize memory schema with FTS5 support
+        await initializeMemorySchemaWithFTS5(this.vectorConnection.db);
+
+        // Create enhanced memory operations
+        this.memory = new SQLiteVecMemoryOperations(this.vectorConnection.db);
+
         this.isVectorInitialized = true;
         logger.info(
           LogCategory.STORAGE,
           'SQLiteVec',
-          'Vector adapter initialized'
+          'Vector adapter with FTS5 memory support initialized'
         );
       } catch (error) {
         logger.warn(

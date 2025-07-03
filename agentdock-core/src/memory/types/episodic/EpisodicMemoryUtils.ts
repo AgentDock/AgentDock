@@ -1,14 +1,74 @@
+import { LogCategory, logger } from '../../../logging';
+import {
+  MemoryOperations,
+  VectorMemoryOperations
+} from '../../../storage/types';
+import { EmbeddingService } from '../../intelligence/embeddings/EmbeddingService';
 import { EpisodicMemoryData } from './EpisodicMemoryTypes';
 
 /**
  * Utility functions for EpisodicMemory operations
+ * Works with memory-enabled adapters only - see index.ts for adapter compatibility
  */
+
+// Memory adapter infrastructure (validated at initialization)
+let embeddingService: EmbeddingService | null = null;
+let vectorMemoryOps: VectorMemoryOperations | null = null;
+let memoryOps: MemoryOperations | null = null;
+
+/**
+ * Initialize episodic memory analysis services with validated memory adapter
+ * @param embedding - Embedding service for semantic operations
+ * @param adapter - Validated storage adapter with memory operations
+ * @param adapterName - Name of adapter for logging
+ */
+export function initializeEpisodicMemoryServices(
+  embedding: EmbeddingService,
+  adapter: any,
+  adapterName: string = 'unknown'
+): void {
+  embeddingService = embedding;
+
+  // Adapter is already validated by initializeMemoryUtilities
+  const memoryOperations = adapter.memory as MemoryOperations;
+
+  // Safe capability detection
+  const hasVectorSearch =
+    'searchByVector' in memoryOperations &&
+    typeof memoryOperations.searchByVector === 'function';
+  const hasHybridSearch =
+    hasVectorSearch &&
+    'hybridSearch' in memoryOperations &&
+    typeof memoryOperations.hybridSearch === 'function';
+
+  if (hasVectorSearch) {
+    vectorMemoryOps = memoryOperations as VectorMemoryOperations;
+  }
+
+  memoryOps = memoryOperations;
+
+  logger.info(
+    LogCategory.STORAGE,
+    'EpisodicMemoryUtils',
+    'Episodic memory services initialized successfully',
+    {
+      adapterName,
+      hasVectorSearch,
+      hasHybridSearch,
+      capabilities: hasHybridSearch
+        ? 'hybrid'
+        : hasVectorSearch
+          ? 'vector'
+          : 'text'
+    }
+  );
+}
 
 /**
  * Generate unique episodic memory ID
  */
 export function generateEpisodicMemoryId(): string {
-  return `ep_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  return `em_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }
 
 /**
@@ -19,28 +79,39 @@ export function getEpisodicTableName(namespace: string): string {
 }
 
 /**
- * Calculate memory importance based on content characteristics
+ * Calculate memory decay factor based on time
+ */
+export function calculateDecayFactor(
+  timestamp: Date,
+  currentTime: Date = new Date()
+): number {
+  const ageInHours =
+    (currentTime.getTime() - timestamp.getTime()) / (1000 * 60 * 60);
+
+  // Exponential decay: 50% after 24 hours, 25% after 48 hours, etc.
+  return Math.pow(0.5, ageInHours / 24);
+}
+
+/**
+ * Calculate episodic importance based on content and context
  */
 export function calculateEpisodicImportance(
   content: string,
-  context: string = '',
-  tags: string[] = []
+  emotionalWeight: number = 0.5,
+  contextualRelevance: number = 0.5
 ): number {
-  let importance = 0.4;
+  let importance = 0.3;
 
-  // Content length indicates complexity
-  if (content.length > 200) importance += 0.2;
-  if (content.length > 500) importance += 0.1;
+  // Emotional content is more memorable
+  importance += emotionalWeight * 0.3;
 
-  // Context adds value
-  if (context.length > 50) importance += 0.1;
+  // Contextually relevant content is important
+  importance += contextualRelevance * 0.3;
 
-  // Tags indicate categorization
-  importance += Math.min(tags.length * 0.05, 0.2);
-
-  // Problem-solving or learning content
-  if (isProblemSolving(content)) importance += 0.3;
-  if (isLearningContent(content)) importance += 0.2;
+  // Length factor (moderate length often more important)
+  if (content.length > 100 && content.length < 1000) {
+    importance += 0.1;
+  }
 
   return Math.min(importance, 1.0);
 }
@@ -248,22 +319,110 @@ export function validateEpisodicConfig(config: any): boolean {
 }
 
 /**
- * Check if content is suitable for episodic memory
+ * Check if content is suitable for episodic memory using tiered analysis
  */
-export function isEpisodicWorthy(content: string): boolean {
+export async function isEpisodicWorthy(content: string): Promise<boolean> {
   return (
-    content.length > 20 && content.length < 10000 && !isBoilerplate(content)
+    content.length > 20 &&
+    content.length < 10000 &&
+    !(await isBoilerplate(content))
   );
 }
 
 /**
- * Check if content is boilerplate
+ * Check if content is boilerplate using tiered semantic analysis (MEMORY ADAPTERS)
+ * Tier 1: Hybrid search (PostgreSQL-Vector, SQLite-Vec)
+ * Tier 2: Vector search (if supported by memory adapter)
+ * Tier 3: Text search (all memory adapters)
+ * Tier 4: Simple keyword matching (fallback)
  */
-function isBoilerplate(content: string): boolean {
-  const boilerplatePatterns = [
-    /^(hi|hello|hey|thanks|thank you)$/i,
-    /^(ok|okay|yes|no)$/i,
-    /^(please|can you|could you)$/i
-  ];
-  return boilerplatePatterns.some((pattern) => pattern.test(content.trim()));
+async function isBoilerplate(content: string): Promise<boolean> {
+  if (!embeddingService) {
+    // Tier 4: Simple keyword matching fallback
+    const trimmed = content.trim().toLowerCase();
+    return (
+      trimmed.length < 4 ||
+      trimmed === 'hi' ||
+      trimmed === 'hello' ||
+      trimmed === 'hey' ||
+      trimmed === 'thanks' ||
+      trimmed === 'thank you' ||
+      trimmed === 'ok' ||
+      trimmed === 'okay' ||
+      trimmed === 'yes' ||
+      trimmed === 'no' ||
+      trimmed === 'please' ||
+      trimmed.startsWith('can you') ||
+      trimmed.startsWith('could you')
+    );
+  }
+
+  try {
+    // Generate embedding for the content
+    const embedding = await embeddingService.generateEmbedding(content);
+
+    // Tier 1: Try hybrid search for meaningful content
+    if (
+      vectorMemoryOps &&
+      'hybridSearch' in vectorMemoryOps &&
+      typeof vectorMemoryOps.hybridSearch === 'function'
+    ) {
+      const meaningfulResults = await vectorMemoryOps.hybridSearch(
+        'system',
+        'episodic-boilerplate-detection',
+        'meaningful experiences, important events, memorable conversations, significant interactions',
+        embedding.embedding,
+        { threshold: 0.3, limit: 1, textWeight: 0.3, vectorWeight: 0.7 }
+      );
+
+      return meaningfulResults.length === 0;
+    }
+
+    // Tier 2: Try vector-only search for meaningful content
+    if (vectorMemoryOps && 'searchByVector' in vectorMemoryOps) {
+      const meaningfulResults = await vectorMemoryOps.searchByVector(
+        'system',
+        'episodic-boilerplate-detection',
+        embedding.embedding,
+        { threshold: 0.3, limit: 1 }
+      );
+
+      return meaningfulResults.length === 0;
+    }
+
+    // Tier 3: Text search for meaningful content
+    if (memoryOps) {
+      const meaningfulResults = await memoryOps.recall(
+        'system',
+        'episodic-boilerplate-detection',
+        'meaningful experiences important events memorable conversations',
+        { limit: 1 }
+      );
+
+      return meaningfulResults.length === 0;
+    }
+  } catch (error) {
+    logger.warn(
+      LogCategory.STORAGE,
+      'EpisodicMemoryUtils',
+      'Boilerplate detection failed, falling back to keyword matching',
+      {
+        error: error instanceof Error ? error.message : String(error),
+        operation: 'isBoilerplate',
+        fallback: 'simple keyword matching'
+      }
+    );
+  }
+
+  // Tier 4: Simple keyword matching fallback
+  const trimmed = content.trim().toLowerCase();
+  return (
+    trimmed.length < 4 ||
+    trimmed === 'hi' ||
+    trimmed === 'hello' ||
+    trimmed === 'thanks' ||
+    trimmed === 'ok' ||
+    trimmed === 'yes' ||
+    trimmed === 'no'
+  );
 }

@@ -6,9 +6,11 @@
  */
 
 import { LogCategory, logger } from '../../../logging';
+import { VectorOperations } from '../../base-types';
 import { PostgreSQLAdapter } from '../postgresql';
 import { PostgreSQLConnectionManager } from '../postgresql/connection';
 import { PostgreSQLConnection } from '../postgresql/types';
+import { PostgreSQLVectorMemoryOperations } from './operations/memory';
 import {
   deleteVectors,
   getVectorById,
@@ -29,7 +31,6 @@ import {
   VectorData,
   VectorIndexType,
   VectorMetric,
-  VectorOperations,
   VectorSearchOptions,
   VectorSearchResult
 } from './types';
@@ -42,7 +43,11 @@ export type {
   VectorSearchOptions,
   VectorSearchResult
 };
-export { VectorMetric, VectorIndexType };
+export type { VectorMetric };
+export { VectorIndexType };
+
+// Export operations
+export { PostgreSQLVectorMemoryOperations } from './operations/memory';
 
 /**
  * PostgreSQL storage adapter with vector similarity search capabilities
@@ -53,6 +58,7 @@ export { VectorMetric, VectorIndexType };
  * - IVF Flat and HNSW indexing
  * - Metadata filtering
  * - Hybrid search (vector + metadata)
+ * - Vector-enabled memory operations with hybrid text + vector search
  * - All standard PostgreSQL adapter features
  */
 export class PostgreSQLVectorAdapter
@@ -62,13 +68,16 @@ export class PostgreSQLVectorAdapter
   private vectorOptions: PostgreSQLVectorAdapterOptions;
   private isVectorInitialized = false;
 
+  // Override parent memory property with vector-enabled operations
+  memory?: PostgreSQLVectorMemoryOperations;
+
   constructor(options: PostgreSQLVectorAdapterOptions) {
     super(options);
     this.vectorOptions = {
       ...options,
       enableVector: options.enableVector ?? true,
       defaultDimension: options.defaultDimension || 1536,
-      defaultMetric: options.defaultMetric || VectorMetric.COSINE,
+      defaultMetric: options.defaultMetric || 'cosine',
       defaultIndexType: options.defaultIndexType || VectorIndexType.IVFFLAT
     };
   }
@@ -91,11 +100,72 @@ export class PostgreSQLVectorAdapter
         );
       }
 
+      // Initialize vector-enabled memory operations (override parent memory)
+      this.memory = new PostgreSQLVectorMemoryOperations(
+        connection.pool,
+        connection.schema
+      );
+
+      // Create GIN indexes for text search performance (managed service compatible)
+      await this.createTextSearchIndexes(connection);
+
       this.isVectorInitialized = true;
       logger.info(
         LogCategory.STORAGE,
         'PostgreSQLVector',
-        'Vector adapter initialized'
+        'Vector adapter initialized with hybrid search capabilities'
+      );
+    }
+  }
+
+  /**
+   * Create GIN indexes for text search performance
+   *
+   * Uses built-in PostgreSQL features only - no extensions required
+   * Compatible with all managed database services
+   */
+  private async createTextSearchIndexes(
+    connection: PostgreSQLConnection
+  ): Promise<void> {
+    try {
+      // Create GIN index for full-text search on memory content
+      // Uses to_tsvector which is built-in to PostgreSQL
+      await connection.pool.query(`
+        CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_memories_content_gin 
+        ON ${connection.schema}.memories 
+        USING GIN (to_tsvector('english', content)) 
+        WITH (fastupdate = off);
+      `);
+
+      // Create GIN index for keywords JSONB search
+      await connection.pool.query(`
+        CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_memories_keywords_gin 
+        ON ${connection.schema}.memories 
+        USING GIN (keywords) 
+        WITH (fastupdate = off);
+      `);
+
+      // Create HNSW index for vector similarity search (if not exists)
+      await connection.pool.query(`
+        CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_memories_embedding_hnsw 
+        ON ${connection.schema}.memories 
+        USING hnsw (embedding vector_cosine_ops) 
+        WITH (m = 16, ef_construction = 64);
+      `);
+
+      logger.info(
+        LogCategory.STORAGE,
+        'PostgreSQLVector',
+        'Text search and vector indexes created for optimal hybrid search performance'
+      );
+    } catch (error) {
+      logger.warn(
+        LogCategory.STORAGE,
+        'PostgreSQLVector',
+        'Some indexes may already exist or failed to create',
+        {
+          error: error instanceof Error ? error.message : String(error)
+        }
       );
     }
   }

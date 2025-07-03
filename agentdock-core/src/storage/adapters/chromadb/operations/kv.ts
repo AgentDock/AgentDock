@@ -3,15 +3,14 @@
  */
 
 import { LogCategory, logger } from '../../../../logging';
-import { ListOptions, StorageOptions } from '../../../types';
+import { ListOptions, StorageMetadata, StorageOptions } from '../../../types';
 import { ChromaDBClient } from '../client';
 import {
   ChromaDocument,
   ChromaEmbeddingFunction,
   ChromaInclude,
   ChromaLogicalFilter,
-  ChromaWhereFilter,
-  StorageMetadata
+  ChromaWhereFilter
 } from '../types';
 
 /**

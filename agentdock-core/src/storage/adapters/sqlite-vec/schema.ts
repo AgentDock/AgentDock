@@ -103,7 +103,7 @@ export async function createVectorCollection(
   db: Database.Database,
   config: VectorCollectionConfig
 ): Promise<void> {
-  const { name, dimension, metric = VectorMetric.COSINE } = config;
+  const { name, dimension, metric = 'cosine' } = config;
 
   // Create the vec0 virtual table
   const createTableSQL = `CREATE VIRTUAL TABLE IF NOT EXISTS ${name} USING vec0(embedding float[${dimension}])`;

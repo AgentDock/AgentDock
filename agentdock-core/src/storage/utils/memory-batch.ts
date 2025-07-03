@@ -6,11 +6,8 @@
  */
 
 import { LogCategory, logger } from '../../logging';
-import {
-  Memory,
-  MemoryConnection
-} from '../adapters/postgresql/operations/memory';
-import { MemoryType } from '../adapters/postgresql/schema-memory';
+import { MemoryType } from '../../shared/types/memory';
+import { MemoryConnection, MemoryData } from '../types';
 
 /**
  * Configuration for batch processing
@@ -43,7 +40,7 @@ export interface BatchStats {
  * Streaming memory batch processor for real-time ingestion
  */
 export class StreamingMemoryBatchProcessor {
-  private buffer: Memory[] = [];
+  private buffer: MemoryData[] = [];
   private flushTimer?: NodeJS.Timeout;
   private stats: BatchStats = {
     totalProcessed: 0,
@@ -56,14 +53,14 @@ export class StreamingMemoryBatchProcessor {
   private startTime: number = Date.now();
 
   constructor(
-    private processor: BatchProcessor<Memory>,
+    private processor: BatchProcessor<MemoryData>,
     private config: BatchProcessorConfig
   ) {}
 
   /**
    * Process a single memory
    */
-  async process(memory: Memory): Promise<void> {
+  async process(memory: MemoryData): Promise<void> {
     // CRITICAL FIX: Enforce hard buffer limit to prevent OOM crashes
     const MAX_BUFFER_SIZE = this.config.maxBatchSize * 3;
 
@@ -98,7 +95,7 @@ export class StreamingMemoryBatchProcessor {
   /**
    * Process multiple memories
    */
-  async processMany(memories: Memory[]): Promise<void> {
+  async processMany(memories: MemoryData[]): Promise<void> {
     // CRITICAL FIX: Check if we can handle the batch size before processing
     const MAX_BUFFER_SIZE = this.config.maxBatchSize * 3;
 
@@ -232,7 +229,7 @@ export class StreamingMemoryBatchProcessor {
  */
 export class ParallelBatchProcessor {
   private readonly WORKER_COUNT: number;
-  private queues: Memory[][];
+  private queues: MemoryData[][];
   private currentQueue = 0;
   private stats: BatchStats = {
     totalProcessed: 0,
@@ -244,7 +241,7 @@ export class ParallelBatchProcessor {
   };
 
   constructor(
-    private processor: BatchProcessor<Memory>,
+    private processor: BatchProcessor<MemoryData>,
     private config: BatchProcessorConfig
   ) {
     this.WORKER_COUNT = config.maxConcurrent || 4;
@@ -257,7 +254,7 @@ export class ParallelBatchProcessor {
    * Process a massive dataset in parallel
    */
   async processMassiveDataset(
-    memories: AsyncIterable<Memory>
+    memories: AsyncIterable<MemoryData>
   ): Promise<BatchStats> {
     const startTime = Date.now();
 
@@ -322,31 +319,21 @@ export interface ConsolidationOptions {
 }
 
 /**
- * Consolidation result
- */
-export interface ConsolidationResult {
-  examined: number;
-  consolidated: number;
-  spaceSaved: number;
-  groups: number;
-}
-
-/**
  * Memory consolidator for similarity-based merging
  */
 export class MemoryConsolidator {
   constructor(
-    private similarityCalculator: (m1: Memory, m2: Memory) => number
+    private similarityCalculator: (m1: MemoryData, m2: MemoryData) => number
   ) {}
 
   /**
    * Find similar memory groups
    */
   findSimilarGroups(
-    memories: Memory[],
+    memories: MemoryData[],
     options: ConsolidationOptions
-  ): Memory[][] {
-    const groups: Memory[][] = [];
+  ): MemoryData[][] {
+    const groups: MemoryData[][] = [];
     const processed = new Set<string>();
 
     for (const memory of memories) {
@@ -373,12 +360,12 @@ export class MemoryConsolidator {
    * Find memories similar to a target
    */
   private findSimilarMemories(
-    target: Memory,
-    candidates: Memory[],
+    target: MemoryData,
+    candidates: MemoryData[],
     processed: Set<string>,
     options: ConsolidationOptions
-  ): Memory[] {
-    const similar: Memory[] = [target];
+  ): MemoryData[] {
+    const similar: MemoryData[] = [target];
 
     for (const candidate of candidates) {
       if (candidate.id === target.id || processed.has(candidate.id)) {
@@ -403,7 +390,7 @@ export class MemoryConsolidator {
   /**
    * Consolidate a group of similar memories
    */
-  consolidateGroup(group: Memory[]): Memory {
+  consolidateGroup(group: MemoryData[]): MemoryData {
     // Sort by importance and recency
     group.sort((a, b) => {
       const scoreA =
@@ -447,10 +434,9 @@ export class MemoryConsolidator {
       createdAt: Math.min(...group.map((m) => m.createdAt)),
       updatedAt: Date.now(),
       lastAccessedAt: Math.max(...group.map((m) => m.lastAccessedAt)),
-      extractionMethod: 'consolidation',
       tokenCount: totalTokens,
       sessionId: group[0].sessionId
-    };
+    } as MemoryData;
   }
 
   /**
@@ -482,17 +468,17 @@ export class BulkDecayProcessor {
    * Process decay in batches
    */
   async processBatch(
-    memories: Memory[],
+    memories: MemoryData[],
     decayRules: {
       decayRate: number;
       importanceWeight: number;
       accessBoost: number;
     }
   ): Promise<{
-    decayed: Memory[];
+    decayed: MemoryData[];
     removed: string[];
   }> {
-    const decayed: Memory[] = [];
+    const decayed: MemoryData[] = [];
     const removed: string[] = [];
 
     for (const memory of memories) {

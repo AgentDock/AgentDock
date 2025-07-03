@@ -130,11 +130,11 @@ export const VectorSQL = {
  */
 function getDistanceOperator(metric: VectorMetric): string {
   switch (metric) {
-    case VectorMetric.EUCLIDEAN:
+    case 'euclidean':
       return 'vector_l2_ops';
-    case VectorMetric.COSINE:
+    case 'cosine':
       return 'vector_cosine_ops';
-    case VectorMetric.INNER_PRODUCT:
+    case 'ip':
       return 'vector_ip_ops';
     default:
       return 'vector_l2_ops';
@@ -146,11 +146,11 @@ function getDistanceOperator(metric: VectorMetric): string {
  */
 export function getDistanceFunction(metric: VectorMetric): string {
   switch (metric) {
-    case VectorMetric.EUCLIDEAN:
+    case 'euclidean':
       return '<->';
-    case VectorMetric.COSINE:
+    case 'cosine':
       return '<=>';
-    case VectorMetric.INNER_PRODUCT:
+    case 'ip':
       return '<#>';
     default:
       return '<->';
@@ -220,11 +220,11 @@ export async function createVectorCollection(
 
     // Create vector index if specified
     if (config.index) {
-      const metric = config.metric || VectorMetric.COSINE;
+      const metric = config.metric || 'cosine';
       await client.query(
         VectorSQL.CREATE_VECTOR_INDEX(
           config.name,
-          config.index.type,
+          config.index.type as VectorIndexType,
           metric,
           config.index,
           schema

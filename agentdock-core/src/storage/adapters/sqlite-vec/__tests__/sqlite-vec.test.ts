@@ -62,7 +62,7 @@ describe('SQLiteVecAdapter', () => {
         namespace: 'test',
         enableVector: true,
         defaultDimension: 3, // Small dimension for tests
-        defaultMetric: VectorMetric.COSINE
+        defaultMetric: 'cosine'
       });
     });
 

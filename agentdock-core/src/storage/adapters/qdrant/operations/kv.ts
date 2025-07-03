@@ -8,11 +8,11 @@
 import { createHash } from 'crypto';
 
 import { LogCategory, logger } from '../../../../logging';
-import { ListOptions, StorageOptions } from '../../../types';
+import { ListOptions, StorageMetadata, StorageOptions } from '../../../types';
 import { KeyManager } from '../../../utils/key-manager';
 import { SerializationManager } from '../../../utils/serialization';
 import { QdrantClient } from '../client';
-import { Payload, QdrantFilter, QdrantPoint, StorageMetadata } from '../types';
+import { Payload, QdrantFilter, QdrantPoint } from '../types';
 
 /**
  * KV operations for Qdrant

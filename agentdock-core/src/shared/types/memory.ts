@@ -16,3 +16,27 @@ export enum MemoryType {
   SEMANTIC = 'semantic',
   PROCEDURAL = 'procedural'
 }
+
+/**
+ * Base interface for any consolidatable memory item
+ * This minimal interface defines what ALL memory items must have
+ * to be eligible for consolidation operations.
+ *
+ * KISS Principle: Only include fields absolutely necessary for consolidation
+ */
+export interface BaseMemoryItem {
+  /** Unique identifier */
+  id: string;
+
+  /** Content that can be consolidated */
+  content: string;
+
+  /** Importance score (0-1) used in consolidation decisions */
+  importance: number;
+
+  /** Type of memory for consolidation strategies */
+  type: MemoryType;
+
+  /** Creation timestamp for age-based consolidation */
+  createdAt: number;
+}

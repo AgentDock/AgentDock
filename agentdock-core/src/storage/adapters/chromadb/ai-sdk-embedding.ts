@@ -4,7 +4,11 @@
  * Properly typed embedding function using AI SDK embedding models
  */
 
-import { embedMany } from '../../../llm';
+import {
+  createEmbedding,
+  embedMany,
+  getEmbeddingDimensions
+} from '../../../llm';
 import { LogCategory, logger } from '../../../logging';
 import { ChromaEmbeddingFunction } from './types';
 
@@ -15,15 +19,18 @@ export class AISDKEmbeddingFunction implements ChromaEmbeddingFunction {
   private embeddingCache = new Map<string, number[]>();
   private cacheEnabled: boolean;
   private embeddingModelName: string;
+  private embeddingProvider: string;
 
   constructor(
     embeddingModelName: string = 'text-embedding-3-small',
     private dimension: number = 1536,
     options?: {
       cacheEnabled?: boolean;
+      provider?: string;
     }
   ) {
     this.embeddingModelName = embeddingModelName;
+    this.embeddingProvider = options?.provider || 'openai';
     this.cacheEnabled = options?.cacheEnabled ?? true;
   }
 
@@ -70,14 +77,27 @@ export class AISDKEmbeddingFunction implements ChromaEmbeddingFunction {
           {
             count: texts.length,
             cached: documents.length - texts.length,
-            model: this.embeddingModelName
+            model: this.embeddingModelName,
+            provider: this.embeddingProvider
           }
         );
 
-        // Use AI SDK's embedMany function - it will create the correct embedding model internally
-        // We'll need to dynamically import the OpenAI provider
-        const { openai } = await import('@ai-sdk/openai');
-        const embeddingModel = openai.embedding(this.embeddingModelName);
+        // Use createEmbedding factory to create the model
+        const apiKey =
+          process.env[`${this.embeddingProvider.toUpperCase()}_API_KEY`] || '';
+
+        if (!apiKey) {
+          throw new Error(
+            `${this.embeddingProvider} API key is required for embeddings`
+          );
+        }
+
+        const embeddingModel = createEmbedding({
+          provider: this.embeddingProvider as any,
+          apiKey,
+          model: this.embeddingModelName,
+          dimensions: this.dimension
+        });
 
         const result = await embedMany({
           model: embeddingModel,
@@ -112,7 +132,8 @@ export class AISDKEmbeddingFunction implements ChromaEmbeddingFunction {
         {
           error: error instanceof Error ? error.message : String(error),
           documentCount: documents.length,
-          model: this.embeddingModelName
+          model: this.embeddingModelName,
+          provider: this.embeddingProvider
         }
       );
 
@@ -209,6 +230,7 @@ export function createAISDKEmbeddingFunction(
   dimension?: number,
   options?: {
     cacheEnabled?: boolean;
+    provider?: string;
   }
 ): ChromaEmbeddingFunction {
   return new AISDKEmbeddingFunction(embeddingModelName, dimension, options);

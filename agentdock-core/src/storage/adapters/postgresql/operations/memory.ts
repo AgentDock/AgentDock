@@ -8,67 +8,86 @@
 import { Pool } from 'pg';
 
 import { LogCategory, logger } from '../../../../logging';
+import { MemoryType } from '../../../../shared/types/memory';
 import {
+  BatchResult,
+  DatabaseDecayRules,
+  DatabaseMemoryQuery,
+  DatabaseRecallOptions
+} from '../../../base-types';
+import {
+  ConnectionType,
   MemoryOperations as IMemoryOperations,
+  MemoryConnection,
   MemoryData,
   MemoryOperationStats,
   MemoryRecallOptions
 } from '../../../types';
-import { nanoid as generateId } from '../../../utils';
-import { ConnectionType, MemoryType } from '../schema-memory';
+import { generateId } from '../../../utils';
 
 /**
- * Memory data structure
+ * Query timeout utility for preventing runaway queries
  */
-export interface Memory {
-  id: string;
-  agentId: string;
-  userId?: string;
-  content: string;
-  type: MemoryType;
-  importance: number;
-  resonance: number;
-  accessCount: number;
-  createdAt: number;
-  updatedAt: number;
-  lastAccessedAt: number;
-  sessionId?: string;
-  keywords?: string[];
-  metadata?: Record<string, any>;
-  extractionMethod: string;
-  tokenCount?: number;
+class QueryTimeout {
+  static async executeWithTimeout<T>(
+    queryFn: () => Promise<T>,
+    timeoutMs: number = 5000,
+    queryName: string = 'unknown'
+  ): Promise<T> {
+    const timeout = new Promise<never>((_, reject) =>
+      setTimeout(
+        () =>
+          reject(
+            new Error(`Query timeout: ${queryName} exceeded ${timeoutMs}ms`)
+          ),
+        timeoutMs
+      )
+    );
+
+    try {
+      return await Promise.race([queryFn(), timeout]);
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('Query timeout')) {
+        logger.error(
+          LogCategory.STORAGE,
+          'QueryTimeout',
+          'Query exceeded timeout',
+          {
+            queryName,
+            timeoutMs,
+            error: error.message
+          }
+        );
+      }
+      throw error;
+    }
+  }
+}
+
+/**
+ * PostgreSQL-specific memory data with additional fields
+ * Used internally for batch operations - extends framework standard
+ */
+interface PostgreSQLMemoryData extends MemoryData {
+  extractionMethod?: string;
   batchId?: string;
   sourceMessageIds?: string[];
-  embeddingId?: string;
   embeddingModel?: string;
   embeddingDimension?: number;
 }
 
 /**
- * Memory connection for Zettelkasten-style relationships
- */
-export interface MemoryConnection {
-  id: string;
-  sourceMemoryId: string;
-  targetMemoryId: string;
-  connectionType: ConnectionType;
-  strength: number;
-  reason?: string;
-  createdAt: number;
-}
-
-/**
  * Scored memory result from recall operations
  */
-export interface ScoredMemory extends Memory {
+export interface ScoredMemory extends MemoryData {
   score: number;
   relevanceScore?: number;
 }
 
 /**
- * Memory query options
+ * PostgreSQL-specific memory query (local to this adapter)
  */
-export interface MemoryQuery {
+interface MemoryQuery {
   types?: MemoryType[];
   minImportance?: number;
   minResonance?: number;
@@ -82,9 +101,9 @@ export interface MemoryQuery {
 }
 
 /**
- * Recall options
+ * PostgreSQL-specific recall options (local to this adapter)
  */
-export interface RecallOptions {
+interface RecallOptions {
   limit?: number;
   offset?: number;
   includeConnections?: boolean;
@@ -92,18 +111,18 @@ export interface RecallOptions {
 }
 
 /**
- * Decay rules for memory resonance
+ * PostgreSQL-specific decay rules (local to this adapter)
  */
-export interface DecayRules {
+interface DecayRules {
   decayRate: number; // Rate of exponential decay
   importanceWeight: number; // How much importance affects decay
   accessBoost: number; // Boost per access
 }
 
 /**
- * Batch result
+ * PostgreSQL-specific batch result (local to this adapter)
  */
-export interface BatchResult {
+interface PostgreSQLBatchResult {
   batchId: string;
   memoriesCreated: number;
   vectorsCreated: number;
@@ -113,13 +132,67 @@ export interface BatchResult {
 }
 
 /**
+ * PostgreSQL-specific memory operations configuration
+ */
+interface MemoryOperationsConfig {
+  textSearchLanguage?: string; // Configurable language for text search
+  defaultEmbeddingDimension?: number; // Expected embedding dimension
+  queryTimeoutMs?: number; // Query timeout in milliseconds
+}
+
+/**
  * Memory operations for PostgreSQL - implements storage interface directly
  */
 export class MemoryOperations implements IMemoryOperations {
+  private config: MemoryOperationsConfig;
+
   constructor(
     private pool: Pool,
-    private schema: string = 'public'
-  ) {}
+    private schema: string = 'public',
+    config: MemoryOperationsConfig = {}
+  ) {
+    this.config = {
+      textSearchLanguage: 'english',
+      defaultEmbeddingDimension: 1536,
+      queryTimeoutMs: 5000,
+      ...config
+    };
+  }
+
+  /**
+   * Validate embedding dimensions against expected configuration
+   */
+  private validateEmbedding(
+    embedding: number[],
+    context: string = 'operation'
+  ): void {
+    if (!embedding || embedding.length === 0) {
+      throw new Error(`Embedding vector is required for ${context}`);
+    }
+
+    if (
+      this.config.defaultEmbeddingDimension &&
+      embedding.length !== this.config.defaultEmbeddingDimension
+    ) {
+      throw new Error(
+        `Embedding dimension mismatch in ${context}: expected ${this.config.defaultEmbeddingDimension}, got ${embedding.length}`
+      );
+    }
+  }
+
+  /**
+   * Execute query with timeout protection
+   */
+  private async executeWithTimeout<T>(
+    queryFn: () => Promise<T>,
+    queryName: string
+  ): Promise<T> {
+    return QueryTimeout.executeWithTimeout(
+      queryFn,
+      this.config.queryTimeoutMs,
+      queryName
+    );
+  }
 
   /**
    * Store a single memory - simple interface
@@ -302,12 +375,12 @@ export class MemoryOperations implements IMemoryOperations {
    * Create memories in batch with optimizations
    */
   async batchCreateMemories(
-    memories: Memory[],
+    memories: PostgreSQLMemoryData[],
     vectorData?: Array<{
       memoryId: string;
       vector: number[];
     }>
-  ): Promise<BatchResult> {
+  ): Promise<PostgreSQLBatchResult> {
     const startTime = Date.now();
     const batchId = `batch_${Date.now()}_${generateId()}`;
 
@@ -585,7 +658,7 @@ export class MemoryOperations implements IMemoryOperations {
   }
 
   /**
-   * Apply decay rules to memories
+   * Apply decay rules to memories - OPTIMIZED with batch operations
    */
   async applyDecay(
     userId: string,
@@ -600,77 +673,140 @@ export class MemoryOperations implements IMemoryOperations {
     try {
       await client.query('BEGIN');
 
-      // Get all memories for user and agent
+      // Get all memories for user and agent with calculated decay values
       const result = await client.query(
         `
-        SELECT id, resonance, importance, last_accessed_at, access_count
+        SELECT 
+          id, 
+          resonance, 
+          importance, 
+          last_accessed_at, 
+          access_count,
+          -- Pre-calculate decay factors in SQL for efficiency
+          EXTRACT(EPOCH FROM (NOW() - last_accessed_at)) / 86400.0 as age_days,
+          EXP(-$3 * EXTRACT(EPOCH FROM (NOW() - last_accessed_at)) / 86400.0) as decay_factor,
+          importance * $4 as importance_boost,
+          LN(access_count + 1) * $5 as access_boost
         FROM ${this.schema}.memories
         WHERE user_id = $1 AND agent_id = $2
       `,
-        [userId, agentId]
+        [
+          userId,
+          agentId,
+          decayRules.decayRate,
+          decayRules.importanceWeight,
+          decayRules.accessBoost
+        ]
       );
 
-      let processed = 0;
-      let decayed = 0;
-      let removed = 0;
+      const processed = result.rows.length;
+
+      // Separate memories to remove vs update in memory (avoid multiple passes)
+      const toRemove: string[] = [];
+      const toUpdate: Array<{ id: string; newResonance: number }> = [];
 
       for (const row of result.rows) {
-        processed++;
-
-        const ageMs = Date.now() - new Date(row.last_accessed_at).getTime();
-        const ageDays = ageMs / (24 * 60 * 60 * 1000);
-
-        // Apply decay formula
-        const decayFactor = Math.exp(-decayRules.decayRate * ageDays);
-        const importanceBoost =
-          parseFloat(row.importance) * decayRules.importanceWeight;
-        const accessBoost =
-          Math.log(row.access_count + 1) * decayRules.accessBoost;
-
         const newResonance = Math.max(
           0,
-          parseFloat(row.resonance) * decayFactor +
-            importanceBoost +
-            accessBoost
+          parseFloat(row.resonance) * parseFloat(row.decay_factor) +
+            parseFloat(row.importance_boost) +
+            parseFloat(row.access_boost)
         );
 
         if (newResonance <= 0.01) {
-          // Remove memory
+          toRemove.push(row.id);
+        } else if (Math.abs(newResonance - parseFloat(row.resonance)) > 0.001) {
+          toUpdate.push({ id: row.id, newResonance });
+        }
+      }
+
+      let removed = 0;
+      let decayed = 0;
+
+      // Batch delete memories with too low resonance
+      if (toRemove.length > 0) {
+        // Process in chunks of 1000 to avoid parameter limits
+        const deleteChunks = this.chunkArray(toRemove, 1000);
+        for (const chunk of deleteChunks) {
+          const placeholders = chunk.map((_, i) => `$${i + 1}`).join(', ');
           await client.query(
-            `DELETE FROM ${this.schema}.memories WHERE id = $1`,
-            [row.id]
+            `DELETE FROM ${this.schema}.memories WHERE id IN (${placeholders})`,
+            chunk
           );
-          removed++;
-        } else if (newResonance !== parseFloat(row.resonance)) {
-          // Update resonance
-          await client.query(
-            `
+          removed += chunk.length;
+        }
+      }
+
+      // Batch update resonance values using VALUES clause for maximum efficiency
+      if (toUpdate.length > 0) {
+        const updateChunks = this.chunkArray(toUpdate, 1000);
+        for (const chunk of updateChunks) {
+          const valuesClauses: string[] = [];
+          const values: any[] = [];
+
+          chunk.forEach((item, i) => {
+            const baseIndex = i * 2;
+            valuesClauses.push(
+              `($${baseIndex + 1}::uuid, $${baseIndex + 2}::real)`
+            );
+            values.push(item.id, item.newResonance);
+          });
+
+          const updateQuery = `
             UPDATE ${this.schema}.memories 
-            SET resonance = $1
-            WHERE id = $2
-          `,
-            [newResonance, row.id]
-          );
-          decayed++;
+            SET 
+              resonance = v.new_resonance,
+              updated_at = NOW()
+            FROM (VALUES ${valuesClauses.join(', ')}) AS v(id, new_resonance)
+            WHERE ${this.schema}.memories.id = v.id
+          `;
+
+          await client.query(updateQuery, values);
+          decayed += chunk.length;
         }
       }
 
       await client.query('COMMIT');
 
-      logger.debug(LogCategory.STORAGE, 'MemoryOperations', 'Decay applied', {
-        agentId,
-        processed,
-        decayed,
-        removed
-      });
+      logger.debug(
+        LogCategory.STORAGE,
+        'MemoryOperations',
+        'Batch decay applied',
+        {
+          agentId: agentId.substring(0, 8),
+          processed,
+          decayed,
+          removed,
+          performance: `${processed} memories processed in batch operations`
+        }
+      );
 
       return { processed, decayed, removed };
     } catch (error) {
       await client.query('ROLLBACK');
+      logger.error(
+        LogCategory.STORAGE,
+        'MemoryOperations',
+        'Batch decay failed',
+        {
+          error: error instanceof Error ? error.message : String(error)
+        }
+      );
       throw error;
     } finally {
       client.release();
     }
+  }
+
+  /**
+   * Utility method to chunk arrays for batch processing
+   */
+  private chunkArray<T>(array: T[], chunkSize: number): T[][] {
+    const chunks: T[][] = [];
+    for (let i = 0; i < array.length; i += chunkSize) {
+      chunks.push(array.slice(i, i + chunkSize));
+    }
+    return chunks;
   }
 
   /**
@@ -742,12 +878,12 @@ export class MemoryOperations implements IMemoryOperations {
   async findConnectedMemories(
     userId: string,
     memoryId: string,
-    depth: number = 2,
-    minStrength: number = 0.5
+    depth: number = 2
   ): Promise<{
-    memories: Memory[];
+    memories: MemoryData[];
     connections: MemoryConnection[];
   }> {
+    const minStrength = 0.5; // Default minimum strength
     const client = await this.pool.connect();
     try {
       // Recursive CTE for graph traversal
@@ -812,13 +948,8 @@ export class MemoryOperations implements IMemoryOperations {
         sessionId: row.session_id,
         keywords: row.keywords,
         metadata: row.metadata,
-        extractionMethod: row.extraction_method,
         tokenCount: row.token_count,
-        batchId: row.batch_id,
-        sourceMessageIds: row.source_message_ids,
-        embeddingId: row.embedding_id,
-        embeddingModel: row.embedding_model,
-        embeddingDimension: row.embedding_dimension
+        embeddingId: row.embedding_id
       }));
 
       const connections = connectionsResult.rows.map((row) => ({
@@ -843,7 +974,7 @@ export class MemoryOperations implements IMemoryOperations {
   async getMemoryById(
     userId: string,
     memoryId: string
-  ): Promise<Memory | null> {
+  ): Promise<MemoryData | null> {
     const client = await this.pool.connect();
     try {
       const result = await client.query(
@@ -878,13 +1009,8 @@ export class MemoryOperations implements IMemoryOperations {
         sessionId: row.session_id,
         keywords: row.keywords,
         metadata: row.metadata,
-        extractionMethod: row.extraction_method,
         tokenCount: row.token_count,
-        batchId: row.batch_id,
-        sourceMessageIds: row.source_message_ids,
-        embeddingId: row.embedding_id,
-        embeddingModel: row.embedding_model,
-        embeddingDimension: row.embedding_dimension
+        embeddingId: row.embedding_id
       };
     } finally {
       client.release();
@@ -898,7 +1024,7 @@ export class MemoryOperations implements IMemoryOperations {
     userId: string,
     agentId: string,
     memoryId: string,
-    updates: Partial<Memory>
+    updates: Partial<MemoryData>
   ): Promise<void> {
     const client = await this.pool.connect();
     try {
@@ -1079,13 +1205,14 @@ export class MemoryOperations implements IMemoryOperations {
     embedding: number[],
     limit: number = 10,
     threshold: number = 0.7
-  ): Promise<Memory[]> {
-    const client = await this.pool.connect();
-    try {
-      const vectorStr = `[${embedding.join(',')}]`;
+  ): Promise<MemoryData[]> {
+    return this.executeWithTimeout(async () => {
+      const client = await this.pool.connect();
+      try {
+        const vectorStr = `[${embedding.join(',')}]`;
 
-      const result = await client.query(
-        `
+        const result = await client.query(
+          `
         SELECT m.*, 
                1 - (m.embedding <=> $4::vector) as similarity
         FROM ${this.schema}.memories m
@@ -1096,35 +1223,31 @@ export class MemoryOperations implements IMemoryOperations {
         ORDER BY m.embedding <=> $4::vector
         LIMIT $3
       `,
-        [userId, agentId, limit, vectorStr, threshold]
-      );
+          [userId, agentId, limit, vectorStr, threshold]
+        );
 
-      return result.rows.map((row) => ({
-        id: row.id,
-        agentId: row.agent_id,
-        userId: row.user_id,
-        content: row.content,
-        type: row.type,
-        importance: parseFloat(row.importance),
-        resonance: parseFloat(row.resonance),
-        accessCount: row.access_count,
-        createdAt: new Date(row.created_at).getTime(),
-        updatedAt: new Date(row.updated_at).getTime(),
-        lastAccessedAt: new Date(row.last_accessed_at).getTime(),
-        sessionId: row.session_id,
-        keywords: row.keywords,
-        metadata: row.metadata,
-        extractionMethod: row.extraction_method,
-        tokenCount: row.token_count,
-        batchId: row.batch_id,
-        sourceMessageIds: row.source_message_ids,
-        embeddingId: row.embedding_id,
-        embeddingModel: row.embedding_model,
-        embeddingDimension: row.embedding_dimension
-      }));
-    } finally {
-      client.release();
-    }
+        return result.rows.map((row) => ({
+          id: row.id,
+          agentId: row.agent_id,
+          userId: row.user_id,
+          content: row.content,
+          type: row.type,
+          importance: parseFloat(row.importance),
+          resonance: parseFloat(row.resonance),
+          accessCount: row.access_count,
+          createdAt: new Date(row.created_at).getTime(),
+          updatedAt: new Date(row.updated_at).getTime(),
+          lastAccessedAt: new Date(row.last_accessed_at).getTime(),
+          sessionId: row.session_id,
+          keywords: row.keywords,
+          metadata: row.metadata,
+          tokenCount: row.token_count,
+          embeddingId: row.embedding_id
+        }));
+      } finally {
+        client.release();
+      }
+    }, 'findSimilar');
   }
 
   /**

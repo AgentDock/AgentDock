@@ -8,11 +8,11 @@
 import { createHash } from 'crypto';
 
 import { LogCategory, logger } from '../../../../logging';
-import { ListOptions, StorageOptions } from '../../../types';
+import { ListOptions, StorageMetadata, StorageOptions } from '../../../types';
 import { KeyManager } from '../../../utils/key-manager';
 import { SerializationManager } from '../../../utils/serialization';
 import { PineconeClient } from '../client';
-import { PineconeVector, StorageMetadata } from '../types';
+import { PineconeVector } from '../types';
 
 /**
  * KV operations for Pinecone
@@ -76,7 +76,7 @@ export class KVOperations {
         return null;
       }
 
-      const metadata = vector.metadata as StorageMetadata;
+      const metadata = vector.metadata as Record<string, any>;
 
       // Check TTL
       if (metadata._ttl_expires && metadata._ttl_expires < Date.now()) {
@@ -86,7 +86,7 @@ export class KVOperations {
 
       // Deserialize value
       if (metadata._value) {
-        return this.serialization.deserialize<T>(metadata._value);
+        return this.serialization.deserialize<T>(metadata._value as string);
       }
 
       return null;

@@ -444,10 +444,10 @@ export interface QdrantScrollResponse {
 }
 
 /**
- * Storage metadata for KV operations
+ * Qdrant-specific storage metadata for KV operations
  * Stored in Qdrant payload to enable storage operations
  */
-export interface StorageMetadata {
+export interface QdrantMetadata {
   /**
    * Storage type marker
    */

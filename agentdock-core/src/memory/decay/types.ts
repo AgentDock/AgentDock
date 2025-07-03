@@ -69,8 +69,9 @@ export interface DecayConfiguration {
 
 /**
  * Result of applying decay operations.
+ * Note: This is different from the framework DecayResult in base-types
  */
-export interface DecayResult {
+export interface DecayOperationResult {
   /** Number of memories processed */
   processed: number;
 

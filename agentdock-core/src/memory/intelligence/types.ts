@@ -1,34 +1,5 @@
+import { ConnectionType, MemoryConnection } from '../../storage/types';
 import { Memory } from '../types/common';
-
-// Connection types between memories
-export type ConnectionType =
-  | 'similar' // Semantically similar content
-  | 'contradicts' // Conflicting information
-  | 'extends' // Builds upon
-  | 'references' // Explicitly references
-  | 'temporal' // Time-based relationship
-  | 'causal' // Cause-effect relationship
-  | 'derived' // Derived from other memory
-  | 'corrects' // Corrects previous memory
-  | 'updates'; // Updates previous memory
-
-export interface MemoryConnection {
-  id: string;
-  sourceId: string;
-  targetId: string;
-  type: ConnectionType;
-  strength: number; // 0-1, where 1 is strongest
-  reason?: string;
-  createdAt: number;
-  method: 'embedding' | 'user-rules' | 'small-llm' | 'hybrid';
-  metadata?: {
-    confidence?: number;
-    algorithm?: string;
-    embeddingSimilarity?: number;
-    llmUsed?: boolean;
-    cost?: number;
-  };
-}
 
 // Intelligence layer configuration - following CTO's hybrid approach
 export interface IntelligenceLayerConfig {
@@ -42,6 +13,11 @@ export interface IntelligenceLayerConfig {
   // Optional enhancement layers
   connectionDetection: {
     method: 'embedding-only' | 'user-rules' | 'small-llm' | 'hybrid';
+
+    // Connection discovery configuration
+    maxRecentMemories?: number; // Default: 50, range: 10-500
+    temporalWindowDays?: number; // Default: 7
+    enableTemporalAnalysis?: boolean; // Default: false
 
     // User-defined rules (free, configurable)
     userRules?: {
@@ -67,6 +43,23 @@ export interface IntelligenceLayerConfig {
     };
   };
 
+  // Temporal pattern analysis (optional)
+  temporal?: {
+    enabled?: boolean;
+    analysisFrequency?: 'realtime' | 'hourly' | 'daily'; // How often to run analysis
+    minMemoriesForAnalysis?: number; // Default: 5
+    enableLLMEnhancement?: boolean; // Use LLM for deeper insights
+  };
+
+  // Memory recall configuration
+  recall?: {
+    defaultLimit?: number; // Default: 20, range: 5-100
+    productionLimit?: number; // Default: 15 for production preset
+    minRelevanceThreshold?: number; // Default: 0.1
+    enableCaching?: boolean; // Default: true
+    cacheTTL?: number; // Default: 300000 (5 minutes)
+  };
+
   // Cost control
   costControl: {
     maxLLMCallsPerBatch: number;
@@ -81,11 +74,19 @@ export interface ConnectionRule {
   id: string;
   name: string;
   description: string;
-  pattern: string; // Regex or simple string match
+
+  // Semantic approach - required, no more regex patterns
+  semanticDescription: string; // Natural language description of what to look for
+  semanticEmbedding?: number[]; // Pre-computed embedding of the semantic description
+
   connectionType: ConnectionType;
   confidence: number; // 0-1
   language?: string; // Optional language hint
-  caseSensitive?: boolean;
+
+  // Semantic matching configuration
+  semanticThreshold?: number; // Embedding similarity threshold (default: 0.75)
+  requiresBothMemories?: boolean; // Must match both memories vs either (default: true)
+
   enabled: boolean;
   createdBy: string;
   createdAt: Date;
@@ -151,14 +152,6 @@ export interface ConsolidationCandidate {
   suggestedContent?: string;
 }
 
-export interface ConsolidationResult {
-  original: Memory[];
-  consolidated: Memory;
-  preservedIds?: string[];
-  strategy: string;
-  confidence: number;
-}
-
 export interface ConsolidationConfig {
   similarityThreshold: number;
   maxAge: number; // Max age for episodic memories (ms)
@@ -172,21 +165,4 @@ export interface ConsolidationConfig {
     costPerToken?: number;
     maxTokensPerSummary?: number;
   };
-}
-
-// Importance scoring for memories
-export interface ImportanceFactors {
-  frequency: number; // How often accessed
-  recency: number; // How recent
-  connections: number; // Number of connections
-  centrality: number; // Graph centrality
-  userMarked: boolean; // User flagged as important
-  consolidated: boolean; // Result of consolidation
-}
-
-export interface ImportanceScore {
-  total: number; // 0-1 overall score
-  factors: ImportanceFactors;
-  confidence: number;
-  explanation?: string;
 }

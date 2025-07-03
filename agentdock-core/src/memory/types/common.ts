@@ -12,48 +12,10 @@ import { MemoryType } from '../../shared/types/memory';
 export { MemoryType };
 
 /**
- * Base memory interface used by batch processing and other systems
+ * Re-export Memory interface from storage types
+ * This ensures all memory operations use the secure interface with userId
  */
-export interface Memory {
-  /** Unique identifier for this memory */
-  id: string;
-
-  /** Agent this memory belongs to */
-  agentId: string;
-
-  /** Memory content */
-  content: string;
-
-  /** Type of memory */
-  type: MemoryType;
-
-  /** Importance score (0.0 to 1.0) */
-  importance: number;
-
-  /** How well this memory resonates with current context */
-  resonance?: number;
-
-  /** Number of times this memory has been accessed */
-  accessCount: number;
-
-  /** Creation timestamp */
-  createdAt: number;
-
-  /** Last update timestamp */
-  updatedAt: number;
-
-  /** Last access timestamp */
-  lastAccessedAt: number;
-
-  /** Additional metadata */
-  metadata?: Record<string, any>;
-
-  /** Keywords for search and categorization */
-  keywords?: string[];
-
-  /** IDs of connected memories */
-  connections?: string[];
-}
+export type { MemoryData as Memory } from '../../storage/types';
 
 /**
  * Message interface for agent communications

@@ -232,10 +232,10 @@ export interface PineconeUpdateRequest {
 }
 
 /**
- * Storage metadata for KV operations
+ * Pinecone-specific storage metadata for KV operations
  * Stored alongside vectors to enable storage operations
  */
-export interface StorageMetadata {
+export interface PineconeMetadata {
   /**
    * Storage type marker
    */

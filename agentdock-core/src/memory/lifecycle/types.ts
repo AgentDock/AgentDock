@@ -7,7 +7,8 @@
  * @author AgentDock Core Team
  */
 
-import { DecayConfiguration, DecayResult } from '../decay/types';
+import { DecayResult } from '../base-types';
+import { DecayConfiguration, DecayOperationResult } from '../decay/types';
 
 /**
  * Types of changes that can occur to a memory over its lifecycle.

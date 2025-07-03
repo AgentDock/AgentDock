@@ -3,6 +3,14 @@
  */
 
 import { BaseStorageAdapter } from '../../base-adapter';
+import {
+  MemoryData,
+  MemoryOperations,
+  MemoryOperationStats,
+  MemoryRecallOptions,
+  StorageMetadata,
+  StorageProvider
+} from '../../types';
 
 /**
  * Distance functions supported by ChromaDB
@@ -257,10 +265,10 @@ export interface ChromaGetResult {
 }
 
 /**
- * Storage metadata for KV operations
+ * ChromaDB-specific storage metadata for KV operations
  * Stored in ChromaDB metadata to enable storage operations
  */
-export interface StorageMetadata {
+export interface ChromaMetadata {
   /**
    * Storage type marker
    */

@@ -1,487 +1,476 @@
-# AgentDock Core Memory System - Developer Documentation
+# AgentDock Core Memory System - Technical Implementation
 
-> **Technical implementation guide for the AgentDock Core memory system**
+> **Work in Progress** - This technical documentation covers the current implementation of AgentDock's memory system as it exists today. The system is actively under development and APIs may change.
 
-This is the technical documentation for developers working directly with the AgentDock Core memory implementation. For user-facing documentation, see [`docs/memory/README.md`](../../../docs/memory/README.md).
+## Overview
 
-## Architecture Overview
+The AgentDock Core Memory System provides a production-ready, four-layer memory architecture for AI agents. This is the technical implementation guide for developers integrating the memory system directly or preparing for npm package deployment.
 
-The memory system implements a **4-layer cognitive architecture** with **production-grade batch processing** and **cost optimization**:
+## Architecture Summary
+
+**Four-Layer Memory System**
+- **Working Memory**: Session-scoped conversation context with TTL management
+- **Episodic Memory**: Time-ordered experiences with configurable decay
+- **Semantic Memory**: Long-term knowledge with confidence scoring and consolidation
+- **Procedural Memory**: Learned behavioral patterns with reinforcement learning
+
+**Core Systems**
+- **PRIME Extraction**: Intelligent memory extraction with tier-based model selection
+- **Hybrid Search**: 70/30 vector/text fusion for PostgreSQL, RRF for SQLite
+- **Memory Connections**: Progressive relationship discovery with configurable enhancement
+- **Cost Tracking**: Production monitoring with budget controls
+
+## Current File Structure
 
 ```
 agentdock-core/src/memory/
-├── types/                   # 4 Memory Type Implementations (762 lines)
-│   ├── working/            # WorkingMemory.ts (197 lines)
-│   ├── episodic/           # EpisodicMemory.ts (195 lines) 
-│   ├── semantic/           # SemanticMemory.ts (170 lines)
-│   ├── procedural/         # ProceduralMemory.ts (200 lines)
-│   └── base/               # BaseMemoryType.ts (shared foundation)
-├── batch/                  # Batch Processing System (676 lines)
-│   ├── BatchProcessor.ts   # Main orchestrator with 5x cost reduction
-│   ├── extractors/         # 3-tier extraction pipeline
-│   └── types.ts           # Batch processing interfaces
-├── services/               # Core Services (492 lines)
-│   ├── RecallService.ts    # Unified cross-memory search
-│   ├── ConversationProcessor.ts  # Message → Memory pipeline  
-│   └── EncryptionService.ts      # Security layer
-├── intelligence/          # AI Layer (189 lines)
-│   ├── connections/       # MemoryConnectionManager.ts
-│   ├── consolidation/     # MemoryConsolidator.ts
-│   └── embedding/         # EmbeddingService.ts
-├── lifecycle/             # Memory Management (537 lines)
-│   ├── MemoryLifecycleManager.ts  # Complete automation
-│   └── ConfigurableDecayEngine.ts # TTL & resonance decay
-├── __tests__/             # Test Suite 
-│   ├── unit/              # Component tests
-│   ├── integration/       # Cross-system tests  
-│   └── performance/       # Latency & throughput tests
-└── index.ts               # Public API exports
+├── index.ts                    # Public API exports
+├── MemoryManager.ts           # Core orchestrator
+├── create-memory-system.ts    # Factory functions
+├── base-types.ts              # Foundational types
+│
+├── extraction/                # PRIME Extraction System
+│   ├── PRIMEExtractor.ts      # Memory extraction engine
+│   ├── PRIMEOrchestrator.ts   # Batch processing
+│   ├── config/                # Extraction configurations
+│   └── __tests__/             # Extraction test suite
+│
+├── services/                  # Core Services
+│   ├── RecallService.ts       # Memory retrieval
+│   ├── ConversationProcessor.ts # Message processing
+│   ├── EncryptionService.ts   # Security layer
+│   ├── RecallServiceUtils.ts  # Utility functions
+│   └── RecallServiceTypes.ts  # Service type definitions
+│
+├── types/                     # Memory Type Implementations
+│   ├── base/                  # BaseMemoryType foundation
+│   ├── working/               # WorkingMemory implementation
+│   ├── episodic/              # EpisodicMemory with decay
+│   ├── semantic/              # SemanticMemory with consolidation
+│   └── procedural/            # ProceduralMemory with learning
+│
+├── tracking/                  # Cost & Performance Tracking
+│   ├── CostTracker.ts         # Production cost monitoring
+│   └── index.ts               # Tracking exports
+│
+├── intelligence/              # AI-Powered Features
+│   ├── connections/           # Memory relationship management
+│   ├── consolidation/         # Knowledge consolidation
+│   ├── embeddings/            # Vector embedding service
+│   └── graph/                 # Connection graph implementation
+│
+├── lifecycle/                 # Memory Management
+│   ├── MemoryLifecycleManager.ts    # Memory lifecycle orchestration
+│   ├── MemoryEvolutionTracker.ts    # Evolution tracking
+│   └── LifecycleScheduler.ts        # Automated scheduling
+│
+├── decay/                     # Memory Decay System
+│   ├── ConfigurableDecayEngine.ts   # Universal decay implementation
+│   └── index.ts               # Decay exports
+│
+├── config/                    # Configuration Presets
+│   └── recall-presets.ts      # Preset configurations
+│
+└── __tests__/                 # Test Suite
+    ├── unit/                  # Component tests
+    ├── integration/           # Cross-system tests
+    └── performance/           # Performance validation
 ```
 
-## Core Components
+## Public API
 
-### 1. **BatchProcessor** - 5x Cost Reduction Engine
-
-**File**: `batch/BatchProcessor.ts` (676 lines)
-
-The **most critical component** implementing intelligent message processing with dramatic cost savings:
-
-```typescript
-import { BatchProcessor } from '@agentdock/core';
-
-// Cost-optimized configuration
-const processor = new BatchProcessor(storage, {
-  maxBatchSize: 20,        // Process 20 messages at once
-  extractionRate: 0.2,     // Only process 20% of batches (5x savings)
-  timeoutMinutes: 5,       // Or process after 5 minutes
-  
-  extractors: [
-    { type: 'rules', enabled: true, costPerMemory: 0 },        // Free tier
-    { type: 'small-llm', enabled: true, costPerMemory: 0.001 }, // Cheap tier
-    { type: 'large-llm', enabled: true, costPerMemory: 0.01 }   // Premium tier
-  ],
-  
-  costBudget: 50.0,        // Monthly budget control
-  targetCoverage: 0.8      // 80% memory coverage target
-});
-
-// Process with cost tracking
-const result = await processor.process(userId, agentId, messages);
-```
-
-**Key Features**:
-- **Statistical Processing**: Only processes 1 in 5 message batches
-- **3-Tier Extraction**: Rules (free) → Small LLM (cheap) → Large LLM (premium)
-- **Noise Filtering**: Removes "ok", "thanks", filler content before processing
-- **Budget Controls**: Monthly spending limits and per-batch restrictions
-- **Advanced Buffering**: Prevents OOM crashes with buffer overflow protection
-
-### 2. **Memory Types** - Specialized Storage Layers
-
-#### **WorkingMemory.ts** (197 lines)
-**Fast, ephemeral context for immediate conversations**
-
-```typescript
-import { WorkingMemory } from '@agentdock/core';
-
-const working = new WorkingMemory(storage, {
-  maxContextItems: 10,     // Recent message limit
-  ttlSeconds: 3600,        // 1-hour auto-expiry  
-  contextWindow: 5,        // Rolling context window
-  priority: 'high'         // High-priority access
-});
-
-// Store session context
-await working.store(agentId, sessionId, messages);
-
-// Retrieve with automatic cleanup
-const context = await working.recall(agentId, sessionId);
-```
-
-#### **EpisodicMemory.ts** (195 lines)
-**Time-ordered experiences and events**
-
-```typescript
-import { EpisodicMemory } from '@agentdock/core';
-
-const episodic = new EpisodicMemory(storage, {
-  compressionAge: 30,      // Compress after 30 days
-  decayRate: 0.1,         // Natural forgetting rate
-  retentionPolicy: 'temporal',
-  importanceThreshold: 0.3
-});
-
-// Store life events with temporal ordering
-await episodic.store(agentId, {
-  content: 'User mentioned their dog passed away',
-  timestamp: Date.now(),
-  importance: 0.9,
-  emotionalWeight: 0.8
-});
-```
-
-#### **SemanticMemory.ts** (170 lines)  
-**Long-term knowledge and facts**
-
-```typescript
-import { SemanticMemory } from '@agentdock/core';
-
-const semantic = new SemanticMemory(storage, {
-  confidenceThreshold: 0.7,    // Quality gate
-  consolidationEnabled: true,   // Auto-merge similar facts
-  vectorSearch: true,          // Enable similarity search
-  maxRelatedFacts: 5          // Limit retrieval size
-});
-
-// Store permanent knowledge
-await semantic.store(agentId, {
-  content: 'User is allergic to shellfish',
-  keywords: ['allergy', 'shellfish', 'medical'],
-  confidence: 0.95,
-  neverDecay: true  // Critical medical info
-});
-```
-
-#### **ProceduralMemory.ts** (200 lines)
-**Learned behavioral patterns**
-
-```typescript
-import { ProceduralMemory } from '@agentdock/core';
-
-const procedural = new ProceduralMemory(storage, {
-  learningRate: 0.05,          // Pattern learning speed
-  reinforcementDecay: 0.02,    // Pattern fade rate
-  confidenceThreshold: 0.6,    // Action confidence gate
-  maxPatterns: 100            // Storage limit
-});
-
-// Learn from successful interactions
-await procedural.learn(agentId, {
-  pattern: 'When user mentions stress → suggest breathing exercises',
-  context: 'anxiety management',
-  successRate: 0.85,
-  lastSuccess: Date.now()
-});
-```
-
-### 3. **RecallService** - Unified Memory Search
-
-**File**: `services/RecallService.ts` (492 lines)
-
-**Cross-memory-type search and intelligent ranking**:
-
-```typescript
-import { RecallService } from '@agentdock/core';
-
-const recall = new RecallService(
-  workingMemory, episodicMemory, semanticMemory, proceduralMemory,
-  {
-    hybridSearch: true,        // Multi-type search
-    embeddingSearch: true,     // Vector similarity
-    temporalRelevance: true,   // Time-based scoring
-    maxResults: 20,           // Result limit
-    cacheEnabled: true        // Performance optimization
-  }
-);
-
-// Unified search across all memory types
-const results = await recall.searchMemories(agentId, {
-  query: 'breathing exercises for anxiety',
-  types: ['semantic', 'procedural'],
-  timeRange: { days: 30 },
-  minRelevance: 0.7
-});
-```
-
-### 4. **MemoryManager** - System Orchestration
-
-**File**: `MemoryManager.ts` (251 lines)
-
-**Central coordinator for all memory operations**:
-
-```typescript
-import { MemoryManager } from '@agentdock/core';
-
-const manager = new MemoryManager(storage, {
-  working: { maxContextItems: 10, ttlSeconds: 3600 },
-  episodic: { compressionAge: 30, decayRate: 0.1 },
-  semantic: { confidenceThreshold: 0.7, vectorSearch: true },
-  procedural: { learningRate: 0.05 }
-});
-
-// Process new conversation
-const result = await manager.processMessage(agentId, sessionId, {
-  id: generateId(),
-  role: 'user',
-  content: 'I have trouble sleeping before presentations',
-  timestamp: Date.now()
-});
-
-// Get relevant context for responses
-const context = await manager.getRelevantMemories(agentId, sessionId, {
-  query: 'presentation anxiety',
-  includeTypes: ['episodic', 'semantic', 'procedural'],
-  maxResults: 10
-});
-```
-
-## Storage Integration
-
-### **PostgreSQL Adapter** (537 lines)
-
-**Production-grade storage with advanced vector operations**:
-
-```typescript
-// File: storage/adapters/postgresql/operations/memory.ts
-import { PostgreSQLMemoryAdapter } from '@agentdock/core/server';
-
-const adapter = new PostgreSQLMemoryAdapter({
-  connectionString: process.env.DATABASE_URL,
-  schema: 'memory_system',
-  vector: {
-    dimension: 1536,
-    metric: 'cosine',
-    indexType: 'ivfflat',
-    lists: 100
-  }
-});
-
-// High-performance batch operations  
-await adapter.batchCreateMemories(memories);
-await adapter.recallMemories(agentId, criteria, options);
-```
-
-### **SQLite Adapter** (428 lines)
-
-**Development-friendly local storage**:
-
-```typescript
-// File: storage/adapters/sqlite/operations/memory.ts
-import { SQLiteMemoryAdapter } from '@agentdock/core/server';
-
-const adapter = new SQLiteMemoryAdapter({
-  filename: './memory.db',
-  enableVector: true,  // Uses sqlite-vec extension
-  defaultDimension: 1536
-});
-```
-
-## Batch Processing Utilities
-
-### **StreamingMemoryBatchProcessor** 
-
-**Real-time memory ingestion with overflow protection**:
-
-```typescript
-import { StreamingMemoryBatchProcessor } from '@agentdock/core';
-
-const processor = new StreamingMemoryBatchProcessor(
-  async (batch) => await adapter.batchCreateMemories(batch),
-  {
-    maxBatchSize: 1000,      // Batch size limit
-    flushIntervalMs: 5000,   // Auto-flush interval  
-    maxMemoryMB: 100,        // Memory pressure limit
-    maxConcurrent: 5         // Parallel processing limit
-  }
-);
-
-// Process with automatic batching
-await processor.process(memory);
-
-// Monitor performance
-const stats = processor.getStats();
-console.log(`Throughput: ${stats.throughput} items/sec`);
-```
-
-### **MemoryConsolidator**
-
-**Deduplication and similarity clustering**:
-
-```typescript
-import { MemoryConsolidator } from '@agentdock/core';
-
-const consolidator = new MemoryConsolidator(
-  (m1, m2) => cosineSimilarity(m1.embedding, m2.embedding)
-);
-
-// Find similar memory groups
-const groups = consolidator.findSimilarGroups(memories, {
-  similarityThreshold: 0.85,
-  minGroupSize: 2,
-  maxGroupSize: 10,
-  preserveImportant: true
-});
-
-// Consolidate each group to save storage
-for (const group of groups) {
-  const consolidated = consolidator.consolidateGroup(group);
-  await adapter.setMemory(consolidated);
-}
-```
-
-## Key APIs
-
-### **Browser-Safe Exports** (`@agentdock/core`)
+### Factory Functions
 
 ```typescript
 import { 
-  // Memory types
-  MemoryManager,
-  WorkingMemory,
-  EpisodicMemory, 
-  SemanticMemory,
-  ProceduralMemory,
-  
-  // Processing
-  BatchProcessor,
-  RecallService,
-  ConversationProcessor,
-  
-  // Utilities
-  StreamingMemoryBatchProcessor,
-  MemoryConsolidator,
-  
-  // Storage providers (browser-safe)
-  MemoryStorageProvider,
-  RedisStorageProvider,
-  VercelKVProvider
-} from '@agentdock/core';
+  createMemorySystem, 
+  createLocalMemory, 
+  createProductionMemory 
+} from '@agentdock/core/memory';
+
+// Quick development setup
+const memory = await createLocalMemory();
+
+// Production configuration
+const memory = await createProductionMemory({
+  databaseUrl: process.env.DATABASE_URL,
+  recallPreset: 'precision',
+  encryption: true
+});
+
+// Full configuration
+const memory = await createMemorySystem({
+  storage: {
+    type: 'postgresql',
+    connectionString: process.env.DATABASE_URL
+  },
+  recall: {
+    preset: 'research',
+    weights: {
+      vector: 0.45,
+      text: 0.25, 
+      temporal: 0.20,
+      procedural: 0.10
+    }
+  },
+  extraction: {
+    tier: 'balanced',
+    budget: 100.0
+  }
+});
 ```
 
-### **Server-Only Exports** (`@agentdock/core/server`)
+### Core Components
 
 ```typescript
-import {
-  // Storage adapters (Node.js only) 
-  SQLiteAdapter,
-  SQLiteMemoryAdapter,
-  PostgreSQLAdapter,
-  PostgreSQLMemoryAdapter,
-  
-  // Registration functions
-  registerSQLiteAdapter,
-  registerPostgreSQLAdapter
-} from '@agentdock/core/server';
+import { 
+  MemoryManager,
+  RecallService,
+  PRIMEExtractor,
+  ConversationProcessor 
+} from '@agentdock/core/memory';
+
+// Direct component usage
+const memoryManager = new MemoryManager(storage, config);
+const recallService = new RecallService(memoryTypes, recallConfig);
+const extractor = new PRIMEExtractor(extractionConfig);
 ```
 
-## Testing Infrastructure
+### Memory Operations
 
-**Test Results**: 274/281 tests passing (98% success rate)
+```typescript
+// Store memories
+await memory.store(userId, "User prefers morning meetings");
 
-```bash
-# Run all memory tests
-cd agentdock-core && npm test src/memory
+// Recall with hybrid search
+const memories = await memory.recall(userId, "meeting preferences", {
+  limit: 10,
+  threshold: 0.7
+});
 
-# Run specific test suites
-npm test src/memory/__tests__/unit/
-npm test src/memory/__tests__/integration/
-npm test src/memory/__tests__/performance/
+// Process conversations
+const result = await memory.processConversation(userId, messages);
 ```
 
-**Test Coverage**:
-- **Unit Tests**: Individual memory type functionality
-- **Integration Tests**: Cross-system memory interactions 
-- **Performance Tests**: Latency and throughput validation
-- **E2E Tests**: Complete workflow validation
+## PRIME Extraction System
 
-**Failing Tests** (5 tests - expected):
-- Performance tests requiring API keys (store-latency.test.ts)
-- One BatchProcessor flaky test for statistical processing
+The **Priority Rules Intelligent Memory Extraction (PRIME)** system automatically extracts structured memories from conversations using intelligent model tier selection.
+
+### Tier Selection Logic
+
+```typescript
+// Character-based automatic tier routing
+const getTier = (messageLength: number) => {
+  if (messageLength < 100) return 'fast';        // gpt-4o-mini
+  if (messageLength < 500) return 'balanced';    // gpt-4o-mini  
+  return 'accurate';                             // gpt-4o
+};
+```
+
+### Extraction Configuration
+
+```typescript
+const extractionConfig = {
+  tiers: {
+    fast: { 
+      model: 'gpt-4o-mini', 
+      charThreshold: 100,
+      timeout: 5000 
+    },
+    balanced: { 
+      model: 'gpt-4o-mini', 
+      charThreshold: 500,
+      timeout: 10000 
+    },
+    accurate: { 
+      model: 'gpt-4o', 
+      charThreshold: Infinity,
+      timeout: 15000 
+    }
+  },
+  extractionRate: 1.0,  // Process all messages in production
+  costBudget: 100.0,    // Monthly budget limit
+  fallbackToRules: true // Pattern-based fallback
+};
+```
+
+### Memory Output Structure
+
+```typescript
+interface ExtractedMemory {
+  working: string[];     // Immediate context
+  episodic: string[];    // Experiences and events
+  semantic: string[];    // Facts and knowledge
+  procedural: string[];  // Learned patterns
+}
+```
+
+## Memory Recall System
+
+### Recall Presets
+
+The system includes four validated preset configurations:
+
+```typescript
+const RECALL_PRESETS = {
+  default: {      // General purpose
+    vector: 0.30, text: 0.30, temporal: 0.20, procedural: 0.20
+  },
+  precision: {    // Medical, legal, financial
+    vector: 0.25, text: 0.45, temporal: 0.20, procedural: 0.10
+  },
+  performance: {  // High-volume customer support
+    vector: 0.20, text: 0.50, temporal: 0.25, procedural: 0.05
+  },
+  research: {     // Academic, analysis
+    vector: 0.45, text: 0.25, temporal: 0.20, procedural: 0.10
+  }
+};
+```
+
+### Hybrid Search Implementation
+
+**PostgreSQL**: Weighted score fusion
+```sql
+SELECT *, 
+  (0.7 * (1 - (embedding <=> query_embedding)) + 
+   0.3 * ts_rank(search_vector, query_text)) as hybrid_score
+FROM memories 
+ORDER BY hybrid_score DESC;
+```
+
+**SQLite**: Reciprocal Rank Fusion (RRF)
+```typescript
+const rrf = (rank1: number, rank2: number, k = 60) => 
+  (1.0 / (k + rank1)) + (1.0 / (k + rank2));
+```
+
+## Memory Types Implementation
+
+### Working Memory
+```typescript
+interface WorkingMemoryConfig {
+  ttl: number;           // Default: 3600 seconds (1 hour)
+  maxSize: number;       // Default: 100 items
+  sessionScoped: boolean; // Default: true
+}
+```
+
+### Episodic Memory
+```typescript
+interface EpisodicMemoryConfig {
+  decay: {
+    rate: number;        // Default: 0.1 per day
+    protectionRules: string[];
+  };
+  temporal: {
+    granularity: 'hour' | 'day' | 'week';
+    clustering: boolean;
+  };
+}
+```
+
+### Semantic Memory
+```typescript
+interface SemanticMemoryConfig {
+  consolidation: {
+    enabled: boolean;
+    threshold: number;   // Confidence threshold for consolidation
+    interval: number;    // Consolidation check interval
+  };
+  confidence: {
+    initial: number;     // Default: 0.5
+    reinforcement: number; // Boost on recall
+  };
+}
+```
+
+### Procedural Memory
+```typescript
+interface ProceduralMemoryConfig {
+  learning: {
+    reinforcement: number; // Success reinforcement rate
+    decay: number;         // Unused pattern decay
+  };
+  patterns: {
+    maxComplexity: number; // Pattern complexity limit
+    minSupport: number;    // Minimum pattern support
+  };
+}
+```
+
+## Memory Connections
+
+### Connection Types
+- **Similar**: Semantic similarity via embedding distance
+- **Causal**: Cause-effect relationships extracted from text
+- **Temporal**: Time-based sequence patterns
+- **References**: Explicit mention connections
+- **Hierarchical**: Part-of and category relationships
+
+### Progressive Enhancement
+```typescript
+interface ConnectionConfig {
+  embedding: {
+    threshold: number;   // Similarity threshold
+    maxConnections: number;
+  };
+  rules: {
+    patterns: string[];  // Custom pattern rules
+    enabled: boolean;
+  };
+  llm: {
+    enabled: boolean;    // AI-powered analysis
+    model: string;       // Model for connection analysis
+    budget: number;      // Monthly budget for LLM connections
+  };
+  temporal: {
+    windowSize: number;  // Time window for temporal connections
+    enabled: boolean;
+  };
+}
+```
+
+## Storage Adapters
+
+### Development: SQLite + sqlite-vec
+```typescript
+const storage = new SQLiteAdapter({
+  path: './memory.db',
+  vectorSearch: true,
+  encryption: false
+});
+```
+
+### Production: PostgreSQL + pgvector
+```typescript
+const storage = new PostgreSQLAdapter({
+  connectionString: process.env.DATABASE_URL,
+  vectorDimensions: 1536,
+  indexType: 'ivfflat',
+  encryption: true
+});
+```
+
+### Alternative: Vector Databases
+```typescript
+// Note: ChromaDB and Pinecone adapters exist but are not yet optimized for memory operations
+// Use PostgreSQL or SQLite for production deployments
+```
+
+## Cost Tracking
+
+### Production Monitoring
+```typescript
+const costTracker = new CostTracker({
+  monthlyBudget: 100.0,
+  alerts: {
+    thresholds: [50, 75, 90], // Percentage alerts
+    webhook: process.env.ALERT_WEBHOOK
+  },
+  breakdown: {
+    extraction: true,
+    recall: true,
+    connections: true
+  }
+});
+```
+
+### Usage Analytics
+```typescript
+const usage = await costTracker.getUsageReport({
+  period: 'month',
+  breakdown: 'by_user'
+});
+
+console.log({
+  totalCost: usage.total,
+  extractionCost: usage.extraction,
+  userBreakdown: usage.users
+});
+```
+
+## Security Considerations
+
+### User Isolation
+All memory operations enforce user-level isolation:
+```typescript
+// Automatic user filtering in all queries
+const memories = await memoryManager.recall(userId, query); // Only returns userId memories
+```
+
+### Encryption
+```typescript
+const encryptionService = new EncryptionService({
+  key: process.env.ENCRYPTION_KEY,
+  algorithm: 'aes-256-gcm',
+  fields: ['content', 'metadata'] // Encrypt specific fields
+});
+```
+
+### Database Security
+- User ID constraints on all memory tables
+- Prepared statements prevent SQL injection
+- Connection pooling with secure credentials
+- Optional field-level encryption for sensitive data
 
 ## Performance Characteristics
 
-| Operation | Throughput | Latency | Notes |
-|-----------|------------|---------|-------|
-| Batch Creation | 10,000 memories/sec | - | PostgreSQL batch operations |
-| Memory Recall | - | <100ms | With proper indexing |
-| Vector Search | - | ~10ms | 1M vectors (pgvector IVFFlat) |
-| Working Memory | - | <5ms | Redis-backed operations |
+### Recall Performance
+- **Sub-100ms** for typical queries (100-10,000 memories per user)
+- **Vector search**: Optimized with HNSW/IVFFlat indexing
+- **Caching**: Built-in result caching with configurable TTL
+- **Batch operations**: Efficient bulk processing for large conversations
 
-## Development Workflow
+### Memory Extraction
+- **Tier-based processing**: Automatic cost optimization
+- **Graceful degradation**: Pattern-based fallback when AI unavailable
+- **Budget controls**: Automatic rate limiting when budget exceeded
+- **Async processing**: Non-blocking extraction pipeline
 
-### **1. Local Development Setup**
 
-```bash
-# Install dependencies
-cd agentdock-core && pnpm install
 
-# Run tests
-npm test
+## Configuration Examples
 
-# Build
-npm run build
-
-# Watch mode during development
-npm test -- --watch
-```
-
-### **2. Database Setup**
-
-**SQLite (Development)**:
-```bash
-# Automatic initialization on first use
-# No manual setup required
-```
-
-**PostgreSQL (Production)**:
-```sql
--- Initialize memory schema
-SELECT initializeMemorySchema();
-
--- Create optimized indexes
-CREATE INDEX CONCURRENTLY idx_memories_vector_cosine 
-ON memories USING ivfflat (embedding vector_cosine_ops) 
-WITH (lists = 100);
-```
-
-### **3. Configuration Patterns**
-
-**Development Config**:
+### Customer Support Agent
 ```typescript
-const config = {
-  storage: 'sqlite',
-  memory: {
-    working: { maxContextItems: 5 },
-    semantic: { confidenceThreshold: 0.6 }
-  },
-  batch: { extractionRate: 0.5 }  // Higher rate for development
-};
+const memory = await createMemorySystem({
+  recall: { preset: 'performance' },  // Fast exact-match retrieval
+  extraction: { tier: 'fast' },       // Cost-optimized extraction
+  decay: {
+    rules: ['never_decay:contact_info', 'slow_decay:preferences']
+  }
+});
 ```
 
-**Production Config**:
+### Research Assistant
 ```typescript
-const config = {
-  storage: 'postgresql', 
-  memory: {
-    working: { maxContextItems: 20, ttlSeconds: 7200 },
-    semantic: { confidenceThreshold: 0.8, vectorSearch: true }
-  },
-  batch: { extractionRate: 0.2, costBudget: 100 }  // Cost-optimized
-};
+const memory = await createMemorySystem({
+  recall: { preset: 'research' },     // Enhanced semantic connections
+  extraction: { tier: 'accurate' },   // High-quality extraction
+  connections: {
+    llm: { enabled: true },           // AI-powered relationship discovery
+    temporal: { enabled: true }       // Time-based patterns
+  }
+});
 ```
 
-## Browser/Server Architecture
+### Medical Assistant
+```typescript
+const memory = await createMemorySystem({
+  recall: { preset: 'precision' },    // Exact terminology matching
+  extraction: { tier: 'accurate' },   // Medical accuracy required
+  decay: {
+    rules: ['never_decay:allergies', 'never_decay:medications']
+  },
+  security: {
+    encryption: true,                 // HIPAA compliance
+    auditLogging: true
+  }
+});
+```
 
-**Problem Solved**: SQLite imports were breaking Next.js browser builds.
 
-**Solution**: Dual export system:
-- **Main export** (`@agentdock/core`): Browser-safe components only
-- **Server export** (`@agentdock/core/server`): Node.js-specific adapters
+This system is under active development. Key areas for contribution include storage adapter optimization, memory connection algorithms, cost optimization strategies, performance benchmarking, and security enhancements.
 
-This follows **industry standard patterns** used by Prisma, Next.js, and other major frameworks.
-
-## Next Steps
-
-1. **Factory Functions**: Add convenience functions for easier setup
-2. **Preset Configurations**: Fast/balanced/accurate presets  
-3. **Enhanced Caching**: Improve recall performance
-4. **Advanced Relationships**: More sophisticated connection discovery
-5. **Monitoring Tools**: Memory system observability
-
----
-
-## Usage Examples
-
-See the [main memory documentation](../../../docs/memory/README.md) for comprehensive usage examples and real-world implementation patterns.
-
-**This technical documentation covers the implementation details for developers working directly with the AgentDock Core memory system codebase.**
+Part of the AgentDock project. See main repository for license details. 

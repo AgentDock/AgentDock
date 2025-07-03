@@ -8,10 +8,10 @@
 import { LogCategory, logger } from '../../../logging';
 import { MemoryType } from '../../../shared/types/memory';
 import { StorageProvider } from '../../../storage/types';
+import { DecayResult } from '../../base-types';
 import { IntelligenceLayerConfig } from '../../intelligence/types';
 import { BaseMemoryType } from '../base/BaseMemoryType';
 import {
-  DecayResult,
   EpisodicMemoryConfig,
   EpisodicMemoryData,
   EpisodicMemoryStats,
@@ -108,10 +108,16 @@ export class EpisodicMemory extends BaseMemoryType {
       return {
         processed: result.processed || 0,
         decayed: result.decayed || 0,
-        removed: result.removed || 0
+        removed: result.removed || 0,
+        averageDecay: result.decayed > 0 ? result.decayed / result.processed : 0
       };
     }
-    return { processed: 0, decayed: 0, removed: 0 };
+    return {
+      processed: 0,
+      decayed: 0,
+      removed: 0,
+      averageDecay: 0
+    };
   }
 
   /**

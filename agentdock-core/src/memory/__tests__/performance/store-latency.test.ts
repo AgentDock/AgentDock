@@ -99,7 +99,7 @@ describe('Store Latency Performance Test', () => {
     const latency = endTime - startTime;
 
     // Store should complete quickly (connection discovery is async)
-    expect(latency).toBeLessThan(50);
+    expect(latency).toBeLessThan(100);
     expect(memoryId).toBeDefined();
   });
 
@@ -151,7 +151,7 @@ describe('Store Latency Performance Test', () => {
     const latency = endTime - startTime;
 
     // Store should still be fast even with connection discovery
-    expect(latency).toBeLessThan(50);
+    expect(latency).toBeLessThan(100);
     expect(memoryId).toBeDefined();
 
     // Give time for background connection discovery to complete

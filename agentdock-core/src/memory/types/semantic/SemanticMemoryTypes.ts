@@ -1,3 +1,6 @@
+// Import unified ConsolidationResult from base-types
+import { ConsolidationResult } from '../../base-types';
+
 export interface SemanticMemoryData {
   id: string;
   agentId: string;
@@ -87,11 +90,8 @@ export interface ConsolidationOptions {
   similarityThreshold?: number;
 }
 
-export interface ConsolidationResult {
-  examined: number;
-  consolidated: number;
-  spaceSaved: number;
-}
+// Re-export for this module's convenience
+export type { ConsolidationResult };
 
 export interface RelatedMemoryResult {
   memory: SemanticMemoryData;

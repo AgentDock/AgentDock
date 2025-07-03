@@ -1,3 +1,6 @@
+// Import unified types from base-types
+import { ConsolidationResult, DecayResult } from '../../base-types';
+
 export interface EpisodicMemoryData {
   id: string;
   agentId: string;
@@ -38,17 +41,8 @@ export interface EpisodicQuery {
   limit?: number;
 }
 
-export interface ConsolidationResult {
-  original: number;
-  compressed: number;
-  spaceSaved: number;
-}
-
-export interface DecayResult {
-  processed: number;
-  decayed: number;
-  removed: number;
-}
+// Re-export for this module's convenience
+export type { ConsolidationResult, DecayResult };
 
 export interface EpisodicMemoryStats {
   totalMemories: number;

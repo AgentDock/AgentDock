@@ -1,14 +1,35 @@
 // Import config types for MemoryManagerConfig
+import { LogCategory, logger } from '../../logging';
+import { MemoryOperations, VectorMemoryOperations } from '../../storage/types';
+/**
+ * Memory utilities initialization and services
+ * Works with memory-enabled adapters only
+ */
+
+import { EmbeddingService } from '../intelligence/embeddings/EmbeddingService';
+import type { IntelligenceLayerConfig } from '../intelligence/types';
 import type { EpisodicMemoryConfig } from './episodic/EpisodicMemoryTypes';
+import { initializeEpisodicMemoryServices } from './episodic/EpisodicMemoryUtils';
 import type { ProceduralMemoryConfig } from './procedural/ProceduralMemoryTypes';
 import type { SemanticMemoryConfig } from './semantic/SemanticMemoryTypes';
+// Import initialization functions from all utility files
+import { initializeSemanticServices } from './semantic/SemanticMemoryUtils';
 import type { WorkingMemoryConfig } from './working/WorkingMemoryTypes';
+import { initializeWorkingMemoryServices } from './working/WorkingMemoryUtils';
 
 /**
- * @fileoverview Memory Types - Clean exports with full type safety
+ * @fileoverview Memory Types - Production-Ready Memory Adapter Support
  *
- * NO any types - Full type safety enforced
- * Simple delegation to storage layer
+ * PRODUCTION MEMORY ADAPTERS:
+ * ✅ PostgreSQL-Vector (hybrid search + ACID transactions)
+ * ✅ SQLite-Vec (hybrid search + local development)
+ * ✅ PostgreSQL (text search + ACID transactions)
+ * ✅ SQLite (text search + local development)
+ *
+ * STORAGE-ONLY ADAPTERS (No Memory Operations):
+ * ❌ ChromaDB, Pinecone, Qdrant (vector similarity + KV only)
+ *
+ * Note: Vector adapters can be extended to support memory operations in the future.
  */
 
 // Type exports - Keep interfaces
@@ -56,5 +77,165 @@ export interface MemoryManagerConfig {
   episodic?: EpisodicMemoryConfig;
   semantic?: SemanticMemoryConfig;
   procedural?: ProceduralMemoryConfig;
+  intelligence?: IntelligenceLayerConfig;
   debug?: boolean;
 }
+
+/**
+ * Memory adapter capabilities interface
+ */
+export interface AdapterCapabilities {
+  hasMemoryOps: boolean;
+  hasVectorSearch: boolean;
+  hasHybridSearch: boolean;
+  adapterType: 'vector+hybrid' | 'vector-only' | 'text-only';
+}
+
+/**
+ * Validate that an adapter supports memory operations
+ * @param adapter - Storage adapter to validate
+ * @param adapterName - Name of adapter for error messages
+ * @throws Error if adapter doesn't support memory operations
+ */
+export function validateMemoryAdapter(
+  adapter: any,
+  adapterName: string = 'unknown'
+): void {
+  if (!adapter) {
+    throw new Error(
+      `Memory adapter is null or undefined. Please provide a valid memory adapter.`
+    );
+  }
+
+  if (!adapter.memory) {
+    logger.error(
+      LogCategory.STORAGE,
+      'MemoryUtilities',
+      'Incompatible adapter - no memory operations',
+      { adapterName }
+    );
+
+    throw new Error(
+      `Adapter '${adapterName}' does not support memory operations. ` +
+        `Supported: PostgreSQL, PostgreSQL-Vector, SQLite, SQLite-Vec. ` +
+        `Vector adapters (ChromaDB, Pinecone, Qdrant) require memory operation extensions.`
+    );
+  }
+
+  if (typeof adapter.memory.recall !== 'function') {
+    logger.error(
+      LogCategory.STORAGE,
+      'MemoryUtilities',
+      'Incomplete memory operations - missing recall method',
+      { adapterName }
+    );
+
+    throw new Error(
+      `Adapter '${adapterName}' memory operations are incomplete. Missing required 'recall' method.`
+    );
+  }
+
+  logger.info(
+    LogCategory.STORAGE,
+    'MemoryUtilities',
+    'Memory adapter validation passed',
+    {
+      adapterName,
+      hasVectorSearch: 'searchByVector' in adapter.memory,
+      hasHybridSearch: 'hybridSearch' in adapter.memory
+    }
+  );
+}
+
+/**
+ * Detect adapter capabilities safely with informative logging
+ * @param memoryOps - Validated memory operations interface
+ * @param adapterName - Name of adapter for logging
+ * @returns Adapter capabilities
+ */
+export function detectAdapterCapabilities(
+  memoryOps: any,
+  adapterName: string = 'unknown'
+): AdapterCapabilities {
+  const capabilities: AdapterCapabilities = {
+    hasMemoryOps: true, // Validated by this point
+    hasVectorSearch:
+      'searchByVector' in memoryOps &&
+      typeof memoryOps.searchByVector === 'function',
+    hasHybridSearch:
+      'hybridSearch' in memoryOps &&
+      typeof memoryOps.hybridSearch === 'function',
+    adapterType: 'text-only'
+  };
+
+  if (capabilities.hasHybridSearch) {
+    capabilities.adapterType = 'vector+hybrid';
+  } else if (capabilities.hasVectorSearch) {
+    capabilities.adapterType = 'vector-only';
+  }
+
+  logger.info(
+    LogCategory.STORAGE,
+    'MemoryUtilities',
+    'Adapter capabilities detected',
+    { adapterName, capabilities }
+  );
+
+  return capabilities;
+}
+
+/**
+ * Initialize all memory utility services with memory-enabled adapter
+ *
+ * SUPPORTED ADAPTERS:
+ * ✅ PostgreSQL-Vector (hybrid search + ACID transactions)
+ * ✅ SQLite-Vec (hybrid search + local development)
+ * ✅ PostgreSQL (text search + ACID transactions)
+ * ✅ SQLite (text search + local development)
+ *
+ * Uses tiered fallback system within memory adapters:
+ * - Tier 1: Hybrid search (PostgreSQL-Vector, SQLite-Vec)
+ * - Tier 2: Vector search (if supported by memory adapter)
+ * - Tier 3: Text search (all memory adapters)
+ * - Tier 4: Simple analysis (fallback)
+ *
+ * @param embeddingService - Embedding service for semantic operations
+ * @param adapter - Storage adapter with memory operations
+ * @param adapterName - Name of adapter for logging and error messages
+ * @throws Error if adapter doesn't support memory operations
+ */
+export function initializeMemoryUtilities(
+  embeddingService: EmbeddingService,
+  adapter: any,
+  adapterName: string = 'unknown'
+): void {
+  // Validate adapter before using - will throw on incompatible adapters
+  validateMemoryAdapter(adapter, adapterName);
+
+  const memoryOperations = adapter.memory;
+
+  // Detect capabilities with logging
+  const capabilities = detectAdapterCapabilities(memoryOperations, adapterName);
+
+  // Initialize all services with validated adapter
+  initializeSemanticServices(embeddingService, adapter, adapterName);
+  initializeWorkingMemoryServices(embeddingService, adapter, adapterName);
+  initializeEpisodicMemoryServices(embeddingService, adapter, adapterName);
+
+  logger.info(
+    LogCategory.STORAGE,
+    'MemoryUtilities',
+    'All memory utilities initialized successfully',
+    { adapterName, capabilities }
+  );
+}
+
+// TODO: Vector Adapter Memory Operations Support
+// When ready to support ChromaDB/Pinecone/Qdrant for memory operations:
+// 1. Create VectorMemoryWrapper classes that implement MemoryOperations
+// 2. Use vector similarity search for recall operations
+// 3. Store memory metadata in vector payload/metadata fields
+// 4. Handle user isolation through vector namespacing
+// 5. Implement memory connections through vector relationships
+//
+// Current blocker: Vector DBs lack ACID transactions needed for complex memory operations

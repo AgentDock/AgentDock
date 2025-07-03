@@ -14,10 +14,10 @@ Based on **Collins & Loftus (1975)**, memories are interconnected nodes that act
 
 ```mermaid
 graph TD
-    A[Activated Memory:<br/>"Customer complaint"] --> B[Related Memory:<br/>"Product issue"]
-    A --> C[Similar Memory:<br/>"Support ticket"]
-    B --> D[Causal Memory:<br/>"Bug fix deployed"]
-    C --> E[Part-of Memory:<br/>"Q3 feedback summary"]
+    A[Activated Memory:<br/>'Customer complaint'] --> B[Related Memory:<br/>'Product issue']
+    A --> C[Similar Memory:<br/>'Support ticket']
+    B --> D[Causal Memory:<br/>'Bug fix deployed']
+    C --> E[Part-of Memory:<br/>'Q3 feedback summary']
     
     style A fill:#ff9999,stroke:#333,stroke-width:3px
     style B fill:#ffcc99,stroke:#333,stroke-width:2px

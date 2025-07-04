@@ -32,16 +32,20 @@ agentdock-core/src/memory/
 ├── extraction/                # PRIME Extraction System
 │   ├── PRIMEExtractor.ts      # Memory extraction engine
 │   ├── PRIMEOrchestrator.ts   # Batch processing
+│   ├── index.ts               # Extraction exports
 │   ├── config/                # Extraction configurations
 │   └── __tests__/             # Extraction test suite
 │
 ├── services/                  # Core Services
+│   ├── index.ts               # Service exports
 │   ├── RecallService.ts       # Memory retrieval
 │   ├── EncryptionService.ts   # Security layer
 │   ├── RecallServiceUtils.ts  # Utility functions
 │   └── RecallServiceTypes.ts  # Service type definitions
 │
 ├── types/                     # Memory Type Implementations
+│   ├── index.ts               # Type exports
+│   ├── common.ts              # Shared type definitions
 │   ├── base/                  # BaseMemoryType foundation
 │   ├── working/               # WorkingMemory implementation
 │   ├── episodic/              # EpisodicMemory with decay
@@ -59,16 +63,26 @@ agentdock-core/src/memory/
 │   └── graph/                 # Connection graph implementation
 │
 ├── lifecycle/                 # Memory Management
+│   ├── index.ts               # Lifecycle exports
+│   ├── types.ts               # Lifecycle type definitions
 │   ├── MemoryLifecycleManager.ts    # Memory lifecycle orchestration
 │   ├── MemoryEvolutionTracker.ts    # Evolution tracking
-│   └── LifecycleScheduler.ts        # Automated scheduling
+│   ├── LifecycleScheduler.ts        # Automated scheduling
+│   └── examples/              # Lifecycle usage examples
 │
 ├── decay/                     # Memory Decay System
-│   ├── ConfigurableDecayEngine.ts   # Universal decay implementation
-│   └── index.ts               # Decay exports
+│   ├── index.ts               # Decay exports
+│   ├── types.ts               # Decay type definitions
+│   └── ConfigurableDecayEngine.ts   # Universal decay implementation
+│
+├── procedural/                # Procedural Memory System
+│   ├── index.ts               # Procedural exports
+│   ├── types.ts               # Procedural type definitions
+│   └── ProceduralMemoryManager.ts   # Procedural memory management
 │
 ├── config/                    # Configuration Presets
-│   └── recall-presets.ts      # Preset configurations
+│   ├── recall-presets.ts      # Preset configurations
+│   └── intelligence-layer-config.ts # Intelligence layer settings
 │
 └── __tests__/                 # Test Suite
     ├── unit/                  # Component tests
@@ -427,7 +441,140 @@ const encryptionService = new EncryptionService({
 - **Budget controls**: Automatic rate limiting when budget exceeded
 - **Async processing**: Non-blocking extraction pipeline
 
+## Validation & Error Handling
 
+The memory system provides comprehensive validation with fail-fast behavior for production reliability.
+
+### Storage Provider Validation
+
+PRIMEOrchestrator automatically validates storage providers support memory operations:
+
+```typescript
+// ✅ Valid storage provider
+const storage = new PostgreSQLAdapter(config);
+const orchestrator = new PRIMEOrchestrator(storage, primeConfig);
+
+// ❌ Invalid storage provider
+const basicStorage = new BasicKVStorage(); // No memory interface
+const orchestrator = new PRIMEOrchestrator(basicStorage, primeConfig);
+// Throws: "Storage provider must support memory operations. 
+//          Ensure your storage provider implements the memory interface."
+```
+
+### Configuration Validation
+
+PRIMEExtractor validates critical configuration fields at initialization:
+
+```typescript
+// ❌ Missing API key
+const extractor = new PRIMEExtractor({
+  provider: 'openai',
+  apiKey: '', // Invalid
+  maxTokens: 4000
+}, costTracker);
+// Throws: ConfigValidationError: "PRIME apiKey is required. 
+//          Provide via config.apiKey or PRIME_API_KEY env var"
+
+// ❌ Invalid provider
+const extractor = new PRIMEExtractor({
+  provider: 'invalid-provider',
+  apiKey: 'sk-...'
+}, costTracker);
+// Throws: ConfigValidationError: "Invalid provider 'invalid-provider'. 
+//          Must be one of: openai, anthropic, azure, bedrock"
+
+// ✅ Valid configuration
+const extractor = new PRIMEExtractor({
+  provider: 'openai',
+  apiKey: process.env.OPENAI_API_KEY,
+  maxTokens: 4000,
+  modelTiers: {
+    fast: 'gpt-4o-mini',
+    balanced: 'gpt-4o-mini', 
+    accurate: 'gpt-4o'
+  }
+}, costTracker);
+```
+
+### Environment Variable Support
+
+Configuration supports environment variable overrides for secure deployment:
+
+```typescript
+// Environment variables (recommended for production)
+PRIME_API_KEY=sk-...
+PRIME_PROVIDER=openai
+PRIME_DEFAULT_TIER=balanced
+PRIME_MAX_TOKENS=4000
+
+// Automatic detection in PRIMEExtractor
+const extractor = new PRIMEExtractor({
+  // Minimal config - env vars provide the rest
+  provider: 'openai', // Can be overridden by PRIME_PROVIDER
+  apiKey: 'fallback-key' // PRIME_API_KEY takes precedence
+}, costTracker);
+```
+
+## Timestamp Handling
+
+The memory system provides precise timestamp handling for temporal accuracy and AI SDK integration.
+
+### Message Timestamp Preservation
+
+Memory extraction preserves original message timestamps from multiple sources:
+
+```typescript
+// AI SDK integration with automatic timestamp detection
+const messageTime = message.createdAt || message.timestamp || Date.now();
+
+// Stored memories maintain temporal accuracy
+const memory = {
+  id: 'memory_123',
+  content: 'User prefers morning meetings',
+  createdAt: messageTime,        // Original message timestamp
+  lastAccessedAt: messageTime,   // When first created
+  updatedAt: Date.now(),         // When memory was processed
+  
+  metadata: {
+    originalMessageTime: messageTime,    // Backup timestamp reference
+    extractionTime: Date.now(),          // When extraction occurred
+    originalConversationDate: '2025-01-15T10:30:00Z' // Display context
+  }
+};
+```
+
+### Conversation Context Preservation
+
+PRIMEOrchestrator maintains conversation-level temporal context:
+
+```typescript
+// Automatic conversation date extraction for display context
+const conversationContext = {
+  originalConversationDate: '2025-01-15T10:30:00Z' // From first message
+};
+
+// Applied to all memories in the conversation
+const memories = await orchestrator.processMessages(userId, agentId, messages);
+// Each memory includes originalConversationDate in metadata
+```
+
+### Temporal Metadata Structure
+
+```typescript
+interface TemporalMetadata {
+  originalConversationDate?: string;        // ISO string for conversation context
+  originalMessageTime?: number;             // Unix timestamp from source
+  extractionTime?: number;                  // When PRIME processed the message
+}
+
+// Usage in memory retrieval
+const memories = await memoryManager.recall(userId, query);
+memories.forEach(memory => {
+  console.log('Original message:', new Date(memory.createdAt));
+  console.log('Extraction time:', new Date(memory.metadata.extractionTime));
+  console.log('Conversation date:', memory.metadata.originalConversationDate);
+});
+```
 
 ## Configuration Examples
 
@@ -468,7 +615,6 @@ const memory = await createMemorySystem({
   }
 });
 ```
-
 
 This system is under active development. Key areas for contribution include storage adapter optimization, memory connection algorithms, cost optimization strategies, performance benchmarking, and security enhancements.
 

@@ -517,8 +517,8 @@ export function validateRecallQuery(query: RecallQuery): boolean {
   return (
     query.agentId?.length > 0 &&
     query.query?.length > 0 &&
-    (query.limit || 0) <= 1000 &&
-    (query.minRelevance || 0) >= 0 &&
-    (query.minRelevance || 1) <= 1
+    (query.limit ?? 10) <= 1000 &&
+    (query.minRelevance ?? 0) >= 0 &&
+    (query.minRelevance ?? 0) <= 1
   );
 }

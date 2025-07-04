@@ -170,7 +170,7 @@ export class RecallService {
     const filteredMemories = enhancedMemories.filter(
       (memory) =>
         memory.relevance >=
-        (query.minRelevance || this.config.minRelevanceThreshold)
+        (query.minRelevance ?? this.config.minRelevanceThreshold)
     );
 
     // Apply limit

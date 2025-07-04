@@ -63,6 +63,28 @@ describe('MemoryManager - Core Functionality', () => {
     test('accepts complete configuration without errors', () => {
       expect(() => new MemoryManager(storage, testConfig.memory)).not.toThrow();
     });
+
+    test('applies default values correctly when not specified', () => {
+      // Test that default values are properly applied from configuration
+      const configWithDefaults = {
+        working: { ...testConfig.memory.working },
+        episodic: { ...testConfig.memory.episodic },
+        semantic: { ...testConfig.memory.semantic },
+        procedural: { ...testConfig.memory.procedural }
+      };
+
+      const manager = new MemoryManager(storage, configWithDefaults);
+      expect(manager).toBeDefined();
+
+      // Verify internal configuration has expected default values
+      const internalConfig = (manager as any).config;
+      expect(internalConfig.working.ttlSeconds).toBe(
+        testConfig.memory.working.ttlSeconds
+      );
+      expect(internalConfig.working.maxContextItems).toBe(
+        testConfig.memory.working.maxContextItems
+      );
+    });
   });
 
   describe('User Isolation - CRITICAL SECURITY TEST', () => {

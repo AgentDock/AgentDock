@@ -11,6 +11,7 @@ import { EventEmitter } from 'events';
 import { openai } from '@ai-sdk/openai';
 import { z } from 'zod';
 
+import { createError, ErrorCode } from '../../../errors/index';
 import {
   createEmbedding,
   getDefaultEmbeddingModel,
@@ -395,7 +396,15 @@ export class MemoryConnectionManager {
     newMemory: Memory
   ): Promise<MemoryConnection[]> {
     if (!userId?.trim()) {
-      throw new Error('userId is required for connection discovery operations');
+      throw createError(
+        'storage',
+        'userId is required for connection discovery operations',
+        ErrorCode.VALIDATION_ERROR,
+        {
+          operation: 'discoverConnections',
+          timestamp: new Date().toISOString()
+        }
+      );
     }
 
     try {
@@ -418,7 +427,13 @@ export class MemoryConnectionManager {
         agentId,
         limit
       );
-      const connections: MemoryConnection[] = [];
+
+      // OPTIMIZATION: Pre-calculate all similarities and sort before expensive LLM calls
+      const candidates: Array<{
+        memory: Memory;
+        similarity: number;
+        embedding: number[];
+      }> = [];
 
       // Generate embedding for new memory (always done - base layer)
       const newEmbedding = await this.generateEmbedding(newMemory.content);
@@ -435,27 +450,45 @@ export class MemoryConnectionManager {
           existingEmbedding
         );
 
-        if (similarity < this.config.embedding.similarityThreshold) {
-          continue; // Skip if below base threshold
+        if (similarity >= this.config.embedding.similarityThreshold) {
+          candidates.push({
+            memory: existingMemory,
+            similarity,
+            embedding: existingEmbedding
+          });
         }
+      }
 
+      // CRITICAL OPTIMIZATION: Sort by similarity and limit BEFORE expensive operations
+      const maxLLMCalls = this.config.costControl.maxLLMCallsPerBatch || 10;
+      const topCandidates = candidates
+        .sort((a, b) => b.similarity - a.similarity)
+        .slice(0, maxLLMCalls);
+
+      // Now process only the top candidates with expensive operations
+      const connections: MemoryConnection[] = [];
+
+      for (const candidate of topCandidates) {
         // Level 2: Progressive enhancement to determine connection type
         const connectionAnalysis = await this.analyzeConnectionType(
           newMemory,
-          existingMemory,
-          similarity
+          candidate.memory,
+          candidate.similarity
         );
 
         if (
           connectionAnalysis.connectionType !== 'similar' ||
-          similarity > this.config.embedding.similarityThreshold
+          candidate.similarity > this.config.embedding.similarityThreshold
         ) {
           connections.push({
             id: generateId(),
             sourceMemoryId: newMemory.id,
-            targetMemoryId: existingMemory.id,
+            targetMemoryId: candidate.memory.id,
             connectionType: connectionAnalysis.connectionType,
-            strength: Math.max(similarity, connectionAnalysis.confidence),
+            strength: Math.max(
+              candidate.similarity,
+              connectionAnalysis.confidence
+            ),
             reason:
               connectionAnalysis.reasoning || 'Similarity-based connection',
             createdAt: Date.now(),
@@ -466,36 +499,35 @@ export class MemoryConnectionManager {
                 | 'small-llm'
                 | 'hybrid',
               confidence: connectionAnalysis.confidence,
-              algorithm: 'progressive_enhancement',
-              embeddingSimilarity: similarity,
+              algorithm: 'progressive_enhancement_optimized',
+              embeddingSimilarity: candidate.similarity,
               llmUsed:
                 this.config.connectionDetection.llmEnhancement?.enabled &&
-                similarity < 0.9
+                candidate.similarity < 0.9,
+              candidatesProcessed: topCandidates.length,
+              totalCandidatesFound: candidates.length
             }
           });
         }
       }
 
-      // Limit connections and sort by strength
-      const limitedConnections = connections
-        .sort((a, b) => b.strength - a.strength)
-        .slice(0, this.config.costControl.maxLLMCallsPerBatch || 10);
-
       logger.info(
         LogCategory.STORAGE,
         'MemoryConnectionManager',
-        'Progressive enhancement completed',
+        'Optimized progressive enhancement completed',
         {
           userId: userId.substring(0, 8),
           agentId: agentId.substring(0, 8),
           memoryId: newMemory.id,
-          totalFound: connections.length,
-          kept: limitedConnections.length,
+          totalCandidates: candidates.length,
+          processedCandidates: topCandidates.length,
+          connectionsFound: connections.length,
+          costOptimization: `${Math.max(0, candidates.length - topCandidates.length)} LLM calls saved`,
           method: this.config.connectionDetection.method
         }
       );
 
-      return limitedConnections;
+      return connections;
     } catch (error) {
       logger.error(
         LogCategory.STORAGE,
@@ -577,8 +609,16 @@ export class MemoryConnectionManager {
 
       // Semantic-only approach - no legacy support
       if (!rule.semanticDescription) {
-        throw new Error(
-          `Connection rule '${rule.name}' missing semantic description. Regex patterns not supported.`
+        throw createError(
+          'config',
+          `Connection rule '${rule.name}' missing semantic description. Regex patterns not supported.`,
+          ErrorCode.CONFIG_VALIDATION,
+          {
+            operation: 'applyUserRules',
+            ruleId: rule.id,
+            ruleName: rule.name,
+            timestamp: new Date().toISOString()
+          }
         );
       }
 
@@ -827,7 +867,15 @@ Provide confidence score (0-1) and brief reasoning.`
     connections: MemoryConnection[]
   ): Promise<void> {
     if (!userId?.trim()) {
-      throw new Error('userId is required for connection creation operations');
+      throw createError(
+        'storage',
+        'userId is required for connection creation operations',
+        ErrorCode.VALIDATION_ERROR,
+        {
+          operation: 'createConnections',
+          timestamp: new Date().toISOString()
+        }
+      );
     }
 
     if (connections.length === 0) return;
@@ -930,7 +978,7 @@ Provide confidence score (0-1) and brief reasoning.`
   }
 
   /**
-   * Get recent memories for comparison
+   * Get recent memories for comparison with progressive fallback
    */
   private async getRecentMemories(
     userId: string,
@@ -938,33 +986,202 @@ Provide confidence score (0-1) and brief reasoning.`
     limit: number
   ): Promise<Memory[]> {
     if (!userId?.trim()) {
-      throw new Error('userId is required for memory retrieval operations');
+      throw createError(
+        'storage',
+        'userId is required for memory retrieval operations',
+        ErrorCode.VALIDATION_ERROR,
+        {
+          operation: 'getRecentMemories',
+          timestamp: new Date().toISOString()
+        }
+      );
     }
 
-    // Use storage memory operations if available
+    const startTime = Date.now();
+    let lastError: Error | null = null;
+
+    // Method 1: Primary recall with metadata (most complete)
     if (this.storage.memory?.recall) {
       try {
+        logger.debug(
+          LogCategory.STORAGE,
+          'MemoryConnectionManager',
+          'Attempting primary recall method',
+          {
+            userId: userId.substring(0, 8),
+            agentId: agentId.substring(0, 8),
+            limit
+          }
+        );
+
         const memories = await this.storage.memory.recall(userId, agentId, '', {
           limit,
           includeMetadata: true
         });
+
+        logger.debug(
+          LogCategory.STORAGE,
+          'MemoryConnectionManager',
+          'Primary recall succeeded',
+          {
+            userId: userId.substring(0, 8),
+            agentId: agentId.substring(0, 8),
+            memoriesFound: memories.length,
+            responseTimeMs: Date.now() - startTime
+          }
+        );
+
         return memories;
       } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
         logger.warn(
           LogCategory.STORAGE,
           'MemoryConnectionManager',
-          'Memory recall failed, returning empty array',
+          'Primary recall failed, attempting fallback',
           {
-            error: error instanceof Error ? error.message : String(error),
+            error: lastError.message,
             userId: userId.substring(0, 8),
-            agentId: agentId.substring(0, 8)
+            agentId: agentId.substring(0, 8),
+            method: 'recall'
           }
         );
-        return [];
       }
     }
 
-    // Fallback if storage doesn't support recall
+    // Method 2: Hybrid search fallback (if available)
+    if (this.storage.memory?.hybridSearch) {
+      try {
+        logger.debug(
+          LogCategory.STORAGE,
+          'MemoryConnectionManager',
+          'Attempting hybrid search fallback',
+          {
+            userId: userId.substring(0, 8),
+            agentId: agentId.substring(0, 8),
+            limit
+          }
+        );
+
+        // Generate a general embedding for recent memories
+        const recentQuery = 'recent user activity and interactions';
+        const queryEmbedding = await this.generateEmbedding(recentQuery);
+
+        const memories = await this.storage.memory.hybridSearch(
+          userId,
+          agentId,
+          recentQuery,
+          queryEmbedding,
+          {
+            limit,
+            includeMetadata: true
+          }
+        );
+
+        logger.debug(
+          LogCategory.STORAGE,
+          'MemoryConnectionManager',
+          'Hybrid search fallback succeeded',
+          {
+            userId: userId.substring(0, 8),
+            agentId: agentId.substring(0, 8),
+            memoriesFound: memories.length,
+            responseTimeMs: Date.now() - startTime
+          }
+        );
+
+        return memories;
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+        logger.warn(
+          LogCategory.STORAGE,
+          'MemoryConnectionManager',
+          'Hybrid search fallback failed, attempting vector search',
+          {
+            error: lastError.message,
+            userId: userId.substring(0, 8),
+            agentId: agentId.substring(0, 8),
+            method: 'hybridSearch'
+          }
+        );
+      }
+    }
+
+    // Method 3: Vector search fallback (if available)
+    if (this.storage.memory?.vectorSearch) {
+      try {
+        logger.debug(
+          LogCategory.STORAGE,
+          'MemoryConnectionManager',
+          'Attempting vector search fallback',
+          {
+            userId: userId.substring(0, 8),
+            agentId: agentId.substring(0, 8),
+            limit
+          }
+        );
+
+        // Generate a general embedding for recent memories
+        const recentQuery = 'user activity and system interactions';
+        const queryEmbedding = await this.generateEmbedding(recentQuery);
+
+        const memories = await this.storage.memory.vectorSearch(
+          userId,
+          agentId,
+          queryEmbedding,
+          {
+            limit,
+            includeMetadata: true
+          }
+        );
+
+        logger.debug(
+          LogCategory.STORAGE,
+          'MemoryConnectionManager',
+          'Vector search fallback succeeded',
+          {
+            userId: userId.substring(0, 8),
+            agentId: agentId.substring(0, 8),
+            memoriesFound: memories.length,
+            responseTimeMs: Date.now() - startTime
+          }
+        );
+
+        return memories;
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+        logger.warn(
+          LogCategory.STORAGE,
+          'MemoryConnectionManager',
+          'Vector search fallback failed, returning empty array',
+          {
+            error: lastError.message,
+            userId: userId.substring(0, 8),
+            agentId: agentId.substring(0, 8),
+            method: 'vectorSearch'
+          }
+        );
+      }
+    }
+
+    // Final fallback: Log comprehensive failure information
+    logger.error(
+      LogCategory.STORAGE,
+      'MemoryConnectionManager',
+      'All memory retrieval methods failed',
+      {
+        userId: userId.substring(0, 8),
+        agentId: agentId.substring(0, 8),
+        totalResponseTimeMs: Date.now() - startTime,
+        lastError: lastError?.message || 'Unknown error',
+        availableMethods: {
+          recall: !!this.storage.memory?.recall,
+          hybridSearch: !!this.storage.memory?.hybridSearch,
+          vectorSearch: !!this.storage.memory?.vectorSearch
+        }
+      }
+    );
+
+    // Return empty array as graceful degradation
     return [];
   }
 
@@ -1044,7 +1261,15 @@ Provide confidence score (0-1) and brief reasoning.`
     memoryId: string
   ): Promise<Memory | null> {
     if (!userId?.trim()) {
-      throw new Error('userId is required for memory retrieval operations');
+      throw createError(
+        'storage',
+        'userId is required for memory retrieval operations',
+        ErrorCode.VALIDATION_ERROR,
+        {
+          operation: 'getMemoryById',
+          timestamp: new Date().toISOString()
+        }
+      );
     }
 
     if (this.storage.memory?.getById) {

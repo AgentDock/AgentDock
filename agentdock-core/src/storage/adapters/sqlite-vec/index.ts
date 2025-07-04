@@ -72,7 +72,16 @@ export class SQLiteVecAdapter
   private isVectorInitialized = false;
   private vectorConnectionManager: SQLiteConnectionManager;
   private vectorConnection?: SQLiteConnection;
-  public memory?: MemoryOperations;
+
+  // Override parent memory property with vector-enabled operations
+  declare memory?: SQLiteVecMemoryOperations;
+
+  protected async initializeMemoryOperations(): Promise<void> {
+    if (!this.vectorConnection) return;
+
+    // Use vector-enhanced memory operations
+    this.memory = new SQLiteVecMemoryOperations(this.vectorConnection.db);
+  }
 
   constructor(options: SQLiteVecAdapterOptions = {}) {
     super(options);

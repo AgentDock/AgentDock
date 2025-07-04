@@ -35,7 +35,7 @@ export class SQLiteAdapter extends BaseStorageAdapter {
   private batchOps!: BatchOperations;
 
   // Memory operations (optional)
-  memory?: IMemoryOperations;
+  memory?: SqliteMemoryOperations;
 
   constructor(options: SQLiteAdapterOptions = {}) {
     super();
@@ -62,7 +62,7 @@ export class SQLiteAdapter extends BaseStorageAdapter {
   /**
    * Initialize memory operations - auto-creates tables for SQLite
    */
-  private async initializeMemoryOperations(): Promise<void> {
+  protected async initializeMemoryOperations(): Promise<void> {
     if (!this.connection) return;
 
     try {

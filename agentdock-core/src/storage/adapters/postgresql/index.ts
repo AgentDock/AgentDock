@@ -33,7 +33,7 @@ export class PostgreSQLAdapter extends BaseStorageAdapter {
   private batchOps!: BatchOperations;
 
   // Memory operations (optional)
-  memory?: IMemoryOperations;
+  memory?: MemoryOperations;
 
   private initPromise?: Promise<void>;
 
@@ -75,7 +75,7 @@ export class PostgreSQLAdapter extends BaseStorageAdapter {
   /**
    * Initialize memory operations if memory tables exist
    */
-  private async initializeMemoryOperations(): Promise<void> {
+  protected async initializeMemoryOperations(): Promise<void> {
     if (!this.connection) return;
 
     try {

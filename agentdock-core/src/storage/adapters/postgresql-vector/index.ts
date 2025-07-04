@@ -50,16 +50,8 @@ export { VectorIndexType };
 export { PostgreSQLVectorMemoryOperations } from './operations/memory';
 
 /**
- * PostgreSQL storage adapter with vector similarity search capabilities
- *
- * Features:
- * - pgvector extension for vector operations
- * - Multiple distance metrics (Euclidean, Cosine, Inner Product)
- * - IVF Flat and HNSW indexing
- * - Metadata filtering
- * - Hybrid search (vector + metadata)
- * - Vector-enabled memory operations with hybrid text + vector search
- * - All standard PostgreSQL adapter features
+ * PostgreSQL + Vector storage adapter
+ * Extends the base PostgreSQL adapter with vector similarity search capabilities.
  */
 export class PostgreSQLVectorAdapter
   extends PostgreSQLAdapter
@@ -69,7 +61,18 @@ export class PostgreSQLVectorAdapter
   private isVectorInitialized = false;
 
   // Override parent memory property with vector-enabled operations
-  memory?: PostgreSQLVectorMemoryOperations;
+  declare memory?: PostgreSQLVectorMemoryOperations;
+
+  protected async initializeMemoryOperations(): Promise<void> {
+    const connection = await this.getConnection();
+    if (!connection) return;
+
+    // Use vector-enhanced memory operations
+    this.memory = new PostgreSQLVectorMemoryOperations(
+      connection.pool,
+      connection.schema
+    );
+  }
 
   constructor(options: PostgreSQLVectorAdapterOptions) {
     super(options);

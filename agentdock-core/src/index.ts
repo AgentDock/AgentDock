@@ -307,7 +307,6 @@ export type {
 export {
   MemoryManager,
   RecallService,
-  ConversationProcessor,
   // PRIME extraction system
   PRIMEExtractor,
   PRIMEOrchestrator,

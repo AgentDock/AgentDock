@@ -7,7 +7,7 @@
 // Core Services
 export { EncryptionService } from './EncryptionService';
 export { RecallService } from './RecallService';
-export { ConversationProcessor } from './ConversationProcessor';
+// ConversationProcessor removed in favor of PRIME extraction system
 
 // Service Types
 export type {
@@ -23,9 +23,5 @@ export type {
   RecallMetrics
 } from './RecallServiceTypes';
 
-export type {
-  ConversationMessage as ServiceConversationMessage,
-  ExtractionConfig,
-  ExtractionResult,
-  ProcessingResult as ServiceProcessingResult
-} from './ConversationProcessor';
+// ConversationProcessor types removed with the service
+// Use PRIMEExtractor and PRIMEOrchestrator types instead

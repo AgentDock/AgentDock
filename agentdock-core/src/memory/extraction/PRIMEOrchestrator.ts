@@ -24,6 +24,11 @@ import { CostTracker } from '../tracking/CostTracker';
 import { Memory, MemoryMessage } from '../types/common';
 import { PRIMEConfig, PRIMEExtractor, PRIMERule } from './PRIMEExtractor';
 
+// Temporal metadata interface
+export interface TemporalMetadata {
+  originalConversationDate?: string;
+}
+
 // PRIMEOrchestrator-specific types
 export interface PRIMEOrchestratorConfig {
   primeConfig: PRIMEConfig;
@@ -31,6 +36,7 @@ export interface PRIMEOrchestratorConfig {
   maxRetries?: number; // Default: 3
   retryDelay?: number; // Default: 1000ms
   enableMetrics?: boolean; // Default: true
+  enableTemporalContext?: boolean; // Default: true - Adds conversation date for display context
 }
 
 export interface PRIMEExtractionResult {
@@ -57,8 +63,8 @@ export interface PRIMEProcessingMetrics {
 /**
  * PRIMEOrchestrator - Simple memory extraction orchestration
  *
- * Provides direct processing through PRIMEExtractor without complex
- * buffering, deduplication, or multi-tier orchestration logic.
+ * Provides direct processing through PRIMEExtractor with individual
+ * message timestamp preservation and conversation date context.
  */
 export class PRIMEOrchestrator {
   private extractor: PRIMEExtractor;
@@ -89,10 +95,10 @@ export class PRIMEOrchestrator {
   /**
    * Process messages through PRIME extraction system
    *
-   * Direct processing without complex orchestration:
+   * Each message is processed individually with preserved timestamps:
    * 1. Load user rules
    * 2. Process each message through PRIMEExtractor
-   * 3. Store memories individually
+   * 3. Store memories with original message timestamps
    * 4. Track metrics
    * 5. Return results
    */
@@ -202,7 +208,7 @@ export class PRIMEOrchestrator {
 
   /**
    * Process a batch of messages
-   * Direct processing without complex orchestration
+   * Direct processing with conversation date context for display
    */
   private async processBatch(
     userId: string,
@@ -212,6 +218,12 @@ export class PRIMEOrchestrator {
     metrics: PRIMEProcessingMetrics
   ): Promise<Memory[]> {
     const batchMemories: Memory[] = [];
+
+    // Extract conversation date for display context if needed
+    const conversationContext =
+      this.config.enableTemporalContext && messages.length > 0
+        ? this.extractConversationDate(messages)
+        : {};
 
     for (const message of messages) {
       try {
@@ -224,8 +236,20 @@ export class PRIMEOrchestrator {
             this.config.primeConfig.defaultImportanceThreshold
         });
 
+        // Add conversation date context for display purposes if available
+        const enhancedMemories = memories.map((memory) => ({
+          ...memory,
+          metadata: {
+            ...memory.metadata,
+            ...(conversationContext.originalConversationDate && {
+              originalConversationDate:
+                conversationContext.originalConversationDate
+            })
+          }
+        }));
+
         // Store each memory individually
-        for (const memory of memories) {
+        for (const memory of enhancedMemories) {
           await this.storeMemory(userId, agentId, memory);
           batchMemories.push(memory);
         }
@@ -342,6 +366,32 @@ export class PRIMEOrchestrator {
   }
 
   /**
+   * Extract conversation date for display context
+   */
+  private extractConversationDate(messages: MemoryMessage[]): TemporalMetadata {
+    if (!messages || messages.length === 0) {
+      return {};
+    }
+
+    // Get the earliest message timestamp for conversation date context
+    const firstMessage = messages[0];
+    if (!firstMessage?.timestamp) {
+      return {};
+    }
+
+    const conversationTime =
+      firstMessage.timestamp instanceof Date
+        ? firstMessage.timestamp.getTime()
+        : typeof firstMessage.timestamp === 'number'
+          ? firstMessage.timestamp
+          : Date.now();
+
+    return {
+      originalConversationDate: new Date(conversationTime).toISOString()
+    };
+  }
+
+  /**
    * Validate configuration with sensible defaults
    */
   private validateAndSetDefaults(
@@ -352,7 +402,8 @@ export class PRIMEOrchestrator {
       batchSize: config.batchSize || 10,
       maxRetries: config.maxRetries || 3,
       retryDelay: config.retryDelay || 1000,
-      enableMetrics: config.enableMetrics ?? true
+      enableMetrics: config.enableMetrics ?? true,
+      enableTemporalContext: config.enableTemporalContext ?? true
     };
   }
 

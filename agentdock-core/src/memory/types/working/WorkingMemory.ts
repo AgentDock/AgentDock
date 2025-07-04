@@ -15,6 +15,7 @@ import {
   WorkingMemoryData,
   WorkingMemoryStats
 } from './WorkingMemoryTypes';
+import { estimateTokens } from './WorkingMemoryUtils';
 
 export class WorkingMemory extends BaseMemoryType {
   constructor(
@@ -62,7 +63,7 @@ export class WorkingMemory extends BaseMemoryType {
 
       // Required fields
       sessionId: options?.sessionId || `session_${Date.now()}`,
-      tokenCount: 0, // TODO: Add proper token counting service
+      tokenCount: estimateTokens(content),
 
       // Type-specific metadata
       metadata: {
@@ -145,14 +146,53 @@ export class WorkingMemory extends BaseMemoryType {
     }
 
     const stats = await this.storage.memory!.getStats(userId, agentId);
+
+    // Get all working memories to calculate token statistics
+    const workingMemories = await this.storage.memory!.recall(
+      userId,
+      agentId || '',
+      '',
+      {
+        type: MemoryType.WORKING,
+        limit: 1000 // Get all working memories for accurate stats
+      }
+    );
+
+    // Calculate real token statistics
+    const totalTokens = workingMemories.reduce(
+      (sum, memory) => sum + (memory.tokenCount || 0),
+      0
+    );
+    const avgTokensPerMemory =
+      workingMemories.length > 0 ? totalTokens / workingMemories.length : 0;
+
+    // Calculate expired memories
+    const now = Date.now();
+    const expiredMemories = workingMemories.filter((memory) => {
+      const expiresAt = memory.metadata?.expiresAt;
+      return expiresAt && expiresAt < now;
+    }).length;
+
+    // Calculate encrypted memories
+    const encryptedMemories = workingMemories.filter(
+      (memory) => memory.metadata?.encrypted === true
+    ).length;
+
+    // Find oldest and newest memories
+    const timestamps = workingMemories.map((m) => m.createdAt).filter(Boolean);
+    const oldestMemory =
+      timestamps.length > 0 ? Math.min(...timestamps) : Date.now();
+    const newestMemory =
+      timestamps.length > 0 ? Math.max(...timestamps) : Date.now();
+
     return {
       totalMemories: stats.byType?.working || 0,
-      totalTokens: 0, // Would need token counting in storage
-      avgTokensPerMemory: 0,
-      expiredMemories: 0,
-      encryptedMemories: 0,
-      oldestMemory: Date.now(),
-      newestMemory: Date.now()
+      totalTokens,
+      avgTokensPerMemory,
+      expiredMemories,
+      encryptedMemories,
+      oldestMemory,
+      newestMemory
     };
   }
 

@@ -17,6 +17,11 @@ import {
   StoreSemanticOptions
 } from './SemanticMemoryTypes';
 
+// Add token estimation utility (same as WorkingMemory)
+function estimateTokens(text: string): number {
+  return Math.ceil(text.length / 4);
+}
+
 export class SemanticMemory extends BaseMemoryType {
   constructor(
     storage: StorageProvider,
@@ -66,7 +71,7 @@ export class SemanticMemory extends BaseMemoryType {
 
       // Required fields
       sessionId: `session_${Date.now()}`,
-      tokenCount: 0, // TODO: Add proper token counting
+      tokenCount: estimateTokens(content),
       keywords: options?.keywords || [],
 
       // Type-specific

@@ -311,7 +311,7 @@ describe('EpisodicMemory - Actual Implementation', () => {
         updatedAt: expect.any(Number),
         lastAccessedAt: expect.any(Number),
         sessionId: expect.stringMatching(/^session_\d+$/),
-        tokenCount: 0, // TODO: implement token counting
+        tokenCount: 8, // Calculated: Math.ceil("Test data".length / 4)
         metadata: expect.objectContaining({
           tags,
           expiresAt: expect.any(Number)

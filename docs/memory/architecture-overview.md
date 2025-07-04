@@ -2,6 +2,8 @@
 
 > See also: [Memory System README](./README.md) | [Memory Connections](./memory-connections.md) | [Graph Architecture](./graph-architecture.md)
 
+**🚀 For practical integration**: See **[Implementation Guide](./implementation-guide.md)** for when, how, and where to use each approach in your application.
+
 ## Core Components
 
 ```

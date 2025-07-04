@@ -230,6 +230,8 @@ export class MemoryManager {
    * @param agentId - The agent storing this memory
    * @param content - Memory content to store
    * @param type - Memory type: 'working' | 'episodic' | 'semantic' | 'procedural'
+   * @param options - Optional storage configuration
+   * @param options.timestamp - Custom timestamp for historical memory injection
    *
    * @returns Promise<string> - The generated memory ID
    *
@@ -248,23 +250,14 @@ export class MemoryManager {
    * );
    * ```
    *
-   * @example Store episodic memory (default type)
+   * @example Store historical memory with custom timestamp
    * ```typescript
    * const memoryId = await manager.store(
    *   'user-123',
    *   'agent-456',
-   *   'User completed onboarding flow'
-   * );
-   * ```
-   *
-   * @example Store working memory with vector embedding
-   * ```typescript
-   * // If embedding service is configured, vector embedding is automatic
-   * const memoryId = await manager.store(
-   *   'user-123',
-   *   'agent-456',
-   *   'Current task: analyzing user feedback',
-   *   'working'
+   *   'User completed onboarding 10 years ago',
+   *   'episodic',
+   *   { timestamp: Date.now() - (10 * 365 * 24 * 60 * 60 * 1000) }
    * );
    * ```
    */
@@ -272,7 +265,8 @@ export class MemoryManager {
     userId: string,
     agentId: string,
     content: string,
-    type: MemoryType = MemoryType.SEMANTIC
+    type: MemoryType = MemoryType.SEMANTIC,
+    options?: { timestamp?: number }
   ): Promise<string> {
     if (!userId || typeof userId !== 'string' || !userId.trim()) {
       throw new Error(
@@ -307,7 +301,8 @@ export class MemoryManager {
           userId,
           agentId,
           content,
-          type
+          type,
+          options?.timestamp
         );
 
         // Store with embedding
@@ -330,7 +325,8 @@ export class MemoryManager {
           userId,
           agentId,
           content,
-          type
+          type,
+          options?.timestamp
         );
       }
     } else {
@@ -339,7 +335,8 @@ export class MemoryManager {
         userId,
         agentId,
         content,
-        type
+        type,
+        options?.timestamp
       );
     }
 
@@ -353,12 +350,13 @@ export class MemoryManager {
     userId: string,
     agentId: string,
     content: string,
-    type: MemoryType
+    type: MemoryType,
+    timestamp?: number
   ): Promise<any> {
     // Create basic memory data structure
     const now = Date.now();
     return {
-      id: `mem_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      id: `mem_${timestamp || now}_${Math.random().toString(36).substr(2, 9)}`,
       userId,
       agentId,
       type,
@@ -366,7 +364,7 @@ export class MemoryManager {
       importance: 0.5, // Default importance
       resonance: 0.5, // Default resonance
       accessCount: 0,
-      createdAt: now,
+      createdAt: timestamp || now,
       updatedAt: now,
       lastAccessedAt: now,
       metadata: {
@@ -377,13 +375,26 @@ export class MemoryManager {
 
   /**
    * Delegate storage to appropriate memory type
+   * Note: Individual memory types don't yet support timestamp injection
+   * Historical timestamps are preserved when using vector storage
    */
   private async delegateToMemoryType(
     userId: string,
     agentId: string,
     content: string,
-    type: MemoryType
+    type: MemoryType,
+    timestamp?: number
   ): Promise<string> {
+    // Log if timestamp injection attempted with traditional storage
+    if (timestamp && timestamp !== Date.now()) {
+      logger.info(
+        LogCategory.STORAGE,
+        'MemoryManager',
+        'Historical timestamp injection requires vector storage. Using current time.',
+        { requestedTimestamp: new Date(timestamp).toISOString() }
+      );
+    }
+
     switch (type) {
       case 'working':
         return this.working.store(userId, agentId, content);

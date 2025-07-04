@@ -225,9 +225,20 @@ const memory = await createMemorySystem({
   databaseUrl: process.env.DATABASE_URL
 });
 
-// Use the memory system
-await memory.store(userId, "User prefers email notifications");
-const memories = await memory.recall(userId, "notification preferences");
+// Three integration approaches:
+// 1. Direct storage: memory.store(userId, content, type)
+// 2. Message processing: memory.addMessage(userId, message)  
+// 3. Batch conversation analysis: Use PRIME extraction system
+import { PRIMEExtractor, PRIMEOrchestrator } from 'agentdock-core';
+
+// Historical memory injection with timestamps
+const memoryId = await memoryManager.store(
+  'user-123',
+  'agent-456',
+  'User completed onboarding last year',
+  'episodic',
+  { timestamp: Date.now() - (365 * 24 * 60 * 60 * 1000) }
+);
 ```
 
 ### **Storage Options**
@@ -241,7 +252,7 @@ const memories = await memory.recall(userId, "notification preferences");
 - **Performance**: High-volume customer support  
 - **Research**: Enhanced connection discovery
 
-See [Architecture Overview](./architecture-overview.md) for detailed configuration examples and deployment guides.
+See [Implementation Guide](./implementation-guide.md) for complete integration examples and [Architecture Overview](./architecture-overview.md) for detailed configuration examples and deployment guides.
 
 ## Memory Architecture Details
 
@@ -339,6 +350,7 @@ This is an open-source framework. Users are responsible for:
 
 ## Documentation Navigation
 
+- **[Implementation Guide](./implementation-guide.md)** - **START HERE** - When, how, and where to integrate memory in your application
 - **[Architecture Overview](./architecture-overview.md)** - Complete technical reference and configuration examples
 - **[Conversational RAG](./retrieval-augmented-generation.md)** - RAG implementation and hybrid retrieval strategy  
 - **[Memory Connections](./memory-connections.md)** - How memories connect and discover relationships

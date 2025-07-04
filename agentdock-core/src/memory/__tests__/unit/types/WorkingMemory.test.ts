@@ -355,7 +355,7 @@ describe('WorkingMemory - Actual Implementation', () => {
         updatedAt: expect.any(Number),
         lastAccessedAt: expect.any(Number),
         sessionId,
-        tokenCount: 0,
+        tokenCount: 7, // Calculated: Math.ceil(content.length / 4)
         metadata: expect.objectContaining({
           contextWindow: 30,
           expiresAt: expect.any(Number)
@@ -404,7 +404,7 @@ describe('WorkingMemory - Actual Implementation', () => {
         importance: 0.8, // Default importance for working memory
         sessionId,
         contextWindow: 15,
-        tokenCount: 0,
+        tokenCount: 7, // Calculated: Math.ceil(content.length / 4)
         expiresAt: expect.any(Number),
         metadata: expect.any(Object)
       });

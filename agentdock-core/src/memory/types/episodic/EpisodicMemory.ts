@@ -18,6 +18,11 @@ import {
   StoreEpisodicOptions
 } from './EpisodicMemoryTypes';
 
+// Add token estimation utility (same as WorkingMemory)
+function estimateTokens(text: string): number {
+  return Math.ceil(text.length / 4);
+}
+
 export class EpisodicMemory extends BaseMemoryType {
   constructor(
     storage: StorageProvider,
@@ -62,7 +67,7 @@ export class EpisodicMemory extends BaseMemoryType {
 
       // Required fields
       sessionId: `session_${Date.now()}`,
-      tokenCount: 0, // TODO: Add proper token counting
+      tokenCount: estimateTokens(content),
 
       // Type-specific
       metadata: {

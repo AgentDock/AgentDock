@@ -18,12 +18,26 @@
  * ```
  */
 
+import { z } from 'zod';
+
 import { CoreLLM } from '../../llm/core-llm';
 import { createLLM } from '../../llm/create-llm';
 import { LLMConfig } from '../../llm/types';
 import { LogCategory, logger } from '../../logging';
 import { CostTracker } from '../tracking/CostTracker';
 import { Memory, MemoryMessage, MemoryType } from '../types/common';
+
+// PRIME extraction schema for generateObject validation
+const PRIMEExtractionSchema = z.object({
+  memories: z.array(
+    z.object({
+      content: z.string().min(1),
+      type: z.enum(['working', 'episodic', 'semantic', 'procedural']),
+      importance: z.number().min(0).max(1),
+      reasoning: z.string().optional()
+    })
+  )
+});
 
 // PRIME-specific types
 export interface PRIMEConfig {
@@ -74,6 +88,7 @@ export interface PRIMEExtractionContext {
   userRules: PRIMERule[];
   importanceThreshold?: number;
   tier?: 'fast' | 'balanced' | 'accurate'; // Allow override of auto-selection
+  message?: MemoryMessage;
 }
 
 export interface PRIMEExtractionMetrics {
@@ -128,9 +143,14 @@ export class PRIMEExtractor {
       // Step 2: Build optimized prompt with embedded rules
       const prompt = this.buildOptimizedPrompt(message, userRules, context);
 
-      // Step 3: Single extraction call
+      // Step 3: Single extraction call with message context for timestamp preservation
       const startTime = Date.now();
-      const memories = await this.extractWithSingleCall(prompt, tier, context);
+      const contextWithMessage = { ...context, message };
+      const memories = await this.extractWithSingleCall(
+        prompt,
+        tier,
+        contextWithMessage
+      );
       const processingTime = Date.now() - startTime;
 
       // Step 4: Track metrics
@@ -248,57 +268,47 @@ JSON: [{content, type, importance, reasoning}]`;
     const llm = createLLM(llmConfig);
 
     try {
-      const response = await llm.generateText({
+      const { object: result, usage } = await llm.generateObject({
+        schema: PRIMEExtractionSchema,
         messages: [{ role: 'user', content: prompt }],
         temperature: this.config.temperature
       });
 
-      // Parse JSON response from text and convert to Memory objects
-      const responseText = response.text;
-      let memoriesData: any[] = [];
+      const memoriesData = result.memories || [];
 
-      try {
-        const parsed = JSON.parse(responseText);
-        memoriesData = Array.isArray(parsed) ? parsed : parsed.memories || [];
-      } catch (parseError) {
-        logger.error(
-          LogCategory.STORAGE,
-          'PRIMEExtractor',
-          'Failed to parse LLM response as JSON',
-          {
-            error:
-              parseError instanceof Error
-                ? parseError.message
-                : 'Unknown error',
-            responseText: responseText.substring(0, 200)
+      return memoriesData.map((memory: any) => {
+        // Get message timestamp for temporal preservation
+        const messageTime =
+          context.message?.timestamp instanceof Date
+            ? context.message.timestamp.getTime()
+            : context.message?.timestamp || Date.now();
+
+        return {
+          id: this.generateMemoryId(),
+          userId: context.userId,
+          agentId: context.agentId,
+          content: memory.content,
+          type: memory.type as MemoryType,
+          importance: memory.importance,
+
+          // Required fields with proper timestamp preservation
+          resonance: 1.0,
+          accessCount: 0,
+          createdAt: messageTime,
+          updatedAt: Date.now(),
+          lastAccessedAt: messageTime,
+
+          // Optional metadata
+          metadata: {
+            extractionMethod: 'prime',
+            reasoning: memory.reasoning,
+            tier: tier,
+            tokenCount: this.estimateTokens(prompt),
+            originalMessageTime: messageTime,
+            extractionTime: Date.now()
           }
-        );
-        return [];
-      }
-
-      return memoriesData.map((memory: any) => ({
-        id: this.generateMemoryId(),
-        userId: context.userId,
-        agentId: context.agentId,
-        content: memory.content,
-        type: memory.type as MemoryType,
-        importance: memory.importance,
-
-        // Required fields
-        resonance: 1.0,
-        accessCount: 0,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-        lastAccessedAt: Date.now(),
-
-        // Optional metadata
-        metadata: {
-          extractionMethod: 'prime',
-          reasoning: memory.reasoning,
-          tier: tier,
-          tokenCount: this.estimateTokens(prompt)
-        }
-      }));
+        };
+      });
     } catch (error) {
       logger.error(
         LogCategory.STORAGE,
@@ -427,7 +437,8 @@ JSON: [{content, type, importance, reasoning}]`;
     const fallbackContext = {
       ...context,
       importanceThreshold: this.config.fallbackThreshold,
-      userRules: []
+      userRules: [],
+      message
     };
 
     try {

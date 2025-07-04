@@ -182,7 +182,7 @@ export async function createMemorySystem(
           id: message.id || Date.now().toString(),
           agentId: 'default',
           content: message.content,
-          timestamp: message.timestamp || Date.now(),
+          timestamp: message.createdAt || message.timestamp || Date.now(),
           metadata: {
             role: message.role || 'user'
           }

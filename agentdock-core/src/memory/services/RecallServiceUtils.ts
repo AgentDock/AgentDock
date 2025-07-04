@@ -515,6 +515,7 @@ function normalizeWeights(weights: {
  */
 export function validateRecallQuery(query: RecallQuery): boolean {
   return (
+    query.userId?.length > 0 &&
     query.agentId?.length > 0 &&
     query.query?.length > 0 &&
     (query.limit ?? 10) <= 1000 &&

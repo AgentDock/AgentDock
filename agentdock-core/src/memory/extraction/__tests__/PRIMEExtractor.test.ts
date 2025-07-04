@@ -83,7 +83,7 @@ describe('PRIMEExtractor', () => {
   });
 
   describe('prompt building', () => {
-    test('should build optimized prompt with rules', () => {
+    test('should build optimized prompt with rules', async () => {
       const message: MemoryMessage = {
         id: 'test-1',
         agentId: 'test-agent',
@@ -110,13 +110,11 @@ describe('PRIMEExtractor', () => {
       };
 
       // The actual extraction would call an LLM, so we can't test the full flow
-      // But we can test that the extractor accepts the correct inputs
-      expect(() => {
-        extractor.extract(message, context);
-      }).not.toThrow();
+      // But we can test that the extractor accepts the correct inputs and doesn't throw
+      await expect(extractor.extract(message, context)).resolves.toBeDefined();
     });
 
-    test('should handle empty rules', () => {
+    test('should handle empty rules', async () => {
       const message: MemoryMessage = {
         id: 'test-2',
         agentId: 'test-agent',
@@ -131,9 +129,7 @@ describe('PRIMEExtractor', () => {
         importanceThreshold: 0.7
       };
 
-      expect(() => {
-        extractor.extract(message, context);
-      }).not.toThrow();
+      await expect(extractor.extract(message, context)).resolves.toBeDefined();
     });
   });
 

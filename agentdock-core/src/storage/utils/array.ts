@@ -55,22 +55,25 @@ export async function parallelProcess<T, R>(
   concurrency: number,
   callback: (item: T) => Promise<R>
 ): Promise<R[]> {
+  if (concurrency <= 0) throw new Error('Concurrency must be greater than 0');
+  if (items.length === 0) return [];
+
   const results: R[] = new Array(items.length);
-  const executing: Promise<void>[] = [];
+  const executing = new Set<Promise<void>>();
 
   for (let i = 0; i < items.length; i++) {
-    const promise = callback(items[i]).then((result) => {
-      results[i] = result;
-    });
+    const promise = callback(items[i])
+      .then((result) => {
+        results[i] = result;
+      })
+      .finally(() => {
+        executing.delete(promise);
+      });
 
-    executing.push(promise);
+    executing.add(promise);
 
-    if (executing.length >= concurrency) {
+    if (executing.size >= concurrency) {
       await Promise.race(executing);
-      executing.splice(
-        executing.findIndex((p) => p === promise),
-        1
-      );
     }
   }
 

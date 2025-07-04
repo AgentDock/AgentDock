@@ -32,6 +32,17 @@ export class S3BatchOperations {
   ) {}
 
   /**
+   * Check if error indicates object not found
+   */
+  private isObjectNotFoundError(err: any): boolean {
+    return (
+      err.name === 'NotFound' ||
+      err.name === 'NoSuchKey' ||
+      err.$metadata?.httpStatusCode === 404
+    );
+  }
+
+  /**
    * Get multiple values by keys
    */
   async mget(keys: string[]): Promise<Array<any | null>> {
@@ -73,14 +84,7 @@ export class S3BatchOperations {
           const bodyString = await streamToString(response.Body);
           return jsonDeserializer(bodyString);
         } catch (error) {
-          const err = error as {
-            name?: string;
-            $metadata?: { httpStatusCode?: number };
-          };
-          if (
-            err.name === 'NoSuchKey' ||
-            err.$metadata?.httpStatusCode === 404
-          ) {
+          if (this.isObjectNotFoundError(error)) {
             return null;
           }
           throw error;
@@ -248,14 +252,7 @@ export class S3BatchOperations {
 
           return true;
         } catch (error) {
-          const err = error as {
-            name?: string;
-            $metadata?: { httpStatusCode?: number };
-          };
-          if (
-            err.name === 'NotFound' ||
-            err.$metadata?.httpStatusCode === 404
-          ) {
+          if (this.isObjectNotFoundError(error)) {
             return false;
           }
           throw error;

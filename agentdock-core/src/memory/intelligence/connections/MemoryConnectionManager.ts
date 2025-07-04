@@ -684,7 +684,7 @@ Provide confidence score (0-1) and brief reasoning.`
           }
         ],
         temperature:
-          this.config.connectionDetection.llmEnhancement!.temperature || 0.2
+          this.config.connectionDetection.llmEnhancement?.temperature || 0.2
       });
 
       // Track costs using configured pricing (following batch processing pattern)
@@ -695,8 +695,11 @@ Provide confidence score (0-1) and brief reasoning.`
         memoriesExtracted: 1,
         messagesProcessed: 2,
         metadata: {
-          provider: this.config.connectionDetection.llmEnhancement!.provider,
-          model: this.config.connectionDetection.llmEnhancement!.model,
+          provider:
+            this.config.connectionDetection.llmEnhancement?.provider ||
+            'unknown',
+          model:
+            this.config.connectionDetection.llmEnhancement?.model || 'unknown',
           tokensUsed: usage?.totalTokens || 0,
           responseTimeMs: Date.now() - startTime,
           connectionType: result.connectionType
@@ -871,7 +874,11 @@ Provide confidence score (0-1) and brief reasoning.`
   private calculateCost(usage?: any): number {
     if (!usage) return 0;
 
-    const config = this.config.connectionDetection.llmEnhancement!;
+    const config = this.config.connectionDetection.llmEnhancement;
+    if (!config) {
+      // No LLM config means no cost
+      return 0;
+    }
 
     // Option 1: Cost per token (user configures based on their provider)
     if (config.costPerToken) {

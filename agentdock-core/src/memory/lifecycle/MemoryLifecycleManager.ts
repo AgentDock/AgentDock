@@ -585,13 +585,19 @@ export class MemoryLifecycleManager {
   }
 
   /**
-   * Get all memories for an agent.
+   * Get all memories for an agent with optional pagination
+   *
+   * @param userId - User ID for memory isolation
+   * @param agentId - Agent ID for memory filtering
+   * @param batchSize - Number of memories to process at once (default: 1000)
+   * @returns Promise<Memory[]> - All agent memories
    *
    * @private
    */
   private async getAllAgentMemories(
     userId: string,
-    agentId: string
+    agentId: string,
+    batchSize: number = 1000
   ): Promise<Memory[]> {
     const memories: Memory[] = [];
 
@@ -600,26 +606,79 @@ export class MemoryLifecycleManager {
         `memory:${userId}:${agentId}:`
       );
 
-      for (const key of memoryKeys) {
-        const memory = await this.storage.get<Memory>(key);
-        if (memory) {
-          memories.push(memory);
+      // Process in batches to prevent OOM for large memory stores
+      for (let i = 0; i < memoryKeys.length; i += batchSize) {
+        const batch = memoryKeys.slice(i, i + batchSize);
+
+        // Process batch in parallel for better performance
+        const batchResults = await Promise.allSettled(
+          batch.map((key) => this.storage.get<Memory>(key))
+        );
+
+        // Filter successful results and add to memories
+        for (const result of batchResults) {
+          if (result.status === 'fulfilled' && result.value) {
+            memories.push(result.value);
+          } else if (result.status === 'rejected') {
+            logger.warn(
+              LogCategory.STORAGE,
+              'MemoryLifecycleManager',
+              'Failed to retrieve memory in batch',
+              {
+                userId,
+                agentId,
+                error:
+                  result.reason instanceof Error
+                    ? result.reason.message
+                    : String(result.reason)
+              }
+            );
+          }
+        }
+
+        // Log progress for large operations
+        if (memoryKeys.length > batchSize) {
+          logger.debug(
+            LogCategory.STORAGE,
+            'MemoryLifecycleManager',
+            'Memory retrieval progress',
+            {
+              userId,
+              agentId,
+              processed: Math.min(i + batchSize, memoryKeys.length),
+              total: memoryKeys.length,
+              retrieved: memories.length
+            }
+          );
         }
       }
 
-      return memories;
-    } catch (error) {
-      logger.warn(
+      logger.info(
         LogCategory.STORAGE,
         'MemoryLifecycleManager',
-        'Failed to retrieve some memories',
+        'Completed memory retrieval',
+        {
+          userId,
+          agentId,
+          totalKeys: memoryKeys.length,
+          retrievedMemories: memories.length,
+          batchSize
+        }
+      );
+
+      return memories;
+    } catch (error) {
+      logger.error(
+        LogCategory.STORAGE,
+        'MemoryLifecycleManager',
+        'Failed to retrieve agent memories',
         {
           userId,
           agentId,
           error: error instanceof Error ? error.message : String(error)
         }
       );
-      return memories;
+      return memories; // Return partial results rather than failing completely
     }
   }
 }

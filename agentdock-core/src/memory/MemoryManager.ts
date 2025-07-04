@@ -78,6 +78,7 @@ import {
   ConnectionType,
   HybridSearchOptions,
   StorageProvider,
+  validateConnectionType,
   VectorMemoryOperations
 } from '../storage/types';
 import { EmbeddingService } from './intelligence/embeddings/EmbeddingService';
@@ -279,7 +280,15 @@ export class MemoryManager {
 
     // Check if we have vector-enabled storage
     const isVectorMemoryOps = (ops: any): ops is VectorMemoryOperations => {
-      return ops && typeof ops.storeMemoryWithEmbedding === 'function';
+      return (
+        ops &&
+        typeof ops.storeMemoryWithEmbedding === 'function' &&
+        typeof ops.searchByVector === 'function' &&
+        typeof ops.findSimilarMemories === 'function' &&
+        typeof ops.hybridSearch === 'function' &&
+        typeof ops.updateMemoryEmbedding === 'function' &&
+        typeof ops.getMemoryEmbedding === 'function'
+      );
     };
 
     const hasVectorSupport =
@@ -476,7 +485,15 @@ export class MemoryManager {
 
     // Check if we have vector-enabled storage
     const isVectorMemoryOps = (ops: any): ops is VectorMemoryOperations => {
-      return ops && typeof ops.searchByVector === 'function';
+      return (
+        ops &&
+        typeof ops.storeMemoryWithEmbedding === 'function' &&
+        typeof ops.searchByVector === 'function' &&
+        typeof ops.findSimilarMemories === 'function' &&
+        typeof ops.hybridSearch === 'function' &&
+        typeof ops.updateMemoryEmbedding === 'function' &&
+        typeof ops.getMemoryEmbedding === 'function'
+      );
     };
 
     const hasVectorSupport =
@@ -667,6 +684,10 @@ export class MemoryManager {
     if (!connectionType) {
       throw new Error('Connection type is required');
     }
+
+    // Validate connection type to ensure data integrity
+    validateConnectionType(connectionType);
+
     if (typeof strength !== 'number') {
       throw new Error('Connection strength must be a number');
     }

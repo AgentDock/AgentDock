@@ -20,7 +20,11 @@ import {
 import { CoreLLM } from '../../../llm/core-llm';
 import { createLLM } from '../../../llm/create-llm';
 import { LogCategory, logger } from '../../../logging';
-import { ConnectionType, MemoryConnection } from '../../../storage/types';
+import {
+  ConnectionType,
+  MemoryConnection,
+  validateConnectionType
+} from '../../../storage/types';
 import { generateId } from '../../../storage/utils';
 import { CostTracker } from '../../tracking/CostTracker';
 import { Memory } from '../../types/common';
@@ -879,6 +883,11 @@ Provide confidence score (0-1) and brief reasoning.`
     }
 
     if (connections.length === 0) return;
+
+    // Validate all connection types to ensure data integrity
+    for (const connection of connections) {
+      validateConnectionType(connection.connectionType);
+    }
 
     try {
       // Use memory adapter's createConnections method if available (includes userId security)

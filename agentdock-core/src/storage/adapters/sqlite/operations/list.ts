@@ -26,21 +26,21 @@ export class ListOperations {
 
   /**
    * Deserialize value from string
-   * WARNING: If JSON parsing fails, returns the raw string cast to T
-   * This may cause runtime errors if T expects an object but gets a string
-   * Callers should validate the result type if needed
+   * Throws error if JSON parsing fails instead of dangerous type casting
    */
   private deserializeValue<T>(value: string): T {
     try {
       return JSON.parse(value) as T;
-    } catch {
-      // Log warning about potential type mismatch
-      logger.warn(
-        LogCategory.STORAGE,
-        'SQLiteList',
-        `Failed to deserialize value, returning raw string: ${value}`
+    } catch (error) {
+      logger.error(LogCategory.STORAGE, 'SQLiteList', 'Invalid JSON data', {
+        value: value.substring(0, 100), // Log first 100 chars
+        error: error instanceof Error ? error.message : String(error)
+      });
+
+      // THROW ERROR instead of dangerous cast
+      throw new Error(
+        `Failed to deserialize storage value: ${error instanceof Error ? error.message : 'Invalid JSON'}`
       );
-      return value as T; // UNSAFE: May cause runtime errors if T expects object
     }
   }
 

@@ -37,7 +37,6 @@ agentdock-core/src/memory/
 │
 ├── services/                  # Core Services
 │   ├── RecallService.ts       # Memory retrieval
-│   ├── ConversationProcessor.ts # Message processing
 │   ├── EncryptionService.ts   # Security layer
 │   ├── RecallServiceUtils.ts  # Utility functions
 │   └── RecallServiceTypes.ts  # Service type definitions
@@ -127,7 +126,7 @@ import {
   MemoryManager,
   RecallService,
   PRIMEExtractor,
-  ConversationProcessor 
+  PRIMEOrchestrator 
 } from '@agentdock/core/memory';
 
 // Direct component usage

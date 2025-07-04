@@ -462,6 +462,44 @@ function SettingsPage() {
                 Configure API keys for language models and other services
               </p>
 
+              {/* 
+                TODO: Embedding Provider Configuration (Platform v2)
+                =====================================================
+                
+                CURRENT CONFIGURATION (via environment variables):
+                - EMBEDDING_PROVIDER=openai|google|mistral
+                - EMBEDDING_MODEL=text-embedding-3-small (optional)
+                - OPENAI_API_KEY / GOOGLE_API_KEY / MISTRAL_API_KEY
+                
+                Usage Examples:
+                EMBEDDING_PROVIDER=google GOOGLE_API_KEY=xxx npm run dev
+                EMBEDDING_PROVIDER=mistral MISTRAL_API_KEY=xxx npm run dev
+                
+                FUTURE (Platform v2):
+                - Admin dashboard configuration
+                - Per-workspace provider settings
+                - Cost tracking & usage analytics
+                - Provider performance monitoring
+                - Multi-tenant isolation
+                - Automatic failover/redundancy
+                
+                MIGRATION PATH:
+                1. Current: Environment variables only
+                2. Next: Uncomment provider implementations as packages available
+                3. Platform v2: Full UI with admin configuration
+                
+                No breaking changes - environment variables will continue working
+                
+                Supported Providers:
+                ✅ openai (text-embedding-3-small)
+                ✅ google (text-embedding-004)
+                🔄 mistral (mistral-embed) - Package needed
+                🔄 voyage (voyage-3) - Package needed
+                🔄 cohere (embed-english-v3.0) - Package needed
+                
+                Note: Full UI implementation during platform transformation
+              */}
+
               <div className="grid gap-6">
                 {API_KEY_PROVIDERS.map(
                   ({ key, label, icon: Icon, description }) => (

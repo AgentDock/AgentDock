@@ -1,233 +1,324 @@
 # Vector Storage Integration
 
-Vector Storage Integration will enable embedding-based retrieval for documents, memories, and other data types, enhancing AgentDock's capabilities for contextual and semantic search.
+Vector storage provides embedding-based retrieval for memories, documents, and semantic search across the AgentDock platform.
 
 ## Current Status
 
-**Status: In Progress**
+**Status: ✅ Implemented**
 
-We are actively developing the Vector Storage system as a critical component of AgentDock's advanced features, particularly for RAG (Retrieval Augmented Generation) and memory capabilities.
+AgentDock includes a complete vector storage system with multiple production-ready adapters and full AI SDK integration.
 
-## Feature Overview
+## Implemented Features
 
-The Vector Storage Integration will provide:
+### Vector Storage Adapters
 
-- **Embedding Generation**: Creating vector representations of text and other data
-- **Similarity Search**: Finding related content based on semantic meaning
-- **Provider Abstraction**: Support for multiple vector database backends
-- **Hybrid Search**: Combining vector search with traditional search methods
-- **Metadata Filtering**: Filtering search results by metadata attributes
-- **Chunking Strategies**: Smart document segmentation for optimal retrieval
-- **Index Management**: Creating and maintaining vector indexes
+1. **PostgreSQL + pgvector** (Production)
+   - Full vector similarity search
+   - Scales to millions of vectors
+   - HNSW and IVFFlat indexes
+   - Hybrid search capabilities
 
-## Architecture Diagrams
+2. **SQLite + sqlite-vec** (Development)
+   - Local vector search
+   - Zero external dependencies
+   - Perfect for development
+   - 768-dimension support
 
-### Vector Storage Core Components
+3. **ChromaDB** (Specialized)
+   - Dedicated vector database
+   - Built-in collections
+   - Metadata filtering
+   - REST API interface
 
-```mermaid
-graph TD
-    A[Application] --> B[Vector Storage Manager]
-    
-    B --> C[Storage Abstraction Layer]
-    B --> D[Embedding Generation]
-    
-    D --> E[OpenAI Embeddings]
-    D --> F[Anthropic Embeddings]
-    D --> G[Open Source Models]
-    
-    B --> H[Vector Operations]
-    H --> I[Similarity Search]
-    H --> J[Metadata Filtering]
-    H --> K[Chunking]
-    
-    style B fill:#0066cc,color:#ffffff,stroke:#0033cc
-    style D fill:#e6f2ff,stroke:#99ccff
-    style H fill:#0066cc,color:#ffffff,stroke:#0033cc
-```
+4. **Qdrant** (High Performance)
+   - Production vector search
+   - Advanced filtering
+   - Batch operations
+   - Clustering support
 
-### Provider Interfaces and Integrations
+5. **Pinecone** (Managed Service)
+   - Serverless vector search
+   - Auto-scaling
+   - Global replication
+   - Enterprise support
 
-```mermaid
-graph TD
-    A[Vector Storage Manager] --> B[Provider Interface]
-    
-    B --> C[Local Vector Store]
-    B --> D[PostgreSQL + pgvector]
-    B --> E[External Providers]
-    
-    F[Advanced Memory Systems] --> A
-    G[RAG Modules] --> A
-    
-    style A fill:#0066cc,color:#ffffff,stroke:#0033cc
-    style B fill:#0066cc,color:#ffffff,stroke:#0033cc
-    
-    subgraph "External Providers"
-        E1[Qdrant]
-        E2[Pinecone]
-        E3[Chroma]
-    end
-    
-    E --> E1
-    E --> E2
-    E --> E3
-```
+### AI SDK Integration
 
-## Implementation Details
-
-The vector storage system includes these key components:
+AgentDock exports AI SDK's embedding functions directly:
 
 ```typescript
-// Vector storage provider interface
-interface VectorStorageProvider {
-  // Store vectors with their content and metadata
-  store(
-    vectors: number[][], 
-    content: string[], 
-    metadata: Record<string, any>[]
-  ): Promise<string[]>;
-  
-  // Search for similar vectors
-  search(
-    query: number[], 
-    limit: number, 
-    filters?: Record<string, any>
-  ): Promise<VectorSearchResult[]>;
-  
-  // Delete vectors by ID
-  delete(ids: string[]): Promise<void>;
-  
-  // Create a new index
-  createIndex(
-    name: string, 
-    dimensions: number, 
-    options?: IndexOptions
-  ): Promise<void>;
-}
+import { embed, embedMany } from 'agentdock-core/llm';
+import { createOpenAIModel } from 'agentdock-core/llm';
 
-// Vector search result
-interface VectorSearchResult {
-  id: string;
-  content: string;
-  metadata: Record<string, any>;
-  score: number; // Similarity score
+// Create embedding model
+const embeddingModel = createOpenAIModel({
+  model: 'text-embedding-3-small',
+  apiKey: process.env.OPENAI_API_KEY
+});
+
+// Generate single embedding
+const result = await embed({
+  model: embeddingModel,
+  value: 'Your text to embed'
+});
+
+// Generate batch embeddings
+const results = await embedMany({
+  model: embeddingModel,
+  values: ['Text 1', 'Text 2', 'Text 3']
+});
+```
+
+## Architecture
+
+### Storage Layer Integration
+
+```typescript
+// Vector operations are part of storage adapters
+import { getStorageFactory } from 'agentdock-core';
+
+const factory = getStorageFactory();
+const vectorStorage = factory.getProvider({
+  type: 'postgresql-vector',
+  config: {
+    connectionString: process.env.DATABASE_URL,
+    enableVector: true,
+    defaultDimension: 1536
+  }
+});
+```
+
+### Vector Operations Interface
+
+All vector-enabled adapters implement:
+
+```typescript
+interface VectorOperations {
+  // Collection management
+  createCollection(config: VectorCollectionConfig): Promise<void>;
+  dropCollection(name: string): Promise<void>;
+  
+  // Vector CRUD
+  insertVectors(collection: string, vectors: VectorData[]): Promise<void>;
+  updateVectors(collection: string, vectors: VectorData[]): Promise<void>;
+  deleteVectors(collection: string, ids: string[]): Promise<void>;
+  
+  // Search
+  searchVectors(
+    collection: string,
+    queryVector: number[],
+    options?: VectorSearchOptions
+  ): Promise<VectorSearchResult[]>;
 }
 ```
 
-## Current Implementation Status
+## Memory System Integration
 
-Currently, we have implemented:
+### 1. Memory Embeddings
 
-- **Interface Design**: Core interface for vector storage operations
-- **Embedding Integration**: Connections to embedding model providers
-- **Basic Vector Operations**: Foundation for similarity search and operations
+```typescript
+// Generate embeddings for memories
+const memoryEmbedding = await embed({
+  model: embeddingModel,
+  value: memory.content
+});
 
-## Supported Providers
+// Store in vector collection
+await vectorStorage.insertVectors('memories', [{
+  id: memory.id,
+  vector: memoryEmbedding.embedding,
+  metadata: {
+    agentId: memory.agentId,
+    type: memory.type,
+    importance: memory.importance
+  }
+}]);
+```
 
-We're implementing support for these vector database providers:
+### 2. Semantic Memory Recall
 
-1. **Local Vector Store**: Simple in-memory vector store for development
-2. **PostgreSQL + pgvector**: Production-ready vector database solution
-3. **Qdrant**: High-performance vector database
-4. **Pinecone**: Managed vector database service
-5. **Chroma**: Open-source embedding database
+```typescript
+// Generate query embedding
+const queryEmbedding = await embed({
+  model: embeddingModel,
+  value: userQuery
+});
 
-## Integration with LLM Providers
+// Search similar memories
+const similarMemories = await vectorStorage.searchVectors(
+  'memories',
+  queryEmbedding.embedding,
+  {
+    k: 10,
+    filter: { agentId: currentAgentId },
+    includeScore: true
+  }
+);
+```
 
-The system will support multiple embedding models:
+### 3. Batch Processing
 
-- **OpenAI Embeddings**: text-embedding-3-small and text-embedding-3-large
-- **Anthropic Embeddings**: claude-3 embeddings 
-- **Open Source Models**: Support for Hugging Face sentence transformers
+```typescript
+// Batch embed memories for efficiency
+const memoryTexts = memories.map(m => m.content);
+const embeddings = await embedMany({
+  model: embeddingModel,
+  values: memoryTexts
+});
 
-## Dependency on Storage Abstraction Layer
+// Batch insert
+const vectorData = memories.map((memory, i) => ({
+  id: memory.id,
+  vector: embeddings.embeddings[i],
+  metadata: {
+    agentId: memory.agentId,
+    type: memory.type,
+    createdAt: memory.createdAt
+  }
+}));
 
-The Vector Storage system builds on the Storage Abstraction Layer:
+await vectorStorage.insertVectors('memories', vectorData);
+```
 
-- **Storage Backend**: Uses the storage layer for persisting vector data
-- **Provider Flexibility**: Leverages storage providers for different deployment scenarios
-- **Metadata Storage**: Stores vector metadata through the storage layer
-- **Optimized Access**: Uses specialized vector storage where available
+## Production Configurations
 
-## Connection to Advanced Memory Systems
+### PostgreSQL + pgvector (Recommended)
 
-Vector Storage is tightly integrated with Advanced Memory Systems:
+```typescript
+// Production setup with pgvector
+const vectorStorage = factory.getProvider({
+  type: 'postgresql-vector',
+  config: {
+    connectionString: process.env.DATABASE_URL,
+    enableVector: true,
+    defaultDimension: 1536,
+    defaultMetric: VectorMetric.COSINE,
+    ivfflat: {
+      lists: 100,  // For 1M vectors
+      probes: 10   // Query accuracy
+    }
+  }
+});
+```
 
-- **Memory Retrieval**: Provides semantic search for memory items
-- **Contextual Relevance**: Helps identify memories related to current context
-- **Concept Relationships**: Identifies related concepts and information
-- **Memory Embedding**: Generates and manages embeddings for memory items
+### Embedding Model Selection
 
-## RAG Implementation
+```typescript
+// Cost-optimized embedding
+const smallModel = createOpenAIModel({
+  model: 'text-embedding-3-small',  // $0.02/1M tokens
+  apiKey: process.env.OPENAI_API_KEY
+});
 
-Vector Storage is a key component of our RAG (Retrieval Augmented Generation) pipeline:
+// Quality-optimized embedding
+const largeModel = createOpenAIModel({
+  model: 'text-embedding-3-large',  // $0.13/1M tokens
+  apiKey: process.env.OPENAI_API_KEY
+});
+```
 
-1. **Document Processing**: Chunk and process documents
-2. **Embedding Generation**: Create vector representations
-3. **Storage**: Store embeddings with metadata
-4. **Query Understanding**: Process user queries
-5. **Retrieval**: Find relevant content
-6. **Context Integration**: Include retrieved content in LLM context
-7. **Response Generation**: Generate augmented responses
+## Performance Optimization
 
-## Use Cases
+### 1. Batch Operations
+- Process embeddings in batches of 100-1000
+- Use `embedMany` for multiple texts
+- Batch vector insertions
 
-Vector storage enables several key capabilities:
+### 2. Caching Strategy
+```typescript
+// Cache embeddings to avoid re-computation
+const embeddingCache = new Map<string, number[]>();
 
-1. **Document Q&A**: Answer questions based on document contents
-2. **Knowledge Bases**: Create searchable knowledge repositories
-3. **Semantic Memory**: Store and retrieve agent memories by meaning
-4. **Similarity Matching**: Find similar content or queries
-5. **Content Organization**: Group related content automatically
-6. **Contextual Recommendations**: Suggest relevant information
+async function getCachedEmbedding(text: string): Promise<number[]> {
+  const hash = createHash(text);
+  if (embeddingCache.has(hash)) {
+    return embeddingCache.get(hash)!;
+  }
+  
+  const result = await embed({ model, value: text });
+  embeddingCache.set(hash, result.embedding);
+  return result.embedding;
+}
+```
 
-## Performance Considerations
+### 3. Index Optimization
+- Use IVFFlat for large datasets (>100K vectors)
+- Tune `lists` parameter: sqrt(num_vectors)
+- Increase `probes` for better accuracy
 
-The vector storage system is designed with performance in mind:
+## Cost Management
 
-- **Batched Operations**: Efficient batch processing for embeddings
-- **Caching**: Caching frequent queries and embeddings
-- **Index Optimization**: Performance tuning for different use cases
-- **Dimension Reduction**: Techniques to reduce vector dimensions while preserving meaning
-- **Hybrid Search**: Combining vector search with keyword search for better results
+### Embedding Costs (OpenAI)
+- text-embedding-3-small: $0.02 per 1M tokens
+- text-embedding-3-large: $0.13 per 1M tokens
+- ada-002: $0.10 per 1M tokens (legacy)
 
-## Future Enhancements
+### Cost Optimization Strategies
+1. Use smaller models for non-critical content
+2. Cache embeddings aggressively
+3. Batch operations to reduce API calls
+4. Filter content before embedding
+5. Use dimension reduction when appropriate
 
-After the initial implementation, we plan to add:
+## Common Use Cases
 
-- **Multi-modal Vectors**: Support for image and audio embeddings
-- **Incremental Updates**: Efficient handling of document updates
-- **Hierarchical Indexing**: Advanced indexing for improved performance
-- **Cross-Encoder Reranking**: Improve result relevance with reranking
-- **Sparse + Dense Vectors**: Combining traditional and neural search approaches
+### 1. Semantic Memory Search
+Find memories related to current context
 
-## Timeline
+### 2. Document Retrieval
+RAG implementation for knowledge bases
 
-| Phase | Status | Description |
-|-------|--------|-------------|
-| Research & Design | Complete | Vector storage architecture and interface design |
-| Interface Definition | Complete | Core provider interface specification |
-| Embedding Integration | Complete | Connection to embedding model providers |
-| Local Vector Store | In Progress | In-memory implementation for development |
-| PostgreSQL Integration | In Progress | Integration with PostgreSQL and pgvector |
-| RAG Pipeline | Planned | Complete retrieval-augmented generation system |
-| External Providers | Planned | Integration with Qdrant, Pinecone, and other services |
-| Advanced Features | Planned | Multi-modal support and performance optimizations |
+### 3. Similarity Matching
+Find similar conversations or patterns
 
-## Connection to Other Roadmap Items
+### 4. Concept Clustering
+Group related memories automatically
 
-Vector Storage has strong connections to:
+### 5. Context Building
+Retrieve relevant history for agents
 
-- **Storage Abstraction Layer**: Provides the foundation for persisting vector data
-- **Advanced Memory Systems**: Enables semantic search for agent memories
-- **Evaluation Framework**: Supports testing and evaluation of retrieval quality
-- **AgentDock Pro**: Offers enterprise-grade vector search capabilities
+## Migration Guide
 
-## Documentation
+### From Placeholder to Real Embeddings
 
-Comprehensive documentation will cover:
+```typescript
+// Before: ChromaDB placeholder
+const embeddingFunction = new DefaultEmbeddingFunction();
 
-- Setting up vector storage for different providers
-- Implementing custom vector storage providers
-- Best practices for chunking and embedding
-- Performance optimization techniques
-- Scaling vector storage for production use 
+// After: Real embeddings
+const embeddingFunction = {
+  async generate(documents: string[]): Promise<number[][]> {
+    const result = await embedMany({
+      model: embeddingModel,
+      values: documents
+    });
+    return result.embeddings;
+  }
+};
+```
+
+## Monitoring and Debugging
+
+### Vector Storage Metrics
+- Index size and performance
+- Query latency (p50, p95, p99)
+- Embedding generation time
+- Cache hit rates
+
+### Debug Utilities
+```typescript
+// Check vector similarity
+import { cosineSimilarity } from 'agentdock-core/evaluation';
+
+const similarity = cosineSimilarity(vector1, vector2);
+console.log(`Similarity: ${similarity}`);
+```
+
+## Next Steps
+
+With vector storage fully implemented, the memory system can now:
+1. Generate real embeddings for all memory types
+2. Perform semantic search at scale
+3. Build memory networks with vector similarity
+4. Enable hybrid search (vector + metadata)
+5. Support multi-modal embeddings (future)

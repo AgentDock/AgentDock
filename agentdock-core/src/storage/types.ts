@@ -5,6 +5,118 @@
  * allowing for pluggable storage providers with a consistent interface.
  */
 
+import { MemoryType } from '../shared/types/memory';
+
+/**
+ * Connection types for memory relationships
+ * Based on cognitive science research and database schema design
+ */
+export type ConnectionType =
+  | 'similar' // Semantically similar content
+  | 'related' // General relationship
+  | 'causes' // Direct causation
+  | 'part_of' // Part of a larger concept
+  | 'opposite'; // Contradictory/opposite relationship
+
+/**
+ * Runtime validation to prevent database constraint violations
+ */
+export const VALID_CONNECTION_TYPES: readonly ConnectionType[] = [
+  'similar',
+  'related',
+  'causes',
+  'part_of',
+  'opposite'
+] as const;
+
+/**
+ * Validate connection type at runtime
+ * @param type - Connection type to validate
+ * @returns true if valid, false otherwise
+ */
+export function isValidConnectionType(type: string): type is ConnectionType {
+  return VALID_CONNECTION_TYPES.includes(type as ConnectionType);
+}
+
+/**
+ * Throw error for invalid connection types
+ * @param type - Connection type to validate
+ * @throws Error if invalid type
+ */
+export function validateConnectionType(
+  type: string
+): asserts type is ConnectionType {
+  if (!isValidConnectionType(type)) {
+    throw new Error(
+      `Invalid connection type: '${type}'. Valid types are: ${VALID_CONNECTION_TYPES.join(', ')}`
+    );
+  }
+}
+
+/**
+ * Memory connection interface - FRAMEWORK STANDARD
+ * This is the authoritative definition used by ALL layers
+ *
+ * Performance considerations:
+ * - Use interfaces for extensibility
+ * - Keep fields minimal for optimal serialization
+ * - sourceMemoryId/targetMemoryId match database schema
+ */
+export interface MemoryConnection {
+  /** Unique identifier for the connection */
+  id: string;
+
+  /** Source memory ID (maps to source_memory_id in DB) */
+  sourceMemoryId: string;
+
+  /** Target memory ID (maps to target_memory_id in DB) */
+  targetMemoryId: string;
+
+  /** Type of connection between memories */
+  connectionType: ConnectionType;
+
+  /** Connection strength (0-1, where 1 is strongest) */
+  strength: number;
+
+  /** Optional reason for the connection */
+  reason?: string;
+
+  /** Creation timestamp (Unix milliseconds) */
+  createdAt: number;
+
+  /** Optional metadata for the connection */
+  metadata?: {
+    /** Method used to create connection */
+    method?: 'embedding' | 'user-rules' | 'small-llm' | 'hybrid';
+    /** Confidence score for the connection */
+    confidence?: number;
+    /** Algorithm used for connection discovery */
+    algorithm?: string;
+    /** Embedding similarity score if applicable */
+    embeddingSimilarity?: number;
+    /** Whether LLM was used for this connection */
+    llmUsed?: boolean;
+    /** Cost of creating this connection */
+    cost?: number;
+    /** Allow extension for future features */
+    [key: string]: unknown;
+  };
+}
+
+/**
+ * Type-safe storage metadata interface
+ */
+export interface StorageMetadata {
+  created?: Date;
+  updated?: Date;
+  version?: number;
+  source?: string;
+  tags?: string[];
+  priority?: 'low' | 'medium' | 'high';
+  // Allow additional properties but typed
+  [key: string]: unknown;
+}
+
 /**
  * Common options for storage operations
  */
@@ -22,7 +134,7 @@ export interface StorageOptions {
    * Additional metadata to store with the value
    * This can be used for filtering and organization
    */
-  metadata?: Record<string, any>;
+  metadata?: StorageMetadata;
 }
 
 /**
@@ -178,6 +290,213 @@ export interface StorageProvider {
    * This should be called when the provider is no longer needed
    */
   destroy?(): Promise<void>;
+
+  /**
+   * Memory operations (optional - not all storage providers support memory operations)
+   */
+  memory?: MemoryOperations;
+}
+
+/**
+ * Memory operations interface for storage providers that support memory functionality
+ * This is the standard interface - storage adapters may implement extended versions
+ */
+export interface MemoryOperations {
+  store(userId: string, agentId: string, memory: MemoryData): Promise<string>;
+  recall(
+    userId: string,
+    agentId: string,
+    query: string,
+    options?: MemoryRecallOptions
+  ): Promise<MemoryData[]>;
+  update(
+    userId: string,
+    agentId: string,
+    memoryId: string,
+    updates: Partial<MemoryData>
+  ): Promise<void>;
+  delete(userId: string, agentId: string, memoryId: string): Promise<void>;
+  getStats(userId: string, agentId?: string): Promise<MemoryOperationStats>;
+  getById?(userId: string, memoryId: string): Promise<MemoryData | null>;
+
+  // Extended operations - may not be implemented by all providers
+  batchStore?(
+    userId: string,
+    agentId: string,
+    memories: MemoryData[]
+  ): Promise<string[]>;
+  applyDecay?(userId: string, agentId: string, decayRules: any): Promise<any>;
+
+  /**
+   * Creates memory connections in batch
+   * @param userId - User ID for isolation
+   * @param connections - Array of memory connections to create
+   */
+  createConnections?(
+    userId: string,
+    connections: MemoryConnection[]
+  ): Promise<void>;
+
+  /**
+   * Finds connected memories up to a specified depth
+   * @param userId - User ID for isolation
+   * @param memoryId - Starting memory ID
+   * @param depth - How many levels of connections to traverse (default: 2)
+   * @returns Memories and their connections
+   */
+  findConnectedMemories?(
+    userId: string,
+    memoryId: string,
+    depth?: number
+  ): Promise<{
+    memories: MemoryData[];
+    connections: MemoryConnection[];
+  }>;
+}
+
+/**
+ * Vector-enabled memory operations interface
+ * Extends standard memory operations with vector similarity search capabilities
+ */
+export interface VectorMemoryOperations extends MemoryOperations {
+  /**
+   * Store memory with its embedding vector
+   */
+  storeMemoryWithEmbedding(
+    userId: string,
+    agentId: string,
+    memory: MemoryData,
+    embedding: number[]
+  ): Promise<string>;
+
+  /**
+   * Search memories by vector similarity
+   */
+  searchByVector(
+    userId: string,
+    agentId: string,
+    queryEmbedding: number[],
+    options?: VectorSearchOptions
+  ): Promise<MemoryData[]>;
+
+  /**
+   * Find similar memories using vector similarity
+   */
+  findSimilarMemories(
+    userId: string,
+    agentId: string,
+    embedding: number[],
+    threshold?: number
+  ): Promise<MemoryData[]>;
+
+  /**
+   * Hybrid search combining vector similarity and text search
+   */
+  hybridSearch(
+    userId: string,
+    agentId: string,
+    query: string,
+    queryEmbedding: number[],
+    options?: HybridSearchOptions
+  ): Promise<MemoryData[]>;
+
+  /**
+   * Update a memory's embedding
+   */
+  updateMemoryEmbedding(
+    userId: string,
+    memoryId: string,
+    embedding: number[]
+  ): Promise<void>;
+
+  /**
+   * Get a memory's embedding vector
+   */
+  getMemoryEmbedding(
+    userId: string,
+    memoryId: string
+  ): Promise<number[] | null>;
+}
+
+/**
+ * Options for vector search operations
+ */
+export interface VectorSearchOptions {
+  threshold?: number;
+  limit?: number;
+  metric?: 'cosine' | 'euclidean' | 'dot_product';
+  filter?: Record<string, any>;
+}
+
+/**
+ * Options for hybrid search operations
+ */
+export interface HybridSearchOptions extends VectorSearchOptions {
+  textWeight?: number;
+  vectorWeight?: number;
+  fuzzyMatch?: boolean;
+  useTypeScriptBM25?: boolean; // For managed service compatibility
+}
+
+/**
+ * Memory data structure for storage operations
+ */
+export interface MemoryData {
+  id: string;
+  userId: string; // Required for user isolation
+  agentId: string;
+  type: MemoryType;
+  content: string;
+  importance: number;
+  resonance: number;
+  accessCount: number;
+  createdAt: number;
+  updatedAt: number;
+  lastAccessedAt: number;
+
+  // Fields that exist in PostgreSQL Memory table
+  sessionId?: string;
+  tokenCount?: number;
+  keywords?: string[];
+  embeddingId?: string;
+
+  // Type-specific metadata (properly typed)
+  metadata?: {
+    contextWindow?: number;
+    expiresAt?: number;
+    context?: string;
+    category?: string;
+    confidence?: number;
+    [key: string]: unknown;
+  };
+}
+
+/**
+ * Type alias for easier migration from insecure Memory interface
+ * @deprecated Use MemoryData directly - this alias will be removed after migration
+ */
+export type Memory = MemoryData;
+
+/**
+ * Options for memory recall operations
+ */
+export interface MemoryRecallOptions {
+  type?: MemoryType;
+  limit?: number;
+  threshold?: number;
+  minImportance?: number;
+  useVectorSearch?: boolean;
+  timeRange?: { start: Date; end: Date };
+}
+
+/**
+ * Memory operation statistics
+ */
+export interface MemoryOperationStats {
+  totalMemories: number;
+  byType: Record<string, number>;
+  avgImportance: number;
+  totalSize: string;
 }
 
 /**

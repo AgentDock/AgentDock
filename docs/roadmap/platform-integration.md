@@ -4,9 +4,13 @@ The Platform Integration feature extends AgentDock agents to interact with users
 
 ## Current Status
 
-**Status: Planned**
+**Status: Blocked - Requires HTTP Adapter Framework**
 
-Development of the framework-agnostic platform integration system has been designed, with Telegram as the first reference implementation.
+Development of the platform integration system is **blocked** pending implementation of the HTTP Adapter Framework Abstraction. Platform Integration cannot begin until the foundational HTTP adapter infrastructure is completed.
+
+**Critical Dependency:** [HTTP Adapter Framework Abstraction](./http-adapter-framework-abstraction.md)
+
+**Reason for Dependency:** Platform Integration requires framework-agnostic HTTP handling to support webhooks across NextJS (open source) and Hono (commercial platform). The current NextJS-specific implementation cannot be extended to support platform webhooks without the unified HTTP adapter layer.
 
 ## Feature Overview
 
@@ -190,24 +194,46 @@ The platform integration feature delivers several important benefits:
 
 ## Timeline
 
-| Phase | Status | Description |
-|-------|--------|-------------|
-| Design & Architecture | Complete | Core architecture design |
-| Platform Node Abstract Class | Planned | Base class implementation |
-| HTTP Adapter Interface | Planned | Framework adapter design |
-| Telegram Reference | Planned | First complete implementation |
-| WhatsApp Integration | Planned | Business API integration |
-| Slack Integration | Planned | Slack Bot implementation |
-| Additional Platforms | Future | Discord, Teams, etc. |
+| Phase | Status | Description | Dependencies |
+|-------|--------|-------------|--------------|
+| **PREREQUISITE: HTTP Adapter Framework** | **Required** | **Must complete first** | **[HTTP Adapter Framework](./http-adapter-framework-abstraction.md)** |
+| Design & Architecture | Complete | Core architecture design | ✅ Complete |
+| Platform Node Abstract Class | Blocked | Base class implementation | HTTP Adapter Framework |
+| HTTP Adapter Interface | Blocked | Framework adapter design | HTTP Adapter Framework |
+| Telegram Reference | Blocked | First complete implementation | HTTP Adapter Framework |
+| WhatsApp Integration | Blocked | Business API integration | HTTP Adapter Framework |
+| Slack Integration | Blocked | Slack Bot implementation | HTTP Adapter Framework |
+| Additional Platforms | Future | Discord, Teams, etc. | All above phases |
+
+**CRITICAL:** All Platform Integration phases are blocked until HTTP Adapter Framework is implemented.
 
 ## Connection to Other Roadmap Items
 
 The Platform Integration connects with other roadmap items:
 
+- **HTTP Adapter Framework Abstraction**: **CRITICAL PREREQUISITE** - Must be implemented first
 - **Storage Abstraction Layer**: Uses storage for conversation state
 - **Advanced Memory Systems**: Provides long-term memory across platforms
 - **Multi-Agent Collaboration**: Enables collaboration via messaging platforms
 - **Voice AI Agents**: Foundation for voice platform integration
+
+## Impact on Open Source Client
+
+**Required Changes After HTTP Adapter Implementation:**
+
+1. **Route Simplification**
+   - `src/app/api/chat/[agentId]/route.ts` - Replace with HTTP adapter usage
+   - Remove `src/lib/agent-adapter.ts` (logic moves to agentdock-core)
+   - Remove `src/lib/orchestration-adapter.ts` (logic moves to agentdock-core)
+
+2. **Platform Webhook Support**
+   - Add new routes: `/api/platforms/telegram/[nodeId]`
+   - Add new routes: `/api/platforms/whatsapp/[nodeId]`
+   - Add new routes: `/api/platforms/slack/[nodeId]`
+
+3. **Configuration Updates**
+   - Update environment variables for platform integrations
+   - Add platform-specific configuration management
 
 ## Getting Started (Preview)
 

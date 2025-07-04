@@ -164,7 +164,7 @@ describe('NLPAccuracyEvaluator - Base Functionality', () => {
       inputNumeric.criteria!
     );
     expect(results.length).toBe(1);
-    let resultNumeric = results[0];
+    const resultNumeric = results[0];
     expect(resultNumeric.score).toBeCloseTo(expectedLowSimilarity);
     expect(resultNumeric.reasoning).toContain(
       `Cosine similarity: ${expectedLowSimilarity.toFixed(4)}.`
@@ -185,7 +185,7 @@ describe('NLPAccuracyEvaluator - Base Functionality', () => {
     const inputBinary = createTestInput(respText, gtText, 'binary');
     results = await evaluator.evaluate(inputBinary, inputBinary.criteria!);
     expect(results.length).toBe(1);
-    let resultBinary = results[0];
+    const resultBinary = results[0];
     expect(resultBinary.score).toBe(false); // similarity < threshold -> false
     expect(resultBinary.reasoning).toContain(
       `Cosine similarity: ${expectedLowSimilarity.toFixed(4)}.`

@@ -124,7 +124,19 @@ export default [
       'import/no-duplicates': 'error',
       'import/no-cycle': 'error',
       'import/no-unresolved': ['error', { 
-        ignore: ['geist/font/mono', 'geist/font/sans'] 
+        ignore: [
+          'geist/font/mono', 
+          'geist/font/sans',
+          // Database peer dependencies - optional installs
+          '@aws-sdk/client-dynamodb',
+          '@aws-sdk/client-s3', 
+          '@aws-sdk/lib-storage',
+          '@aws-sdk/s3-request-presigner',
+          '@aws-sdk/types',
+          'mongodb',
+          'pg',
+          'better-sqlite3'
+        ] 
       }]
     }
   },

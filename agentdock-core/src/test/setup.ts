@@ -77,7 +77,7 @@ beforeAll(() => {
   Object.defineProperty(global, 'TextEncoder', {
     value: class {
       encode(str: string) {
-        return new Uint8Array([...str].map((c) => c.charCodeAt(0)));
+        return new Uint8Array(Array.from(str).map((c) => c.charCodeAt(0)));
       }
     },
     writable: true
@@ -86,7 +86,7 @@ beforeAll(() => {
   Object.defineProperty(global, 'TextDecoder', {
     value: class {
       decode(arr: Uint8Array) {
-        return String.fromCharCode(...arr);
+        return String.fromCharCode(...Array.from(arr));
       }
     },
     writable: true

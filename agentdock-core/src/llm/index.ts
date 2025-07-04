@@ -57,6 +57,12 @@ export * from './providers'; // Includes adapters and validation functions
 export * from './types'; // Internal LLM types (LLMConfig, TokenUsage etc.)
 export * from './provider-registry';
 export { LLMOrchestrationService } from './llm-orchestration-service';
+export {
+  createEmbedding,
+  getDefaultEmbeddingModel,
+  getEmbeddingDimensions
+} from './create-embedding';
+export type { EmbeddingConfig } from './create-embedding';
 
 // Re-export AI SDK Functions
 export {

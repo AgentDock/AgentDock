@@ -210,9 +210,11 @@ export class MemoryManager {
         );
       } catch (error) {
         // Fallback to traditional storage on error
-        console.error(
-          'Vector storage failed, falling back to traditional storage:',
-          error
+        logger.error(
+          LogCategory.STORAGE,
+          'MemoryManager',
+          'Vector storage failed, falling back to traditional storage',
+          { error: error instanceof Error ? error.message : String(error) }
         );
         memoryId = await this.delegateToMemoryType(
           userId,
@@ -363,9 +365,11 @@ export class MemoryManager {
       }
     } catch (error) {
       // Fallback to traditional recall on error
-      console.error(
-        'Vector recall failed, falling back to traditional recall:',
-        error
+      logger.error(
+        LogCategory.STORAGE,
+        'MemoryManager',
+        'Vector recall failed, falling back to traditional recall',
+        { error: error instanceof Error ? error.message : String(error) }
       );
       return this.storage.memory!.recall(userId, agentId, query, {
         type: options.type,

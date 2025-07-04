@@ -92,22 +92,39 @@ export interface AdapterCapabilities {
 }
 
 /**
+ * Memory adapter interface for type safety
+ */
+interface MemoryAdapter {
+  memory?: {
+    recall?: (...args: any[]) => any;
+    store?: (...args: any[]) => any;
+    getStats?: (...args: any[]) => any;
+    searchByVector?: (...args: any[]) => any;
+    hybridSearch?: (...args: any[]) => any;
+    storeMemoryWithEmbedding?: (...args: any[]) => any;
+    [key: string]: unknown;
+  };
+}
+
+/**
  * Validate that an adapter supports memory operations
  * @param adapter - Storage adapter to validate
  * @param adapterName - Name of adapter for error messages
  * @throws Error if adapter doesn't support memory operations
  */
 export function validateMemoryAdapter(
-  adapter: any,
+  adapter: unknown,
   adapterName: string = 'unknown'
-): void {
-  if (!adapter) {
+): asserts adapter is MemoryAdapter {
+  if (!adapter || typeof adapter !== 'object') {
     throw new Error(
-      `Memory adapter is null or undefined. Please provide a valid memory adapter.`
+      `Memory adapter is null, undefined, or not an object. Please provide a valid memory adapter.`
     );
   }
 
-  if (!adapter.memory) {
+  const adapterObj = adapter as Record<string, unknown>;
+
+  if (!adapterObj.memory || typeof adapterObj.memory !== 'object') {
     logger.error(
       LogCategory.STORAGE,
       'MemoryUtilities',
@@ -122,7 +139,8 @@ export function validateMemoryAdapter(
     );
   }
 
-  if (typeof adapter.memory.recall !== 'function') {
+  const memory = adapterObj.memory as Record<string, unknown>;
+  if (typeof memory.recall !== 'function') {
     logger.error(
       LogCategory.STORAGE,
       'MemoryUtilities',
@@ -141,30 +159,28 @@ export function validateMemoryAdapter(
     'Memory adapter validation passed',
     {
       adapterName,
-      hasVectorSearch: 'searchByVector' in adapter.memory,
-      hasHybridSearch: 'hybridSearch' in adapter.memory
+      hasVectorSearch: typeof memory.searchByVector === 'function',
+      hasHybridSearch: typeof memory.hybridSearch === 'function'
     }
   );
 }
 
 /**
  * Detect adapter capabilities safely with informative logging
- * @param memoryOps - Validated memory operations interface
+ * @param adapter - Validated memory adapter
  * @param adapterName - Name of adapter for logging
  * @returns Adapter capabilities
  */
 export function detectAdapterCapabilities(
-  memoryOps: any,
+  adapter: MemoryAdapter,
   adapterName: string = 'unknown'
 ): AdapterCapabilities {
+  const memoryOps = adapter.memory!; // Safe after validation
+
   const capabilities: AdapterCapabilities = {
     hasMemoryOps: true, // Validated by this point
-    hasVectorSearch:
-      'searchByVector' in memoryOps &&
-      typeof memoryOps.searchByVector === 'function',
-    hasHybridSearch:
-      'hybridSearch' in memoryOps &&
-      typeof memoryOps.hybridSearch === 'function',
+    hasVectorSearch: typeof memoryOps.searchByVector === 'function',
+    hasHybridSearch: typeof memoryOps.hybridSearch === 'function',
     adapterType: 'text-only'
   };
 
@@ -206,16 +222,14 @@ export function detectAdapterCapabilities(
  */
 export function initializeMemoryUtilities(
   embeddingService: EmbeddingService,
-  adapter: any,
+  adapter: unknown,
   adapterName: string = 'unknown'
 ): void {
   // Validate adapter before using - will throw on incompatible adapters
   validateMemoryAdapter(adapter, adapterName);
 
-  const memoryOperations = adapter.memory;
-
   // Detect capabilities with logging
-  const capabilities = detectAdapterCapabilities(memoryOperations, adapterName);
+  const capabilities = detectAdapterCapabilities(adapter, adapterName);
 
   // Initialize all services with validated adapter
   initializeSemanticServices(embeddingService, adapter, adapterName);

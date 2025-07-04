@@ -1,7 +1,71 @@
 /**
- * MemoryManager - Orchestrates AgentDock memory system with vector-first approach
+ * Core memory management system for AgentDock AI agents
  *
- * Integrates vector similarity search with traditional memory operations
+ * Provides multi-type memory storage with automatic importance calculation,
+ * decay over time, and intelligent connection discovery between memories.
+ * Supports configurable embedding providers for semantic similarity.
+ *
+ * Features:
+ * - Multi-type memory support (working, episodic, semantic, procedural)
+ * - Configurable embedding providers (OpenAI, Google, Mistral, Voyage, Cohere)
+ * - Automatic importance and resonance calculation
+ * - Time-based memory decay with access patterns
+ * - Progressive enhancement for connection discovery
+ * - User-level data isolation for security
+ * - Vector-first storage with hybrid search capabilities
+ * - Graceful fallback to traditional storage
+ *
+ * @example Basic usage
+ * ```typescript
+ * const manager = new MemoryManager(storage, {
+ *   working: { maxTokens: 4000 },
+ *   episodic: { maxMemoriesPerSession: 1000 },
+ *   semantic: { maxMemoriesPerCategory: 2000 },
+ *   procedural: { minSuccessRate: 0.7 }
+ * });
+ *
+ * // Store a memory
+ * const memoryId = await manager.store(
+ *   'user-123',
+ *   'agent-456',
+ *   'User prefers dark mode',
+ *   'semantic'
+ * );
+ *
+ * // Recall related memories
+ * const memories = await manager.recall(
+ *   'user-123',
+ *   'agent-456',
+ *   'user preferences'
+ * );
+ * ```
+ *
+ * @example With custom embedding provider
+ * ```typescript
+ * // Set environment variables
+ * process.env.EMBEDDING_PROVIDER = 'google';
+ * process.env.GOOGLE_API_KEY = 'your-key';
+ *
+ * const manager = new MemoryManager(storage, config);
+ * ```
+ *
+ * @example Vector-enhanced configuration
+ * ```typescript
+ * const config = {
+ *   working: { maxTokens: 4000 },
+ *   episodic: { maxMemoriesPerSession: 1000 },
+ *   semantic: { maxMemoriesPerCategory: 2000 },
+ *   procedural: { minSuccessRate: 0.7 },
+ *   intelligence: {
+ *     embedding: {
+ *       enabled: true,
+ *       provider: 'google',
+ *       model: 'text-embedding-004',
+ *       similarityThreshold: 0.75
+ *     }
+ *   }
+ * };
+ * ```
  */
 
 import {
@@ -156,7 +220,53 @@ export class MemoryManager {
   }
 
   /**
-   * Store memory - Simple delegation to memory types with optional embedding generation
+   * Stores a new memory in the system with automatic importance calculation
+   *
+   * Uses vector-first approach when embedding service is available, automatically
+   * generating embeddings for semantic similarity search. Falls back gracefully
+   * to traditional storage when vector operations fail.
+   *
+   * @param userId - Unique user identifier for data isolation (required)
+   * @param agentId - The agent storing this memory
+   * @param content - Memory content to store
+   * @param type - Memory type: 'working' | 'episodic' | 'semantic' | 'procedural'
+   *
+   * @returns Promise<string> - The generated memory ID
+   *
+   * @throws {Error} If userId is empty (security requirement)
+   * @throws {Error} If agentId or content is empty
+   * @throws {Error} If storage operation fails
+   * @throws {Error} If content exceeds token limit for memory type
+   *
+   * @example Store semantic memory
+   * ```typescript
+   * const memoryId = await manager.store(
+   *   'user-123',
+   *   'agent-456',
+   *   'User prefers dark mode UI',
+   *   'semantic'
+   * );
+   * ```
+   *
+   * @example Store episodic memory (default type)
+   * ```typescript
+   * const memoryId = await manager.store(
+   *   'user-123',
+   *   'agent-456',
+   *   'User completed onboarding flow'
+   * );
+   * ```
+   *
+   * @example Store working memory with vector embedding
+   * ```typescript
+   * // If embedding service is configured, vector embedding is automatic
+   * const memoryId = await manager.store(
+   *   'user-123',
+   *   'agent-456',
+   *   'Current task: analyzing user feedback',
+   *   'working'
+   * );
+   * ```
    */
   async store(
     userId: string,
@@ -289,7 +399,54 @@ export class MemoryManager {
   }
 
   /**
-   * Recall memories - Vector-first approach with hybrid search
+   * Recalls memories using vector-first approach with hybrid search
+   *
+   * Performs semantic similarity search using embeddings when available,
+   * combining vector search (70%) with text search (30%) for optimal results.
+   * Falls back to traditional text-based search when vector operations fail.
+   *
+   * @param userId - Unique user identifier for data isolation (required)
+   * @param agentId - The agent requesting memories
+   * @param query - Search query to find related memories
+   * @param options - Optional search configuration
+   * @param options.type - Filter by memory type
+   * @param options.limit - Maximum number of memories to return (default: 20)
+   *
+   * @returns Promise<any[]> - Array of matching memories with relevance scores
+   *
+   * @throws {Error} If userId is empty (security requirement)
+   * @throws {Error} If agentId or query is empty
+   * @throws {Error} If storage operation fails
+   *
+   * @example Basic memory recall
+   * ```typescript
+   * const memories = await manager.recall(
+   *   'user-123',
+   *   'agent-456',
+   *   'user preferences'
+   * );
+   * ```
+   *
+   * @example Filtered recall with options
+   * ```typescript
+   * const workingMemories = await manager.recall(
+   *   'user-123',
+   *   'agent-456',
+   *   'current tasks',
+   *   { type: 'working', limit: 10 }
+   * );
+   * ```
+   *
+   * @example Semantic search with vector similarity
+   * ```typescript
+   * // If embedding service is configured, performs semantic similarity search
+   * const relatedMemories = await manager.recall(
+   *   'user-123',
+   *   'agent-456',
+   *   'dark theme settings'
+   * );
+   * // Returns memories about UI preferences, themes, display settings
+   * ```
    */
   async recall(
     userId: string,
@@ -379,7 +536,43 @@ export class MemoryManager {
   }
 
   /**
-   * Apply decay - DELEGATE to storage
+   * Applies time-based memory decay to reduce importance over time
+   *
+   * Implements exponential decay algorithm to gradually reduce memory importance
+   * and resonance based on age and access patterns. Memories that are accessed
+   * frequently maintain higher importance scores.
+   *
+   * @param userId - Unique user identifier for data isolation (required)
+   * @param agentId - The agent whose memories to decay
+   * @param decayConfig - Configuration for decay algorithm
+   * @param decayConfig.decayRate - Rate of importance reduction (0-1)
+   * @param decayConfig.minImportance - Minimum importance threshold
+   * @param decayConfig.accessBonus - Bonus for recently accessed memories
+   *
+   * @returns Promise<void> - Completes when decay is applied
+   *
+   * @throws {Error} If userId is empty (security requirement)
+   * @throws {Error} If agentId is empty
+   * @throws {Error} If decayConfig is missing
+   * @throws {Error} If storage operation fails
+   *
+   * @example Basic decay application
+   * ```typescript
+   * await manager.decay('user-123', 'agent-456', {
+   *   decayRate: 0.1,
+   *   minImportance: 0.1,
+   *   accessBonus: 0.05
+   * });
+   * ```
+   *
+   * @example Aggressive decay for working memory
+   * ```typescript
+   * await manager.decay('user-123', 'agent-456', {
+   *   decayRate: 0.3,
+   *   minImportance: 0.05,
+   *   accessBonus: 0.1
+   * });
+   * ```
    */
   async decay(
     userId: string,
@@ -404,7 +597,46 @@ export class MemoryManager {
   }
 
   /**
-   * Create connection - DELEGATE to storage
+   * Creates a manual connection between two memories
+   *
+   * Establishes a directed connection between memories with specified type and strength.
+   * Connections enable graph-based memory traversal and influence recall relevance.
+   *
+   * @param userId - Unique user identifier for data isolation (required)
+   * @param fromId - Source memory ID
+   * @param toId - Target memory ID
+   * @param connectionType - Type of connection (causal, temporal, semantic, etc.)
+   * @param strength - Connection strength (0-1, higher = stronger)
+   *
+   * @returns Promise<void> - Completes when connection is created
+   *
+   * @throws {Error} If userId is empty (security requirement)
+   * @throws {Error} If fromId or toId is empty
+   * @throws {Error} If connectionType is missing
+   * @throws {Error} If strength is not a number
+   * @throws {Error} If storage operation fails
+   *
+   * @example Create causal connection
+   * ```typescript
+   * await manager.createConnection(
+   *   'user-123',
+   *   'mem_user_clicked_button',
+   *   'mem_modal_opened',
+   *   'causal',
+   *   0.9
+   * );
+   * ```
+   *
+   * @example Create semantic connection
+   * ```typescript
+   * await manager.createConnection(
+   *   'user-123',
+   *   'mem_dark_mode_preference',
+   *   'mem_ui_theme_settings',
+   *   'semantic',
+   *   0.8
+   * );
+   * ```
    */
   async createConnection(
     userId: string,
@@ -443,7 +675,39 @@ export class MemoryManager {
   }
 
   /**
-   * Get memory statistics - DELEGATE to storage
+   * Retrieves memory statistics and usage metrics
+   *
+   * Provides comprehensive analytics about memory usage including count by type,
+   * storage usage, connection statistics, and performance metrics.
+   *
+   * @param userId - Unique user identifier for data isolation (required)
+   * @param agentId - Optional agent ID to filter statistics
+   *
+   * @returns Promise<any> - Object containing memory statistics
+   * @returns Promise<{
+   *   totalMemories: number;
+   *   memoriesByType: Record<string, number>;
+   *   totalConnections: number;
+   *   storageUsage: number;
+   *   averageImportance: number;
+   *   lastActivity: Date;
+   * }>
+   *
+   * @throws {Error} If userId is empty (security requirement)
+   * @throws {Error} If storage operation fails
+   *
+   * @example Get user-wide statistics
+   * ```typescript
+   * const stats = await manager.getStats('user-123');
+   * console.log(`Total memories: ${stats.totalMemories}`);
+   * console.log(`Working: ${stats.memoriesByType.working}`);
+   * ```
+   *
+   * @example Get agent-specific statistics
+   * ```typescript
+   * const agentStats = await manager.getStats('user-123', 'agent-456');
+   * console.log(`Agent has ${agentStats.totalMemories} memories`);
+   * ```
    */
   async getStats(userId: string, agentId?: string): Promise<any> {
     if (!userId || typeof userId !== 'string' || !userId.trim()) {
@@ -455,7 +719,33 @@ export class MemoryManager {
   }
 
   /**
-   * Clear working memory - Simple delegation
+   * Clears all working memory for a specific agent
+   *
+   * Removes all temporary memories from working memory type, typically used
+   * when starting a new conversation or task session.
+   *
+   * @param userId - Unique user identifier for data isolation (required)
+   * @param agentId - The agent whose working memory to clear
+   *
+   * @returns Promise<void> - Completes when working memory is cleared
+   *
+   * @throws {Error} If userId is empty (security requirement)
+   * @throws {Error} If agentId is empty
+   * @throws {Error} If storage operation fails
+   *
+   * @example Clear working memory for new session
+   * ```typescript
+   * await manager.clearWorkingMemory('user-123', 'agent-456');
+   * ```
+   *
+   * @example Clear working memory with confirmation
+   * ```typescript
+   * const stats = await manager.getStats('user-123', 'agent-456');
+   * if (stats.memoriesByType.working > 0) {
+   *   await manager.clearWorkingMemory('user-123', 'agent-456');
+   *   console.log('Working memory cleared');
+   * }
+   * ```
    */
   async clearWorkingMemory(userId: string, agentId: string): Promise<void> {
     if (!userId || typeof userId !== 'string' || !userId.trim()) {
@@ -470,7 +760,41 @@ export class MemoryManager {
   }
 
   /**
-   * Learn from outcome - Simple delegation
+   * Records a successful action pattern for procedural learning
+   *
+   * Stores trigger-action pairs that can be used for future recommendations.
+   * Builds procedural memory by learning from successful outcomes.
+   *
+   * @param userId - Unique user identifier for data isolation (required)
+   * @param agentId - The agent learning the pattern
+   * @param trigger - The condition or context that triggered the action
+   * @param action - The successful action taken
+   *
+   * @returns Promise<any> - Learning result with pattern ID and confidence
+   *
+   * @throws {Error} If userId is empty (security requirement)
+   * @throws {Error} If agentId, trigger, or action is empty
+   * @throws {Error} If storage operation fails
+   *
+   * @example Learn from successful interaction
+   * ```typescript
+   * const result = await manager.learn(
+   *   'user-123',
+   *   'agent-456',
+   *   'user asks for help',
+   *   'provide step-by-step instructions'
+   * );
+   * ```
+   *
+   * @example Learn from error resolution
+   * ```typescript
+   * const result = await manager.learn(
+   *   'user-123',
+   *   'agent-456',
+   *   'API timeout error',
+   *   'retry with exponential backoff'
+   * );
+   * ```
    */
   async learn(
     userId: string,
@@ -490,7 +814,52 @@ export class MemoryManager {
   }
 
   /**
-   * Get recommendations - Simple delegation
+   * Gets recommended actions based on procedural memory patterns
+   *
+   * Analyzes historical trigger-action patterns to suggest appropriate actions
+   * for the current context. Returns actions ranked by confidence score.
+   *
+   * @param userId - Unique user identifier for data isolation (required)
+   * @param agentId - The agent requesting recommendations
+   * @param trigger - The current context or condition
+   *
+   * @returns Promise<any[]> - Array of recommended actions with confidence scores
+   * @returns Promise<Array<{
+   *   action: string;
+   *   confidence: number;
+   *   timesUsed: number;
+   *   lastUsed: Date;
+   * }>>
+   *
+   * @throws {Error} If userId is empty (security requirement)
+   * @throws {Error} If agentId or trigger is empty
+   * @throws {Error} If storage operation fails
+   *
+   * @example Get recommendations for user request
+   * ```typescript
+   * const recommendations = await manager.getRecommendations(
+   *   'user-123',
+   *   'agent-456',
+   *   'user asks for help'
+   * );
+   *
+   * // Use the highest confidence recommendation
+   * const bestAction = recommendations[0];
+   * console.log(`Recommend: ${bestAction.action} (${bestAction.confidence})`);
+   * ```
+   *
+   * @example Get recommendations for error handling
+   * ```typescript
+   * const recommendations = await manager.getRecommendations(
+   *   'user-123',
+   *   'agent-456',
+   *   'API timeout error'
+   * );
+   *
+   * for (const rec of recommendations) {
+   *   console.log(`${rec.action} - used ${rec.timesUsed} times`);
+   * }
+   * ```
    */
   async getRecommendations(
     userId: string,
@@ -509,7 +878,49 @@ export class MemoryManager {
   }
 
   /**
-   * Search semantic knowledge - Simple delegation
+   * Searches semantic knowledge base for relevant information
+   *
+   * Performs targeted search within semantic memory type to find factual
+   * information, knowledge, and learned concepts related to the query.
+   *
+   * @param userId - Unique user identifier for data isolation (required)
+   * @param agentId - The agent searching for knowledge
+   * @param query - Search query for knowledge lookup
+   *
+   * @returns Promise<any[]> - Array of relevant knowledge entries
+   * @returns Promise<Array<{
+   *   content: string;
+   *   importance: number;
+   *   category: string;
+   *   createdAt: Date;
+   *   accessCount: number;
+   * }>>
+   *
+   * @throws {Error} If userId is empty (security requirement)
+   * @throws {Error} If agentId or query is empty
+   * @throws {Error} If storage operation fails
+   *
+   * @example Search for factual knowledge
+   * ```typescript
+   * const knowledge = await manager.searchKnowledge(
+   *   'user-123',
+   *   'agent-456',
+   *   'JavaScript async patterns'
+   * );
+   *
+   * for (const item of knowledge) {
+   *   console.log(`${item.category}: ${item.content}`);
+   * }
+   * ```
+   *
+   * @example Search for user-specific knowledge
+   * ```typescript
+   * const userKnowledge = await manager.searchKnowledge(
+   *   'user-123',
+   *   'agent-456',
+   *   'user preferences and settings'
+   * );
+   * ```
    */
   async searchKnowledge(
     userId: string,
@@ -528,7 +939,50 @@ export class MemoryManager {
   }
 
   /**
-   * Get working memory context - Simple delegation
+   * Retrieves current working context for active conversation
+   *
+   * Gets the most recent working memories that form the current context
+   * for ongoing conversation or task execution.
+   *
+   * @param userId - Unique user identifier for data isolation (required)
+   * @param agentId - The agent whose working context to retrieve
+   * @param limit - Maximum number of context items to return (default: all)
+   *
+   * @returns Promise<any[]> - Array of working context memories
+   * @returns Promise<Array<{
+   *   content: string;
+   *   importance: number;
+   *   createdAt: Date;
+   *   sessionId?: string;
+   * }>>
+   *
+   * @throws {Error} If userId is empty (security requirement)
+   * @throws {Error} If agentId is empty
+   * @throws {Error} If storage operation fails
+   *
+   * @example Get current working context
+   * ```typescript
+   * const context = await manager.getWorkingContext(
+   *   'user-123',
+   *   'agent-456',
+   *   5
+   * );
+   *
+   * console.log('Current context:');
+   * context.forEach(item => console.log(`- ${item.content}`));
+   * ```
+   *
+   * @example Get full working context
+   * ```typescript
+   * const fullContext = await manager.getWorkingContext(
+   *   'user-123',
+   *   'agent-456'
+   * );
+   *
+   * const contextSummary = fullContext
+   *   .map(item => item.content)
+   *   .join(' ');
+   * ```
    */
   async getWorkingContext(
     userId: string,
@@ -547,7 +1001,38 @@ export class MemoryManager {
   }
 
   /**
-   * Close memory manager - Cleanup
+   * Closes the memory manager and performs cleanup
+   *
+   * Properly shuts down the memory manager, releasing resources and
+   * performing any necessary cleanup operations. Should be called
+   * when the memory manager is no longer needed.
+   *
+   * @returns Promise<void> - Completes when cleanup is finished
+   *
+   * @throws {Error} If cleanup operations fail
+   *
+   * @example Graceful shutdown
+   * ```typescript
+   * try {
+   *   await manager.close();
+   *   console.log('Memory manager closed successfully');
+   * } catch (error) {
+   *   console.error('Error during cleanup:', error);
+   * }
+   * ```
+   *
+   * @example Close in finally block
+   * ```typescript
+   * let manager;
+   * try {
+   *   manager = new MemoryManager(storage, config);
+   *   // ... use memory manager
+   * } finally {
+   *   if (manager) {
+   *     await manager.close();
+   *   }
+   * }
+   * ```
    */
   async close(): Promise<void> {
     // Storage cleanup if supported

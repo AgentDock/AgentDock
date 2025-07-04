@@ -154,6 +154,78 @@ class ConnectionDiscoveryQueue extends EventEmitter {
 
 /**
  * Language-agnostic memory connection manager using progressive enhancement
+ *
+ * Automatically discovers meaningful connections between memories using a
+ * sophisticated layered approach: embedding similarity → user rules → LLM analysis.
+ * Supports semantic understanding without regex patterns for global compatibility.
+ *
+ * Features:
+ * - Progressive enhancement (embedding → rules → LLM → fallback)
+ * - Language-agnostic semantic analysis using embeddings
+ * - User-defined connection rules with semantic descriptions
+ * - Optional LLM enhancement for complex relationship detection
+ * - Cost-aware processing with budget controls
+ * - Real-time and queued connection discovery
+ * - Configurable embedding providers
+ * - User-level data isolation for security
+ *
+ * Architecture:
+ * Level 1: Embedding similarity (always performed, zero cost after cache)
+ * Level 2: User-defined semantic rules (free, configurable patterns)
+ * Level 3: LLM enhancement (optional, cost-controlled)
+ * Level 4: Heuristic fallback (temporal + similarity analysis)
+ *
+ * @example Basic connection discovery
+ * ```typescript
+ * const connectionManager = new MemoryConnectionManager(storage, config, costTracker);
+ *
+ * const connections = await connectionManager.discoverConnections(
+ *   'user-123',
+ *   'agent-456',
+ *   newMemory
+ * );
+ *
+ * await connectionManager.createConnections('user-123', connections);
+ * ```
+ *
+ * @example With semantic rules
+ * ```typescript
+ * const config = {
+ *   embedding: { enabled: true, similarityThreshold: 0.7 },
+ *   connectionDetection: {
+ *     method: 'hybrid',
+ *     userRules: {
+ *       enabled: true,
+ *       patterns: [{
+ *         id: 'user-action',
+ *         semanticDescription: 'user performs an action that affects the system',
+ *         connectionType: 'causal',
+ *         confidence: 0.8
+ *       }]
+ *     }
+ *   }
+ * };
+ * ```
+ *
+ * @example LLM-enhanced analysis
+ * ```typescript
+ * const config = {
+ *   embedding: { enabled: true },
+ *   connectionDetection: {
+ *     method: 'hybrid',
+ *     llmEnhancement: {
+ *       enabled: true,
+ *       provider: 'openai',
+ *       model: 'gpt-4-turbo-preview',
+ *       temperature: 0.2
+ *     }
+ *   },
+ *   costControl: {
+ *     monthlyBudget: 50,
+ *     preferEmbeddingWhenSimilar: true
+ *   }
+ * };
+ * ```
  */
 export class MemoryConnectionManager {
   private llm?: CoreLLM;
@@ -237,7 +309,85 @@ export class MemoryConnectionManager {
   }
 
   /**
-   * Discover connections for a new memory using progressive enhancement
+   * Discovers connections for a new memory using progressive enhancement
+   *
+   * Analyzes a new memory against recent memories to find meaningful connections
+   * using a layered approach: embedding similarity → user rules → LLM → heuristics.
+   * The progressive enhancement ensures optimal cost-performance balance.
+   *
+   * @param userId - Unique user identifier for data isolation (required)
+   * @param agentId - The agent whose memories to analyze
+   * @param newMemory - The new memory to find connections for
+   *
+   * @returns Promise<MemoryConnection[]> - Array of discovered connections
+   * @returns Promise<Array<{
+   *   id: string;
+   *   sourceMemoryId: string;
+   *   targetMemoryId: string;
+   *   connectionType: 'similar' | 'causes' | 'related' | 'part_of' | 'opposite';
+   *   strength: number;
+   *   reason: string;
+   *   createdAt: number;
+   *   metadata: {
+   *     method: string;
+   *     confidence: number;
+   *     embeddingSimilarity: number;
+   *     llmUsed: boolean;
+   *   };
+   * }>>
+   *
+   * @throws {Error} If userId is empty (security requirement)
+   * @throws {Error} If storage operations fail
+   * @throws {Error} If embedding generation fails
+   *
+   * @example Basic connection discovery
+   * ```typescript
+   * const newMemory = {
+   *   id: 'mem_123',
+   *   content: 'User clicked the save button',
+   *   userId: 'user-123',
+   *   agentId: 'agent-456',
+   *   createdAt: Date.now()
+   * };
+   *
+   * const connections = await connectionManager.discoverConnections(
+   *   'user-123',
+   *   'agent-456',
+   *   newMemory
+   * );
+   *
+   * console.log(`Found ${connections.length} connections`);
+   * connections.forEach(conn => {
+   *   console.log(`${conn.connectionType}: ${conn.reason} (${conn.strength})`);
+   * });
+   * ```
+   *
+   * @example With cost-aware processing
+   * ```typescript
+   * // Manager will automatically:
+   * // 1. Check embedding similarity (free after cache)
+   * // 2. Apply user rules if configured (free)
+   * // 3. Use LLM only if within budget and similarity < 0.9
+   * // 4. Fall back to heuristics if needed
+   *
+   * const connections = await connectionManager.discoverConnections(
+   *   'user-123',
+   *   'agent-456',
+   *   newMemory
+   * );
+   * ```
+   *
+   * @example Processing results by connection type
+   * ```typescript
+   * const connections = await connectionManager.discoverConnections(
+   *   'user-123',
+   *   'agent-456',
+   *   newMemory
+   * );
+   *
+   * const causalConnections = connections.filter(c => c.connectionType === 'causes');
+   * const similarConnections = connections.filter(c => c.connectionType === 'similar');
+   * ```
    */
   async discoverConnections(
     userId: string,
@@ -609,7 +759,65 @@ Provide confidence score (0-1) and brief reasoning.`
   }
 
   /**
-   * Create connections in storage with proper userId security
+   * Creates connections in storage with proper userId security
+   *
+   * Persists discovered memory connections to storage with user-level isolation.
+   * Supports both modern memory adapter interfaces and fallback storage methods.
+   * All connections are secured with userId prefixing to prevent cross-user access.
+   *
+   * @param userId - Unique user identifier for data isolation (required)
+   * @param connections - Array of memory connections to create
+   *
+   * @returns Promise<void> - Completes when all connections are persisted
+   *
+   * @throws {Error} If userId is empty (security requirement)
+   * @throws {Error} If storage operations fail
+   * @throws {Error} If connection data is invalid
+   *
+   * @example Create discovered connections
+   * ```typescript
+   * const connections = await connectionManager.discoverConnections(
+   *   'user-123',
+   *   'agent-456',
+   *   newMemory
+   * );
+   *
+   * await connectionManager.createConnections('user-123', connections);
+   * console.log(`Created ${connections.length} connections`);
+   * ```
+   *
+   * @example Batch connection creation
+   * ```typescript
+   * const allConnections = [];
+   *
+   * for (const memory of newMemories) {
+   *   const connections = await connectionManager.discoverConnections(
+   *     'user-123',
+   *     'agent-456',
+   *     memory
+   *   );
+   *   allConnections.push(...connections);
+   * }
+   *
+   * // Create all connections in one operation
+   * await connectionManager.createConnections('user-123', allConnections);
+   * ```
+   *
+   * @example Handle empty connections gracefully
+   * ```typescript
+   * const connections = await connectionManager.discoverConnections(
+   *   'user-123',
+   *   'agent-456',
+   *   newMemory
+   * );
+   *
+   * if (connections.length > 0) {
+   *   await connectionManager.createConnections('user-123', connections);
+   *   console.log('Connections created successfully');
+   * } else {
+   *   console.log('No connections found to create');
+   * }
+   * ```
    */
   async createConnections(
     userId: string,
@@ -754,7 +962,75 @@ Provide confidence score (0-1) and brief reasoning.`
   }
 
   /**
-   * Get memory by ID for connection discovery
+   * Retrieves a specific memory by its ID for connection discovery
+   *
+   * Fetches a memory object by its unique identifier with proper user-level
+   * data isolation. Used internally by connection discovery algorithms to
+   * access memory content and metadata for relationship analysis.
+   *
+   * @param userId - Unique user identifier for data isolation (required)
+   * @param memoryId - The unique identifier of the memory to retrieve
+   *
+   * @returns Promise<Memory | null> - The memory object or null if not found
+   * @returns Promise<{
+   *   id: string;
+   *   content: string;
+   *   userId: string;
+   *   agentId: string;
+   *   type: MemoryType;
+   *   importance: number;
+   *   createdAt: number;
+   *   updatedAt: number;
+   *   metadata?: any;
+   * } | null>
+   *
+   * @throws {Error} If userId is empty (security requirement)
+   * @throws {Error} If storage operations fail
+   *
+   * @example Retrieve memory for connection analysis
+   * ```typescript
+   * const memory = await connectionManager.getMemoryById(
+   *   'user-123',
+   *   'mem_abc123'
+   * );
+   *
+   * if (memory) {
+   *   console.log(`Found memory: ${memory.content}`);
+   *   console.log(`Type: ${memory.type}, Importance: ${memory.importance}`);
+   * } else {
+   *   console.log('Memory not found');
+   * }
+   * ```
+   *
+   * @example Batch memory retrieval
+   * ```typescript
+   * const memoryIds = ['mem_123', 'mem_456', 'mem_789'];
+   * const memories = [];
+   *
+   * for (const id of memoryIds) {
+   *   const memory = await connectionManager.getMemoryById('user-123', id);
+   *   if (memory) memories.push(memory);
+   * }
+   *
+   * console.log(`Retrieved ${memories.length} memories`);
+   * ```
+   *
+   * @example Safe memory access with error handling
+   * ```typescript
+   * try {
+   *   const memory = await connectionManager.getMemoryById(
+   *     'user-123',
+   *     'mem_abc123'
+   *   );
+   *
+   *   if (memory) {
+   *     // Process memory for connection discovery
+   *     const connections = await analyzeConnections(memory);
+   *   }
+   * } catch (error) {
+   *   console.error('Failed to retrieve memory:', error);
+   * }
+   * ```
    */
   async getMemoryById(
     userId: string,
@@ -786,7 +1062,78 @@ Provide confidence score (0-1) and brief reasoning.`
   }
 
   /**
-   * Enqueue connection discovery (async, non-blocking)
+   * Enqueues connection discovery for asynchronous processing
+   *
+   * Adds a memory to the connection discovery queue for background processing.
+   * This enables non-blocking connection discovery that doesn't delay memory
+   * storage operations. The queue handles deduplication and rate limiting.
+   *
+   * @param userId - Unique user identifier for data isolation (required)
+   * @param agentId - The agent whose memory needs connection discovery
+   * @param memoryId - The unique identifier of the memory to process
+   *
+   * @returns Promise<void> - Completes when memory is added to queue
+   *
+   * @throws {Error} If userId is empty (security requirement)
+   * @throws {Error} If memoryId is invalid
+   * @throws {Error} If queue operation fails
+   *
+   * @example Async connection discovery after memory storage
+   * ```typescript
+   * // Store memory first
+   * const memoryId = await memoryManager.store(
+   *   'user-123',
+   *   'agent-456',
+   *   'User clicked save button'
+   * );
+   *
+   * // Queue connection discovery (non-blocking)
+   * await connectionManager.enqueueConnectionDiscovery(
+   *   'user-123',
+   *   'agent-456',
+   *   memoryId
+   * );
+   *
+   * console.log('Memory stored and queued for connection discovery');
+   * ```
+   *
+   * @example Batch memory processing
+   * ```typescript
+   * const memoryIds = ['mem_123', 'mem_456', 'mem_789'];
+   *
+   * // Queue all memories for connection discovery
+   * for (const memoryId of memoryIds) {
+   *   await connectionManager.enqueueConnectionDiscovery(
+   *     'user-123',
+   *     'agent-456',
+   *     memoryId
+   *   );
+   * }
+   *
+   * console.log(`Queued ${memoryIds.length} memories for processing`);
+   * ```
+   *
+   * @example Non-blocking memory workflow
+   * ```typescript
+   * // Fast memory storage without waiting for connections
+   * const memoryId = await memoryManager.store(
+   *   'user-123',
+   *   'agent-456',
+   *   'Important user action'
+   * );
+   *
+   * // Queue for background processing
+   * connectionManager.enqueueConnectionDiscovery(
+   *   'user-123',
+   *   'agent-456',
+   *   memoryId
+   * ).catch(error => {
+   *   console.error('Queue error:', error);
+   * });
+   *
+   * // Continue with other operations immediately
+   * return { success: true, memoryId };
+   * ```
    */
   async enqueueConnectionDiscovery(
     userId: string,

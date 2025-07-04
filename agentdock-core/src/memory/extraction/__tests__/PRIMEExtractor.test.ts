@@ -39,10 +39,32 @@ describe('PRIMEExtractor', () => {
       expect(extractor).toBeDefined();
     });
 
+    test('should throw when apiKey is missing', () => {
+      const invalidConfig = {
+        ...config,
+        apiKey: ''
+      };
+
+      expect(() => new PRIMEExtractor(invalidConfig, mockCostTracker)).toThrow(
+        'Configuration error for apiKey: PRIME apiKey is required. Provide via config.apiKey or PRIME_API_KEY env var'
+      );
+    });
+
+    test('should throw when provider is invalid', () => {
+      const invalidConfig = {
+        ...config,
+        provider: 'invalid-provider'
+      };
+
+      expect(() => new PRIMEExtractor(invalidConfig, mockCostTracker)).toThrow(
+        'Configuration error for provider: Invalid provider "invalid-provider". Must be one of: openai, anthropic, azure, bedrock'
+      );
+    });
+
     test('should apply environment variable defaults', () => {
       const envConfig = {
         provider: 'openai',
-        apiKey: '',
+        apiKey: 'env-test-key',
         maxTokens: 2000,
         autoTierSelection: true,
         defaultTier: 'fast' as const,

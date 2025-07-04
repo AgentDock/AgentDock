@@ -27,6 +27,14 @@ import { LogCategory, logger } from '../../logging';
 import { CostTracker } from '../tracking/CostTracker';
 import { Memory, MemoryMessage, MemoryType } from '../types/common';
 
+// Configuration validation error class
+class ConfigValidationError extends Error {
+  constructor(field: string, message: string) {
+    super(`Configuration error for ${field}: ${message}`);
+    this.name = 'ConfigValidationError';
+  }
+}
+
 // PRIME extraction schema for generateObject validation
 const PRIMEExtractionSchema = z.object({
   memories: z.array(
@@ -329,10 +337,28 @@ JSON: [{content, type, importance, reasoning}]`;
    * Environment variables provide overrides
    */
   private validateAndSetDefaults(config: PRIMEConfig): PRIMEConfig {
+    // Validate critical fields first
+    const apiKey = process.env.PRIME_API_KEY || config.apiKey;
+    if (!apiKey) {
+      throw new ConfigValidationError(
+        'apiKey',
+        'PRIME apiKey is required. Provide via config.apiKey or PRIME_API_KEY env var'
+      );
+    }
+
+    const provider = process.env.PRIME_PROVIDER || config.provider || 'openai';
+    const validProviders = ['openai', 'anthropic', 'azure', 'bedrock'];
+    if (!validProviders.includes(provider)) {
+      throw new ConfigValidationError(
+        'provider',
+        `Invalid provider "${provider}". Must be one of: ${validProviders.join(', ')}`
+      );
+    }
+
     return {
-      // LLM Configuration - Environment takes precedence, then config
-      provider: process.env.PRIME_PROVIDER || config.provider || 'openai',
-      apiKey: process.env.PRIME_API_KEY || config.apiKey || '',
+      // LLM Configuration - Validated fields
+      provider,
+      apiKey,
       maxTokens: process.env.PRIME_MAX_TOKENS
         ? Number(process.env.PRIME_MAX_TOKENS)
         : config.maxTokens || 4000,

@@ -72,6 +72,14 @@ export class PRIMEOrchestrator {
   private config: PRIMEOrchestratorConfig;
 
   constructor(storage: StorageProvider, config: PRIMEOrchestratorConfig) {
+    // Validate storage provider has required memory operations
+    if (!storage.memory) {
+      throw new Error(
+        'Storage provider must support memory operations. ' +
+          'Ensure your storage provider implements the memory interface.'
+      );
+    }
+
     this.storage = storage;
     this.config = this.validateAndSetDefaults(config);
 

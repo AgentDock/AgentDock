@@ -11,6 +11,11 @@ import { EventEmitter } from 'events';
 import { openai } from '@ai-sdk/openai';
 import { z } from 'zod';
 
+import {
+  createEmbedding,
+  getDefaultEmbeddingModel,
+  getEmbeddingDimensions
+} from '../../../llm';
 import { CoreLLM } from '../../../llm/core-llm';
 import { createLLM } from '../../../llm/create-llm';
 import { LogCategory, logger } from '../../../logging';
@@ -179,12 +184,32 @@ export class MemoryConnectionManager {
       });
     }
 
-    // Initialize embedding service with OpenAI model
-    const embeddingModel = openai.embedding('text-embedding-3-small');
+    // Initialize embedding service with configurable provider
+    const embeddingProvider =
+      config.embedding.provider || process.env.EMBEDDING_PROVIDER || 'openai';
+    const embeddingModel = createEmbedding({
+      provider: embeddingProvider as
+        | 'openai'
+        | 'google'
+        | 'mistral'
+        | 'voyage'
+        | 'cohere',
+      apiKey: process.env[`${embeddingProvider.toUpperCase()}_API_KEY`] || '',
+      model:
+        config.embedding.model || getDefaultEmbeddingModel(embeddingProvider),
+      dimensions: getEmbeddingDimensions(
+        embeddingProvider,
+        config.embedding.model || getDefaultEmbeddingModel(embeddingProvider)
+      )
+    });
     const embeddingConfig = {
-      provider: 'openai',
-      model: config.embedding.model || 'text-embedding-3-small',
-      dimensions: 1536,
+      provider: embeddingProvider,
+      model:
+        config.embedding.model || getDefaultEmbeddingModel(embeddingProvider),
+      dimensions: getEmbeddingDimensions(
+        embeddingProvider,
+        config.embedding.model || getDefaultEmbeddingModel(embeddingProvider)
+      ),
       cacheEnabled: true,
       batchSize: 100
     };

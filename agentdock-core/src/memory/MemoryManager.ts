@@ -4,7 +4,12 @@
  * Integrates vector similarity search with traditional memory operations
  */
 
-import { createEmbedding, getEmbeddingDimensions } from '../llm';
+import {
+  createEmbedding,
+  getDefaultEmbeddingModel,
+  getEmbeddingDimensions
+} from '../llm';
+import { LogCategory, logger } from '../logging';
 import {
   ConnectionType,
   HybridSearchOptions,
@@ -71,23 +76,69 @@ export class MemoryManager {
     // Initialize embedding service if intelligence config provides embedding settings
     if (config.intelligence?.embedding?.enabled) {
       // Build proper EmbeddingConfig from IntelligenceLayerConfig
-      const provider = 'openai'; // Default provider, could be made configurable
+      const validProviders = ['openai', 'google', 'mistral'];
+      let provider =
+        config.intelligence.embedding.provider ||
+        process.env.EMBEDDING_PROVIDER ||
+        'openai';
+
+      if (!validProviders.includes(provider)) {
+        logger.warn(
+          LogCategory.STORAGE,
+          'MemoryManager',
+          `Embedding provider '${provider}' not yet implemented. Using 'openai'. Check TODO in settings page for status.`,
+          { requested: provider, available: validProviders }
+        );
+        provider = 'openai';
+      }
+
+      // Add logging for debugging
+      logger.debug(
+        LogCategory.STORAGE,
+        'MemoryManager',
+        'Initializing embedding service',
+        {
+          provider,
+          model: config.intelligence.embedding.model || 'default',
+          source: config.intelligence.embedding.provider
+            ? 'config'
+            : 'environment'
+        }
+      );
+
+      // Add logging for non-default providers
+      if (provider !== 'openai') {
+        logger.info(
+          LogCategory.STORAGE,
+          'MemoryManager',
+          `Using ${provider} embedding provider`
+        );
+      }
+
       const model =
-        config.intelligence.embedding.model || 'text-embedding-3-small';
+        config.intelligence.embedding.model ||
+        getDefaultEmbeddingModel(provider);
       const dimensions = getEmbeddingDimensions(provider, model);
 
       // Get API key from environment or config
       const apiKey = process.env[`${provider.toUpperCase()}_API_KEY`] || '';
 
       if (!apiKey) {
-        console.warn(
+        logger.warn(
+          LogCategory.STORAGE,
+          'MemoryManager',
           'No API key found for embedding provider. Embedding features will be disabled.'
         );
         return;
       }
 
       const embeddingModel = createEmbedding({
-        provider,
+        provider: provider as
+          | 'openai'
+          | 'google'
+          | 'mistral'
+          | 'voyage'
+          | 'cohere',
         apiKey,
         model,
         dimensions

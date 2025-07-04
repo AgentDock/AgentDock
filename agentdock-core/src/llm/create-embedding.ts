@@ -13,6 +13,25 @@ import type { EmbeddingModel } from 'ai';
 import { createError, ErrorCode } from '../errors';
 import { LogCategory, logger } from '../logging';
 
+/*
+  TODO: Embedding Dimensions Reference
+  =====================================
+  openai/text-embedding-3-small: 1536
+  openai/text-embedding-3-large: 3072
+  google/text-embedding-004: 768
+  mistral/mistral-embed: 1024
+  voyage/voyage-3: 1024
+  voyage/voyage-3-lite: 512
+  cohere/embed-english-v3.0: 1024
+  
+  Important for vector database schema planning
+*/
+
+// Add these imports when packages are available:
+// import { createMistral } from '@ai-sdk/mistral';
+// import { createVoyage } from '@ai-sdk/voyage';
+// import { createCohere } from '@ai-sdk/cohere';
+
 /**
  * Configuration for creating embedding models
  */
@@ -20,6 +39,9 @@ export interface EmbeddingConfig {
   provider:
     | 'openai'
     | 'google'
+    | 'mistral'
+    | 'voyage'
+    | 'cohere'
     | 'anthropic'
     | 'groq'
     | 'cerebras'
@@ -116,6 +138,32 @@ export function createEmbedding(
         ErrorCode.LLM_EXECUTION
       );
 
+    /* TODO: Uncomment when packages are available
+    case 'mistral': {
+      if (!config.apiKey) {
+        throw createError('llm', 'Mistral API key is required', ErrorCode.LLM_API_KEY);
+      }
+      const provider = createMistral({ apiKey: config.apiKey });
+      return provider.embedding(config.model || 'mistral-embed');
+    }
+
+    case 'voyage': {
+      if (!config.apiKey) {
+        throw createError('llm', 'Voyage API key is required', ErrorCode.LLM_API_KEY);
+      }
+      const provider = createVoyage({ apiKey: config.apiKey });
+      return provider.embedding(config.model || 'voyage-3');
+    }
+
+    case 'cohere': {
+      if (!config.apiKey) {
+        throw createError('llm', 'Cohere API key is required', ErrorCode.LLM_API_KEY);
+      }
+      const provider = createCohere({ apiKey: config.apiKey });
+      return provider.embedding(config.model || 'embed-english-v3.0');
+    }
+    */
+
     default:
       throw createError(
         'llm',
@@ -134,6 +182,10 @@ export function getDefaultEmbeddingModel(provider: string): string {
       return 'text-embedding-3-small';
     case 'google':
       return 'text-embedding-004';
+    // TODO: Uncomment when packages available:
+    // case 'mistral': return 'mistral-embed';
+    // case 'voyage': return 'voyage-3';
+    // case 'cohere': return 'embed-english-v3.0';
     default:
       throw createError(
         'llm',
@@ -166,6 +218,27 @@ export function getEmbeddingDimensions(
   if (provider === 'google') {
     return 768; // Google's text-embedding-004 dimension
   }
+
+  /* TODO: Uncomment when packages available:
+  if (provider === 'mistral') {
+    return 1024; // Mistral's mistral-embed dimension
+  }
+
+  if (provider === 'voyage') {
+    switch (model) {
+      case 'voyage-3':
+        return 1024;
+      case 'voyage-3-lite':
+        return 512;
+      default:
+        return 1024;
+    }
+  }
+
+  if (provider === 'cohere') {
+    return 1024; // Cohere's embed-english-v3.0 dimension
+  }
+  */
 
   return 1536; // Default dimension
 }

@@ -64,6 +64,12 @@
     }
   },
   "comments": {
+    "embedding-providers": "TODO: Add when implementing additional embedding providers",
+    "future-dependencies": [
+      "@ai-sdk/mistral: ^x.x.x - TODO: Add when implementing Mistral support",
+      "@ai-sdk/voyage: ^x.x.x - TODO: Add when voyage package available",
+      "@ai-sdk/cohere: ^x.x.x - TODO: Add when cohere package available"
+    ],
     "providers": "DeepSeek API is compatible with OpenAI's format, so we use the OpenAI client with a custom baseURL"
   },
   "devDependencies": {

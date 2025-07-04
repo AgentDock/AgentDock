@@ -6,8 +6,10 @@ export interface IntelligenceLayerConfig {
   // Base layer - always enabled, zero cost
   embedding: {
     enabled: true;
+    provider?: 'openai' | 'google' | 'mistral' | 'voyage' | 'cohere'; // Add provider types
     similarityThreshold: number; // 0.7 default
     model?: string; // Which embedding model to use
+    apiKey?: string; // Optional override
   };
 
   // Optional enhancement layers

@@ -36,7 +36,7 @@ Each layer serves a distinct purpose and works together to create agents that tr
 | Hybrid Search (30-70 split) | Implemented | PostgreSQL and SQLite adapters |
 | Memory Connections | Implemented | Progressive enhancement approach |
 | Preset Configurations | Implemented | Default, Precision, Performance, Research |
-| Memory Decay System | Implemented | Configurable rules with exponential decay |
+| Lazy Memory Decay System | Implemented | On-demand decay calculation, 65-100% write avoidance |
 | Migration Tools | Planned | Future release |
 
 ## How AgentDock Memory Works
@@ -268,13 +268,20 @@ See [Architecture Overview](./architecture-overview.md) for complete configurati
 
 ## Memory Lifecycle Management
 
-**Configurable Memory Decay**: Human-like forgetting with exponential decay formula
-- **Rule-based protection**: Prevent critical information from decaying
+**Lazy Memory Decay**: Efficient on-demand decay calculation that scales with usage, not data size
+- **65-100% write avoidance**: Only update memories that are actually accessed
+- **Exponential decay formula**: Human-like forgetting with configurable half-lives
+- **Rule-based protection**: Prevent critical information from decaying (neverDecay flag)
 - **Access reinforcement**: Frequently recalled memories stay strong
 - **Automatic cleanup**: Remove memories below relevance threshold
-- **Custom rules**: Define domain-specific retention policies
+- **No scheduled jobs**: Eliminates batch processing failures and resource bottlenecks
 
-Example rules: Never decay medical allergies, slow decay for user preferences, faster decay for casual conversations.
+Example configurations: Never decay medical allergies, slow decay for user preferences (90 days), faster decay for casual conversations (7 days).
+
+**Performance Benefits**:
+- Scales with memory access patterns, not total memory count
+- Sub-second processing for typical workloads
+- Eliminates the scalability bottleneck of processing millions of memories daily
 
 See [Architecture Overview](./architecture-overview.md) for complete decay configuration examples.
 

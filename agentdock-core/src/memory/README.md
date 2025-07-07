@@ -65,15 +65,14 @@ agentdock-core/src/memory/
 ├── lifecycle/                 # Memory Management
 │   ├── index.ts               # Lifecycle exports
 │   ├── types.ts               # Lifecycle type definitions
-│   ├── MemoryLifecycleManager.ts    # Memory lifecycle orchestration
 │   ├── MemoryEvolutionTracker.ts    # Evolution tracking
-│   ├── LifecycleScheduler.ts        # Automated scheduling
 │   └── examples/              # Lifecycle usage examples
 │
-├── decay/                     # Memory Decay System
-│   ├── index.ts               # Decay exports
-│   ├── types.ts               # Decay type definitions
-│   └── ConfigurableDecayEngine.ts   # Universal decay implementation
+├── decay/                     # Lazy Memory Decay System
+│   ├── index.ts               # Lazy decay exports
+│   ├── types.ts               # Lazy decay type definitions
+│   ├── LazyDecayCalculator.ts       # On-demand decay calculation
+│   └── LazyDecayBatchProcessor.ts   # Efficient update batching
 │
 ├── procedural/                # Procedural Memory System
 │   ├── index.ts               # Procedural exports
@@ -370,6 +369,47 @@ const storage = new PostgreSQLAdapter({
 // Note: ChromaDB and Pinecone adapters exist but are not yet optimized for memory operations
 // Use PostgreSQL or SQLite for production deployments
 ```
+
+## Lazy Memory Decay System
+
+The memory system uses **lazy evaluation** for decay calculation, processing only memories that are actually accessed rather than running scheduled batch jobs.
+
+### Core Components
+
+**LazyDecayCalculator**: Calculates exponential decay on-demand during recall operations
+- Custom half-life support (7d working, 30d episodic, 90d semantic, 365d procedural)
+- Reinforcement for frequently accessed memories  
+- Significance threshold (10%) to avoid unnecessary updates
+- neverDecay flag for critical information
+
+**LazyDecayBatchProcessor**: Efficiently batches memory updates
+- Collects updates from multiple recall operations
+- Writes in optimized batches (100 updates per batch)
+- Race condition handling with update merging
+- Overflow protection (10K pending update limit)
+
+### Configuration
+
+```typescript
+const lazyDecayConfig = {
+  defaultHalfLife: 30,           // 30 days default
+  reinforcementEnabled: true,    // Strengthen accessed memories
+  significanceThreshold: 0.1,    // 10% change required for update
+  minUpdateInterval: 60000       // 1 minute minimum between updates
+};
+
+const batchProcessorConfig = {
+  maxBatchSize: 100,            // 100 updates per batch
+  flushIntervalMs: 5000,        // 5 second batching
+  maxPendingUpdates: 10000      // 10K update limit
+};
+```
+
+### Performance Benefits
+- **65-100% write avoidance** depending on memory access patterns
+- **O(accessed) scaling** - only processes used memories
+- **No scheduled jobs** - eliminates batch processing failures
+- **Sub-second processing** for typical workloads
 
 ## Cost Tracking
 

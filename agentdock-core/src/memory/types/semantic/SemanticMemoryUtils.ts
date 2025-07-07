@@ -1,10 +1,11 @@
+import { createHash } from 'crypto';
 import { LogCategory, logger } from '../../../logging';
 import {
   MemoryOperations,
   VectorMemoryOperations
 } from '../../../storage/types';
 import { EmbeddingService } from '../../intelligence/embeddings/EmbeddingService';
-import { SemanticMemoryData } from './SemanticMemoryTypes';
+import { SemanticMemoryData, SemanticMemoryConfig } from './SemanticMemoryTypes';
 
 /**
  * Utility functions for SemanticMemory operations
@@ -582,7 +583,7 @@ export function mergeSemanticMemories(
 /**
  * Validate semantic memory configuration
  */
-export function validateSemanticConfig(config: any): boolean {
+export function validateSemanticConfig(config: SemanticMemoryConfig): boolean {
   return (
     config.deduplicationThreshold >= 0 &&
     config.deduplicationThreshold <= 1 &&
@@ -736,12 +737,9 @@ async function isBoilerplate(content: string): Promise<boolean> {
  * Generate content hash for deduplication
  */
 export function generateContentHash(content: string): string {
-  // Simple hash for content deduplication
-  let hash = 0;
-  for (let i = 0; i < content.length; i++) {
-    const char = content.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash; // Convert to 32-bit integer
-  }
-  return hash.toString();
+  // Use SHA-256 for secure content hashing
+  return createHash('sha256')
+    .update(content)
+    .digest('hex')
+    .substring(0, 16); // Use first 16 chars for reasonable length
 }

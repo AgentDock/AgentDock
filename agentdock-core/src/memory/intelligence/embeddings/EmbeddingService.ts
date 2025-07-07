@@ -8,6 +8,7 @@
  */
 
 import type { EmbeddingModel } from 'ai';
+import { createHash } from 'crypto';
 
 import { embedMany } from '../../../llm';
 import { LogCategory, logger } from '../../../logging';
@@ -290,13 +291,19 @@ export class EmbeddingService {
    * Generate cache key for content
    */
   private getCacheKey(content: string): string {
-    let hash = 0;
-    for (let i = 0; i < content.length; i++) {
-      const char = content.charCodeAt(i);
-      hash = (hash << 5) - hash + char;
-      hash = hash & hash;
-    }
-    return `emb_${this.config.dimensions || 1536}_${Math.abs(hash).toString(36)}`;
+    const hash = this.generateContentHash(content);
+    return `emb_${this.config.dimensions || 1536}_${hash}`;
+  }
+
+  /**
+   * Generate secure hash for content
+   */
+  private generateContentHash(content: string): string {
+    return createHash('sha256')
+      .update(content)
+      .update(this.config.model || 'default') // Include model in hash
+      .digest('hex')
+      .substring(0, 16); // Use first 16 chars for reasonable length
   }
 
   /**

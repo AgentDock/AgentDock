@@ -4,6 +4,7 @@
  * Properly typed embedding function using AI SDK embedding models
  */
 
+import { createHash } from 'crypto';
 import {
   createEmbedding,
   embedMany,
@@ -186,14 +187,11 @@ export class AISDKEmbeddingFunction implements ChromaEmbeddingFunction {
    * Generate cache key for content
    */
   private getCacheKey(content: string): string {
-    // Simple hash for cache key
-    let hash = 0;
-    for (let i = 0; i < content.length; i++) {
-      const char = content.charCodeAt(i);
-      hash = (hash << 5) - hash + char;
-      hash = hash & hash; // Convert to 32bit integer
-    }
-    return `emb_${this.dimension}_${Math.abs(hash).toString(36)}`;
+    const hash = createHash('sha256')
+      .update(content)
+      .digest('hex')
+      .substring(0, 16); // Use first 16 chars for consistency
+    return `emb_${this.dimension}_${hash}`;
   }
 
   /**

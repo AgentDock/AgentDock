@@ -5,6 +5,7 @@
  * multi-tenant support, and efficient organization.
  */
 
+import { createHash } from 'crypto';
 import { LogCategory, logger } from '../../logging';
 import { MemoryType } from '../adapters/postgresql/schema-memory';
 import { getStorageFactory } from '../factory';
@@ -339,16 +340,13 @@ export class IsolatedMemoryOperations {
   }
 
   /**
-   * Simple content hashing
+   * Generate secure hash for content
    */
   private hashContent(content: string): string {
-    let hash = 0;
-    for (let i = 0; i < content.length; i++) {
-      const char = content.charCodeAt(i);
-      hash = (hash << 5) - hash + char;
-      hash = hash | 0; // Convert to 32bit integer
-    }
-    return Math.abs(hash).toString(36);
+    return createHash('sha256')
+      .update(content)
+      .digest('hex')
+      .substring(0, 16); // Use first 16 chars for consistency
   }
 
   /**

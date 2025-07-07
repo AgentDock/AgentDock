@@ -5,8 +5,9 @@
  */
 
 import { LogCategory, logger } from '../../../logging';
+import { MemoryStorageError } from '../../../shared/errors/memory-errors';
 import { MemoryType } from '../../../shared/types/memory';
-import { StorageProvider } from '../../../storage/types';
+import { MemoryOperations, StorageProvider } from '../../../storage/types';
 import { IntelligenceLayerConfig } from '../../intelligence/types';
 import { BaseMemoryType } from '../base/BaseMemoryType';
 import {
@@ -17,16 +18,37 @@ import {
 } from './WorkingMemoryTypes';
 import { estimateTokens } from './WorkingMemoryUtils';
 
-export class WorkingMemory extends BaseMemoryType {
+export class WorkingMemory extends BaseMemoryType<WorkingMemoryConfig> {
   constructor(
     storage: StorageProvider,
     private workingConfig: WorkingMemoryConfig,
     intelligenceConfig?: IntelligenceLayerConfig
   ) {
     super(storage, workingConfig, intelligenceConfig);
-    if (!storage.memory) {
-      throw new Error('Storage must support memory operations');
+  }
+
+  /**
+   * Validates storage is available and returns memory operations
+   * @throws {MemoryStorageError} If storage or memory operations are unavailable
+   * @returns Memory operations interface
+   * @private
+   */
+  private getMemoryOps(): MemoryOperations {
+    if (!this.storage) {
+      throw new MemoryStorageError(
+        'Storage provider not available',
+        'STORAGE_NOT_INITIALIZED'
+      );
     }
+
+    if (!this.storage.memory) {
+      throw new MemoryStorageError(
+        'Memory operations not available - storage may be disconnected or destroyed',
+        'MEMORY_OPS_UNAVAILABLE'
+      );
+    }
+
+    return this.storage.memory;
   }
 
   /**
@@ -76,7 +98,7 @@ export class WorkingMemory extends BaseMemoryType {
       }
     };
 
-    await this.storage.memory!.store(userId, agentId, memoryData);
+    await this.getMemoryOps().store(userId, agentId, memoryData);
     return memoryData.id;
   }
 
@@ -96,11 +118,24 @@ export class WorkingMemory extends BaseMemoryType {
     }
 
     // DELEGATE TO STORAGE
-    const result = await this.storage.memory!.recall(userId, agentId, query, {
+    const result = await this.getMemoryOps().recall(userId, agentId, query, {
       type: MemoryType.WORKING,
       limit
     });
-    return result as unknown as WorkingMemoryData[];
+    
+    // Transform MemoryData to WorkingMemoryData with proper field mapping
+    return result.map(memory => ({
+      id: memory.id,
+      agentId: memory.agentId,
+      content: memory.content,
+      createdAt: memory.createdAt,
+      importance: memory.importance,
+      sessionId: memory.sessionId || `session_${Date.now()}`,
+      contextWindow: memory.metadata?.contextWindow ?? this.workingConfig.maxContextItems,
+      tokenCount: memory.tokenCount ?? 0,
+      expiresAt: memory.metadata?.expiresAt ?? 0,
+      metadata: memory.metadata
+    }));
   }
 
   /**
@@ -118,7 +153,7 @@ export class WorkingMemory extends BaseMemoryType {
     }
 
     // Use storage recall to find memories to delete
-    const memories = await this.storage.memory!.recall(userId, agentId, '', {
+    const memories = await this.getMemoryOps().recall(userId, agentId, '', {
       type: MemoryType.WORKING,
       limit: 1000 // Get all working memories
     });
@@ -130,7 +165,7 @@ export class WorkingMemory extends BaseMemoryType {
 
     // Batch delete through storage
     await Promise.all(
-      toDelete.map((m) => this.storage.memory!.delete(userId, agentId, m.id!))
+      toDelete.map((m) => this.getMemoryOps().delete(userId, agentId, m.id!))
     );
   }
 
@@ -145,10 +180,10 @@ export class WorkingMemory extends BaseMemoryType {
       throw new Error('userId is required for working memory operations');
     }
 
-    const stats = await this.storage.memory!.getStats(userId, agentId);
+    const stats = await this.getMemoryOps().getStats(userId, agentId);
 
     // Get all working memories to calculate token statistics
-    const workingMemories = await this.storage.memory!.recall(
+    const workingMemories = await this.getMemoryOps().recall(
       userId,
       agentId || '',
       '',

@@ -5,22 +5,33 @@
  * when memories are stored.
  */
 
-import { StorageProvider } from '../../../storage/types';
+import { LogCategory, logger } from '../../../logging';
+import { MemoryStorageError } from '../../../shared/errors/memory-errors';
+import { MemoryOperations, StorageProvider } from '../../../storage/types';
 import { generateId } from '../../../storage/utils';
 import { MemoryConnectionManager } from '../../intelligence/connections/MemoryConnectionManager';
 import { TemporalPatternAnalyzer } from '../../intelligence/patterns/TemporalPatternAnalyzer';
 import { IntelligenceLayerConfig } from '../../intelligence/types';
 import { CostTracker } from '../../tracking/CostTracker';
 
-export abstract class BaseMemoryType {
+export abstract class BaseMemoryType<TConfig = any> {
+  protected readonly memory: MemoryOperations;
   protected connectionManager?: MemoryConnectionManager;
   protected temporalAnalyzer?: TemporalPatternAnalyzer;
+  private pendingOperations = new Set<{ abort: () => void }>();
+  private isDestroyed = false;
 
   constructor(
     protected storage: StorageProvider,
-    protected config: any,
+    protected config: TConfig,
     intelligenceConfig?: IntelligenceLayerConfig
   ) {
+    // Validate storage has memory operations first
+    if (!storage.memory) {
+      throw new Error(`${this.constructor.name} requires storage with memory operations`);
+    }
+    this.memory = storage.memory;
+
     // Auto-instantiate connection manager if config provided
     if (intelligenceConfig?.connectionDetection) {
       const costTracker = new CostTracker(storage);
@@ -39,6 +50,22 @@ export abstract class BaseMemoryType {
         );
       }
     }
+  }
+
+  /**
+   * Gets the temporal analyzer instance, ensuring it's initialized
+   * @throws {MemoryStorageError} If temporal analyzer is not initialized
+   * @returns TemporalPatternAnalyzer instance
+   * @private
+   */
+  private getTemporalAnalyzer(): TemporalPatternAnalyzer {
+    if (!this.temporalAnalyzer) {
+      throw new MemoryStorageError(
+        'Temporal analyzer not initialized',
+        'STORAGE_NOT_INITIALIZED'
+      );
+    }
+    return this.temporalAnalyzer;
   }
 
   /**
@@ -65,17 +92,7 @@ export abstract class BaseMemoryType {
 
     // Trigger non-blocking temporal pattern analysis
     if (this.temporalAnalyzer) {
-      setImmediate(async () => {
-        try {
-          const memory = await this.storage.memory?.getById?.(userId, memoryId);
-          if (memory) {
-            // Update temporal patterns in background
-            await this.temporalAnalyzer!.analyzePatterns(agentId);
-          }
-        } catch (error) {
-          console.error('Temporal pattern analysis failed:', error);
-        }
-      });
+      this.scheduleTemporalAnalysis(userId, agentId, memoryId);
     }
 
     return memoryId;
@@ -90,4 +107,73 @@ export abstract class BaseMemoryType {
     content: string,
     options?: any
   ): Promise<string>;
+
+  /**
+   * Schedule temporal analysis with proper cleanup handling
+   */
+  private scheduleTemporalAnalysis(userId: string, agentId: string, memoryId: string): void {
+    if (this.isDestroyed) return;
+    
+    const abortController = new AbortController();
+    let immediateId: NodeJS.Immediate;
+    
+    const operation = {
+      abort: () => {
+        abortController.abort();
+        if (immediateId) clearImmediate(immediateId);
+      }
+    };
+    
+    this.pendingOperations.add(operation);
+    
+    immediateId = setImmediate(async () => {
+      try {
+        // Check if aborted
+        if (abortController.signal.aborted || this.isDestroyed) {
+          return;
+        }
+        
+        const memory = await this.storage.memory?.getById?.(userId, memoryId);
+        
+        // Check again after async operation
+        if (abortController.signal.aborted || this.isDestroyed) {
+          return;
+        }
+        
+        if (memory && this.temporalAnalyzer) {
+          await this.temporalAnalyzer.analyzePatterns(agentId);
+        }
+      } catch (error) {
+        if (!abortController.signal.aborted) {
+          logger.error(LogCategory.STORAGE, 'BaseMemoryType', 'Temporal pattern analysis failed', {
+            error: error instanceof Error ? error.message : String(error),
+            userId,
+            memoryId
+          });
+        }
+      } finally {
+        this.pendingOperations.delete(operation);
+      }
+    });
+  }
+
+  /**
+   * Clean up all pending operations and resources
+   */
+  async destroy(): Promise<void> {
+    this.isDestroyed = true;
+    
+    // Cancel all pending operations
+    for (const operation of this.pendingOperations) {
+      operation.abort();
+    }
+    this.pendingOperations.clear();
+    
+    // Clean up other resources
+    if (this.connectionManager) {
+      await this.connectionManager.destroy();
+    }
+    // Note: TemporalPatternAnalyzer doesn't currently have a destroy method
+    // TODO: Add destroy method to TemporalPatternAnalyzer if it manages resources
+  }
 }

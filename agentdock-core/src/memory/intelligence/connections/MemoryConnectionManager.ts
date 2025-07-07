@@ -63,6 +63,8 @@ class ConnectionDiscoveryQueue extends EventEmitter {
   private processing = new Set<string>();
   private queue: ConnectionTask[] = [];
   private manager: MemoryConnectionManager | null = null;
+  private pendingTimeoutId: NodeJS.Timeout | null = null;
+  private isDestroyed = false;
 
   setManager(manager: MemoryConnectionManager): void {
     this.manager = manager;
@@ -150,10 +152,45 @@ class ConnectionDiscoveryQueue extends EventEmitter {
       this.processing.delete(task.key);
 
       // Process next task after a small delay
-      if (this.queue.length > 0) {
-        setTimeout(() => this.processNext(), 10);
+      if (this.queue.length > 0 && !this.isDestroyed) {
+        // Clear any existing timeout
+        if (this.pendingTimeoutId) {
+          clearTimeout(this.pendingTimeoutId);
+        }
+        
+        this.pendingTimeoutId = setTimeout(() => {
+          this.pendingTimeoutId = null;
+          if (!this.isDestroyed) {
+            this.processNext();
+          }
+        }, 10);
       }
     }
+  }
+
+  /**
+   * Clean up resources and cancel pending operations
+   */
+  destroy(): void {
+    this.isDestroyed = true;
+    
+    // Clear pending timeout
+    if (this.pendingTimeoutId) {
+      clearTimeout(this.pendingTimeoutId);
+      this.pendingTimeoutId = null;
+    }
+    
+    // Reject all pending tasks
+    while (this.queue.length > 0) {
+      const task = this.queue.shift()!;
+      task.reject(new Error('ConnectionDiscoveryQueue destroyed'));
+    }
+    
+    // Clear processing set
+    this.processing.clear();
+    
+    // Clear manager reference
+    this.manager = null;
   }
 }
 
@@ -1396,5 +1433,12 @@ Provide confidence score (0-1) and brief reasoning.`
         }
       );
     }
+  }
+
+  /**
+   * Clean up resources and destroy the connection discovery queue
+   */
+  async destroy(): Promise<void> {
+    this.queue.destroy();
   }
 }

@@ -5,6 +5,9 @@ import { EpisodicMemory } from '../types/episodic/EpisodicMemory';
 import { ProceduralMemory } from '../types/procedural/ProceduralMemory';
 import { SemanticMemory } from '../types/semantic/SemanticMemory';
 import { WorkingMemory } from '../types/working/WorkingMemory';
+import { MemoryError } from '../../shared/errors/memory-errors';
+import { LogCategory, logger } from '../../logging';
+import { StorageProvider } from '../../storage/types';
 import {
   HybridSearchResult,
   RecallConfig,
@@ -82,6 +85,43 @@ export class RecallService {
     string,
     { result: RecallResult; timestamp: number }
   >();
+  
+  /**
+   * Flag to prevent concurrent cache cleanup operations
+   * @private
+   */
+  private cleanupInProgress = false;
+
+  /**
+   * Track pending cleanup operation for proper cleanup on destroy
+   * @private
+   */
+  private pendingCleanupId: NodeJS.Immediate | null = null;
+
+  /**
+   * Flag to indicate service is being destroyed
+   * @private
+   */
+  private isDestroyed = false;
+
+  /**
+   * High water mark for cache size - triggers cleanup
+   * @private
+   */
+  private readonly cacheHighWater = parseInt(process.env.RECALL_CACHE_HIGH_WATER || '1000');
+
+  /**
+   * Low water mark for cache size - target size after cleanup
+   * @private
+   */
+  private readonly cacheLowWater = parseInt(process.env.RECALL_CACHE_LOW_WATER || '900');
+
+  /**
+   * Counter for tracking cleanup frequency (for monitoring)
+   * @private
+   */
+  private cleanupCount = 0;
+
   private metrics: RecallMetrics = {
     totalQueries: 0,
     avgResponseTime: 0,
@@ -108,6 +148,7 @@ export class RecallService {
    */
   async recall(query: RecallQuery): Promise<RecallResult> {
     const startTime = Date.now();
+    const searchErrors: MemoryError[] = [];
 
     if (!validateRecallQuery(query)) {
       throw new Error('Invalid recall query');
@@ -133,13 +174,18 @@ export class RecallService {
       MemoryType.PROCEDURAL
     ];
 
-    // Execute parallel searches
-    const searchPromises = memoryTypes.map((type) =>
-      this.searchMemoryType(type, query)
-    );
+    // Execute parallel searches with error collection
+    const searchPromises = memoryTypes.map(async (type) => {
+      const result = await this.searchMemoryType(type, query);
+      // Check if this search had errors
+      if ('error' in result && result.error) {
+        searchErrors.push(result.error);
+      }
+      return result;
+    });
 
     const searchResults = await Promise.all(searchPromises);
-    const allMemories = searchResults.flat();
+    const allMemories = searchResults.flat().filter(m => m.id); // Filter out error markers
 
     // Apply hybrid scoring
     const rankedMemories = this.applyHybridScoring(allMemories, query);
@@ -178,6 +224,11 @@ export class RecallService {
       0,
       query.limit || this.config.defaultLimit
     );
+
+    // Check if all searches failed
+    if (limitedMemories.length === 0 && searchErrors.length > 0) {
+      throw new AggregateError(searchErrors, 'All memory searches failed');
+    }
 
     // Cache result
     const result: RecallResult = {
@@ -228,9 +279,9 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
   private async searchMemoryType(
     type: MemoryType,
     query: RecallQuery
-  ): Promise<UnifiedMemoryResult[]> {
+  ): Promise<UnifiedMemoryResult[] | (UnifiedMemoryResult[] & { error: MemoryError })> {
     const results: UnifiedMemoryResult[] = [];
-
+    
     try {
       switch (type) {
         case MemoryType.WORKING: {
@@ -344,8 +395,25 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
         }
       }
     } catch (error) {
-      console.warn(`Error searching ${type} memory:`, error);
-      // Continue with other memory types
+      const searchError = new MemoryError(
+        `Failed to search ${type} memory`,
+        'SEARCH_ERROR',
+        { 
+          type, 
+          userId: query.userId, 
+          query: query.query, 
+          error: error instanceof Error ? error.message : String(error)
+        }
+      );
+      
+      logger.error(LogCategory.STORAGE, 'RecallService', 'Memory search failed', {
+        type,
+        userId: query.userId,
+        error: error instanceof Error ? error.message : String(error)
+      });
+      
+      // Return empty array with error marker for the main method to handle
+      return Object.assign([], { error: searchError }) as UnifiedMemoryResult[] & { error: MemoryError };
     }
 
     return results;
@@ -375,7 +443,7 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
         // Procedural score based on pattern match and usage
         const proceduralScore =
           memory.type === MemoryType.PROCEDURAL
-            ? memory.context.usageCount || 0 / 100 // Normalize usage count
+            ? (Number(memory.context?.usageCount) || 0) / 100 // Normalize usage count
             : 0;
 
         const combinedRelevance = calculateCombinedRelevance(
@@ -452,7 +520,12 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
           };
         });
       } catch (error) {
-        console.warn('Failed to fetch stored connections:', error);
+        logger.warn(LogCategory.STORAGE, 'RecallService', 'Failed to fetch stored connections', {
+          userId,
+          memoryCount: memories.length,
+          error: error instanceof Error ? error.message : String(error)
+        });
+        // Return memories without connection enhancement
         return memories;
       }
     }
@@ -485,10 +558,11 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
   /**
    * Get cache statistics
    */
-  getCacheStats(): { size: number; hitRate: number } {
+  getCacheStats(): { size: number; hitRate: number; cleanupCount: number } {
     return {
       size: this.cache.size,
-      hitRate: this.metrics.cacheHitRate
+      hitRate: this.metrics.cacheHitRate,
+      cleanupCount: this.cleanupCount
     };
   }
 
@@ -520,18 +594,55 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
     return cached.result;
   }
 
+  /**
+   * Caches a recall result with automatic cleanup when cache exceeds limits
+   * 
+   * @param cacheKey - The cache key for the result
+   * @param result - The recall result to cache
+   * @private
+   */
   private cacheResult(cacheKey: string, result: RecallResult): void {
     this.cache.set(cacheKey, {
       result: { ...result },
       timestamp: Date.now()
     });
 
-    // Cleanup old entries
-    if (this.cache.size > 1000) {
-      const oldestKey = this.cache.keys().next().value;
-      if (oldestKey) {
-        this.cache.delete(oldestKey);
+    // Prevent concurrent cleanup operations
+    if (this.cache.size > this.cacheHighWater && !this.cleanupInProgress && !this.isDestroyed) {
+      this.cleanupInProgress = true;
+
+      // Clear any existing cleanup operation
+      if (this.pendingCleanupId) {
+        clearImmediate(this.pendingCleanupId);
       }
+
+      // Use setImmediate to avoid blocking current operation
+      this.pendingCleanupId = setImmediate(() => {
+        try {
+          // Check if service was destroyed while waiting
+          if (this.isDestroyed) {
+            return;
+          }
+
+          // Calculate how many entries to remove (at least 100 or down to low water mark)
+          const toDelete = Math.max(100, this.cache.size - this.cacheLowWater);
+          const entries = Array.from(this.cache.keys());
+
+          // Remove oldest entries (Map maintains insertion order)
+          entries.slice(0, toDelete).forEach(key => this.cache.delete(key));
+
+          // Log cleanup for monitoring
+          this.cleanupCount++;
+          console.debug('RecallService cache cleanup completed', {
+            removed: toDelete,
+            newSize: this.cache.size,
+            cleanupCount: this.cleanupCount
+          });
+        } finally {
+          this.cleanupInProgress = false;
+          this.pendingCleanupId = null;
+        }
+      });
     }
   }
 
@@ -602,6 +713,26 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
     this.metrics.popularQueries = this.metrics.popularQueries
       .sort((a, b) => b.count - a.count)
       .slice(0, 100);
+  }
+
+  /**
+   * Clean up resources and cancel pending operations
+   * Should be called when the RecallService is no longer needed
+   */
+  async destroy(): Promise<void> {
+    this.isDestroyed = true;
+
+    // Cancel any pending cache cleanup
+    if (this.pendingCleanupId) {
+      clearImmediate(this.pendingCleanupId);
+      this.pendingCleanupId = null;
+    }
+
+    // Clear the cache
+    this.cache.clear();
+
+    // Reset cleanup flag
+    this.cleanupInProgress = false;
   }
 }
 

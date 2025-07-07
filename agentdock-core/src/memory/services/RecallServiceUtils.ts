@@ -342,8 +342,8 @@ export function findMemoryRelationships(
       other.type === MemoryType.PROCEDURAL
     ) {
       const patternSimilarity = calculatePatternSimilarity(
-        memory.context.pattern || '',
-        other.context.pattern || ''
+        String(memory.context.pattern || ''),
+        String(other.context.pattern || '')
       );
 
       if (patternSimilarity > 0.5) {

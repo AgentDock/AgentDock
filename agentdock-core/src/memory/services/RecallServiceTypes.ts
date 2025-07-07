@@ -23,7 +23,7 @@ export interface RecallQuery {
     start: number;
     end: number;
   };
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
 }
 
 export interface RecallResult {
@@ -48,9 +48,9 @@ export interface UnifiedMemoryResult {
   relevance: number;
   confidence: number;
   timestamp: number;
-  context: Record<string, any>;
+  context: Record<string, unknown>;
   relationships: RelatedMemory[];
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 export interface RelatedMemory {

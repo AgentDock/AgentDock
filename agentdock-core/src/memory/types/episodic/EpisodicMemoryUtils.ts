@@ -4,7 +4,8 @@ import {
   VectorMemoryOperations
 } from '../../../storage/types';
 import { EmbeddingService } from '../../intelligence/embeddings/EmbeddingService';
-import { EpisodicMemoryData } from './EpisodicMemoryTypes';
+import { EpisodicMemoryData, EpisodicMemoryConfig } from './EpisodicMemoryTypes';
+import { SemanticMemoryData } from '../semantic/SemanticMemoryTypes';
 
 /**
  * Utility functions for EpisodicMemory operations
@@ -213,7 +214,7 @@ export function groupByTimeWindow(
 /**
  * Convert group of memories to semantic summary
  */
-export function convertToSemantic(group: EpisodicMemoryData[]): any {
+export function convertToSemantic(group: EpisodicMemoryData[]): SemanticMemoryData | null {
   if (group.length === 0) return null;
 
   // Extract key information
@@ -234,6 +235,7 @@ export function convertToSemantic(group: EpisodicMemoryData[]): any {
     content: summary,
     category: 'learned_experience',
     importance: Math.min((totalImportance / group.length) * 1.2, 1.0), // Boost compressed importance
+    resonance: 0.8, // Required property for SemanticMemoryData
     confidence: 0.8,
     createdAt: Date.now(),
     lastAccessedAt: Date.now(),
@@ -308,7 +310,7 @@ export function calculateRelevanceScore(
 /**
  * Validate episodic memory configuration
  */
-export function validateEpisodicConfig(config: any): boolean {
+export function validateEpisodicConfig(config: EpisodicMemoryConfig): boolean {
   return (
     config.maxMemoriesPerSession > 0 &&
     config.decayRate > 0 &&

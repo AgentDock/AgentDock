@@ -13,7 +13,7 @@ export interface EpisodicMemoryData {
   lastAccessedAt: number;
   accessCount: number;
   sourceMessageIds: string[];
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   tags: string[];
   embeddingId?: string;
 }
@@ -58,7 +58,7 @@ export interface StoreEpisodicOptions {
   context?: string;
   importance?: number;
   sourceMessageIds?: string[];
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   tags?: string[];
   encrypt?: boolean;
   sessionId?: string; // Added for MemoryManager compatibility

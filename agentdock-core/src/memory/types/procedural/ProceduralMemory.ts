@@ -24,16 +24,13 @@ function estimateTokens(text: string): number {
   return Math.ceil(text.length / 4);
 }
 
-export class ProceduralMemory extends BaseMemoryType {
+export class ProceduralMemory extends BaseMemoryType<ProceduralMemoryConfig> {
   constructor(
     storage: StorageProvider,
     private proceduralConfig: ProceduralMemoryConfig,
     intelligenceConfig?: IntelligenceLayerConfig
   ) {
     super(storage, proceduralConfig, intelligenceConfig);
-    if (!storage.memory) {
-      throw new Error('Storage must support memory operations');
-    }
   }
 
   /**
@@ -48,7 +45,7 @@ export class ProceduralMemory extends BaseMemoryType {
       action?: string;
       outcome?: string;
       success?: boolean;
-      metadata?: Record<string, any>;
+      metadata?: Record<string, unknown>;
     }
   ): Promise<string> {
     if (!userId || !userId.trim()) {
@@ -86,7 +83,7 @@ export class ProceduralMemory extends BaseMemoryType {
       }
     };
 
-    await this.storage.memory!.store(userId, agentId, memoryData);
+    await this.memory.store(userId, agentId, memoryData);
     return memoryData.id;
   }
 
@@ -128,24 +125,57 @@ export class ProceduralMemory extends BaseMemoryType {
     userId: string,
     agentId: string,
     trigger: string,
-    context: Record<string, any> = {}
-  ): Promise<any[]> {
+    context: Record<string, unknown> = {}
+  ): Promise<PatternMatchResult[]> {
     if (!userId || !userId.trim()) {
       throw new Error('userId is required for procedural memory operations');
     }
 
     // DELEGATE TO STORAGE
-    const result = await this.storage.memory!.recall(userId, agentId, trigger, {
+    const result = await this.memory.recall(userId, agentId, trigger, {
       type: MemoryType.PROCEDURAL,
       limit: 5
     });
-    return result.map((memory) => ({
-      pattern: memory,
-      confidence:
-        this.proceduralConfig.confidenceThreshold ??
-        PROCEDURAL_MEMORY_DEFAULTS.confidenceThreshold,
-      contextMatch: 0.5
-    }));
+    
+    return result.map((memory): PatternMatchResult => {
+      // Extract from generic MemoryData to ProceduralMemoryData
+      const [triggerPart, actionPart] = memory.content.includes('->')
+        ? memory.content.split('->').map(s => s.trim())
+        : [memory.content, 'unknown'];
+      
+      const proceduralData: ProceduralMemoryData = {
+        id: memory.id,
+        agentId: memory.agentId,
+        createdAt: memory.createdAt,
+        trigger: String(memory.metadata?.trigger || triggerPart),
+        action: String(memory.metadata?.action || actionPart),
+        context: String(memory.metadata?.context || ''),
+        pattern: String(memory.metadata?.pattern || memory.content),
+        confidence: Number(memory.metadata?.confidence || 0.5),
+        successCount: Number(memory.metadata?.successCount || 1),
+        totalCount: Number(memory.metadata?.totalCount || 1),
+        lastUsed: typeof memory.metadata?.lastUsed === 'number' 
+          ? memory.metadata.lastUsed 
+          : Date.now(),
+        conditions: Array.isArray(memory.metadata?.conditions) 
+          ? memory.metadata.conditions 
+          : [],
+        outcomes: Array.isArray(memory.metadata?.outcomes) 
+          ? memory.metadata.outcomes 
+          : [{
+              success: true,
+              timestamp: Date.now()
+            }],
+        metadata: memory.metadata || {}
+      };
+      
+      return {
+        pattern: proceduralData,
+        confidence: this.proceduralConfig.confidenceThreshold ?? PROCEDURAL_MEMORY_DEFAULTS.confidenceThreshold,
+        contextMatch: 0.5,
+        reason: 'Pattern matched from storage recall'
+      };
+    });
   }
 
   /**
@@ -159,7 +189,7 @@ export class ProceduralMemory extends BaseMemoryType {
       throw new Error('userId is required for procedural memory operations');
     }
 
-    const stats = await this.storage.memory!.getStats(userId, agentId);
+    const stats = await this.memory.getStats(userId, agentId);
     return {
       totalPatterns: stats.byType?.procedural || 0,
       patternsByCategory: {},
@@ -185,8 +215,8 @@ export class ProceduralMemory extends BaseMemoryType {
       throw new Error('userId is required for procedural memory operations');
     }
 
-    if (this.storage.memory?.getById) {
-      const result = await this.storage.memory.getById(userId, memoryId);
+    if (this.memory.getById) {
+      const result = await this.memory.getById(userId, memoryId);
       if (!result) return null;
 
       // Proper mapping from MemoryData to ProceduralMemoryData

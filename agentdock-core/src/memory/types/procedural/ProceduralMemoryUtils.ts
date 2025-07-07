@@ -1,7 +1,8 @@
 import {
   ProceduralMemoryData,
   ProceduralOutcome,
-  ProceduralPattern
+  ProceduralPattern,
+  ProceduralMemoryConfig
 } from './ProceduralMemoryTypes';
 
 /**
@@ -28,7 +29,7 @@ export function getProceduralTableName(namespace: string): string {
 export function extractActionPattern(
   trigger: string,
   action: string,
-  context: Record<string, any>
+  context: Record<string, unknown>
 ): string {
   // Create a pattern signature from trigger-action-context
   const contextKeys = Object.keys(context).sort();
@@ -145,7 +146,7 @@ export function mergePatterns(
  */
 export function extractConditions(
   trigger: string,
-  context: Record<string, any>
+  context: Record<string, unknown>
 ): string[] {
   const conditions: string[] = [];
 
@@ -176,7 +177,7 @@ export function extractConditions(
  */
 export function matchesConditions(
   conditions: string[],
-  currentContext: Record<string, any>
+  currentContext: Record<string, unknown>
 ): number {
   if (conditions.length === 0) return 1.0;
 
@@ -197,7 +198,7 @@ export function matchesConditions(
  */
 function evaluateCondition(
   condition: string,
-  context: Record<string, any>
+  context: Record<string, unknown>
 ): boolean {
   try {
     // Simple condition evaluation
@@ -263,8 +264,8 @@ function calculateStringSimilarity(str1: string, str2: string): number {
  * Calculate context similarity
  */
 function calculateContextSimilarity(
-  context1: Record<string, any>,
-  context2: Record<string, any>
+  context1: Record<string, unknown>,
+  context2: Record<string, unknown>
 ): number {
   const keys1 = Object.keys(context1);
   const keys2 = Object.keys(context2);
@@ -285,7 +286,7 @@ function calculateContextSimilarity(
 /**
  * Validate procedural memory configuration
  */
-export function validateProceduralConfig(config: any): boolean {
+export function validateProceduralConfig(config: ProceduralMemoryConfig): boolean {
   return (
     config.minSuccessRate >= 0 &&
     config.minSuccessRate <= 1 &&

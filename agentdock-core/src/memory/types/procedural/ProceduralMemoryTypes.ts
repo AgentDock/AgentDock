@@ -10,12 +10,12 @@ export interface ProceduralMemoryData {
   confidence: number;
   lastUsed: number;
   createdAt: number;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   conditions: string[];
   outcomes: Array<{
     success: boolean;
     timestamp: number;
-    context?: Record<string, any>;
+    context?: Record<string, unknown>;
   }>;
 }
 
@@ -56,7 +56,7 @@ export interface ProceduralQuery {
   minConfidence?: number;
   minSuccessRate?: number;
   category?: string;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
   limit?: number;
 }
 
@@ -64,8 +64,8 @@ export interface ProceduralPattern {
   trigger: string;
   conditions: string[];
   action: string;
-  context: Record<string, any>;
-  metadata?: Record<string, any>;
+  context: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface ProceduralOutcome {
@@ -73,7 +73,7 @@ export interface ProceduralOutcome {
   executionTime?: number;
   error?: string;
   feedback?: string;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
 }
 
 export interface ProceduralMemoryStats {
@@ -95,8 +95,8 @@ export interface ProceduralMemoryStats {
 
 export interface StoreProceduralOptions {
   pattern?: string;
-  context?: Record<string, any>;
-  metadata?: Record<string, any>;
+  context?: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
   confidence?: number;
   category?: string;
   conditions?: string[];

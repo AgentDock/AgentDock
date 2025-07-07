@@ -14,7 +14,7 @@ export interface SemanticMemoryData {
   accessCount: number;
   sourceIds: string[];
   keywords: string[];
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   embeddingId?: string;
   facts: string[];
   relations: Array<{ subject: string; predicate: string; object: string }>;
@@ -80,7 +80,7 @@ export interface StoreSemanticOptions {
   confidence?: number;
   sourceIds?: string[];
   keywords?: string[];
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   encrypt?: boolean;
   skipDeduplication?: boolean;
 }

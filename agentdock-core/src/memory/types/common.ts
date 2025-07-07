@@ -37,5 +37,5 @@ export interface MemoryMessage {
   timestamp?: Date;
 
   /** Additional message metadata */
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }

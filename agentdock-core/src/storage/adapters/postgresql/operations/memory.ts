@@ -21,7 +21,8 @@ import {
   MemoryConnection,
   MemoryData,
   MemoryOperationStats,
-  MemoryRecallOptions
+  MemoryRecallOptions,
+  MemoryUpdate
 } from '../../../types';
 import { generateId } from '../../../utils';
 
@@ -1284,6 +1285,59 @@ export class MemoryOperations implements IMemoryOperations {
         reason: row.reason,
         createdAt: parseFloat(row.created_at_ms)
       }));
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Batch update memories for decay operations
+   */
+  async batchUpdateMemories(updates: MemoryUpdate[]): Promise<void> {
+    if (updates.length === 0) return;
+    
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+      
+      // Use UNNEST for efficient bulk update
+      const query = `
+        UPDATE ${this.schema}.memories m
+        SET 
+          resonance = u.resonance::numeric,
+          last_accessed_at = to_timestamp(u.last_accessed::bigint / 1000),
+          access_count = u.access_count::integer,
+          updated_at = CURRENT_TIMESTAMP
+        FROM (
+          SELECT * FROM UNNEST(
+            $1::uuid[],
+            $2::numeric[],
+            $3::bigint[],
+            $4::integer[]
+          ) AS u(id, resonance, last_accessed, access_count)
+        ) u
+        WHERE m.id = u.id
+      `;
+      
+      await client.query(query, [
+        updates.map(u => u.id),
+        updates.map(u => u.resonance),
+        updates.map(u => u.lastAccessedAt),
+        updates.map(u => u.accessCount)
+      ]);
+      
+      await client.query('COMMIT');
+      
+      logger.debug(LogCategory.STORAGE, 'MemoryOperations', 'Batch update completed', {
+        count: updates.length
+      });
+    } catch (error) {
+      await client.query('ROLLBACK');
+      logger.error(LogCategory.STORAGE, 'MemoryOperations', 'Batch update failed', {
+        error: error instanceof Error ? error.message : String(error),
+        count: updates.length
+      });
+      throw new Error(`Batch update failed: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       client.release();
     }

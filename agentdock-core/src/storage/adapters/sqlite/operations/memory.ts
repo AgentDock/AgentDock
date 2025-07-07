@@ -12,7 +12,8 @@ import {
   MemoryData,
   MemoryOperations,
   MemoryOperationStats,
-  MemoryRecallOptions
+  MemoryRecallOptions,
+  MemoryUpdate
 } from '../../../types';
 import { nanoid as generateId } from '../../../utils';
 
@@ -622,5 +623,49 @@ export class SqliteMemoryOperations implements MemoryOperations {
       embeddingId: row.embedding_id,
       metadata: metadata
     };
+  }
+
+  /**
+   * Batch update memories for decay operations
+   */
+  async batchUpdateMemories(updates: MemoryUpdate[]): Promise<void> {
+    if (updates.length === 0) return;
+
+    const updateBatch = this.db.transaction((updates: MemoryUpdate[]) => {
+      const stmt = this.db.prepare(`
+        UPDATE memories 
+        SET 
+          resonance = ?,
+          last_accessed_at = ?,
+          access_count = ?,
+          updated_at = ?
+        WHERE id = ?
+      `);
+      
+      const now = Date.now();
+      for (const update of updates) {
+        stmt.run(
+          update.resonance,
+          update.lastAccessedAt,
+          update.accessCount,
+          now,
+          update.id
+        );
+      }
+    });
+    
+    try {
+      updateBatch(updates);
+      
+      logger.debug(LogCategory.STORAGE, 'SqliteMemoryOperations', 'Batch update completed', {
+        count: updates.length
+      });
+    } catch (error) {
+      logger.error(LogCategory.STORAGE, 'SqliteMemoryOperations', 'Batch update failed', {
+        error: error instanceof Error ? error.message : String(error),
+        count: updates.length
+      });
+      throw new Error(`Batch update failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
 }

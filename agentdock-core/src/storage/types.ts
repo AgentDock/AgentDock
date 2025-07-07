@@ -352,6 +352,12 @@ export interface MemoryOperations {
     memories: MemoryData[];
     connections: MemoryConnection[];
   }>;
+
+  /**
+   * Batch update memories for decay operations
+   * @param updates - Array of memory updates to apply
+   */
+  batchUpdateMemories?(updates: MemoryUpdate[]): Promise<void>;
 }
 
 /**
@@ -454,6 +460,12 @@ export interface MemoryData {
   updatedAt: number;
   lastAccessedAt: number;
 
+  // LAZY DECAY SYSTEM FIELDS
+  neverDecay?: boolean;
+  customHalfLife?: number; // Custom decay rate in days
+  reinforceable?: boolean; // Can be strengthened by access
+  status?: 'active' | 'archived';
+
   // Fields that exist in PostgreSQL Memory table
   sessionId?: string;
   tokenCount?: number;
@@ -487,6 +499,16 @@ export interface MemoryRecallOptions {
   minImportance?: number;
   useVectorSearch?: boolean;
   timeRange?: { start: Date; end: Date };
+}
+
+/**
+ * Memory update for batch operations
+ */
+export interface MemoryUpdate {
+  id: string;
+  resonance: number;
+  lastAccessedAt: number;
+  accessCount: number;
 }
 
 /**

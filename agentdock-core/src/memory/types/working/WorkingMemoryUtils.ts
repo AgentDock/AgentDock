@@ -4,7 +4,7 @@ import {
   VectorMemoryOperations
 } from '../../../storage/types';
 import { EmbeddingService } from '../../intelligence/embeddings/EmbeddingService';
-import { WorkingMemoryData } from './WorkingMemoryTypes';
+import { WorkingMemoryData, WorkingMemoryConfig } from './WorkingMemoryTypes';
 
 /**
  * Utility functions for WorkingMemory operations
@@ -445,7 +445,7 @@ export function getTableName(namespace: string): string {
 /**
  * Validate working memory configuration
  */
-export function validateConfig(config: any): boolean {
+export function validateConfig(config: WorkingMemoryConfig): boolean {
   return (
     config.maxTokens > 0 &&
     config.ttlSeconds > 0 &&

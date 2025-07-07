@@ -23,16 +23,13 @@ function estimateTokens(text: string): number {
   return Math.ceil(text.length / 4);
 }
 
-export class EpisodicMemory extends BaseMemoryType {
+export class EpisodicMemory extends BaseMemoryType<EpisodicMemoryConfig> {
   constructor(
     storage: StorageProvider,
     private episodicConfig: EpisodicMemoryConfig,
     intelligenceConfig?: IntelligenceLayerConfig
   ) {
     super(storage, episodicConfig, intelligenceConfig);
-    if (!storage.memory) {
-      throw new Error('Storage must support memory operations');
-    }
   }
 
   /**
@@ -76,7 +73,7 @@ export class EpisodicMemory extends BaseMemoryType {
       }
     };
 
-    await this.storage.memory!.store(userId, agentId, memoryData);
+    await this.memory.store(userId, agentId, memoryData);
     return memoryData.id;
   }
 
@@ -93,13 +90,33 @@ export class EpisodicMemory extends BaseMemoryType {
       throw new Error('userId is required for episodic memory operations');
     }
 
-    const result = await this.storage.memory!.recall(userId, agentId, query, {
+    const result = await this.memory.recall(userId, agentId, query, {
       type: MemoryType.EPISODIC,
       limit: options?.limit || 20,
       timeRange: options?.timeRange
     });
 
-    return result as unknown as EpisodicMemoryData[];
+    // Transform MemoryData to EpisodicMemoryData with proper field mapping
+    return result.map(memory => ({
+      id: memory.id,
+      agentId: memory.agentId,
+      content: memory.content,
+      createdAt: memory.createdAt,
+      importance: memory.importance,
+      sessionId: memory.sessionId || '',
+      context: memory.metadata?.context || '',
+      resonance: memory.resonance,
+      lastAccessedAt: memory.lastAccessedAt,
+      accessCount: memory.accessCount,
+      sourceMessageIds: Array.isArray(memory.metadata?.sourceMessageIds) 
+        ? memory.metadata.sourceMessageIds 
+        : [],
+      tags: Array.isArray(memory.metadata?.tags) 
+        ? memory.metadata.tags 
+        : [],
+      embeddingId: memory.embeddingId,
+      metadata: memory.metadata || {}
+    }));
   }
 
   /**
@@ -136,7 +153,7 @@ export class EpisodicMemory extends BaseMemoryType {
       throw new Error('userId is required for episodic memory operations');
     }
 
-    const stats = await this.storage.memory!.getStats(userId, agentId);
+    const stats = await this.memory.getStats(userId, agentId);
     return {
       totalMemories: stats.byType?.episodic || 0,
       memoriesBySession: {},

@@ -8,7 +8,7 @@ export interface WorkingMemoryData {
   importance: number;
   createdAt: number;
   expiresAt: number;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface WorkingMemoryConfig {
@@ -46,7 +46,7 @@ export interface StoreOptions {
   importance?: number;
   contextWindow?: number;
   ttlSeconds?: number;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   encrypt?: boolean;
   sessionId?: string; // Added for MemoryManager compatibility
 }

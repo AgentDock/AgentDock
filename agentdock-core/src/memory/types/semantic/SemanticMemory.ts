@@ -22,16 +22,13 @@ function estimateTokens(text: string): number {
   return Math.ceil(text.length / 4);
 }
 
-export class SemanticMemory extends BaseMemoryType {
+export class SemanticMemory extends BaseMemoryType<SemanticMemoryConfig> {
   constructor(
     storage: StorageProvider,
     private semanticConfig: SemanticMemoryConfig,
     intelligenceConfig?: IntelligenceLayerConfig
   ) {
     super(storage, semanticConfig, intelligenceConfig);
-    if (!storage.memory) {
-      throw new Error('Storage must support memory operations');
-    }
   }
 
   /**
@@ -45,7 +42,7 @@ export class SemanticMemory extends BaseMemoryType {
       confidence?: number;
       source?: string;
       keywords?: string[];
-      metadata?: Record<string, any>;
+      metadata?: Record<string, unknown>;
     }
   ): Promise<string> {
     if (!userId || !userId.trim()) {
@@ -85,7 +82,7 @@ export class SemanticMemory extends BaseMemoryType {
       }
     };
 
-    await this.storage.memory!.store(userId, agentId, memoryData);
+    await this.memory.store(userId, agentId, memoryData);
     return memoryData.id;
   }
 
@@ -102,12 +99,36 @@ export class SemanticMemory extends BaseMemoryType {
     }
 
     // DELEGATE TO STORAGE
-    const result = await this.storage.memory!.recall(userId, agentId, query, {
+    const result = await this.memory.recall(userId, agentId, query, {
       type: MemoryType.SEMANTIC,
       limit: 20
     });
 
-    return result as unknown as SemanticMemoryData[];
+    // Transform MemoryData to SemanticMemoryData with proper field mapping
+    return result.map(memory => ({
+      id: memory.id,
+      agentId: memory.agentId,
+      content: memory.content,
+      createdAt: memory.createdAt,
+      importance: memory.importance,
+      category: String(memory.metadata?.category || 'general'),
+      confidence: Number(memory.metadata?.confidence || 0.8),
+      keywords: Array.isArray(memory.keywords) ? memory.keywords : [],
+      resonance: memory.resonance,
+      lastAccessedAt: memory.lastAccessedAt,
+      accessCount: memory.accessCount,
+      sourceIds: Array.isArray(memory.metadata?.sourceIds) 
+        ? memory.metadata.sourceIds 
+        : [],
+      facts: Array.isArray(memory.metadata?.facts) 
+        ? memory.metadata.facts 
+        : [],
+      relations: Array.isArray(memory.metadata?.relations) 
+        ? memory.metadata.relations 
+        : [],
+      metadata: memory.metadata || {},
+      embeddingId: memory.embeddingId
+    }));
   }
 
   /**
@@ -136,7 +157,7 @@ export class SemanticMemory extends BaseMemoryType {
       throw new Error('userId is required for semantic memory operations');
     }
 
-    const stats = await this.storage.memory!.getStats(userId, agentId);
+    const stats = await this.memory.getStats(userId, agentId);
     return {
       totalMemories: stats.byType?.semantic || 0,
       memoriesByCategory: {},

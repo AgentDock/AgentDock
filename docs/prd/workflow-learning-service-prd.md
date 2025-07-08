@@ -9,30 +9,33 @@
 
 ## Executive Summary
 
-Implement a workflow learning service that captures, learns, and executes multi-step tool sequences. The system will automatically detect successful tool patterns and enable deterministic replay of complex workflows, while also supporting user-submitted workflow definitions.
+Unify and enhance AgentDock's existing workflow learning capabilities by creating a consolidated service that captures, learns, and executes multi-step tool sequences. The system will build upon mature procedural learning infrastructure already in production to enable deterministic replay of complex workflows and support user-submitted workflow definitions.
 
 ## Problem Statement
 
 **Business Need**:
 - Agents repeatedly execute the same multi-step tool sequences for similar tasks
-- No institutional memory of successful tool workflow patterns
-- Complex workflows (15+ steps) must be rediscovered each time
-- No way to capture and share proven automation sequences
+- Existing tool pattern learning lacks execution capabilities for deterministic replay
+- Complex workflows (15+ steps) can be learned but not automatically executed
+- No unified interface for both auto-learned and user-submitted workflow automation
 
-**Technical Blocker**:
-- Existing `/memory/procedural/ProceduralMemoryManager.ts` creates naming confusion with procedural memory type
-- Must be renamed and relocated to eliminate architectural confusion
+**Technical Challenge**:
+- Two separate procedural systems exist with different purposes and naming confusion:
+  - `ProceduralMemory` (memory type) - stores simple trigger→action patterns  
+  - `ProceduralMemoryManager` (service) - learns tool sequence patterns
+- Must be unified into a single, coherent workflow learning and execution system
 
 ## Solution Architecture
 
-### Core Concept: Intelligent Workflow Learning
+### Core Concept: Enhanced Workflow Learning & Execution
 
-The system automatically learns successful tool execution patterns and enables deterministic replay:
+Building on AgentDock's existing procedural learning foundation, the system provides complete workflow automation:
 
-1. **Pattern Detection** - Identifies repeated tool sequences that lead to successful outcomes
-2. **Workflow Storage** - Stores patterns in procedural memory with user isolation
-3. **Smart Execution** - Provides deterministic replay of learned workflows
-4. **User Workflows** - Supports manual workflow definition and submission
+1. **Pattern Detection** (EXISTING) - Already identifies repeated tool sequences and tracks success rates
+2. **Workflow Storage** (EXISTING) - Currently stores patterns in procedural memory with user isolation  
+3. **Smart Execution** (NEW) - Add deterministic replay engine for learned workflows
+4. **User Workflows** (NEW) - Add manual workflow definition and submission capabilities
+5. **Unified Architecture** (NEW) - Consolidate existing systems into coherent service
 
 ### Service Architecture
 ```
@@ -292,29 +295,30 @@ export async function GET(request: Request) {
 
 ## Implementation Phases
 
-### Phase 1: Service Foundation
-- Rename and relocate existing tool learning code to `WorkflowLearningService`
-- Establish clean service architecture in `/orchestration/workflow-learning/`
-- Integrate with existing procedural memory for pattern storage
-- Update all imports and references
+### Phase 1: Service Consolidation (IMMEDIATE ACTION)
+- **MOVE**: Rename `/memory/procedural/ProceduralMemoryManager.ts` → `/orchestration/workflow-learning/WorkflowLearningService.ts`
+- **UNIFY**: Integrate existing tool pattern learning with procedural memory type storage
+- **CLEAN**: Eliminate naming confusion between memory type and service
+- **UPDATE**: Fix all imports and references (minimal impact - only 2 files affected)
 
-### Phase 2: Learning Integration
-- Connect WorkflowLearningService to LLMOrchestrationService for tool tracking
-- Implement automatic pattern detection from tool execution sequences
-- Add workflow storage using existing procedural memory operations
-- Create workflow matching and suggestion algorithms
+### Phase 2: Learning Integration (MOSTLY COMPLETE)
+- **EXISTING**: WorkflowLearningService already tracks tool execution patterns
+- **EXISTING**: Automatic pattern detection from successful tool sequences  
+- **EXISTING**: Workflow storage using procedural memory operations
+- **EXISTING**: Workflow matching and suggestion algorithms
+- **NEEDED**: Connect to LLMOrchestrationService for real-time integration
 
-### Phase 3: Execution Engine
-- Build deterministic workflow execution with error handling
-- Implement user workflow submission API endpoints
-- Add partial execution and recovery mechanisms
-- Create workflow performance tracking and metrics
+### Phase 3: Execution Engine (PRIMARY DEVELOPMENT)
+- **NEW**: Build deterministic workflow execution with error handling
+- **NEW**: Implement user workflow submission API endpoints  
+- **NEW**: Add partial execution and recovery mechanisms
+- **NEW**: Create workflow performance tracking and metrics
 
-### Phase 4: Production Features
-- Optimize performance using existing memory system capabilities
-- Add comprehensive testing with existing infrastructure
-- Implement workflow analytics and reporting
-- Deploy production-ready workflow learning system
+### Phase 4: Production Enhancement
+- **EXISTING**: Performance optimized using memory system capabilities
+- **NEW**: Add execution testing beyond existing pattern learning tests
+- **NEW**: Implement workflow execution analytics and reporting  
+- **NEW**: Deploy unified workflow learning and execution system
 
 ## Success Metrics
 

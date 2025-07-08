@@ -1295,11 +1295,11 @@ export class MemoryOperations implements IMemoryOperations {
    */
   async batchUpdateMemories(updates: MemoryUpdate[]): Promise<void> {
     if (updates.length === 0) return;
-    
+
     const client = await this.pool.connect();
     try {
       await client.query('BEGIN');
-      
+
       // Use UNNEST for efficient bulk update
       const query = `
         UPDATE ${this.schema}.memories m
@@ -1318,26 +1318,38 @@ export class MemoryOperations implements IMemoryOperations {
         ) u
         WHERE m.id = u.id
       `;
-      
+
       await client.query(query, [
-        updates.map(u => u.id),
-        updates.map(u => u.resonance),
-        updates.map(u => u.lastAccessedAt),
-        updates.map(u => u.accessCount)
+        updates.map((u) => u.id),
+        updates.map((u) => u.resonance),
+        updates.map((u) => u.lastAccessedAt),
+        updates.map((u) => u.accessCount)
       ]);
-      
+
       await client.query('COMMIT');
-      
-      logger.debug(LogCategory.STORAGE, 'MemoryOperations', 'Batch update completed', {
-        count: updates.length
-      });
+
+      logger.debug(
+        LogCategory.STORAGE,
+        'MemoryOperations',
+        'Batch update completed',
+        {
+          count: updates.length
+        }
+      );
     } catch (error) {
       await client.query('ROLLBACK');
-      logger.error(LogCategory.STORAGE, 'MemoryOperations', 'Batch update failed', {
-        error: error instanceof Error ? error.message : String(error),
-        count: updates.length
-      });
-      throw new Error(`Batch update failed: ${error instanceof Error ? error.message : String(error)}`);
+      logger.error(
+        LogCategory.STORAGE,
+        'MemoryOperations',
+        'Batch update failed',
+        {
+          error: error instanceof Error ? error.message : String(error),
+          count: updates.length
+        }
+      );
+      throw new Error(
+        `Batch update failed: ${error instanceof Error ? error.message : String(error)}`
+      );
     } finally {
       client.release();
     }

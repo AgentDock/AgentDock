@@ -136,13 +136,13 @@ export class ProceduralMemory extends BaseMemoryType<ProceduralMemoryConfig> {
       type: MemoryType.PROCEDURAL,
       limit: 5
     });
-    
+
     return result.map((memory): PatternMatchResult => {
       // Extract from generic MemoryData to ProceduralMemoryData
       const [triggerPart, actionPart] = memory.content.includes('->')
-        ? memory.content.split('->').map(s => s.trim())
+        ? memory.content.split('->').map((s) => s.trim())
         : [memory.content, 'unknown'];
-      
+
       const proceduralData: ProceduralMemoryData = {
         id: memory.id,
         agentId: memory.agentId,
@@ -154,24 +154,29 @@ export class ProceduralMemory extends BaseMemoryType<ProceduralMemoryConfig> {
         confidence: Number(memory.metadata?.confidence || 0.5),
         successCount: Number(memory.metadata?.successCount || 1),
         totalCount: Number(memory.metadata?.totalCount || 1),
-        lastUsed: typeof memory.metadata?.lastUsed === 'number' 
-          ? memory.metadata.lastUsed 
-          : Date.now(),
-        conditions: Array.isArray(memory.metadata?.conditions) 
-          ? memory.metadata.conditions 
+        lastUsed:
+          typeof memory.metadata?.lastUsed === 'number'
+            ? memory.metadata.lastUsed
+            : Date.now(),
+        conditions: Array.isArray(memory.metadata?.conditions)
+          ? memory.metadata.conditions
           : [],
-        outcomes: Array.isArray(memory.metadata?.outcomes) 
-          ? memory.metadata.outcomes 
-          : [{
-              success: true,
-              timestamp: Date.now()
-            }],
+        outcomes: Array.isArray(memory.metadata?.outcomes)
+          ? memory.metadata.outcomes
+          : [
+              {
+                success: true,
+                timestamp: Date.now()
+              }
+            ],
         metadata: memory.metadata || {}
       };
-      
+
       return {
         pattern: proceduralData,
-        confidence: this.proceduralConfig.confidenceThreshold ?? PROCEDURAL_MEMORY_DEFAULTS.confidenceThreshold,
+        confidence:
+          this.proceduralConfig.confidenceThreshold ??
+          PROCEDURAL_MEMORY_DEFAULTS.confidenceThreshold,
         contextMatch: 0.5,
         reason: 'Pattern matched from storage recall'
       };

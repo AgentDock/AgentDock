@@ -1,8 +1,8 @@
 import {
+  ProceduralMemoryConfig,
   ProceduralMemoryData,
   ProceduralOutcome,
-  ProceduralPattern,
-  ProceduralMemoryConfig
+  ProceduralPattern
 } from './ProceduralMemoryTypes';
 
 /**
@@ -286,7 +286,9 @@ function calculateContextSimilarity(
 /**
  * Validate procedural memory configuration
  */
-export function validateProceduralConfig(config: ProceduralMemoryConfig): boolean {
+export function validateProceduralConfig(
+  config: ProceduralMemoryConfig
+): boolean {
   return (
     config.minSuccessRate >= 0 &&
     config.minSuccessRate <= 1 &&

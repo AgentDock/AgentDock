@@ -1,13 +1,13 @@
 import { Pool } from 'pg';
 
+import { LogCategory, logger } from '../../logging';
+import { MemoryError } from '../../shared/errors/memory-errors';
+import { StorageProvider } from '../../storage/types';
 import { MemoryType } from '../types/common';
 import { EpisodicMemory } from '../types/episodic/EpisodicMemory';
 import { ProceduralMemory } from '../types/procedural/ProceduralMemory';
 import { SemanticMemory } from '../types/semantic/SemanticMemory';
 import { WorkingMemory } from '../types/working/WorkingMemory';
-import { MemoryError } from '../../shared/errors/memory-errors';
-import { LogCategory, logger } from '../../logging';
-import { StorageProvider } from '../../storage/types';
 import {
   HybridSearchResult,
   RecallConfig,
@@ -85,7 +85,7 @@ export class RecallService {
     string,
     { result: RecallResult; timestamp: number }
   >();
-  
+
   /**
    * Flag to prevent concurrent cache cleanup operations
    * @private
@@ -108,13 +108,17 @@ export class RecallService {
    * High water mark for cache size - triggers cleanup
    * @private
    */
-  private readonly cacheHighWater = parseInt(process.env.RECALL_CACHE_HIGH_WATER || '1000');
+  private readonly cacheHighWater = parseInt(
+    process.env.RECALL_CACHE_HIGH_WATER || '1000'
+  );
 
   /**
    * Low water mark for cache size - target size after cleanup
    * @private
    */
-  private readonly cacheLowWater = parseInt(process.env.RECALL_CACHE_LOW_WATER || '900');
+  private readonly cacheLowWater = parseInt(
+    process.env.RECALL_CACHE_LOW_WATER || '900'
+  );
 
   /**
    * Counter for tracking cleanup frequency (for monitoring)
@@ -185,7 +189,7 @@ export class RecallService {
     });
 
     const searchResults = await Promise.all(searchPromises);
-    const allMemories = searchResults.flat().filter(m => m.id); // Filter out error markers
+    const allMemories = searchResults.flat().filter((m) => m.id); // Filter out error markers
 
     // Apply hybrid scoring
     const rankedMemories = this.applyHybridScoring(allMemories, query);
@@ -279,9 +283,11 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
   private async searchMemoryType(
     type: MemoryType,
     query: RecallQuery
-  ): Promise<UnifiedMemoryResult[] | (UnifiedMemoryResult[] & { error: MemoryError })> {
+  ): Promise<
+    UnifiedMemoryResult[] | (UnifiedMemoryResult[] & { error: MemoryError })
+  > {
     const results: UnifiedMemoryResult[] = [];
-    
+
     try {
       switch (type) {
         case MemoryType.WORKING: {
@@ -398,22 +404,29 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
       const searchError = new MemoryError(
         `Failed to search ${type} memory`,
         'SEARCH_ERROR',
-        { 
-          type, 
-          userId: query.userId, 
-          query: query.query, 
+        {
+          type,
+          userId: query.userId,
+          query: query.query,
           error: error instanceof Error ? error.message : String(error)
         }
       );
-      
-      logger.error(LogCategory.STORAGE, 'RecallService', 'Memory search failed', {
-        type,
-        userId: query.userId,
-        error: error instanceof Error ? error.message : String(error)
-      });
-      
+
+      logger.error(
+        LogCategory.STORAGE,
+        'RecallService',
+        'Memory search failed',
+        {
+          type,
+          userId: query.userId,
+          error: error instanceof Error ? error.message : String(error)
+        }
+      );
+
       // Return empty array with error marker for the main method to handle
-      return Object.assign([], { error: searchError }) as UnifiedMemoryResult[] & { error: MemoryError };
+      return Object.assign([], {
+        error: searchError
+      }) as UnifiedMemoryResult[] & { error: MemoryError };
     }
 
     return results;
@@ -520,11 +533,16 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
           };
         });
       } catch (error) {
-        logger.warn(LogCategory.STORAGE, 'RecallService', 'Failed to fetch stored connections', {
-          userId,
-          memoryCount: memories.length,
-          error: error instanceof Error ? error.message : String(error)
-        });
+        logger.warn(
+          LogCategory.STORAGE,
+          'RecallService',
+          'Failed to fetch stored connections',
+          {
+            userId,
+            memoryCount: memories.length,
+            error: error instanceof Error ? error.message : String(error)
+          }
+        );
         // Return memories without connection enhancement
         return memories;
       }
@@ -596,7 +614,7 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
 
   /**
    * Caches a recall result with automatic cleanup when cache exceeds limits
-   * 
+   *
    * @param cacheKey - The cache key for the result
    * @param result - The recall result to cache
    * @private
@@ -608,7 +626,11 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
     });
 
     // Prevent concurrent cleanup operations
-    if (this.cache.size > this.cacheHighWater && !this.cleanupInProgress && !this.isDestroyed) {
+    if (
+      this.cache.size > this.cacheHighWater &&
+      !this.cleanupInProgress &&
+      !this.isDestroyed
+    ) {
       this.cleanupInProgress = true;
 
       // Clear any existing cleanup operation
@@ -629,7 +651,7 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
           const entries = Array.from(this.cache.keys());
 
           // Remove oldest entries (Map maintains insertion order)
-          entries.slice(0, toDelete).forEach(key => this.cache.delete(key));
+          entries.slice(0, toDelete).forEach((key) => this.cache.delete(key));
 
           // Log cleanup for monitoring
           this.cleanupCount++;

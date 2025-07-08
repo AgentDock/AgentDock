@@ -35,19 +35,19 @@ export interface DecayCalculationResult {
 export interface LazyDecayConfig {
   /** Default half-life in days for memories without custom settings */
   defaultHalfLife: number;
-  
+
   /** Minimum resonance before marking memory for archival */
   archivalThreshold: number;
-  
+
   /** Enable reinforcement of frequently accessed memories */
   enableReinforcement: boolean;
-  
+
   /** Reinforcement factor for accessed memories */
   reinforcementFactor: number;
-  
+
   /** Maximum resonance cap to prevent over-reinforcement */
   maxResonance: number;
-  
+
   /** Minimum time between updates (prevents excessive database writes) */
   minUpdateIntervalMs: number;
 }
@@ -108,17 +108,24 @@ export class LazyDecayCalculator {
       // Skip memories marked as never decay
       if (memory.neverDecay) {
         result.reason = 'never_decay';
-        
+
         // Still apply reinforcement if enabled and memory is FREQUENTLY accessed (LAZY behavior)
-        if (this.config.enableReinforcement && 
-            memory.reinforceable !== false && 
-            memory.accessCount && memory.accessCount > 5) { // Only reinforce frequently accessed memories
+        if (
+          this.config.enableReinforcement &&
+          memory.reinforceable !== false &&
+          memory.accessCount &&
+          memory.accessCount > 5
+        ) {
+          // Only reinforce frequently accessed memories
           result.newResonance = this.applyReinforcement(memory.resonance);
-          result.reinforcementApplied = result.newResonance !== memory.resonance;
+          result.reinforcementApplied =
+            result.newResonance !== memory.resonance;
           result.shouldUpdate = result.reinforcementApplied;
-          result.reason = result.reinforcementApplied ? 'reinforcement_only' : 'never_decay';
+          result.reason = result.reinforcementApplied
+            ? 'reinforcement_only'
+            : 'never_decay';
         }
-        
+
         return result;
       }
 
@@ -131,25 +138,31 @@ export class LazyDecayCalculator {
 
       // Calculate time-based decay
       const halfLife = memory.customHalfLife ?? this.config.defaultHalfLife;
-      const daysSinceLastAccess = (accessTime - memory.lastAccessedAt) / (1000 * 60 * 60 * 24);
-      
+      const daysSinceLastAccess =
+        (accessTime - memory.lastAccessedAt) / (1000 * 60 * 60 * 24);
+
       // Exponential decay formula: newValue = originalValue * (0.5)^(time/halfLife)
       const decayFactor = Math.pow(0.5, daysSinceLastAccess / halfLife);
       const decayedResonance = memory.resonance * decayFactor;
-      
+
       result.newResonance = decayedResonance;
       result.decayApplied = decayedResonance !== memory.resonance;
 
       // Apply reinforcement if enabled and memory is FREQUENTLY accessed (LAZY behavior)
-      if (this.config.enableReinforcement && 
-          memory.reinforceable !== false && 
-          memory.accessCount && memory.accessCount > 5) { // Only reinforce frequently accessed memories
+      if (
+        this.config.enableReinforcement &&
+        memory.reinforceable !== false &&
+        memory.accessCount &&
+        memory.accessCount > 5
+      ) {
+        // Only reinforce frequently accessed memories
         result.newResonance = this.applyReinforcement(result.newResonance);
         result.reinforcementApplied = result.newResonance !== decayedResonance;
       }
 
       // Determine if update is needed - LAZY: Only update on significant changes (10%+)
-      const significantChange = Math.abs(result.newResonance - memory.resonance) > 0.1;
+      const significantChange =
+        Math.abs(result.newResonance - memory.resonance) > 0.1;
       result.shouldUpdate = significantChange;
 
       // Set reason
@@ -164,24 +177,37 @@ export class LazyDecayCalculator {
       }
 
       // Cap resonance at maximum
-      result.newResonance = Math.min(result.newResonance, this.config.maxResonance);
+      result.newResonance = Math.min(
+        result.newResonance,
+        this.config.maxResonance
+      );
 
-      logger.debug(LogCategory.STORAGE, 'LazyDecayCalculator', 'Decay calculated', {
-        memoryId: memory.id,
-        oldResonance: result.oldResonance,
-        newResonance: result.newResonance,
-        daysSinceAccess: daysSinceLastAccess,
-        halfLife,
-        reason: result.reason
-      });
+      logger.debug(
+        LogCategory.STORAGE,
+        'LazyDecayCalculator',
+        'Decay calculated',
+        {
+          memoryId: memory.id,
+          oldResonance: result.oldResonance,
+          newResonance: result.newResonance,
+          daysSinceAccess: daysSinceLastAccess,
+          halfLife,
+          reason: result.reason
+        }
+      );
 
       return result;
     } catch (error) {
-      logger.error(LogCategory.STORAGE, 'LazyDecayCalculator', 'Decay calculation failed', {
-        memoryId: memory.id,
-        error: error instanceof Error ? error.message : String(error)
-      });
-      
+      logger.error(
+        LogCategory.STORAGE,
+        'LazyDecayCalculator',
+        'Decay calculation failed',
+        {
+          memoryId: memory.id,
+          error: error instanceof Error ? error.message : String(error)
+        }
+      );
+
       result.reason = 'calculation_error';
       return result;
     }
@@ -199,18 +225,25 @@ export class LazyDecayCalculator {
     accessTime: number = Date.now()
   ): DecayCalculationResult[] {
     const startTime = Date.now();
-    
-    const results = memories.map(memory => this.calculateDecay(memory, accessTime));
-    
+
+    const results = memories.map((memory) =>
+      this.calculateDecay(memory, accessTime)
+    );
+
     const processingTime = Date.now() - startTime;
-    const updatesNeeded = results.filter(r => r.shouldUpdate).length;
-    
-    logger.debug(LogCategory.STORAGE, 'LazyDecayCalculator', 'Batch decay calculated', {
-      totalMemories: memories.length,
-      updatesNeeded,
-      processingTimeMs: processingTime,
-      avgTimePerMemory: processingTime / memories.length
-    });
+    const updatesNeeded = results.filter((r) => r.shouldUpdate).length;
+
+    logger.debug(
+      LogCategory.STORAGE,
+      'LazyDecayCalculator',
+      'Batch decay calculated',
+      {
+        totalMemories: memories.length,
+        updatesNeeded,
+        processingTimeMs: processingTime,
+        avgTimePerMemory: processingTime / memories.length
+      }
+    );
 
     return results;
   }
@@ -237,8 +270,8 @@ export class LazyDecayCalculator {
    */
   getMemoriesToArchive(memories: MemoryData[]): string[] {
     return memories
-      .filter(memory => this.shouldArchive(memory))
-      .map(memory => memory.id);
+      .filter((memory) => this.shouldArchive(memory))
+      .map((memory) => memory.id);
   }
 
   /**
@@ -250,7 +283,7 @@ export class LazyDecayCalculator {
   private applyReinforcement(currentResonance: number): number {
     const reinforcement = currentResonance * this.config.reinforcementFactor;
     const newResonance = currentResonance + reinforcement;
-    
+
     // Cap at maximum resonance
     return Math.min(newResonance, this.config.maxResonance);
   }
@@ -262,10 +295,15 @@ export class LazyDecayCalculator {
    */
   updateConfig(newConfig: Partial<LazyDecayConfig>): void {
     this.config = { ...this.config, ...newConfig };
-    
-    logger.debug(LogCategory.STORAGE, 'LazyDecayCalculator', 'Configuration updated', {
-      newConfig
-    });
+
+    logger.debug(
+      LogCategory.STORAGE,
+      'LazyDecayCalculator',
+      'Configuration updated',
+      {
+        newConfig
+      }
+    );
   }
 
   /**
@@ -276,4 +314,4 @@ export class LazyDecayCalculator {
   getConfig(): LazyDecayConfig {
     return { ...this.config };
   }
-} 
+}

@@ -385,9 +385,13 @@ export function migrateToLazyDecay(db: Database): void {
 
   try {
     // Check if migration is needed by checking for never_decay column
-    const columnCheck = db.prepare(`
+    const columnCheck = db
+      .prepare(
+        `
       SELECT name FROM pragma_table_info('memories') WHERE name = 'never_decay'
-    `).get();
+    `
+      )
+      .get();
 
     if (columnCheck) {
       logger.debug(

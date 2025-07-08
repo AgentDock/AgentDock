@@ -4,8 +4,11 @@ import {
   VectorMemoryOperations
 } from '../../../storage/types';
 import { EmbeddingService } from '../../intelligence/embeddings/EmbeddingService';
-import { EpisodicMemoryData, EpisodicMemoryConfig } from './EpisodicMemoryTypes';
 import { SemanticMemoryData } from '../semantic/SemanticMemoryTypes';
+import {
+  EpisodicMemoryConfig,
+  EpisodicMemoryData
+} from './EpisodicMemoryTypes';
 
 /**
  * Utility functions for EpisodicMemory operations
@@ -214,7 +217,9 @@ export function groupByTimeWindow(
 /**
  * Convert group of memories to semantic summary
  */
-export function convertToSemantic(group: EpisodicMemoryData[]): SemanticMemoryData | null {
+export function convertToSemantic(
+  group: EpisodicMemoryData[]
+): SemanticMemoryData | null {
   if (group.length === 0) return null;
 
   // Extract key information

@@ -6,6 +6,7 @@
  */
 
 import { createHash } from 'crypto';
+
 import { LogCategory, logger } from '../../logging';
 import { MemoryType } from '../adapters/postgresql/schema-memory';
 import { getStorageFactory } from '../factory';
@@ -343,10 +344,7 @@ export class IsolatedMemoryOperations {
    * Generate secure hash for content
    */
   private hashContent(content: string): string {
-    return createHash('sha256')
-      .update(content)
-      .digest('hex')
-      .substring(0, 16); // Use first 16 chars for consistency
+    return createHash('sha256').update(content).digest('hex').substring(0, 16); // Use first 16 chars for consistency
   }
 
   /**

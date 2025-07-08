@@ -7,8 +7,8 @@
  * @author AgentDock Core Team
  */
 
-import type { EmbeddingModel } from 'ai';
 import { createHash } from 'crypto';
+import type { EmbeddingModel } from 'ai';
 
 import { embedMany } from '../../../llm';
 import { LogCategory, logger } from '../../../logging';

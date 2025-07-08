@@ -1,11 +1,15 @@
 import { createHash } from 'crypto';
+
 import { LogCategory, logger } from '../../../logging';
 import {
   MemoryOperations,
   VectorMemoryOperations
 } from '../../../storage/types';
 import { EmbeddingService } from '../../intelligence/embeddings/EmbeddingService';
-import { SemanticMemoryData, SemanticMemoryConfig } from './SemanticMemoryTypes';
+import {
+  SemanticMemoryConfig,
+  SemanticMemoryData
+} from './SemanticMemoryTypes';
 
 /**
  * Utility functions for SemanticMemory operations
@@ -738,8 +742,5 @@ async function isBoilerplate(content: string): Promise<boolean> {
  */
 export function generateContentHash(content: string): string {
   // Use SHA-256 for secure content hashing
-  return createHash('sha256')
-    .update(content)
-    .digest('hex')
-    .substring(0, 16); // Use first 16 chars for reasonable length
+  return createHash('sha256').update(content).digest('hex').substring(0, 16); // Use first 16 chars for reasonable length
 }

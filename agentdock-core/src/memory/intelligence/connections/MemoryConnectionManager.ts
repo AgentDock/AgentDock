@@ -157,7 +157,7 @@ class ConnectionDiscoveryQueue extends EventEmitter {
         if (this.pendingTimeoutId) {
           clearTimeout(this.pendingTimeoutId);
         }
-        
+
         this.pendingTimeoutId = setTimeout(() => {
           this.pendingTimeoutId = null;
           if (!this.isDestroyed) {
@@ -173,22 +173,22 @@ class ConnectionDiscoveryQueue extends EventEmitter {
    */
   destroy(): void {
     this.isDestroyed = true;
-    
+
     // Clear pending timeout
     if (this.pendingTimeoutId) {
       clearTimeout(this.pendingTimeoutId);
       this.pendingTimeoutId = null;
     }
-    
+
     // Reject all pending tasks
     while (this.queue.length > 0) {
       const task = this.queue.shift()!;
       task.reject(new Error('ConnectionDiscoveryQueue destroyed'));
     }
-    
+
     // Clear processing set
     this.processing.clear();
-    
+
     // Clear manager reference
     this.manager = null;
   }

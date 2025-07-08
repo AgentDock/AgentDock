@@ -384,9 +384,13 @@ describe('Memory System Integration - All Memory Types Working Together', () => 
       expect(recommendations[0].pattern).toBeDefined();
       // Check either context or action contains the expected text
       expect(
-        recommendations[0].pattern.context?.includes('database connection timeout') ||
-        recommendations[0].pattern.action?.includes('database connection timeout') ||
-        recommendations[0].pattern.trigger?.includes('API returning 500')
+        recommendations[0].pattern.context?.includes(
+          'database connection timeout'
+        ) ||
+          recommendations[0].pattern.action?.includes(
+            'database connection timeout'
+          ) ||
+          recommendations[0].pattern.trigger?.includes('API returning 500')
       ).toBe(true);
 
       // Semantic memory should provide related knowledge
@@ -485,8 +489,8 @@ describe('Memory System Integration - All Memory Types Working Together', () => 
       expect(patterns[0].pattern).toBeDefined();
       expect(
         patterns[0].pattern.context?.includes('useState') ||
-        patterns[0].pattern.action?.includes('useState') ||
-        patterns[0].pattern.trigger?.includes('state')
+          patterns[0].pattern.action?.includes('useState') ||
+          patterns[0].pattern.trigger?.includes('state')
       ).toBe(true);
     });
   });

@@ -1,5 +1,5 @@
-import { RecallConfig } from '../services/RecallServiceTypes';
 import { LogCategory, logger } from '../../logging';
+import { RecallConfig } from '../services/RecallServiceTypes';
 
 /**
  * Production-ready preset configurations for RecallService
@@ -115,28 +115,43 @@ export function validateHybridWeights(
 
   // Helpful warnings based on BEIR research
   if (weights.text < 0.25) {
-    logger.warn(LogCategory.CONFIG, 'RecallPresets', 'Text weight below safety threshold', {
-      textWeight: weights.text,
-      threshold: 0.25,
-      risk: 'May cause catastrophic failures on specialized domains (medical, legal, technical)',
-      recommendation: 'BEIR research recommends minimum 0.25 for safety'
-    });
+    logger.warn(
+      LogCategory.CONFIG,
+      'RecallPresets',
+      'Text weight below safety threshold',
+      {
+        textWeight: weights.text,
+        threshold: 0.25,
+        risk: 'May cause catastrophic failures on specialized domains (medical, legal, technical)',
+        recommendation: 'BEIR research recommends minimum 0.25 for safety'
+      }
+    );
   }
 
   if (weights.vector < 0.2) {
-    logger.warn(LogCategory.CONFIG, 'RecallPresets', 'Vector weight below threshold', {
-      vectorWeight: weights.vector,
-      threshold: 0.2,
-      risk: 'May significantly reduce semantic understanding capabilities'
-    });
+    logger.warn(
+      LogCategory.CONFIG,
+      'RecallPresets',
+      'Vector weight below threshold',
+      {
+        vectorWeight: weights.vector,
+        threshold: 0.2,
+        risk: 'May significantly reduce semantic understanding capabilities'
+      }
+    );
   }
 
   if (weights.temporal < 0.1) {
-    logger.warn(LogCategory.CONFIG, 'RecallPresets', 'Temporal weight below threshold', {
-      temporalWeight: weights.temporal,
-      threshold: 0.1,
-      risk: 'May reduce conversation continuity in multi-turn interactions'
-    });
+    logger.warn(
+      LogCategory.CONFIG,
+      'RecallPresets',
+      'Temporal weight below threshold',
+      {
+        temporalWeight: weights.temporal,
+        threshold: 0.1,
+        risk: 'May reduce conversation continuity in multi-turn interactions'
+      }
+    );
   }
 }
 

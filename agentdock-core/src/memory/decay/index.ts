@@ -12,14 +12,14 @@ export { LazyDecayCalculator } from './LazyDecayCalculator';
 export { LazyDecayBatchProcessor } from './LazyDecayBatchProcessor';
 
 // Type definitions for lazy decay
-export type { 
-  DecayCalculationResult, 
-  LazyDecayConfig 
+export type {
+  DecayCalculationResult,
+  LazyDecayConfig
 } from './LazyDecayCalculator';
 
-export type { 
+export type {
   BatchProcessorConfig,
-  BatchProcessingResult 
+  BatchProcessingResult
 } from './LazyDecayBatchProcessor';
 
 // Legacy type definitions (kept for compatibility)

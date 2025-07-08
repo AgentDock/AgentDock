@@ -25,13 +25,15 @@ describe('batchUpdateMemories', () => {
         query: jest.fn().mockResolvedValue({ rowCount: 1 }),
         release: jest.fn()
       };
-      
+
       mockPool = {
         connect: jest.fn().mockResolvedValue(mockClient)
       };
-      
+
       // Create memory operations instance directly
-      const { MemoryOperations } = require('../../../storage/adapters/postgresql/operations/memory');
+      const {
+        MemoryOperations
+      } = require('../../../storage/adapters/postgresql/operations/memory');
       adapter = {
         memory: new MemoryOperations(mockPool, 'public')
       };
@@ -39,8 +41,18 @@ describe('batchUpdateMemories', () => {
 
     it('should update multiple memories in batch', async () => {
       const updates: MemoryUpdate[] = [
-        { id: 'mem1', resonance: 0.8, lastAccessedAt: Date.now(), accessCount: 5 },
-        { id: 'mem2', resonance: 0.6, lastAccessedAt: Date.now(), accessCount: 3 }
+        {
+          id: 'mem1',
+          resonance: 0.8,
+          lastAccessedAt: Date.now(),
+          accessCount: 5
+        },
+        {
+          id: 'mem2',
+          resonance: 0.6,
+          lastAccessedAt: Date.now(),
+          accessCount: 3
+        }
       ];
 
       await adapter.memory.batchUpdateMemories(updates);
@@ -67,14 +79,20 @@ describe('batchUpdateMemories', () => {
 
     it('should rollback on error', async () => {
       mockClient.query.mockRejectedValueOnce(new Error('Database error'));
-      
+
       const updates: MemoryUpdate[] = [
-        { id: 'mem1', resonance: 0.8, lastAccessedAt: Date.now(), accessCount: 5 }
+        {
+          id: 'mem1',
+          resonance: 0.8,
+          lastAccessedAt: Date.now(),
+          accessCount: 5
+        }
       ];
 
-      await expect(adapter.memory.batchUpdateMemories(updates))
-        .rejects.toThrow('Batch update failed');
-      
+      await expect(adapter.memory.batchUpdateMemories(updates)).rejects.toThrow(
+        'Batch update failed'
+      );
+
       expect(mockClient.query).toHaveBeenCalledWith('ROLLBACK');
       expect(mockClient.release).toHaveBeenCalled();
     });
@@ -88,14 +106,16 @@ describe('batchUpdateMemories', () => {
       const mockStmt = {
         run: jest.fn()
       };
-      
+
       mockDb = {
         prepare: jest.fn().mockReturnValue(mockStmt),
         transaction: jest.fn((fn: any) => fn)
       };
-      
+
       // Create memory operations instance directly
-      const { SqliteMemoryOperations } = require('../../../storage/adapters/sqlite/operations/memory');
+      const {
+        SqliteMemoryOperations
+      } = require('../../../storage/adapters/sqlite/operations/memory');
       adapter = {
         memory: new SqliteMemoryOperations(mockDb)
       };
@@ -103,8 +123,18 @@ describe('batchUpdateMemories', () => {
 
     it('should update multiple memories in batch', async () => {
       const updates: MemoryUpdate[] = [
-        { id: 'mem1', resonance: 0.8, lastAccessedAt: Date.now(), accessCount: 5 },
-        { id: 'mem2', resonance: 0.6, lastAccessedAt: Date.now(), accessCount: 3 }
+        {
+          id: 'mem1',
+          resonance: 0.8,
+          lastAccessedAt: Date.now(),
+          accessCount: 5
+        },
+        {
+          id: 'mem2',
+          resonance: 0.6,
+          lastAccessedAt: Date.now(),
+          accessCount: 3
+        }
       ];
 
       await adapter.memory.batchUpdateMemories(updates);
@@ -125,13 +155,19 @@ describe('batchUpdateMemories', () => {
       mockDb.transaction.mockReturnValueOnce((updates: any) => {
         throw new Error('Transaction failed');
       });
-      
+
       const updates: MemoryUpdate[] = [
-        { id: 'mem1', resonance: 0.8, lastAccessedAt: Date.now(), accessCount: 5 }
+        {
+          id: 'mem1',
+          resonance: 0.8,
+          lastAccessedAt: Date.now(),
+          accessCount: 5
+        }
       ];
 
-      await expect(adapter.memory.batchUpdateMemories(updates))
-        .rejects.toThrow('Batch update failed');
+      await expect(adapter.memory.batchUpdateMemories(updates)).rejects.toThrow(
+        'Batch update failed'
+      );
     });
   });
 });

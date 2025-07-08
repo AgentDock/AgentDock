@@ -122,16 +122,17 @@ export class WorkingMemory extends BaseMemoryType<WorkingMemoryConfig> {
       type: MemoryType.WORKING,
       limit
     });
-    
+
     // Transform MemoryData to WorkingMemoryData with proper field mapping
-    return result.map(memory => ({
+    return result.map((memory) => ({
       id: memory.id,
       agentId: memory.agentId,
       content: memory.content,
       createdAt: memory.createdAt,
       importance: memory.importance,
       sessionId: memory.sessionId || `session_${Date.now()}`,
-      contextWindow: memory.metadata?.contextWindow ?? this.workingConfig.maxContextItems,
+      contextWindow:
+        memory.metadata?.contextWindow ?? this.workingConfig.maxContextItems,
       tokenCount: memory.tokenCount ?? 0,
       expiresAt: memory.metadata?.expiresAt ?? 0,
       metadata: memory.metadata

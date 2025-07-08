@@ -97,7 +97,7 @@ export class EpisodicMemory extends BaseMemoryType<EpisodicMemoryConfig> {
     });
 
     // Transform MemoryData to EpisodicMemoryData with proper field mapping
-    return result.map(memory => ({
+    return result.map((memory) => ({
       id: memory.id,
       agentId: memory.agentId,
       content: memory.content,
@@ -108,12 +108,10 @@ export class EpisodicMemory extends BaseMemoryType<EpisodicMemoryConfig> {
       resonance: memory.resonance,
       lastAccessedAt: memory.lastAccessedAt,
       accessCount: memory.accessCount,
-      sourceMessageIds: Array.isArray(memory.metadata?.sourceMessageIds) 
-        ? memory.metadata.sourceMessageIds 
+      sourceMessageIds: Array.isArray(memory.metadata?.sourceMessageIds)
+        ? memory.metadata.sourceMessageIds
         : [],
-      tags: Array.isArray(memory.metadata?.tags) 
-        ? memory.metadata.tags 
-        : [],
+      tags: Array.isArray(memory.metadata?.tags) ? memory.metadata.tags : [],
       embeddingId: memory.embeddingId,
       metadata: memory.metadata || {}
     }));

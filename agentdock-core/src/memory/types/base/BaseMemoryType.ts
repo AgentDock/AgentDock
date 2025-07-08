@@ -28,7 +28,9 @@ export abstract class BaseMemoryType<TConfig = any> {
   ) {
     // Validate storage has memory operations first
     if (!storage.memory) {
-      throw new Error(`${this.constructor.name} requires storage with memory operations`);
+      throw new Error(
+        `${this.constructor.name} requires storage with memory operations`
+      );
     }
     this.memory = storage.memory;
 
@@ -111,45 +113,54 @@ export abstract class BaseMemoryType<TConfig = any> {
   /**
    * Schedule temporal analysis with proper cleanup handling
    */
-  private scheduleTemporalAnalysis(userId: string, agentId: string, memoryId: string): void {
+  private scheduleTemporalAnalysis(
+    userId: string,
+    agentId: string,
+    memoryId: string
+  ): void {
     if (this.isDestroyed) return;
-    
+
     const abortController = new AbortController();
     let immediateId: NodeJS.Immediate;
-    
+
     const operation = {
       abort: () => {
         abortController.abort();
         if (immediateId) clearImmediate(immediateId);
       }
     };
-    
+
     this.pendingOperations.add(operation);
-    
+
     immediateId = setImmediate(async () => {
       try {
         // Check if aborted
         if (abortController.signal.aborted || this.isDestroyed) {
           return;
         }
-        
+
         const memory = await this.storage.memory?.getById?.(userId, memoryId);
-        
+
         // Check again after async operation
         if (abortController.signal.aborted || this.isDestroyed) {
           return;
         }
-        
+
         if (memory && this.temporalAnalyzer) {
           await this.temporalAnalyzer.analyzePatterns(agentId);
         }
       } catch (error) {
         if (!abortController.signal.aborted) {
-          logger.error(LogCategory.STORAGE, 'BaseMemoryType', 'Temporal pattern analysis failed', {
-            error: error instanceof Error ? error.message : String(error),
-            userId,
-            memoryId
-          });
+          logger.error(
+            LogCategory.STORAGE,
+            'BaseMemoryType',
+            'Temporal pattern analysis failed',
+            {
+              error: error instanceof Error ? error.message : String(error),
+              userId,
+              memoryId
+            }
+          );
         }
       } finally {
         this.pendingOperations.delete(operation);
@@ -162,13 +173,13 @@ export abstract class BaseMemoryType<TConfig = any> {
    */
   async destroy(): Promise<void> {
     this.isDestroyed = true;
-    
+
     // Cancel all pending operations
     for (const operation of this.pendingOperations) {
       operation.abort();
     }
     this.pendingOperations.clear();
-    
+
     // Clean up other resources
     if (this.connectionManager) {
       await this.connectionManager.destroy();

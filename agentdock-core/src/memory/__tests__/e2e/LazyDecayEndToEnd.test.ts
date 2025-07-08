@@ -1,16 +1,21 @@
 /**
  * @fileoverview End-to-end tests for Lazy Decay System
- * 
+ *
  * Complete integration tests covering the entire lazy decay workflow
  * from memory creation to decay calculation during recall operations.
  */
 
-import { MemoryManager } from '../../MemoryManager';
+import {
+  MemoryData,
+  MemoryOperations,
+  MemoryUpdate,
+  StorageProvider
+} from '../../../storage/types';
 import { LazyDecayBatchProcessor } from '../../decay/LazyDecayBatchProcessor';
 import { LazyDecayCalculator } from '../../decay/LazyDecayCalculator';
 import { PRIMEExtractor } from '../../extraction/PRIMEExtractor';
+import { MemoryManager } from '../../MemoryManager';
 import { CostTracker } from '../../tracking/CostTracker';
-import { MemoryData, StorageProvider, MemoryOperations, MemoryUpdate } from '../../../storage/types';
 import { MemoryManagerConfig, MemoryType } from '../../types';
 
 // Mock storage with full lazy decay support
@@ -19,43 +24,56 @@ const createFullMockStorage = (): StorageProvider => {
   const updateHistory: MemoryUpdate[] = [];
 
   const mockMemoryOps: MemoryOperations = {
-    store: jest.fn().mockImplementation(async (userId: string, agentId: string, memory: MemoryData) => {
-      const id = `mem-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      const fullMemory = { ...memory, id };
-      memories.push(fullMemory);
-      return id;
-    }),
+    store: jest
+      .fn()
+      .mockImplementation(
+        async (userId: string, agentId: string, memory: MemoryData) => {
+          const id = `mem-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+          const fullMemory = { ...memory, id };
+          memories.push(fullMemory);
+          return id;
+        }
+      ),
 
-    recall: jest.fn().mockImplementation(async (userId: string, agentId: string, query: string, options?) => {
-      return memories.filter(m => 
-        m.userId === userId && 
-        m.agentId === agentId &&
-        (options?.type ? m.type === options.type : true) &&
-        (options?.limit ? true : true)
-      ).slice(0, options?.limit || 50);
-    }),
+    recall: jest
+      .fn()
+      .mockImplementation(
+        async (userId: string, agentId: string, query: string, options?) => {
+          return memories
+            .filter(
+              (m) =>
+                m.userId === userId &&
+                m.agentId === agentId &&
+                (options?.type ? m.type === options.type : true) &&
+                (options?.limit ? true : true)
+            )
+            .slice(0, options?.limit || 50);
+        }
+      ),
 
     update: jest.fn(),
     delete: jest.fn(),
-    getStats: jest.fn().mockResolvedValue({ 
+    getStats: jest.fn().mockResolvedValue({
       totalMemories: memories.length,
       byType: { semantic: memories.length },
       avgImportance: 0.5,
       totalSize: '1MB'
     }),
 
-    batchUpdateMemories: jest.fn().mockImplementation(async (updates: MemoryUpdate[]) => {
-      updateHistory.push(...updates);
-      updates.forEach(update => {
-        const memory = memories.find(m => m.id === update.id);
-        if (memory) {
-          memory.resonance = update.resonance;
-          memory.lastAccessedAt = update.lastAccessedAt;
-          memory.accessCount = update.accessCount;
-          memory.updatedAt = Date.now();
-        }
-      });
-    })
+    batchUpdateMemories: jest
+      .fn()
+      .mockImplementation(async (updates: MemoryUpdate[]) => {
+        updateHistory.push(...updates);
+        updates.forEach((update) => {
+          const memory = memories.find((m) => m.id === update.id);
+          if (memory) {
+            memory.resonance = update.resonance;
+            memory.lastAccessedAt = update.lastAccessedAt;
+            memory.accessCount = update.accessCount;
+            memory.updatedAt = Date.now();
+          }
+        });
+      })
   };
 
   return {
@@ -75,17 +93,17 @@ const createFullMockStorage = (): StorageProvider => {
     // Test helpers
     _getMemories: () => memories,
     _getUpdateHistory: () => updateHistory,
-    _clearHistory: () => { 
-      memories.length = 0; 
-      updateHistory.length = 0; 
+    _clearHistory: () => {
+      memories.length = 0;
+      updateHistory.length = 0;
     }
   } as any;
 };
 
 describe('Lazy Decay System - End-to-End Tests', () => {
   let memoryManager: MemoryManager;
-  let mockStorage: StorageProvider & { 
-    _getMemories: () => MemoryData[]; 
+  let mockStorage: StorageProvider & {
+    _getMemories: () => MemoryData[];
     _getUpdateHistory: () => MemoryUpdate[];
     _clearHistory: () => void;
   };
@@ -94,23 +112,23 @@ describe('Lazy Decay System - End-to-End Tests', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     mockStorage = createFullMockStorage() as any;
-    
+
     config = {
-      working: { 
+      working: {
         maxTokens: 4000,
         ttlSeconds: 3600,
         maxContextItems: 100,
         compressionThreshold: 0.8,
         encryptSensitive: false
       },
-      episodic: { 
+      episodic: {
         maxMemoriesPerSession: 1000,
         decayRate: 0.1,
         importanceThreshold: 0.5,
         compressionAge: 86400,
         encryptSensitive: false
       },
-      semantic: { 
+      semantic: {
         maxMemoriesPerCategory: 2000,
         deduplicationThreshold: 0.9,
         confidenceThreshold: 0.7,
@@ -118,7 +136,7 @@ describe('Lazy Decay System - End-to-End Tests', () => {
         encryptSensitive: false,
         autoExtractFacts: false
       },
-      procedural: { 
+      procedural: {
         minSuccessRate: 0.7,
         maxPatternsPerCategory: 500,
         decayRate: 0.05,
@@ -143,11 +161,11 @@ describe('Lazy Decay System - End-to-End Tests', () => {
 
       // Phase 1: Store memories with different characteristics
       console.log('Phase 1: Storing memories...');
-      
+
       const normalMemoryId = await memoryManager.store(
-        userId, 
-        agentId, 
-        'Normal memory that should decay over time', 
+        userId,
+        agentId,
+        'Normal memory that should decay over time',
         MemoryType.SEMANTIC
       );
 
@@ -162,9 +180,9 @@ describe('Lazy Decay System - End-to-End Tests', () => {
           importance: 0.9,
           resonance: 1.0,
           accessCount: 10,
-          createdAt: Date.now() - (90 * 24 * 60 * 60 * 1000), // 90 days ago
-          updatedAt: Date.now() - (90 * 24 * 60 * 60 * 1000),
-          lastAccessedAt: Date.now() - (90 * 24 * 60 * 60 * 1000),
+          createdAt: Date.now() - 90 * 24 * 60 * 60 * 1000, // 90 days ago
+          updatedAt: Date.now() - 90 * 24 * 60 * 60 * 1000,
+          lastAccessedAt: Date.now() - 90 * 24 * 60 * 60 * 1000,
           status: 'active' as const,
           neverDecay: true,
           reinforceable: true
@@ -178,9 +196,9 @@ describe('Lazy Decay System - End-to-End Tests', () => {
           importance: 0.6,
           resonance: 1.0,
           accessCount: 2,
-          createdAt: Date.now() - (7 * 24 * 60 * 60 * 1000), // 7 days ago
-          updatedAt: Date.now() - (7 * 24 * 60 * 60 * 1000),
-          lastAccessedAt: Date.now() - (7 * 24 * 60 * 60 * 1000),
+          createdAt: Date.now() - 7 * 24 * 60 * 60 * 1000, // 7 days ago
+          updatedAt: Date.now() - 7 * 24 * 60 * 60 * 1000,
+          lastAccessedAt: Date.now() - 7 * 24 * 60 * 60 * 1000,
           status: 'active' as const,
           customHalfLife: 7 // Fast decay: 7-day half-life
         },
@@ -193,9 +211,9 @@ describe('Lazy Decay System - End-to-End Tests', () => {
           importance: 0.7,
           resonance: 1.0,
           accessCount: 1,
-          createdAt: Date.now() - (60 * 24 * 60 * 60 * 1000), // 60 days ago
-          updatedAt: Date.now() - (60 * 24 * 60 * 60 * 1000),
-          lastAccessedAt: Date.now() - (60 * 24 * 60 * 60 * 1000),
+          createdAt: Date.now() - 60 * 24 * 60 * 60 * 1000, // 60 days ago
+          updatedAt: Date.now() - 60 * 24 * 60 * 60 * 1000,
+          lastAccessedAt: Date.now() - 60 * 24 * 60 * 60 * 1000,
           status: 'active' as const
         },
         {
@@ -207,21 +225,27 @@ describe('Lazy Decay System - End-to-End Tests', () => {
           importance: 0.3,
           resonance: 0.05, // Below archival threshold
           accessCount: 0,
-          createdAt: Date.now() - (120 * 24 * 60 * 60 * 1000), // 120 days ago
-          updatedAt: Date.now() - (120 * 24 * 60 * 60 * 1000),
-          lastAccessedAt: Date.now() - (120 * 24 * 60 * 60 * 1000),
+          createdAt: Date.now() - 120 * 24 * 60 * 60 * 1000, // 120 days ago
+          updatedAt: Date.now() - 120 * 24 * 60 * 60 * 1000,
+          lastAccessedAt: Date.now() - 120 * 24 * 60 * 60 * 1000,
           status: 'active' as const
         }
       ];
 
       mockStorage._getMemories().push(...testMemories);
 
-      console.log(`Stored ${mockStorage._getMemories().length} memories for testing`);
+      console.log(
+        `Stored ${mockStorage._getMemories().length} memories for testing`
+      );
 
       // Phase 2: Perform recall operations to trigger lazy decay
       console.log('Phase 2: Performing recall to trigger lazy decay...');
-      
-      const recalledMemories = await memoryManager.recall(userId, agentId, 'information memory');
+
+      const recalledMemories = await memoryManager.recall(
+        userId,
+        agentId,
+        'information memory'
+      );
 
       // Verify memories were returned
       expect(recalledMemories.length).toBeGreaterThan(0);
@@ -229,14 +253,14 @@ describe('Lazy Decay System - End-to-End Tests', () => {
 
       // Phase 3: Allow batch processor to flush updates
       console.log('Phase 3: Waiting for batch processor to flush updates...');
-      
+
       // Advance timers to trigger batch flush (5 second default)
       jest.advanceTimersByTime(5000);
       await jest.runAllTimersAsync();
 
       // Phase 4: Verify lazy decay calculations were applied
       console.log('Phase 4: Verifying lazy decay calculations...');
-      
+
       const updateHistory = mockStorage._getUpdateHistory();
       console.log(`Applied ${updateHistory.length} decay updates`);
 
@@ -246,13 +270,17 @@ describe('Lazy Decay System - End-to-End Tests', () => {
       expect(updateHistory.length).toBeLessThan(testMemories.length); // Should be lazy!
 
       // Verify specific decay behaviors if updates were applied
-      const neverDecayUpdate = updateHistory.find(u => u.id === 'never-decay-memory');
-      const oldMemoryUpdate = updateHistory.find(u => u.id === 'old-memory');
+      const neverDecayUpdate = updateHistory.find(
+        (u) => u.id === 'never-decay-memory'
+      );
+      const oldMemoryUpdate = updateHistory.find((u) => u.id === 'old-memory');
 
       if (neverDecayUpdate) {
         // Never decay memory should only have reinforcement (if any)
         expect(neverDecayUpdate.resonance).toBeGreaterThanOrEqual(1.0);
-        console.log(`Never decay memory resonance: ${neverDecayUpdate.resonance}`);
+        console.log(
+          `Never decay memory resonance: ${neverDecayUpdate.resonance}`
+        );
       }
 
       if (oldMemoryUpdate) {
@@ -270,20 +298,23 @@ describe('Lazy Decay System - End-to-End Tests', () => {
 
       // Create a substantial number of memories
       const memoryCount = 500;
-      const memories: MemoryData[] = Array.from({ length: memoryCount }, (_, i) => ({
-        id: `perf-memory-${i}`,
-        userId,
-        agentId,
-        type: MemoryType.SEMANTIC,
-        content: `Performance test memory ${i}`,
-        importance: Math.random(),
-        resonance: 0.5 + (Math.random() * 0.5), // 0.5 to 1.0
-        accessCount: Math.floor(Math.random() * 10),
-        createdAt: Date.now() - (Math.random() * 90 * 24 * 60 * 60 * 1000), // Random age up to 90 days
-        updatedAt: Date.now() - (Math.random() * 90 * 24 * 60 * 60 * 1000),
-        lastAccessedAt: Date.now() - (Math.random() * 90 * 24 * 60 * 60 * 1000),
-        status: 'active' as const
-      }));
+      const memories: MemoryData[] = Array.from(
+        { length: memoryCount },
+        (_, i) => ({
+          id: `perf-memory-${i}`,
+          userId,
+          agentId,
+          type: MemoryType.SEMANTIC,
+          content: `Performance test memory ${i}`,
+          importance: Math.random(),
+          resonance: 0.5 + Math.random() * 0.5, // 0.5 to 1.0
+          accessCount: Math.floor(Math.random() * 10),
+          createdAt: Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000, // Random age up to 90 days
+          updatedAt: Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000,
+          lastAccessedAt: Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000,
+          status: 'active' as const
+        })
+      );
 
       mockStorage._getMemories().push(...memories);
 
@@ -299,21 +330,24 @@ describe('Lazy Decay System - End-to-End Tests', () => {
       }
 
       // Verify performance requirements
-      const avgRecallTime = recallTimes.reduce((sum, time) => sum + time, 0) / recallTimes.length;
+      const avgRecallTime =
+        recallTimes.reduce((sum, time) => sum + time, 0) / recallTimes.length;
       expect(avgRecallTime).toBeLessThan(200); // Average recall should be under 200ms
-      
+
       console.log(`Average recall time with lazy decay: ${avgRecallTime}ms`);
 
       // Allow batch processor to flush updates
       jest.advanceTimersByTime(5000);
       await jest.runAllTimersAsync();
 
-      console.log(`Total batch updates: ${mockStorage._getUpdateHistory().length}`);
+      console.log(
+        `Total batch updates: ${mockStorage._getUpdateHistory().length}`
+      );
 
       // Verify that subsequent recalls are fast (due to recent access pattern)
       const firstRecallTime = recallTimes[0];
       const lastRecallTime = recallTimes[recallTimes.length - 1];
-      
+
       // Later recalls should be similar or faster (not significantly slower)
       expect(lastRecallTime).toBeLessThanOrEqual(firstRecallTime * 2);
     });
@@ -325,25 +359,33 @@ describe('Lazy Decay System - End-to-End Tests', () => {
       const agentId = 'batch-agent';
 
       // Add memories that will trigger decay calculations
-      const batchMemories: MemoryData[] = Array.from({ length: 100 }, (_, i) => ({
-        id: `batch-memory-${i}`,
-        userId,
-        agentId,
-        type: MemoryType.SEMANTIC,
-        content: `Batch memory ${i}`,
-        importance: 0.5,
-        resonance: Math.random(),
-        accessCount: Math.floor(Math.random() * 5),
-        createdAt: Date.now() - (30 * 24 * 60 * 60 * 1000), // 30 days ago
-        updatedAt: Date.now() - (30 * 24 * 60 * 60 * 1000),
-        lastAccessedAt: Date.now() - (30 * 24 * 60 * 60 * 1000),
-        status: 'active' as const
-      }));
+      const batchMemories: MemoryData[] = Array.from(
+        { length: 100 },
+        (_, i) => ({
+          id: `batch-memory-${i}`,
+          userId,
+          agentId,
+          type: MemoryType.SEMANTIC,
+          content: `Batch memory ${i}`,
+          importance: 0.5,
+          resonance: Math.random(),
+          accessCount: Math.floor(Math.random() * 5),
+          createdAt: Date.now() - 30 * 24 * 60 * 60 * 1000, // 30 days ago
+          updatedAt: Date.now() - 30 * 24 * 60 * 60 * 1000,
+          lastAccessedAt: Date.now() - 30 * 24 * 60 * 60 * 1000,
+          status: 'active' as const
+        })
+      );
 
       mockStorage._getMemories().push(...batchMemories);
 
       // Perform recall operations to trigger lazy decay
-      const recalledMemories = await memoryManager.recall(userId, agentId, 'batch memory', { limit: 100 });
+      const recalledMemories = await memoryManager.recall(
+        userId,
+        agentId,
+        'batch memory',
+        { limit: 100 }
+      );
       expect(recalledMemories.length).toBe(100);
 
       // Allow batch processor to flush updates (5 second default)
@@ -352,7 +394,9 @@ describe('Lazy Decay System - End-to-End Tests', () => {
 
       // Verify batch processing happened
       const updateHistory = mockStorage._getUpdateHistory();
-      console.log(`Batch collected ${updateHistory.length} updates from recall operations`);
+      console.log(
+        `Batch collected ${updateHistory.length} updates from recall operations`
+      );
 
       // Should have some updates (lazy system only updates changed memories)
       expect(updateHistory.length).toBeGreaterThan(0);
@@ -361,8 +405,12 @@ describe('Lazy Decay System - End-to-End Tests', () => {
       // Verify batchUpdateMemories was called (indicating efficient batch writes)
       expect(mockStorage.memory!.batchUpdateMemories).toHaveBeenCalled();
 
-      console.log(`Processing generated ${updateHistory.length} updates from 100 memories`);
-      console.log(`Write efficiency: ${((100 - updateHistory.length) / 100 * 100).toFixed(1)}% avoided`);
+      console.log(
+        `Processing generated ${updateHistory.length} updates from 100 memories`
+      );
+      console.log(
+        `Write efficiency: ${(((100 - updateHistory.length) / 100) * 100).toFixed(1)}% avoided`
+      );
     });
   });
 
@@ -381,9 +429,9 @@ describe('Lazy Decay System - End-to-End Tests', () => {
         importance: 0.8,
         resonance: 0.9,
         accessCount: 10,
-        createdAt: Date.now() - (1 * 24 * 60 * 60 * 1000), // 1 day ago
-        updatedAt: Date.now() - (1 * 24 * 60 * 60 * 1000),
-        lastAccessedAt: Date.now() - (1 * 24 * 60 * 60 * 1000), // Recent access
+        createdAt: Date.now() - 1 * 24 * 60 * 60 * 1000, // 1 day ago
+        updatedAt: Date.now() - 1 * 24 * 60 * 60 * 1000,
+        lastAccessedAt: Date.now() - 1 * 24 * 60 * 60 * 1000, // Recent access
         status: 'active' as const
       }));
 
@@ -396,9 +444,9 @@ describe('Lazy Decay System - End-to-End Tests', () => {
         importance: 0.6,
         resonance: 0.8,
         accessCount: 1,
-        createdAt: Date.now() - (60 * 24 * 60 * 60 * 1000), // 60 days ago
-        updatedAt: Date.now() - (60 * 24 * 60 * 60 * 1000),
-        lastAccessedAt: Date.now() - (60 * 24 * 60 * 60 * 1000), // Old access
+        createdAt: Date.now() - 60 * 24 * 60 * 60 * 1000, // 60 days ago
+        updatedAt: Date.now() - 60 * 24 * 60 * 60 * 1000,
+        lastAccessedAt: Date.now() - 60 * 24 * 60 * 60 * 1000, // Old access
         status: 'active' as const
       }));
 
@@ -428,4 +476,4 @@ describe('Lazy Decay System - End-to-End Tests', () => {
       console.log('✅ Lazy decay system proven to be actually lazy!');
     });
   });
-}); 
+});

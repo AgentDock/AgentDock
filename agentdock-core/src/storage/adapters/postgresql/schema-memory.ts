@@ -462,11 +462,14 @@ export async function migrateToLazyDecay(
   const client = await pool.connect();
   try {
     // Check if migration is needed by checking for never_decay column
-    const columnCheck = await client.query(`
+    const columnCheck = await client.query(
+      `
       SELECT column_name 
       FROM information_schema.columns 
       WHERE table_schema = $1 AND table_name = 'memories' AND column_name = 'never_decay'
-    `, [schema]);
+    `,
+      [schema]
+    );
 
     if (columnCheck.rows.length > 0) {
       logger.debug(

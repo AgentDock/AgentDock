@@ -298,7 +298,7 @@ JSON: [{content, type, importance, reasoning}]`;
 
         // Find matching rule for decay settings
         const matchingRule = context.userRules.find(
-          rule => rule.type === memory.type && rule.isActive !== false
+          (rule) => rule.type === memory.type && rule.isActive !== false
         );
 
         return {

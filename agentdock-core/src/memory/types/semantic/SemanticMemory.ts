@@ -105,7 +105,7 @@ export class SemanticMemory extends BaseMemoryType<SemanticMemoryConfig> {
     });
 
     // Transform MemoryData to SemanticMemoryData with proper field mapping
-    return result.map(memory => ({
+    return result.map((memory) => ({
       id: memory.id,
       agentId: memory.agentId,
       content: memory.content,
@@ -117,14 +117,12 @@ export class SemanticMemory extends BaseMemoryType<SemanticMemoryConfig> {
       resonance: memory.resonance,
       lastAccessedAt: memory.lastAccessedAt,
       accessCount: memory.accessCount,
-      sourceIds: Array.isArray(memory.metadata?.sourceIds) 
-        ? memory.metadata.sourceIds 
+      sourceIds: Array.isArray(memory.metadata?.sourceIds)
+        ? memory.metadata.sourceIds
         : [],
-      facts: Array.isArray(memory.metadata?.facts) 
-        ? memory.metadata.facts 
-        : [],
-      relations: Array.isArray(memory.metadata?.relations) 
-        ? memory.metadata.relations 
+      facts: Array.isArray(memory.metadata?.facts) ? memory.metadata.facts : [],
+      relations: Array.isArray(memory.metadata?.relations)
+        ? memory.metadata.relations
         : [],
       metadata: memory.metadata || {},
       embeddingId: memory.embeddingId

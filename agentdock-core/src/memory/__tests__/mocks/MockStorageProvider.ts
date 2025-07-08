@@ -298,7 +298,9 @@ export class MockStorageProvider implements StorageProvider {
         // Find the memory in all user spaces
         for (const [userId, userMemories] of this.memories.entries()) {
           for (const [agentId, agentMemories] of userMemories.entries()) {
-            const memoryIndex = agentMemories.findIndex(m => m.id === update.id);
+            const memoryIndex = agentMemories.findIndex(
+              (m) => m.id === update.id
+            );
             if (memoryIndex !== -1) {
               // Update the memory with decay values
               agentMemories[memoryIndex] = {

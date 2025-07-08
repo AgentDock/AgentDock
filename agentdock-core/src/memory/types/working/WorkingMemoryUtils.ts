@@ -4,7 +4,7 @@ import {
   VectorMemoryOperations
 } from '../../../storage/types';
 import { EmbeddingService } from '../../intelligence/embeddings/EmbeddingService';
-import { WorkingMemoryData, WorkingMemoryConfig } from './WorkingMemoryTypes';
+import { WorkingMemoryConfig, WorkingMemoryData } from './WorkingMemoryTypes';
 
 /**
  * Utility functions for WorkingMemory operations

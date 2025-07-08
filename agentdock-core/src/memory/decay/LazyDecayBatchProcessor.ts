@@ -14,7 +14,7 @@
  */
 
 import { LogCategory, logger } from '../../logging';
-import { StorageProvider, MemoryUpdate } from '../../storage/types';
+import { MemoryUpdate, StorageProvider } from '../../storage/types';
 
 /**
  * Configuration for the lazy decay batch processor
@@ -22,10 +22,10 @@ import { StorageProvider, MemoryUpdate } from '../../storage/types';
 export interface BatchProcessorConfig {
   /** Maximum updates to collect before forcing a write */
   maxBatchSize: number;
-  
+
   /** Time in milliseconds between automatic flushes */
   flushIntervalMs: number;
-  
+
   /** Maximum pending updates before dropping new ones */
   maxPendingUpdates: number;
 }
@@ -36,13 +36,13 @@ export interface BatchProcessorConfig {
 export interface BatchProcessingResult {
   /** Number of updates written */
   updatesWritten: number;
-  
+
   /** Processing time in milliseconds */
   processingTimeMs: number;
-  
+
   /** Number of database operations performed */
   databaseOperations: number;
-  
+
   /** Any errors encountered */
   errors: string[];
 }
@@ -80,9 +80,14 @@ export class LazyDecayBatchProcessor {
     // Start the flush timer
     this.scheduleFlush();
 
-    logger.debug(LogCategory.STORAGE, 'LazyDecayBatchProcessor', 'Initialized', {
-      config: this.config
-    });
+    logger.debug(
+      LogCategory.STORAGE,
+      'LazyDecayBatchProcessor',
+      'Initialized',
+      {
+        config: this.config
+      }
+    );
   }
 
   /**
@@ -93,28 +98,41 @@ export class LazyDecayBatchProcessor {
    */
   add(update: MemoryUpdate): void {
     if (this.isDestroyed) {
-      logger.warn(LogCategory.STORAGE, 'LazyDecayBatchProcessor', 'Cannot add update - processor destroyed', {
-        memoryId: update.id
-      });
+      logger.warn(
+        LogCategory.STORAGE,
+        'LazyDecayBatchProcessor',
+        'Cannot add update - processor destroyed',
+        {
+          memoryId: update.id
+        }
+      );
       return;
     }
 
     // Overflow protection - prevent unbounded memory growth
     if (this.pendingUpdates.size >= this.config.maxPendingUpdates) {
-      logger.warn(LogCategory.STORAGE, 'LazyDecayBatchProcessor', 'Pending updates overflow - dropping update', {
-        memoryId: update.id,
-        pendingSize: this.pendingUpdates.size,
-        maxSize: this.config.maxPendingUpdates
-      });
+      logger.warn(
+        LogCategory.STORAGE,
+        'LazyDecayBatchProcessor',
+        'Pending updates overflow - dropping update',
+        {
+          memoryId: update.id,
+          pendingSize: this.pendingUpdates.size,
+          maxSize: this.config.maxPendingUpdates
+        }
+      );
       return;
-      }
+    }
 
     // Merge with existing update to handle race conditions
     const existing = this.pendingUpdates.get(update.id);
     if (existing) {
       // Keep the most recent values
       update.accessCount = Math.max(update.accessCount, existing.accessCount);
-      update.lastAccessedAt = Math.max(update.lastAccessedAt, existing.lastAccessedAt);
+      update.lastAccessedAt = Math.max(
+        update.lastAccessedAt,
+        existing.lastAccessedAt
+      );
       // Use the newer resonance value
     }
 
@@ -134,10 +152,10 @@ export class LazyDecayBatchProcessor {
     if (this.pendingUpdates.size === 0) {
       return {
         updatesWritten: 0,
-      processingTimeMs: 0,
-      databaseOperations: 0,
-      errors: []
-    };
+        processingTimeMs: 0,
+        databaseOperations: 0,
+        errors: []
+      };
     }
 
     const startTime = Date.now();
@@ -158,21 +176,32 @@ export class LazyDecayBatchProcessor {
       await this.storage.memory!.batchUpdateMemories!(updates);
       result.databaseOperations = 1;
 
-      logger.debug(LogCategory.STORAGE, 'LazyDecayBatchProcessor', 'Batch updates written', {
-        updateCount: updates.length,
-        processingTimeMs: Date.now() - startTime
-      });
+      logger.debug(
+        LogCategory.STORAGE,
+        'LazyDecayBatchProcessor',
+        'Batch updates written',
+        {
+          updateCount: updates.length,
+          processingTimeMs: Date.now() - startTime
+        }
+      );
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       result.errors.push(errorMessage);
-      
-      logger.error(LogCategory.STORAGE, 'LazyDecayBatchProcessor', 'Batch update failed', {
-        updateCount: updates.length,
-        error: errorMessage
-      });
+
+      logger.error(
+        LogCategory.STORAGE,
+        'LazyDecayBatchProcessor',
+        'Batch update failed',
+        {
+          updateCount: updates.length,
+          error: errorMessage
+        }
+      );
 
       // Re-add updates to queue for retry (but don't exceed max pending)
-      updates.forEach(update => {
+      updates.forEach((update) => {
         if (this.pendingUpdates.size < this.config.maxPendingUpdates) {
           this.pendingUpdates.set(update.id, update);
         }
@@ -200,10 +229,15 @@ export class LazyDecayBatchProcessor {
 
     // Schedule next flush
     this.flushTimeout = setTimeout(() => {
-      this.flushNow().catch(error => {
-        logger.error(LogCategory.STORAGE, 'LazyDecayBatchProcessor', 'Scheduled flush failed', {
-          error: error instanceof Error ? error.message : String(error)
-        });
+      this.flushNow().catch((error) => {
+        logger.error(
+          LogCategory.STORAGE,
+          'LazyDecayBatchProcessor',
+          'Scheduled flush failed',
+          {
+            error: error instanceof Error ? error.message : String(error)
+          }
+        );
       });
     }, this.config.flushIntervalMs);
   }
@@ -220,15 +254,20 @@ export class LazyDecayBatchProcessor {
    */
   updateConfig(newConfig: Partial<BatchProcessorConfig>): void {
     this.config = { ...this.config, ...newConfig };
-    
+
     // Reschedule flush with new interval if changed
     if (newConfig.flushIntervalMs !== undefined) {
       this.scheduleFlush();
     }
-    
-    logger.debug(LogCategory.STORAGE, 'LazyDecayBatchProcessor', 'Configuration updated', {
-      newConfig
-    });
+
+    logger.debug(
+      LogCategory.STORAGE,
+      'LazyDecayBatchProcessor',
+      'Configuration updated',
+      {
+        newConfig
+      }
+    );
   }
 
   /**
@@ -258,13 +297,18 @@ export class LazyDecayBatchProcessor {
 
     // Flush any remaining updates
     if (this.pendingUpdates.size > 0) {
-      logger.info(LogCategory.STORAGE, 'LazyDecayBatchProcessor', 'Flushing pending updates before destroy', {
-        pendingCount: this.pendingUpdates.size
-      });
-      
+      logger.info(
+        LogCategory.STORAGE,
+        'LazyDecayBatchProcessor',
+        'Flushing pending updates before destroy',
+        {
+          pendingCount: this.pendingUpdates.size
+        }
+      );
+
       await this.flushNow();
     }
 
     logger.debug(LogCategory.STORAGE, 'LazyDecayBatchProcessor', 'Destroyed');
   }
-} 
+}

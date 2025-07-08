@@ -176,9 +176,11 @@ export function detectAdapterCapabilities(
   adapterName: string = 'unknown'
 ): AdapterCapabilities {
   const memoryOps = adapter.memory; // Safe after validation
-  
+
   if (!memoryOps) {
-    throw new Error(`Adapter '${adapterName}' memory operations not found after validation`);
+    throw new Error(
+      `Adapter '${adapterName}' memory operations not found after validation`
+    );
   }
 
   const capabilities: AdapterCapabilities = {

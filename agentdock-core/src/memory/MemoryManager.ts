@@ -84,16 +84,19 @@ import {
   validateConnectionType,
   VectorMemoryOperations
 } from '../storage/types';
+import { LazyDecayBatchProcessor } from './decay/LazyDecayBatchProcessor';
+import {
+  LazyDecayCalculator,
+  LazyDecayConfig
+} from './decay/LazyDecayCalculator';
+import { DecayConfiguration } from './decay/types';
 import { EmbeddingService } from './intelligence/embeddings/EmbeddingService';
+import { MemoryTransaction } from './transactions/MemoryTransaction';
 import { MemoryManagerConfig, MemoryType } from './types';
 import { EpisodicMemory } from './types/episodic/EpisodicMemory';
 import { ProceduralMemory } from './types/procedural/ProceduralMemory';
 import { SemanticMemory } from './types/semantic/SemanticMemory';
 import { WorkingMemory } from './types/working/WorkingMemory';
-import { DecayConfiguration } from './decay/types';
-import { MemoryTransaction } from './transactions/MemoryTransaction';
-import { LazyDecayCalculator, LazyDecayConfig } from './decay/LazyDecayCalculator';
-import { LazyDecayBatchProcessor } from './decay/LazyDecayBatchProcessor';
 
 export class MemoryManager {
   private working: WorkingMemory;
@@ -230,7 +233,7 @@ export class MemoryManager {
 
     // Initialize on-demand decay calculation system
     this.lazyDecayCalculator = new LazyDecayCalculator();
-    
+
     // Initialize batch processor for lazy decay updates
     this.lazyDecayBatchProcessor = new LazyDecayBatchProcessor(storage);
   }
@@ -322,9 +325,9 @@ export class MemoryManager {
       if (!ops || typeof ops !== 'object') {
         return false;
       }
-      
+
       const obj = ops as Record<string, unknown>;
-      
+
       return (
         typeof obj.storeMemoryWithEmbedding === 'function' &&
         typeof obj.searchByVector === 'function' &&
@@ -339,7 +342,8 @@ export class MemoryManager {
     let hasVectorSupport = false;
     try {
       const memoryOps = this.getMemoryOps();
-      hasVectorSupport = isVectorMemoryOps(memoryOps) && !!this.embeddingService;
+      hasVectorSupport =
+        isVectorMemoryOps(memoryOps) && !!this.embeddingService;
     } catch (error) {
       // If getMemoryOps throws, we don't have vector support
       hasVectorSupport = false;
@@ -537,9 +541,9 @@ export class MemoryManager {
       if (!ops || typeof ops !== 'object') {
         return false;
       }
-      
+
       const obj = ops as Record<string, unknown>;
-      
+
       return (
         typeof obj.storeMemoryWithEmbedding === 'function' &&
         typeof obj.searchByVector === 'function' &&
@@ -554,7 +558,8 @@ export class MemoryManager {
     let hasVectorSupport = false;
     try {
       const memoryOps = this.getMemoryOps();
-      hasVectorSupport = isVectorMemoryOps(memoryOps) && !!this.embeddingService;
+      hasVectorSupport =
+        isVectorMemoryOps(memoryOps) && !!this.embeddingService;
     } catch (error) {
       // If getMemoryOps throws, we don't have vector support
       hasVectorSupport = false;
@@ -562,10 +567,15 @@ export class MemoryManager {
 
     if (!hasVectorSupport || !this.embeddingService) {
       // Standard memory recall with lazy decay processing
-      const memories = await this.getMemoryOps().recall(userId, agentId, query, {
-        type: options.type,
-        limit: options.limit
-      }) as MemoryData[];
+      const memories = (await this.getMemoryOps().recall(
+        userId,
+        agentId,
+        query,
+        {
+          type: options.type,
+          limit: options.limit
+        }
+      )) as MemoryData[];
 
       // Apply on-demand decay calculation during recall
       return await this.applyLazyDecayToMemories(memories);
@@ -582,7 +592,7 @@ export class MemoryManager {
 
       // Use hybrid search if available, otherwise fall back to vector-only
       let memories: MemoryData[];
-      
+
       if ('hybridSearch' in vectorMemoryOps && vectorMemoryOps.hybridSearch) {
         memories = await vectorMemoryOps.hybridSearch(
           userId,
@@ -600,7 +610,7 @@ export class MemoryManager {
         );
       } else {
         // Fallback to vector-only search
-        memories = await vectorMemoryOps.searchByVector(
+        memories = (await vectorMemoryOps.searchByVector(
           userId,
           agentId,
           queryEmbedding.embedding,
@@ -610,7 +620,7 @@ export class MemoryManager {
               this.config.intelligence?.embedding?.similarityThreshold || 0.7,
             filter: options.type ? { type: options.type } : undefined
           }
-        ) as MemoryData[];
+        )) as MemoryData[];
       }
 
       // Apply on-demand decay calculation to search results
@@ -623,7 +633,9 @@ export class MemoryManager {
         'Memory recall with lazy decay failed',
         { error: error instanceof Error ? error.message : String(error) }
       );
-      throw new Error(`Memory recall failed: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Memory recall failed: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
@@ -1110,20 +1122,20 @@ export class MemoryManager {
 
   /**
    * Store memory with transaction support for atomic operations
-   * 
+   *
    * Ensures that memory storage and embedding generation either both
    * succeed or both fail, preventing inconsistent state.
-   * 
+   *
    * @param userId - Unique user identifier for data isolation (required)
    * @param agentId - The agent storing this memory
    * @param content - Memory content to store
    * @param type - Memory type: 'working' | 'episodic' | 'semantic' | 'procedural'
    * @param options - Optional storage configuration
-   * 
+   *
    * @returns Promise<string> - The generated memory ID
-   * 
+   *
    * @throws {Error} If any operation fails (all changes rolled back)
-   * 
+   *
    * @example Store with transaction
    * ```typescript
    * try {
@@ -1153,7 +1165,9 @@ export class MemoryManager {
     try {
       // Validate inputs first
       if (!userId || typeof userId !== 'string' || !userId.trim()) {
-        throw new Error('userId must be a non-empty string for memory operations');
+        throw new Error(
+          'userId must be a non-empty string for memory operations'
+        );
       }
       if (!agentId) {
         throw new Error('Agent ID is required');
@@ -1180,30 +1194,38 @@ export class MemoryManager {
         transaction.addOperation(
           async () => {
             if (!memoryId) return; // Skip if no memory ID
-            
-            const embeddingResult = await this.embeddingService!.generateEmbedding(content);
-            
+
+            const embeddingResult =
+              await this.embeddingService!.generateEmbedding(content);
+
             // Get the memory data to store with embedding
-            const memoryData = await this.getMemoryOps().getById?.(userId, memoryId);
+            const memoryData = await this.getMemoryOps().getById?.(
+              userId,
+              memoryId
+            );
             if (!memoryData) {
               throw new Error('Memory not found after creation');
             }
-            
+
             // Store memory with embedding using vector operations
-            await (vectorOps.memory as VectorMemoryOperations).storeMemoryWithEmbedding(
+            await (
+              vectorOps.memory as VectorMemoryOperations
+            ).storeMemoryWithEmbedding(
               userId,
               agentId,
               memoryData,
               embeddingResult.embedding
             );
-            
+
             embeddingStored = true;
           },
           async () => {
             // Rollback: Remove the embedding association
             // Note: The memory itself is deleted in operation 1's rollback
             if (memoryId && embeddingStored) {
-              logger.warn(LogCategory.STORAGE, 'MemoryManager', 
+              logger.warn(
+                LogCategory.STORAGE,
+                'MemoryManager',
                 'Embedding rollback - memory will be deleted by primary operation'
               );
             }
@@ -1213,14 +1235,14 @@ export class MemoryManager {
 
       // Execute all operations atomically
       await transaction.commit();
-      
+
       if (!memoryId) {
         throw new Error('Memory ID not generated');
       }
-      
+
       return memoryId;
     } catch (error) {
-      logger.error(LogCategory.STORAGE, 'MemoryManager', 'Transaction failed', { 
+      logger.error(LogCategory.STORAGE, 'MemoryManager', 'Transaction failed', {
         error: error instanceof Error ? error.message : String(error),
         userId,
         agentId,
@@ -1239,40 +1261,48 @@ export class MemoryManager {
    * @param memories - Array of memories to process
    * @returns Promise<MemoryData[]> - Memories with updated decay values
    */
-  private async applyLazyDecayToMemories(memories: MemoryData[]): Promise<MemoryData[]> {
+  private async applyLazyDecayToMemories(
+    memories: MemoryData[]
+  ): Promise<MemoryData[]> {
     if (!memories || memories.length === 0) {
       return memories;
     }
 
     // Calculate on-demand decay for all retrieved memories
     const decayResults = this.lazyDecayCalculator.calculateBatchDecay(memories);
-    
+
     // Collect memory updates that need to be persisted
     const updates = decayResults
-      .filter(result => result.shouldUpdate)
-      .map(result => ({
+      .filter((result) => result.shouldUpdate)
+      .map((result) => ({
         id: result.memoryId,
         resonance: result.newResonance,
         lastAccessedAt: Date.now(),
-        accessCount: memories.find(m => m.id === result.memoryId)?.accessCount || 0
+        accessCount:
+          memories.find((m) => m.id === result.memoryId)?.accessCount || 0
       }));
 
     // Add updates to batch processor for efficient writing
     if (updates.length > 0) {
-      updates.forEach(update => {
+      updates.forEach((update) => {
         this.lazyDecayBatchProcessor.add(update);
       });
-      
-      logger.debug(LogCategory.STORAGE, 'MemoryManager', 'Updated memory decay values', {
-        totalMemories: memories.length,
-        updatedMemories: updates.length,
-        updates: updates.map(u => ({ id: u.id, newResonance: u.resonance }))
-      });
+
+      logger.debug(
+        LogCategory.STORAGE,
+        'MemoryManager',
+        'Updated memory decay values',
+        {
+          totalMemories: memories.length,
+          updatedMemories: updates.length,
+          updates: updates.map((u) => ({ id: u.id, newResonance: u.resonance }))
+        }
+      );
     }
 
     // Return memories with current decay-calculated values
-    return memories.map(memory => {
-      const result = decayResults.find(r => r.memoryId === memory.id);
+    return memories.map((memory) => {
+      const result = decayResults.find((r) => r.memoryId === memory.id);
       if (result && result.shouldUpdate) {
         return {
           ...memory,

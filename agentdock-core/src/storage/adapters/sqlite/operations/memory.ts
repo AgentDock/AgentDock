@@ -641,7 +641,7 @@ export class SqliteMemoryOperations implements MemoryOperations {
           updated_at = ?
         WHERE id = ?
       `);
-      
+
       const now = Date.now();
       for (const update of updates) {
         stmt.run(
@@ -653,19 +653,31 @@ export class SqliteMemoryOperations implements MemoryOperations {
         );
       }
     });
-    
+
     try {
       updateBatch(updates);
-      
-      logger.debug(LogCategory.STORAGE, 'SqliteMemoryOperations', 'Batch update completed', {
-        count: updates.length
-      });
+
+      logger.debug(
+        LogCategory.STORAGE,
+        'SqliteMemoryOperations',
+        'Batch update completed',
+        {
+          count: updates.length
+        }
+      );
     } catch (error) {
-      logger.error(LogCategory.STORAGE, 'SqliteMemoryOperations', 'Batch update failed', {
-        error: error instanceof Error ? error.message : String(error),
-        count: updates.length
-      });
-      throw new Error(`Batch update failed: ${error instanceof Error ? error.message : String(error)}`);
+      logger.error(
+        LogCategory.STORAGE,
+        'SqliteMemoryOperations',
+        'Batch update failed',
+        {
+          error: error instanceof Error ? error.message : String(error),
+          count: updates.length
+        }
+      );
+      throw new Error(
+        `Batch update failed: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 }

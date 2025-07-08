@@ -6,24 +6,28 @@
  */
 
 import { localPreset, productionPreset } from '../config/presets';
+import { LogCategory, logger } from '../logging';
+import { MemoryType } from '../shared/types/memory';
 import { createStorageProvider } from '../storage/factory';
-import { StorageProvider, MemoryData, StorageProviderOptions } from '../storage/types';
+import {
+  MemoryData,
+  StorageProvider,
+  StorageProviderOptions
+} from '../storage/types';
 import { getRecallPreset, RecallPresetName } from './config/recall-presets';
 import {
   PRIMEOrchestrator,
   PRIMEOrchestratorConfig
 } from './extraction/PRIMEOrchestrator';
+import { IntelligenceLayerConfig } from './intelligence/types';
+import { LifecycleConfig } from './lifecycle/types';
 // TEMP: MemoryLifecycleManager removed for lazy decay implementation
 // import { MemoryLifecycleManager } from './lifecycle/MemoryLifecycleManager';
 import { MemoryManager } from './MemoryManager';
 import { RecallService } from './services/RecallService';
 import { RecallConfig, RecallQuery } from './services/RecallServiceTypes';
-import { MemoryType } from '../shared/types/memory';
-import { LogCategory, logger } from '../logging';
-import { MemoryMessage, Memory } from './types/common';
 import { MemoryManagerConfig } from './types';
-import { LifecycleConfig } from './lifecycle/types';
-import { IntelligenceLayerConfig } from './intelligence/types';
+import { Memory, MemoryMessage } from './types/common';
 
 function isValidMemoryType(type: string): type is MemoryType {
   return Object.values(MemoryType).includes(type as MemoryType);
@@ -46,7 +50,11 @@ export interface MemorySystemOptions {
 export interface MemorySystem {
   // Simple API
   store: (userId: string, content: string, type?: string) => Promise<string>;
-  recall: (userId: string, query: string, options?: Partial<RecallQuery>) => Promise<MemoryData[]>;
+  recall: (
+    userId: string,
+    query: string,
+    options?: Partial<RecallQuery>
+  ) => Promise<MemoryData[]>;
   addMessage: (userId: string, message: MemoryMessage) => Promise<Memory[]>;
 
   // Direct access to components
@@ -125,24 +133,27 @@ export async function createMemorySystem(
   const manager = new MemoryManager(storage, config.memory);
 
   // Create PRIME orchestrator
-  const extraction = new PRIMEOrchestrator(storage, config.prime || {
-    primeConfig: {
-      provider: 'anthropic',
-      apiKey: process.env.ANTHROPIC_API_KEY || '',
-      maxTokens: 4000,
-      autoTierSelection: false,
-      defaultTier: 'balanced',
-      defaultImportanceThreshold: 0.7,
-      temperature: 0.3,
-      modelTiers: {
-        fast: 'gpt-3.5-turbo',
-        balanced: 'gpt-4o-mini',
-        accurate: 'gpt-4o'
-      }
-    },
-    batchSize: 10,
-    enableMetrics: true
-  });
+  const extraction = new PRIMEOrchestrator(
+    storage,
+    config.prime || {
+      primeConfig: {
+        provider: 'anthropic',
+        apiKey: process.env.ANTHROPIC_API_KEY || '',
+        maxTokens: 4000,
+        autoTierSelection: false,
+        defaultTier: 'balanced',
+        defaultImportanceThreshold: 0.7,
+        temperature: 0.3,
+        modelTiers: {
+          fast: 'gpt-3.5-turbo',
+          balanced: 'gpt-4o-mini',
+          accurate: 'gpt-4o'
+        }
+      },
+      batchSize: 10,
+      enableMetrics: true
+    }
+  );
 
   // TEMP: Create lifecycle manager - Removed for lazy decay implementation
   // const lifecycle = new MemoryLifecycleManager(storage, config.lifecycle);
@@ -177,13 +188,22 @@ export async function createMemorySystem(
         try {
           // TEMP: Lifecycle execution disabled for lazy decay implementation
           // await lifecycle.runLifecycle('system', 'default');
-          logger.debug(LogCategory.STORAGE, 'MemorySystem', 'Lifecycle execution skipped (lazy decay mode)');
+          logger.debug(
+            LogCategory.STORAGE,
+            'MemorySystem',
+            'Lifecycle execution skipped (lazy decay mode)'
+          );
         } catch (error) {
-          logger.error(LogCategory.STORAGE, 'MemorySystem', 'Lifecycle execution failed', {
-            error: error instanceof Error ? error.message : String(error),
-            userId: 'system',
-            agentId: 'default'
-          });
+          logger.error(
+            LogCategory.STORAGE,
+            'MemorySystem',
+            'Lifecycle execution failed',
+            {
+              error: error instanceof Error ? error.message : String(error),
+              userId: 'system',
+              agentId: 'default'
+            }
+          );
         }
       },
       24 * 60 * 60 * 1000
@@ -195,7 +215,9 @@ export async function createMemorySystem(
     // Core operations
     async store(userId: string, content: string, type: string = 'semantic') {
       if (!isValidMemoryType(type)) {
-        throw new Error(`Invalid memory type: ${type}. Valid types: ${Object.values(MemoryType).join(', ')}`);
+        throw new Error(
+          `Invalid memory type: ${type}. Valid types: ${Object.values(MemoryType).join(', ')}`
+        );
       }
       return manager.store(userId, 'default', content, type);
     },

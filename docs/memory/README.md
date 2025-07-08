@@ -173,7 +173,8 @@ Ready-made configurations for different agent types:
 
 ### **Production-Ready Architecture**
 - **Configurable memory decay**: Human-like forgetting with rule-based protection
-- **Multiple storage adapters**: PostgreSQL, SQLite, ChromaDB, Pinecone, Qdrant
+- **Specialized memory adapters**: Production-ready implementations for PostgreSQL and SQLite.
+- **Extensible storage framework**: Includes base adapters for ChromaDB, Pinecone, and Qdrant that can be extended with memory operation support.
 - **User isolation**: Complete data separation with proper security
 - **Cost tracking**: Built-in monitoring and budget controls
 
@@ -357,8 +358,7 @@ This is an open-source framework. Users are responsible for:
 
 ## Documentation Navigation
 
-- **[Implementation Guide](./implementation-guide.md)** - **START HERE** - When, how, and where to integrate memory in your application
-- **[Architecture Overview](./architecture-overview.md)** - Complete technical reference and configuration examples
+- **[Architecture Overview](./architecture-overview.md)** - **START HERE** - Complete technical reference and configuration examples
 - **[Conversational RAG](./retrieval-augmented-generation.md)** - RAG implementation and hybrid retrieval strategy  
 - **[Memory Connections](./memory-connections.md)** - How memories connect and discover relationships
 - **[Graph Architecture](./graph-architecture.md)** - Technical implementation of connection system

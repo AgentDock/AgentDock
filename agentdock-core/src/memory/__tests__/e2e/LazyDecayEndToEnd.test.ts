@@ -45,7 +45,7 @@ const createFullMockStorage = (): StorageProvider => {
                 m.userId === userId &&
                 m.agentId === agentId &&
                 (options?.type ? m.type === options.type : true) &&
-                (options?.limit ? true : true)
+                true
             )
             .slice(0, options?.limit || 50);
         }

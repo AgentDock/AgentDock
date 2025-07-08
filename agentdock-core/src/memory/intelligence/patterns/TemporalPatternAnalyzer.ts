@@ -11,6 +11,7 @@ import { z } from 'zod';
 
 import { CoreLLM } from '../../../llm/core-llm';
 import { createLLM } from '../../../llm/create-llm';
+import { LLMProvider } from '../../../llm/types';
 import { LogCategory, logger } from '../../../logging';
 import { Memory } from '../../types/common';
 import {
@@ -71,7 +72,8 @@ export class TemporalPatternAnalyzer {
       config.connectionDetection.llmEnhancement.model
     ) {
       this.llm = createLLM({
-        provider: config.connectionDetection.llmEnhancement.provider as any,
+        provider: config.connectionDetection.llmEnhancement
+          .provider as LLMProvider,
         model: config.connectionDetection.llmEnhancement.model,
         apiKey:
           config.connectionDetection.llmEnhancement.apiKey ||

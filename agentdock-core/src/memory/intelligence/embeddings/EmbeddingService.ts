@@ -12,6 +12,7 @@ import type { EmbeddingModel } from 'ai';
 
 import { embedMany } from '../../../llm';
 import { LogCategory, logger } from '../../../logging';
+import { StorageProvider } from '../../../storage/types';
 import { Memory } from '../../types/common';
 import { EmbeddingConfig, EmbeddingResult } from '../types';
 
@@ -210,13 +211,14 @@ export class EmbeddingService {
     agentId: string,
     queryText: string,
     threshold: number = 0.7,
-    storage: any
+    storage: StorageProvider
   ): Promise<Memory[]> {
     const embeddingResult = await this.generateEmbedding(queryText);
 
     // Check if storage has vector memory operations
     if (storage.memory && 'searchByVector' in storage.memory) {
-      return await storage.memory.searchByVector(
+      const vectorOps = storage.memory as any; // Type assertion for searchByVector method
+      return await vectorOps.searchByVector(
         userId,
         agentId,
         embeddingResult.embedding,

@@ -41,7 +41,7 @@ describe('WorkingMemory - Actual Implementation', () => {
 
       expect(
         () => new WorkingMemory(storageWithoutMemory, testConfig.memory.working)
-      ).toThrow('Storage must support memory operations');
+      ).toThrow('WorkingMemory requires storage with memory operations');
     });
 
     test('uses ttlSeconds from configuration for expiration', async () => {

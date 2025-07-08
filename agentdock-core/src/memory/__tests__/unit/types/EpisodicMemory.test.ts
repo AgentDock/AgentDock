@@ -41,7 +41,7 @@ describe('EpisodicMemory - Actual Implementation', () => {
       expect(
         () =>
           new EpisodicMemory(storageWithoutMemory, testConfig.memory.episodic)
-      ).toThrow('Storage must support memory operations');
+      ).toThrow('EpisodicMemory requires storage with memory operations');
     });
 
     test('uses compressionAge from configuration for expiration', async () => {

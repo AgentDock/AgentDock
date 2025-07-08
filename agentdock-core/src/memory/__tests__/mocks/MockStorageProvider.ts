@@ -9,6 +9,7 @@ import {
   MemoryOperations,
   MemoryOperationStats,
   MemoryRecallOptions,
+  MemoryUpdate,
   StorageProvider
 } from '../../../storage/types';
 import { MemoryType } from '../../types';
@@ -289,6 +290,29 @@ export class MockStorageProvider implements StorageProvider {
           allMemories.length > 0 ? totalImportance / allMemories.length : 0,
         totalSize: `${(totalSize / 1024).toFixed(2)} KB`
       };
+    },
+
+    batchUpdateMemories: async (updates: MemoryUpdate[]): Promise<void> => {
+      // Batch update memories across all users/agents
+      for (const update of updates) {
+        // Find the memory in all user spaces
+        for (const [userId, userMemories] of this.memories.entries()) {
+          for (const [agentId, agentMemories] of userMemories.entries()) {
+            const memoryIndex = agentMemories.findIndex(m => m.id === update.id);
+            if (memoryIndex !== -1) {
+              // Update the memory with decay values
+              agentMemories[memoryIndex] = {
+                ...agentMemories[memoryIndex],
+                resonance: update.resonance,
+                lastAccessedAt: update.lastAccessedAt,
+                accessCount: update.accessCount,
+                updatedAt: Date.now()
+              };
+              break; // Found and updated, move to next update
+            }
+          }
+        }
+      }
     }
   };
 

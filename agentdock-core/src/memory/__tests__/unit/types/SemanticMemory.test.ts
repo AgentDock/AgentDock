@@ -40,7 +40,7 @@ describe('SemanticMemory - Actual Implementation', () => {
       expect(
         () =>
           new SemanticMemory(storageWithoutMemory, testConfig.memory.semantic)
-      ).toThrow('Storage must support memory operations');
+      ).toThrow('SemanticMemory requires storage with memory operations');
     });
 
     test('uses deduplicationThreshold from configuration', async () => {

@@ -46,7 +46,7 @@ describe('ProceduralMemory - Actual Implementation', () => {
             storageWithoutMemory,
             testConfig.memory.procedural
           )
-      ).toThrow('Storage must support memory operations');
+      ).toThrow('ProceduralMemory requires storage with memory operations');
     });
 
     test('uses confidenceThreshold from configuration in learn method', async () => {

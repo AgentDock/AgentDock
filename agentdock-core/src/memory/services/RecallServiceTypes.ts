@@ -24,6 +24,11 @@ export interface RecallQuery {
     end: number;
   };
   context?: Record<string, unknown>;
+  // NEW: Connection graph options
+  useConnections?: boolean; // Override global config
+  connectionHops?: number; // How many hops to traverse (default: 1)
+  connectionTypes?: string[]; // Filter by connection types
+  boostCentralMemories?: boolean; // Apply centrality boost
 }
 
 export interface RecallResult {

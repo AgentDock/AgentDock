@@ -1,5 +1,7 @@
 import { Pool } from 'pg';
 
+import { LogCategory, logger } from '../../logging';
+
 export interface EncryptionConfig {
   keyManagement: 'env' | 'aws-kms' | 'vault';
   defaultKeyId?: string;
@@ -51,7 +53,11 @@ export class EncryptionService {
       // Load encryption keys
       await this.loadEncryptionKeys();
 
-      console.log('EncryptionService initialized with pgcrypto extension');
+      logger.info(
+        LogCategory.STORAGE,
+        'EncryptionService',
+        'Initialized with pgcrypto extension'
+      );
     } catch (error) {
       console.error('Failed to initialize encryption service:', error);
       throw new Error(
@@ -232,8 +238,14 @@ export class EncryptionService {
         ON ${this.escapeIdentifier(validatedTableName)}(${this.escapeIdentifier(validatedColumnName)}_key_id)
       `);
 
-      console.log(
-        `Encrypted column ${validatedColumnName} added to ${validatedTableName}`
+      logger.info(
+        LogCategory.STORAGE,
+        'EncryptionService',
+        'Encrypted column added',
+        {
+          table: validatedTableName,
+          column: validatedColumnName
+        }
       );
     } catch (error) {
       console.error(`Failed to create encrypted column:`, error);
@@ -350,7 +362,10 @@ export class EncryptionService {
         this.defaultKeyId = newKeyId;
       }
 
-      console.log(`Key rotated: ${keyId} -> ${newKeyId}`);
+      logger.info(LogCategory.STORAGE, 'EncryptionService', 'Key rotated', {
+        oldKeyId: keyId,
+        newKeyId: newKeyId
+      });
       return newKeyId;
     } catch (error) {
       console.error(`Key rotation failed for ${keyId}:`, error);

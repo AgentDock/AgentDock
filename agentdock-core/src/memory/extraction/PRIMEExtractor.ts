@@ -5,8 +5,8 @@
  * extraction with embedded rule guidance and smart model selection.
  *
  * Features:
- * - Optimized prompts: 145-275 tokens for efficient extraction
- * - Smart tier selection: fast/balanced/accurate based on content complexity
+ * - Optimized prompts: 50-200 tokens typical, up to 450 for complex extractions
+ * - Smart tier selection: standard/advanced based on content complexity
  * - Embedded rule guidance: Natural language rule integration
  * - Clean architecture: Single extraction path
  * - Configurable models: Support for multiple LLM providers
@@ -54,26 +54,23 @@ export interface PRIMEConfig {
   apiKey: string; // API key for the provider
   maxTokens: number; // Default: 4000
 
-  // Tier configuration - FULLY OPTIONAL
-  autoTierSelection: boolean; // Default: false
-  defaultTier: 'fast' | 'balanced' | 'accurate'; // Default: 'balanced'
+  // 2-TIER MODEL SYSTEM ONLY
+  standardModel: string; // Default: provider's efficient model
+  advancedModel: string; // Default: provider's powerful model
 
-  // Only used if autoTierSelection is true
+  // Smart tier selection
+  autoTierSelection: boolean; // Default: true
+  defaultTier: 'standard' | 'advanced'; // Default: 'standard'
+
+  // Tier thresholds
   tierThresholds?: {
-    fastMaxChars: number; // Default: 100
-    accurateMinChars: number; // Default: 500
+    advancedMinChars: number; // Default: 500
+    advancedMinRules: number; // Default: 5
   };
 
   // Core settings
   defaultImportanceThreshold: number; // Default: 0.7
   temperature: number; // Default: 0.3
-
-  // Model mapping
-  modelTiers: {
-    fast: string; // e.g., 'gpt-3.5-turbo'
-    balanced: string; // e.g., 'gpt-4o-mini'
-    accurate: string; // e.g., 'gpt-4o'
-  };
 
   // Internal settings
   maxRetries?: number; // Default: 2
@@ -100,7 +97,7 @@ export interface PRIMEExtractionContext {
   agentId: string;
   userRules: PRIMERule[];
   importanceThreshold?: number;
-  tier?: 'fast' | 'balanced' | 'accurate'; // Allow override of auto-selection
+  tier?: 'standard' | 'advanced'; // Allow override of auto-selection
   message?: MemoryMessage;
 }
 
@@ -137,7 +134,7 @@ export class PRIMEExtractor {
    * Extract memories using PRIME approach
    *
    * Single extraction path with embedded rule guidance.
-   * Target: 145-275 tokens for efficient processing.
+   * Target: 50-200 tokens typical, up to 450 for complex extractions.
    */
   async extract(
     message: MemoryMessage,
@@ -199,7 +196,7 @@ export class PRIMEExtractor {
 
   /**
    * Build PRIME prompt for efficient extraction
-   * Target: 145-275 tokens for optimal performance
+   * Target: 50-200 tokens typical, up to 450 for complex extractions
    */
   private buildOptimizedPrompt(
     message: MemoryMessage,
@@ -238,7 +235,7 @@ JSON: [{content, type, importance, reasoning}]`;
   private selectOptimalTier(
     message: MemoryMessage,
     rules: PRIMERule[]
-  ): 'fast' | 'balanced' | 'accurate' {
+  ): 'standard' | 'advanced' {
     if (!this.config.tierThresholds) {
       return this.config.defaultTier;
     }
@@ -246,20 +243,15 @@ JSON: [{content, type, importance, reasoning}]`;
     const contentLength = message.content.length;
     const ruleComplexity = rules?.length || 0;
 
-    const { fastMaxChars, accurateMinChars } = this.config.tierThresholds;
+    const { advancedMinChars, advancedMinRules } = this.config.tierThresholds;
 
-    // Fast tier: Simple content, few rules
-    if (contentLength < fastMaxChars && ruleComplexity <= 2) {
-      return 'fast';
+    // Advanced tier: Complex content or many rules
+    if (contentLength > advancedMinChars || ruleComplexity > advancedMinRules) {
+      return 'advanced';
     }
 
-    // Accurate tier: Complex content or many rules
-    if (contentLength > accurateMinChars || ruleComplexity > 5) {
-      return 'accurate';
-    }
-
-    // Balanced tier: Default for most scenarios
-    return 'balanced';
+    // Standard tier: Default for most scenarios
+    return 'standard';
   }
 
   /**
@@ -267,12 +259,15 @@ JSON: [{content, type, importance, reasoning}]`;
    */
   private async extractWithSingleCall(
     prompt: string,
-    tier: 'fast' | 'balanced' | 'accurate',
+    tier: 'standard' | 'advanced',
     context: PRIMEExtractionContext
   ): Promise<Memory[]> {
     const llmConfig: LLMConfig = {
       provider: this.config.provider as any,
-      model: this.config.modelTiers[tier],
+      model:
+        tier === 'advanced'
+          ? this.config.advancedModel
+          : this.config.standardModel,
       temperature: this.config.temperature,
       maxTokens: this.config.maxTokens,
       apiKey: this.config.apiKey
@@ -372,6 +367,10 @@ JSON: [{content, type, importance, reasoning}]`;
       );
     }
 
+    // 2-TIER MODEL CONFIGURATION WITH PROPER CASCADE
+    // Priority: PRIME_MODEL (both) > Tier-specific > Config > Provider defaults
+    const singleModelOverride = process.env.PRIME_MODEL;
+
     return {
       // LLM Configuration - Validated fields
       provider,
@@ -380,54 +379,74 @@ JSON: [{content, type, importance, reasoning}]`;
         ? Number(process.env.PRIME_MAX_TOKENS)
         : config.maxTokens || 4000,
 
-      // Tier selection (optional)
-      autoTierSelection:
-        config.autoTierSelection ??
-        process.env.PRIME_AUTO_TIER_SELECTION === 'true',
-      defaultTier:
-        config.defaultTier ||
-        (process.env.PRIME_DEFAULT_TIER as any) ||
-        'balanced',
+      // 2-TIER MODEL CONFIGURATION
+      standardModel:
+        singleModelOverride ||
+        process.env.PRIME_STANDARD_MODEL ||
+        config.standardModel ||
+        this.getStandardModel(provider),
 
-      // Tier thresholds (only if auto selection enabled)
-      tierThresholds: config.autoTierSelection
-        ? {
-            fastMaxChars:
-              config.tierThresholds?.fastMaxChars ||
-              Number(process.env.PRIME_FAST_THRESHOLD) ||
-              100,
-            accurateMinChars:
-              config.tierThresholds?.accurateMinChars ||
-              Number(process.env.PRIME_ACCURATE_THRESHOLD) ||
-              500
-          }
-        : undefined,
+      advancedModel:
+        singleModelOverride ||
+        process.env.PRIME_ADVANCED_MODEL ||
+        config.advancedModel ||
+        this.getAdvancedModel(provider),
+
+      // Tier selection
+      autoTierSelection: config.autoTierSelection ?? true,
+      defaultTier:
+        (process.env.PRIME_DEFAULT_TIER === 'advanced'
+          ? 'advanced'
+          : process.env.PRIME_DEFAULT_TIER === 'standard'
+            ? 'standard'
+            : config.defaultTier) || 'standard',
+
+      // Smart tier thresholds
+      tierThresholds:
+        config.autoTierSelection !== false
+          ? {
+              advancedMinChars:
+                config.tierThresholds?.advancedMinChars ||
+                Number(process.env.PRIME_ADVANCED_MIN_CHARS) ||
+                500,
+              advancedMinRules:
+                config.tierThresholds?.advancedMinRules ||
+                Number(process.env.PRIME_ADVANCED_MIN_RULES) ||
+                5
+            }
+          : undefined,
 
       // Core settings with sensible defaults
       defaultImportanceThreshold: config.defaultImportanceThreshold || 0.7,
       temperature: config.temperature || 0.3,
-
-      // Model tiers with July 2025 models as defaults
-      modelTiers: {
-        fast:
-          config.modelTiers?.fast ||
-          process.env.PRIME_FAST_MODEL ||
-          'gpt-4.1-mini',
-        balanced:
-          config.modelTiers?.balanced ||
-          process.env.PRIME_BALANCED_MODEL ||
-          'gpt-4.1',
-        accurate:
-          config.modelTiers?.accurate ||
-          process.env.PRIME_ACCURATE_MODEL ||
-          'gpt-4.1'
-      },
 
       // Internal settings
       maxRetries: config.maxRetries || 2,
       fallbackEnabled: config.fallbackEnabled ?? true,
       fallbackThreshold: config.fallbackThreshold || 0.5
     };
+  }
+
+  private getStandardModel(provider: string): string {
+    const models: Record<string, string> = {
+      openai: 'gpt-4o-mini',
+      anthropic: 'claude-3-haiku-20240307',
+      gemini: 'gemini-1.5-flash',
+      azure: 'gpt-4o-mini',
+      bedrock: 'claude-3-haiku-20240307'
+    };
+    return models[provider] || 'gpt-4o-mini';
+  }
+
+  private getAdvancedModel(provider: string): string {
+    const models: Record<string, string> = {
+      openai: 'gpt-4o',
+      anthropic: 'claude-3-sonnet-20240229',
+      gemini: 'gemini-1.5-pro',
+      azure: 'gpt-4o',
+      bedrock: 'claude-3-sonnet-20240229'
+    };
+    return models[provider] || 'gpt-4o';
   }
 
   // Helper methods
@@ -454,8 +473,7 @@ JSON: [{content, type, importance, reasoning}]`;
 
   private calculateCost(tier: string, prompt: string): number {
     const tokenCount = this.estimateTokens(prompt);
-    const costPerToken =
-      tier === 'fast' ? 0.0001 : tier === 'accurate' ? 0.001 : 0.0005;
+    const costPerToken = tier === 'advanced' ? 0.001 : 0.0001;
     return tokenCount * costPerToken;
   }
 
@@ -492,7 +510,7 @@ JSON: [{content, type, importance, reasoning}]`;
       );
       return await this.extractWithSingleCall(
         fallbackPrompt,
-        'fast',
+        'standard',
         fallbackContext
       );
     } catch (error) {

@@ -3,6 +3,9 @@ import { Pool } from 'pg';
 import { LogCategory, logger } from '../../logging';
 import { MemoryError } from '../../shared/errors/memory-errors';
 import { StorageProvider } from '../../storage/types';
+import { MemoryConnectionManager } from '../intelligence/connections/MemoryConnectionManager';
+import { IntelligenceLayerConfig } from '../intelligence/types';
+import { CostTracker } from '../tracking/CostTracker';
 import { MemoryType } from '../types/common';
 import { EpisodicMemory } from '../types/episodic/EpisodicMemory';
 import { ProceduralMemory } from '../types/procedural/ProceduralMemory';
@@ -58,24 +61,21 @@ import {
  * export function createRecallService(options: {
  *   storage?: StorageProvider | 'sqlite' | 'memory' | 'postgresql';
  *   dbPath?: string;
- *   preset?: 'fast' | 'accurate' | 'balanced' | 'production';
  *   vectorSearch?: boolean;
  *   caching?: boolean;
  *   customConfig?: Partial<RecallConfig>;
  * }): Promise<RecallService> {
  *   // Factory implementation would:
  *   // 1. Create storage provider based on options.storage
- *   // 2. Apply preset configurations (fast/accurate/balanced/production)
- *   // 3. Create memory manager with sensible defaults
- *   // 4. Instantiate RecallService with optimized config
- *   // 5. Return ready-to-use RecallService instance
+ *   // 2. Create memory manager with sensible defaults
+ *   // 3. Instantiate RecallService with optimized config
+ *   // 4. Return ready-to-use RecallService instance
  * }
  *
  * // Usage examples:
- * const quickRecall = await createRecallService({ preset: 'fast' });
+ * const quickRecall = await createRecallService({ vectorSearch: false });
  * const productionRecall = await createRecallService({
  *   storage: 'postgresql',
- *   preset: 'production',
  *   vectorSearch: true
  * });
  * ```
@@ -139,13 +139,39 @@ export class RecallService {
     popularQueries: []
   };
 
+  private connectionManager?: MemoryConnectionManager;
+
   constructor(
     private workingMemory: WorkingMemory,
     private episodicMemory: EpisodicMemory,
     private semanticMemory: SemanticMemory,
     private proceduralMemory: ProceduralMemory,
-    private config: RecallConfig
-  ) {}
+    private config: RecallConfig,
+    private intelligenceConfig?: IntelligenceLayerConfig,
+    storage?: StorageProvider
+  ) {
+    // Initialize connection manager if intelligence config enables it
+    if (intelligenceConfig?.connectionDetection && storage) {
+      const costTracker = new CostTracker(storage);
+      this.connectionManager = new MemoryConnectionManager(
+        storage,
+        intelligenceConfig,
+        costTracker
+      );
+
+      logger.info(
+        LogCategory.STORAGE,
+        'RecallService',
+        'Connection graph enhancement enabled for recall',
+        {
+          connectionDetectionEnabled:
+            intelligenceConfig.connectionDetection.enabled,
+          maxCandidates:
+            intelligenceConfig.connectionDetection.maxCandidates || 20
+        }
+      );
+    }
+  }
 
   /**
    * Main recall method - searches across all memory types
@@ -195,10 +221,22 @@ export class RecallService {
     const rankedMemories = this.applyHybridScoring(allMemories, query);
 
     // Enhance with stored connections from database
-    const enhancedMemories = await this.enhanceWithStoredConnections(
+    let enhancedMemories = await this.enhanceWithStoredConnections(
       rankedMemories,
       query.userId
     );
+
+    // NEW: Enrich with graph traversal to discover additional memories
+    if (this.intelligenceConfig?.connectionDetection) {
+      enhancedMemories = await this.enrichWithConnections(
+        enhancedMemories,
+        query
+      );
+      enhancedMemories = await this.applyCentralityBoost(
+        enhancedMemories,
+        query
+      );
+    }
 
     // TEMPORAL FIX: Extract conversation date context for AgentNode-style injection
     const conversationContext =
@@ -231,7 +269,8 @@ export class RecallService {
 
     // Check if all searches failed
     if (limitedMemories.length === 0 && searchErrors.length > 0) {
-      throw new AggregateError(searchErrors, 'All memory searches failed');
+      const errorMessage = searchErrors.map((e) => e.message).join('; ');
+      throw new Error(`All memory searches failed: ${errorMessage}`);
     }
 
     // Cache result
@@ -552,6 +591,169 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
   }
 
   /**
+   * Enrich memories with connected memories using graph traversal
+   * This discovers NEW memories that weren't in the original search results
+   */
+  private async enrichWithConnections(
+    memories: UnifiedMemoryResult[],
+    query: RecallQuery
+  ): Promise<UnifiedMemoryResult[]> {
+    if (
+      !this.connectionManager ||
+      !this.intelligenceConfig?.connectionDetection
+    ) {
+      return memories;
+    }
+
+    // Check if user wants to use connections
+    const useConnections = query.useConnections ?? true;
+    if (!useConnections) {
+      return memories;
+    }
+
+    const enriched = new Map<string, UnifiedMemoryResult>();
+    const processed = new Set<string>();
+
+    // Add original memories to the result set
+    memories.forEach((m) => enriched.set(m.id, m));
+
+    // Determine how many top memories to traverse from
+    const connectionHops = query.connectionHops || 1;
+    const topMemoriesToTraverse = Math.min(memories.length, 5);
+
+    // For top-ranked memories, discover connected memories
+    for (const memory of memories.slice(0, topMemoriesToTraverse)) {
+      if (processed.has(memory.id)) continue;
+      processed.add(memory.id);
+
+      try {
+        // Use the connection manager to find connected memories
+        const { memories: connectedMemories, connections } =
+          await this.connectionManager.findConnectedMemories(
+            query.userId,
+            memory.id,
+            connectionHops
+          );
+
+        // Add connected memories with decayed relevance based on distance
+        for (const connectedMemory of connectedMemories) {
+          if (!enriched.has(connectedMemory.id)) {
+            // Find the connection to determine strength
+            const connection = connections.find(
+              (c) =>
+                c.targetMemoryId === connectedMemory.id ||
+                c.sourceMemoryId === connectedMemory.id
+            );
+
+            // Apply connection type filter if specified
+            if (
+              query.connectionTypes &&
+              connection &&
+              !query.connectionTypes.includes(connection.connectionType)
+            ) {
+              continue;
+            }
+
+            // Convert to UnifiedMemoryResult with decayed relevance
+            const decayFactor = 0.7; // Each hop reduces relevance by 30%
+            const connectionStrength = connection?.strength || 0.5;
+
+            enriched.set(connectedMemory.id, {
+              id: connectedMemory.id,
+              type: connectedMemory.type,
+              content: connectedMemory.content,
+              relevance: memory.relevance * decayFactor * connectionStrength,
+              confidence: 0.8, // Default confidence for connected memories
+              timestamp: connectedMemory.createdAt,
+              context: connectedMemory.metadata || {},
+              relationships: [],
+              metadata: {
+                ...connectedMemory.metadata,
+                connectionSource: memory.id,
+                connectionType: connection?.connectionType,
+                connectionStrength: connectionStrength,
+                hopsFromQuery: 1 // TODO: Calculate actual hop distance
+              }
+            });
+          }
+        }
+      } catch (error) {
+        logger.warn(
+          LogCategory.STORAGE,
+          'RecallService',
+          'Failed to get connected memories',
+          {
+            memoryId: memory.id,
+            error: error instanceof Error ? error.message : String(error)
+          }
+        );
+      }
+    }
+
+    logger.info(
+      LogCategory.STORAGE,
+      'RecallService',
+      'Connection graph enrichment completed',
+      {
+        originalCount: memories.length,
+        enrichedCount: enriched.size,
+        newMemoriesFound: enriched.size - memories.length,
+        connectionHops
+      }
+    );
+
+    return Array.from(enriched.values());
+  }
+
+  /**
+   * Apply centrality boosting to memories based on their importance in the graph
+   */
+  private async applyCentralityBoost(
+    memories: UnifiedMemoryResult[],
+    query: RecallQuery
+  ): Promise<UnifiedMemoryResult[]> {
+    if (!this.connectionManager || !query.boostCentralMemories) {
+      return memories;
+    }
+
+    try {
+      // Get the most central memories from the connection manager
+      const centralMemories =
+        await this.connectionManager.getCentralMemories(10);
+      const centralityMap = new Map(
+        centralMemories.map((c) => [c.memoryId, c.centrality])
+      );
+
+      // Apply centrality boost to memories
+      return memories.map((memory) => {
+        const centrality = centralityMap.get(memory.id) || 0;
+        if (centrality > 0) {
+          // Boost relevance based on centrality (max 20% boost)
+          const boostFactor = 1 + centrality * 0.2;
+          return {
+            ...memory,
+            relevance: Math.min(1.0, memory.relevance * boostFactor),
+            metadata: {
+              ...memory.metadata,
+              centrality,
+              centralityBoostApplied: true
+            }
+          };
+        }
+        return memory;
+      });
+    } catch (error) {
+      logger.warn(
+        LogCategory.STORAGE,
+        'RecallService',
+        'Failed to apply centrality boost',
+        { error: error instanceof Error ? error.message : String(error) }
+      );
+      return memories;
+    }
+  }
+
+  /**
    * Get metrics for monitoring and optimization
    *
    * @todo Add comprehensive traceability system for preset performance monitoring:
@@ -759,86 +961,32 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
 }
 
 /**
- * @todo SUGGESTED: Default RecallConfig presets for convenience factory
+ * @todo SUGGESTED: Default RecallConfig options for convenience factory
  *
- * These preset configurations would provide sensible defaults for different use cases:
+ * Factory function could provide sensible defaults for different use cases:
  *
  * ```typescript
- * export const RECALL_CONFIG_PRESETS = {
- *   // Fast preset: Minimal features, maximum performance
- *   fast: {
+ * export const RECALL_CONFIG_OPTIONS = {
+ *   // Minimal features, maximum performance
+ *   minimal: {
  *     defaultLimit: 5,
  *     minRelevanceThreshold: 0.2,
- *     hybridSearchWeights: { vector: 0, text: 0.8, temporal: 0.2, procedural: 0 },
  *     enableVectorSearch: false,
  *     enableRelatedMemories: false,
- *     maxRelatedDepth: 0,
  *     cacheResults: true,
  *     cacheTTL: 60000 // 1 minute
  *   } as RecallConfig,
  *
- *   // Balanced preset: Good performance with moderate features
- *   balanced: {
- *     defaultLimit: 10,
- *     minRelevanceThreshold: 0.1,
- *     hybridSearchWeights: { vector: 0.3, text: 0.4, temporal: 0.2, procedural: 0.1 },
- *     enableVectorSearch: true,
- *     enableRelatedMemories: true,
- *     maxRelatedDepth: 2,
- *     cacheResults: true,
- *     cacheTTL: 300000 // 5 minutes
- *   } as RecallConfig,
- *
- *   // Accurate preset: Maximum features, thorough search
- *   accurate: {
- *     defaultLimit: 20,
- *     minRelevanceThreshold: 0.05,
- *     hybridSearchWeights: { vector: 0.4, text: 0.3, temporal: 0.2, procedural: 0.1 },
- *     enableVectorSearch: true,
- *     enableRelatedMemories: true,
- *     maxRelatedDepth: 5,
- *     cacheResults: true,
- *     cacheTTL: 600000 // 10 minutes
- *   } as RecallConfig,
- *
- *   // Production preset: Enterprise-ready configuration
- *   production: {
+ *   // Standard configuration for most use cases
+ *   standard: {
  *     defaultLimit: 15,
  *     minRelevanceThreshold: 0.1,
- *     hybridSearchWeights: { vector: 0.4, text: 0.3, temporal: 0.2, procedural: 0.1 },
  *     enableVectorSearch: true,
  *     enableRelatedMemories: true,
  *     maxRelatedDepth: 3,
  *     cacheResults: true,
  *     cacheTTL: 900000 // 15 minutes
  *   } as RecallConfig
- * };
- *
- * export const MEMORY_CONFIG_PRESETS = {
- *   fast: {
- *     working: { maxContextItems: 20, ttlSeconds: 1800 },
- *     episodic: { importance: { threshold: 0.2 } },
- *     semantic: { importance: { threshold: 0.3 } },
- *     procedural: { actionExtraction: { enabled: false } }
- *   },
- *   balanced: {
- *     working: { maxContextItems: 50, ttlSeconds: 3600 },
- *     episodic: { importance: { threshold: 0.1 } },
- *     semantic: { importance: { threshold: 0.2 } },
- *     procedural: { actionExtraction: { enabled: true } }
- *   },
- *   accurate: {
- *     working: { maxContextItems: 100, ttlSeconds: 7200 },
- *     episodic: { importance: { threshold: 0.05 } },
- *     semantic: { importance: { threshold: 0.1 } },
- *     procedural: { actionExtraction: { enabled: true } }
- *   },
- *   production: {
- *     working: { maxContextItems: 75, ttlSeconds: 5400 },
- *     episodic: { importance: { threshold: 0.1 } },
- *     semantic: { importance: { threshold: 0.15 } },
- *     procedural: { actionExtraction: { enabled: true } }
- *   }
  * };
  * ```
  */

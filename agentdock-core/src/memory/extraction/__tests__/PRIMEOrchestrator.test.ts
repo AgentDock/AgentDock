@@ -37,14 +37,11 @@ describe('PRIMEOrchestrator', () => {
         apiKey: 'test-key',
         maxTokens: 4000,
         autoTierSelection: false,
-        defaultTier: 'balanced',
+        defaultTier: 'standard',
+        standardModel: 'claude-3-haiku-20240307',
+        advancedModel: 'claude-3-sonnet-20240229',
         defaultImportanceThreshold: 0.7,
-        temperature: 0.3,
-        modelTiers: {
-          fast: 'gpt-3.5-turbo',
-          balanced: 'gpt-4o-mini',
-          accurate: 'gpt-4o'
-        }
+        temperature: 0.3
       },
       batchSize: 10,
       enableMetrics: true
@@ -86,14 +83,11 @@ describe('PRIMEOrchestrator', () => {
           apiKey: 'test-key',
           maxTokens: 2000,
           autoTierSelection: false,
-          defaultTier: 'fast' as const,
+          defaultTier: 'standard' as const,
+          standardModel: 'gpt-4o-mini',
+          advancedModel: 'gpt-4o',
           defaultImportanceThreshold: 0.5,
-          temperature: 0.2,
-          modelTiers: {
-            fast: 'gpt-3.5-turbo',
-            balanced: 'gpt-4',
-            accurate: 'gpt-4'
-          }
+          temperature: 0.2
         }
       };
 

@@ -140,15 +140,12 @@ export async function createMemorySystem(
         provider: 'anthropic',
         apiKey: process.env.ANTHROPIC_API_KEY || '',
         maxTokens: 4000,
-        autoTierSelection: false,
-        defaultTier: 'balanced',
+        autoTierSelection: true,
+        defaultTier: 'standard',
+        standardModel: 'claude-3-haiku-20240307',
+        advancedModel: 'claude-3-sonnet-20240229',
         defaultImportanceThreshold: 0.7,
-        temperature: 0.3,
-        modelTiers: {
-          fast: 'gpt-3.5-turbo',
-          balanced: 'gpt-4o-mini',
-          accurate: 'gpt-4o'
-        }
+        temperature: 0.3
       },
       batchSize: 10,
       enableMetrics: true
@@ -174,7 +171,9 @@ export async function createMemorySystem(
     manager['episodic'],
     manager['semantic'],
     manager['procedural'],
-    recallConfig
+    recallConfig,
+    config.intelligence,
+    storage
   );
 
   // Track cleanup resources

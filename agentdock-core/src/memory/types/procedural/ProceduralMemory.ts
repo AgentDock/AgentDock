@@ -151,7 +151,11 @@ export class ProceduralMemory extends BaseMemoryType<ProceduralMemoryConfig> {
         action: String(memory.metadata?.action || actionPart),
         context: String(memory.metadata?.context || ''),
         pattern: String(memory.metadata?.pattern || memory.content),
-        confidence: Number(memory.metadata?.confidence || 0.5),
+        confidence: Number(
+          memory.metadata?.confidence ||
+            this.proceduralConfig.confidenceThreshold ||
+            PROCEDURAL_MEMORY_DEFAULTS.confidenceThreshold
+        ),
         successCount: Number(memory.metadata?.successCount || 1),
         totalCount: Number(memory.metadata?.totalCount || 1),
         lastUsed:
@@ -240,7 +244,11 @@ export class ProceduralMemory extends BaseMemoryType<ProceduralMemoryConfig> {
         ),
         context: String(result.metadata?.context || ''),
         pattern: String(result.metadata?.pattern || result.content),
-        confidence: Number(result.metadata?.confidence || 0.5),
+        confidence: Number(
+          result.metadata?.confidence ||
+            this.proceduralConfig.confidenceThreshold ||
+            PROCEDURAL_MEMORY_DEFAULTS.confidenceThreshold
+        ),
         successCount: Number(result.metadata?.successCount || 1),
         totalCount: Number(result.metadata?.totalCount || 1),
         lastUsed:

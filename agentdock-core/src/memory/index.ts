@@ -24,7 +24,6 @@
  * export async function createMemorySystem(options: {
  *   storage?: 'sqlite' | 'memory' | 'postgresql' | StorageProvider;
  *   dbPath?: string;
- *   preset?: 'fast' | 'balanced' | 'accurate' | 'production';
  *   features?: {
  *     vectorSearch?: boolean;
  *     encryption?: boolean;
@@ -38,27 +37,25 @@
  * }> {
  *   // Implementation would:
  *   // 1. Create appropriate storage provider
- *   // 2. Apply preset configurations from MEMORY_CONFIG_PRESETS
- *   // 3. Initialize all memory types with sensible defaults
- *   // 4. Create RecallService with preset configuration
- *   // 5. Create ConversationProcessor for message handling
- *   // 6. Return complete, ready-to-use memory system
+ *   // 2. Initialize all memory types with sensible defaults
+ *   // 3. Create RecallService with optimized configuration
+ *   // 4. Create ConversationProcessor for message handling
+ *   // 5. Return complete, ready-to-use memory system
  * }
  *
  * // Quick setup examples:
  * const { memoryManager, recallService } = await createMemorySystem({
- *   preset: 'production'
+ *   features: { vectorSearch: true }
  * });
  *
  * const { memoryManager, recallService } = await createMemorySystem({
  *   storage: 'postgresql',
- *   preset: 'accurate',
  *   features: { vectorSearch: true, encryption: true }
  * });
  *
  * // For specific memory type shortcuts:
- * export function createQuickRecall(preset: 'fast' | 'balanced' = 'balanced'): Promise<RecallService>;
- * export function createMemoryManager(preset: 'fast' | 'balanced' = 'balanced'): Promise<MemoryManager>;
+ * export function createQuickRecall(): Promise<RecallService>;
+ * export function createMemoryManager(): Promise<MemoryManager>;
  * ```
  */
 

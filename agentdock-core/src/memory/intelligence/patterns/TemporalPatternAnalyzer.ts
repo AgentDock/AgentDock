@@ -114,23 +114,31 @@ export class TemporalPatternAnalyzer {
     private config: IntelligenceLayerConfig,
     costTracker?: CostTracker
   ) {
-    // Only create LLM if enhancement is enabled and required fields are provided
-    if (
-      config.connectionDetection.llmEnhancement?.enabled &&
-      config.connectionDetection.llmEnhancement.provider &&
-      config.connectionDetection.llmEnhancement.model
-    ) {
-      this.llm = createLLM({
-        provider: config.connectionDetection.llmEnhancement
-          .provider as LLMProvider,
-        model: config.connectionDetection.llmEnhancement.model,
-        apiKey:
-          config.connectionDetection.llmEnhancement.apiKey ||
-          process.env[
-            `${config.connectionDetection.llmEnhancement.provider.toUpperCase()}_API_KEY`
-          ] ||
-          ''
-      });
+    // Only create LLM if connection detection is enabled
+    if (config.connectionDetection.enabled) {
+      // Follow PRIME pattern for LLM configuration
+      const provider =
+        process.env.CONNECTION_PROVIDER ||
+        process.env.PRIME_PROVIDER ||
+        config.connectionDetection.provider ||
+        'openai';
+
+      const apiKey =
+        process.env.CONNECTION_API_KEY ||
+        process.env[`${provider.toUpperCase()}_API_KEY`];
+
+      if (apiKey) {
+        const model =
+          process.env.CONNECTION_MODEL ||
+          config.connectionDetection.model ||
+          'gpt-4o-mini';
+
+        this.llm = createLLM({
+          provider: provider as LLMProvider,
+          model,
+          apiKey
+        });
+      }
     }
 
     // Use provided cost tracker or create mock
@@ -142,7 +150,7 @@ export class TemporalPatternAnalyzer {
       'Initialized temporal pattern analyzer',
       {
         llmEnabled: !!this.llm,
-        method: config.connectionDetection.method
+        connectionDetectionEnabled: config.connectionDetection.enabled
       }
     );
   }

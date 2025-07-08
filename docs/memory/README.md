@@ -9,12 +9,20 @@ The AgentDock Memory System transforms how AI agents remember, learn, and connec
 AgentDock introduces potentially revolutionary approaches to conversational memory:
 
 - **Four-Dimensional Memory Fusion**: Combines vector + text + temporal + procedural relevance scoring (beyond typical vector-only RAG systems)
-- **PRIME Extraction System**: Cost-optimized intelligent memory extraction with automatic model tier selection  
+- **PRIME Extraction System**: Cost-optimized intelligent memory extraction with automatic 2-tier model selection  
 - **Hybrid SQL + In-Memory Graph**: Graph-like memory connections without dedicated graph database complexity
 - **Research-Validated Hybrid Search**: 30% text + 70% vector configuration prevents catastrophic failures on specialized domains
 - **Progressive Memory Connections**: Multi-tier relationship discovery that scales from embedding similarity to LLM analysis
 
 These innovations work together to create conversational agents that truly learn and evolve while remaining operationally simple for production deployment.
+
+### Intelligence Features
+
+- **Memory Consolidation**: Automatic optimization through episodic→semantic conversion and deduplication - reduces storage and improves recall quality (see [Consolidation Guide](./consolidation-guide.md))
+- **Graph Analysis**: Multi-hop traversal and clustering via ConnectionGraph for discovering indirect relationships - now actively integrated (see [Graph Architecture](./graph-architecture.md))
+- **Temporal Patterns**: Activity detection and behavioral insights through statistical analysis with optional LLM enhancement (see [Memory Connections](./memory-connections.md#temporal-pattern-integration))
+
+Note: All intelligence features use computational resources (database queries, CPU cycles, memory). Optional LLM enhancements incur additional API costs.
 
 ## What is Memory in AgentDock?
 
@@ -37,7 +45,6 @@ Each layer serves a distinct purpose and works together to create agents that tr
 | Memory Connections | Implemented | Progressive enhancement approach |
 | Preset Configurations | Implemented | Default, Precision, Performance, Research |
 | Lazy Memory Decay System | Implemented | On-demand decay calculation, 65-100% write avoidance |
-| Migration Tools | Planned | Future release |
 
 ## How AgentDock Memory Works
 
@@ -141,7 +148,7 @@ See [Research Foundations](./research-foundations.md) for scientific background.
 
 ### **PRIME Extraction System**
 Intelligent, cost-optimized memory extraction:
-- **Character-based tier selection**: Automatically routes to optimal model (fast/balanced/accurate)
+- **Character-based tier selection**: Automatically routes to optimal model (standard/advanced)
 - **Budget controls**: Monthly spending limits and usage tracking
 - **Validated output**: Type-safe memory creation with Zod schema validation
 - **Graceful degradation**: Falls back to pattern-based extraction when needed
@@ -173,8 +180,8 @@ Ready-made configurations for different agent types:
 
 ### **Production-Ready Architecture**
 - **Configurable memory decay**: Human-like forgetting with rule-based protection
-- **Specialized memory adapters**: Production-ready implementations for PostgreSQL and SQLite.
-- **Extensible storage framework**: Includes base adapters for ChromaDB, Pinecone, and Qdrant that can be extended with memory operation support.
+- **Specialized memory adapters**: Production-ready implementations for PostgreSQL (pgvector) and SQLite.
+- **Community-extensible adapters**: Base classes available for ChromaDB, Pinecone, and Qdrant.
 - **User isolation**: Complete data separation with proper security
 - **Cost tracking**: Built-in monitoring and budget controls
 
@@ -212,7 +219,7 @@ See detailed implementation examples in [Architecture Overview](./architecture-o
 
 ### **Simple Setup with Presets**
 ```typescript
-import { createMemorySystem } from '@agentdock/core';
+import { createMemorySystem } from 'agentdock-core';
 
 // Development setup
 const memory = await createMemorySystem({
@@ -253,7 +260,7 @@ const memoryId = await memoryManager.store(
 - **Performance**: High-volume customer support  
 - **Research**: Enhanced connection discovery
 
-See [Implementation Guide](./implementation-guide.md) for complete integration examples and [Architecture Overview](./architecture-overview.md) for detailed configuration examples and deployment guides.
+See [Architecture Overview](./architecture-overview.md) for detailed configuration examples and deployment guides.
 
 ## Memory Architecture Details
 
@@ -358,10 +365,14 @@ This is an open-source framework. Users are responsible for:
 
 ## Documentation Navigation
 
-- **[Architecture Overview](./architecture-overview.md)** - **START HERE** - Complete technical reference and configuration examples
+- **[Complete Configuration Guide](./complete-configuration-guide.md)** - **START HERE** - ALL configuration options including 2-tier models, storage, presets, and environment variables
+- **[Connection System Introduction](./connection-system-intro.md)** - **PUBLIC-FACING** - Brief overview of memory connections for non-technical audiences
+- **[Architecture Overview](./architecture-overview.md)** - Technical architecture and implementation details
 - **[Conversational RAG](./retrieval-augmented-generation.md)** - RAG implementation and hybrid retrieval strategy  
-- **[Memory Connections](./memory-connections.md)** - How memories connect and discover relationships
+- **[Memory Connections](./memory-connections.md)** - Technical connection discovery and configuration
 - **[Graph Architecture](./graph-architecture.md)** - Technical implementation of connection system
+- **[Memory Consolidation](./consolidation-guide.md)** - Memory optimization and lifecycle management
+- **[Testing Connections](./testing-connections.md)** - How to test and troubleshoot the connection system
 - **[Research Foundations](./research-foundations.md)** - Scientific background and cognitive science principles
 
 ---

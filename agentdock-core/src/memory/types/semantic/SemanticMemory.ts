@@ -112,7 +112,11 @@ export class SemanticMemory extends BaseMemoryType<SemanticMemoryConfig> {
       createdAt: memory.createdAt,
       importance: memory.importance,
       category: String(memory.metadata?.category || 'general'),
-      confidence: Number(memory.metadata?.confidence || 0.8),
+      confidence: Number(
+        memory.metadata?.confidence ||
+          this.semanticConfig.confidenceThreshold ||
+          SEMANTIC_MEMORY_DEFAULTS.confidenceThreshold
+      ),
       keywords: Array.isArray(memory.keywords) ? memory.keywords : [],
       resonance: memory.resonance,
       lastAccessedAt: memory.lastAccessedAt,
@@ -159,7 +163,9 @@ export class SemanticMemory extends BaseMemoryType<SemanticMemoryConfig> {
     return {
       totalMemories: stats.byType?.semantic || 0,
       memoriesByCategory: {},
-      avgConfidence: 0.8,
+      avgConfidence:
+        this.semanticConfig.confidenceThreshold ||
+        SEMANTIC_MEMORY_DEFAULTS.confidenceThreshold,
       avgImportance: stats.avgImportance || 0,
       totalFacts: 0,
       totalRelations: 0,
@@ -190,7 +196,11 @@ export class SemanticMemory extends BaseMemoryType<SemanticMemoryConfig> {
         createdAt: result.createdAt,
         importance: result.importance,
         category: String(result.metadata?.category || 'general'),
-        confidence: Number(result.metadata?.confidence || 0.8),
+        confidence: Number(
+          result.metadata?.confidence ||
+            this.semanticConfig.confidenceThreshold ||
+            SEMANTIC_MEMORY_DEFAULTS.confidenceThreshold
+        ),
         keywords: Array.isArray(result.keywords) ? result.keywords : [],
         resonance: result.resonance,
         lastAccessedAt: result.lastAccessedAt,

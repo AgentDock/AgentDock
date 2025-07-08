@@ -80,12 +80,12 @@ flowchart TD
 
 ### Temporal Pattern Integration
 
-When enabled, the system analyzes temporal patterns to enhance connection discovery:
+When enabled, the system uses the **TemporalPatternAnalyzer** to analyze memory access patterns and enhance connection discovery:
 
 ```mermaid
 flowchart LR
     A[Memory Stored] --> B[Connection Discovery]
-    B --> C[Temporal Analysis]
+    B --> C[TemporalPatternAnalyzer]
     
     C --> D[Daily Patterns]
     C --> E[Weekly Patterns] 
@@ -102,10 +102,25 @@ flowchart LR
 ```
 
 **Temporal Features:**
-- **Daily patterns**: Identifies regular time-based activities (e.g., "morning standup notes")
-- **Weekly patterns**: Detects recurring weekly behaviors (e.g., "Monday planning sessions")
-- **Burst detection**: Finds periods of intense activity (e.g., "incident response clusters")
-- **Activity clusters**: Groups temporally related memories for stronger connections
+
+1. **Pattern Detection** (`analyzePatterns()` method):
+   - **Daily patterns**: Identifies regular time-based activities (e.g., "morning standup notes")
+   - **Weekly patterns**: Detects recurring weekly behaviors (e.g., "Monday planning sessions")
+   - **Monthly patterns**: Discovers monthly cycles (e.g., "end-of-month reports")
+   - **Burst patterns**: Finds periods of intense activity
+
+2. **Activity Cluster Detection** (`detectActivityClusters()` method):
+   - Groups memories created in temporal proximity
+   - Identifies focused work sessions
+   - Calculates cluster intensity based on memory density
+   - Provides context for time-sensitive information
+
+3. **Statistical Analysis** (no external API calls):
+   - Peak hour detection using local CPU computation
+   - Frequency analysis through memory timestamp processing
+   - Time-gap clustering with configurable windows
+   - Progressive enhancement with optional LLM insights
+   - **Resource usage**: Database queries + CPU cycles + memory allocation
 
 **Configuration:**
 ```typescript
@@ -117,11 +132,48 @@ temporal: {
 }
 ```
 
+**Implementation Example:**
+```typescript
+// The TemporalPatternAnalyzer in action
+const patterns = await analyzer.analyzePatterns('agent-123', {
+  start: new Date('2024-01-01'),
+  end: new Date('2024-01-31')
+});
+
+// Returns patterns like:
+[
+  {
+    pattern: 'daily',
+    description: 'Morning activity spike 8-10 AM',
+    confidence: 0.92,
+    peakHour: 9
+  },
+  {
+    pattern: 'weekly',
+    description: 'Monday planning sessions',
+    confidence: 0.85,
+    dayOfWeek: 1
+  }
+]
+
+// Activity clusters provide grouping context
+const clusters = await analyzer.detectActivityClusters('agent-123');
+// Returns temporally grouped memories with intensity scores
+```
+
 **Benefits:**
-- Stronger connections between related activities
+- Stronger connections between temporally related activities
 - Better context for time-sensitive information
 - Improved recall for sequential workflows
 - Enhanced pattern recognition across time periods
+- Behavioral insights for agent optimization
+
+**Resource Considerations:**
+- **Database load**: Queries to fetch memories within time ranges
+- **CPU usage**: Statistical calculations on timestamps
+- **Memory usage**: Loading and processing memory arrays
+- **Optional LLM costs**: If enhancement is enabled
+- **Performance impact**: Analysis runs asynchronously to avoid blocking
 
 ## How It Works Under the Hood
 

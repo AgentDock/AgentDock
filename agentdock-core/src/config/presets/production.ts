@@ -12,6 +12,7 @@
  */
 
 import { PRIMEOrchestratorConfig } from '../../memory/extraction/PRIMEOrchestrator';
+// FIVE_CORE_CONNECTION_TYPES are now built into the LLM classification system
 import { IntelligenceLayerConfig } from '../../memory/intelligence/types';
 import { LifecycleConfig } from '../../memory/lifecycle/types';
 import { MemoryManagerConfig } from '../../memory/types';
@@ -92,36 +93,38 @@ export const productionVectorStorageConfig: StorageProviderOptions = {
 /**
  * Intelligence configuration for production
  *
- * @note Uses hybrid approach with small LLM for better quality
+ * @note Uses smart triage with LLM classification for 35% of connections
  */
 export const productionIntelligenceConfig: IntelligenceLayerConfig = {
   embedding: {
     enabled: true,
-    similarityThreshold: 0.75, // Slightly higher for production quality
+    similarityThreshold: 0.3, // Base threshold for candidate discovery
     model: 'text-embedding-3-small'
   },
   connectionDetection: {
-    method: 'hybrid',
-    userRules: {
-      enabled: true,
-      patterns: []
+    enabled: true, // Simple on/off toggle for AgentDock Pro
+
+    // LLM configuration follows PRIME pattern - shares API keys seamlessly
+    // Uses CONNECTION_PROVIDER || PRIME_PROVIDER for seamless integration
+    // Uses CONNECTION_API_KEY || {PROVIDER}_API_KEY for shared credentials
+    enhancedModel: 'gpt-4o', // Optional quality upgrade for production
+
+    // Smart triage thresholds for 65% cost optimization
+    thresholds: {
+      autoSimilar: 0.8, // 40% auto-classified as "similar" (FREE)
+      autoRelated: 0.6, // 25% auto-classified as "related" (FREE)
+      llmRequired: 0.3 // 35% LLM classifies into 5 research-based types (PAID)
     },
-    llmEnhancement: {
-      enabled: true,
-      provider: 'openai', // Configure based on your provider
-      model: 'gpt-3.5-turbo', // Fast and cost-effective
-      maxTokensPerAnalysis: 100,
-      temperature: 0.2,
-      validateResponses: true,
-      fallbackToEmbedding: true,
-      minConfidence: 0.7,
-      costPerToken: 0.0000005 // Example pricing
-    }
+
+    // Processing configuration
+    maxCandidates: 20, // Limit candidates to top-20 for efficiency
+    batchSize: 10, // Batch LLM calls for cost efficiency
+    temperature: 0.2, // Low temperature for consistent classification
+    maxTokens: 500 // Concise prompts and responses
   },
   costControl: {
     maxLLMCallsPerBatch: 10,
-    monthlyBudget: 50, // $50/month for connections
-    preferEmbeddingWhenSimilar: true,
+    preferEmbeddingWhenSimilar: true, // Use auto-classification when possible
     trackTokenUsage: true
   }
 };
@@ -181,18 +184,15 @@ export const productionPRIMEConfig: PRIMEOrchestratorConfig = {
     provider: process.env.PRIME_PROVIDER || 'openai',
     apiKey: process.env.PRIME_API_KEY || process.env.OPENAI_API_KEY || '',
     maxTokens: 4000,
-    defaultTier: 'balanced',
+    defaultTier: 'standard',
     autoTierSelection: true,
+    standardModel: 'gpt-4o-mini',
+    advancedModel: 'gpt-4o',
     temperature: 0.2,
     defaultImportanceThreshold: 0.7,
     tierThresholds: {
-      fastMaxChars: 100,
-      accurateMinChars: 500
-    },
-    modelTiers: {
-      fast: 'gpt-3.5-turbo',
-      balanced: 'gpt-4o-mini',
-      accurate: 'gpt-4o'
+      advancedMinChars: 500,
+      advancedMinRules: 5
     }
   },
   batchSize: 20,

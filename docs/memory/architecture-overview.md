@@ -27,7 +27,7 @@ Extracted Memories:
 ```
 
 **Key Features**:
-- Smart model selection (fast/balanced/accurate)
+- Smart model selection (standard/advanced 2-tier)
 - Rule-based extraction guidance
 - Cost optimization with budget tracking
 - Real-time message processing
@@ -120,110 +120,13 @@ See [Memory Connections](./memory-connections.md) for detailed explanation and [
 
 AgentDock implements a **lazy memory decay** system to simulate human-like forgetting, ensuring that agent memory remains relevant without manual cleanup. This system is efficient, operating on-demand when memories are accessed, which avoids costly batch processing jobs.
 
-### Configuration
+**Key Principles:**
+- **On-demand calculation**: Decay computed when memories are accessed, not on schedule
+- **Access reinforcement**: Frequently used memories stay strong
+- **Rule-based protection**: Critical memories can be protected from decay
+- **Custom half-lives**: Different decay rates for different memory types
 
-Decay behavior is controlled through the `LazyDecayConfig` object during memory system initialization.
-
-```typescript
-// Example configuration for lazy decay
-const lazyDecayConfig = {
-  // The time (in days) it takes for a memory's relevance to halve.
-  defaultHalfLife: 30,
-  
-  // Resonance score below which a memory is considered irrelevant and can be archived.
-  archivalThreshold: 0.1,
-  
-  // Whether to increase the resonance of a memory when it's accessed.
-  enableReinforcement: true,
-  
-  // The factor by which to boost resonance on access (e.g., 0.1 = 10% boost).
-  reinforcementFactor: 0.1, 
-  
-  // The maximum resonance a memory can reach through reinforcement.
-  maxResonance: 2.0,
-  
-  // Minimum time (in ms) before a memory can be updated again to avoid spam.
-  minUpdateIntervalMs: 3600000 // 1 hour
-};
-```
-
-### Configuration Examples
-
-Here are three examples demonstrating how to configure memory decay for different agent types.
-
-#### 1. Therapy Agent: Never Forget Trauma
-
-This agent needs to remember critical patient history without degradation, while allowing less important conversational details to fade.
-
-```typescript
-// In createMemorySystem call
-const therapyAgentConfig = {
-  // Standard decay for most memories
-  defaultHalfLife: 60, // 2 months
-  archivalThreshold: 0.05,
-};
-
-// When storing a critical memory (e.g., trauma event)
-await memoryManager.store(
-  'user-123',
-  'therapy-agent',
-  'Patient experienced a critical traumatic event.',
-  'episodic',
-  {
-    // This flag completely protects the memory from the decay process.
-    neverDecay: true,
-    importance: 1.0
-  }
-);
-```
-
-#### 2. Business Analyst Agent: Prioritize Recent Data
-
-This agent focuses on recent market trends and data. Older information is less relevant and should decay more quickly.
-
-```typescript
-// In createMemorySystem call
-const businessAnalystConfig = {
-  // Recent data is key, so information decays faster.
-  defaultHalfLife: 14, // 2 weeks
-  
-  // A higher threshold removes older, less relevant data points sooner.
-  archivalThreshold: 0.2,
-  
-  // Reinforce frequently accessed reports or metrics.
-  enableReinforcement: true,
-  reinforcementFactor: 0.15 // A stronger boost for important data
-};
-```
-
-#### 3. General Purpose Assistant: Balanced Memory
-
-A standard assistant with a balanced memory that retains important user preferences while letting trivial details fade over time.
-
-```typescript
-// In createMemorySystem call
-const generalAssistantConfig = {
-  // A standard 30-day half-life for most information.
-  defaultHalfLife: 30,
-  archivalThreshold: 0.1,
-  enableReinforcement: true,
-  reinforcementFactor: 0.05, // Gentle reinforcement
-  maxResonance: 1.5
-};
-
-// Storing a user preference with a custom, longer half-life
-await memoryManager.store(
-  'user-456',
-  'general-assistant',
-  'User prefers a formal tone.',
-  'semantic',
-  {
-    // This memory will take 90 days to lose half its resonance.
-    customHalfLife: 90,
-    importance: 0.9
-  }
-);
-```
+For complete configuration examples and detailed setup instructions, see [Complete Configuration Guide](./complete-configuration-guide.md).
 
 ## Summary
 

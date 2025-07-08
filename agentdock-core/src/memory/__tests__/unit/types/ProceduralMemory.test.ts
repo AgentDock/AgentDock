@@ -424,7 +424,7 @@ describe('ProceduralMemory - Actual Implementation', () => {
       );
 
       expect(retrieved).not.toBeNull();
-      expect(retrieved?.confidence).toBe(0.5); // Default confidence
+      expect(retrieved?.confidence).toBe(0.7); // Default confidence from PROCEDURAL_MEMORY_DEFAULTS
       expect(retrieved?.successCount).toBe(1); // Default
       expect(retrieved?.totalCount).toBe(1); // Default
       expect(retrieved?.conditions).toEqual([]); // Default empty array

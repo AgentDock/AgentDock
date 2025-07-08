@@ -205,18 +205,33 @@ graph LR
 **ConnectionGraph Implementation:**
 
 ```typescript
-// ConnectionGraph provides advanced algorithms
 class ConnectionGraph {
-    // Find shortest path between memories
+    // Basic operations
+    addNode(id: string, metadata: any): void
+    addEdge(from: string, to: string, type: string, strength: number): void
+    
+    // Path finding
     findPath(from: string, to: string): string[]
+    getConnectionPath(sourceId: string, targetId: string): string[]
     
-    // Detect clusters of related memories
-    findClusters(): Memory[][]
+    // Graph analysis
+    detectCommunity(nodeId: string): Set<string>
+    getMemoryClusters(minSize: number): string[][]
     
-    // Identify central/important memories
-    calculateCentrality(): Map<string, number>
+    // Centrality metrics
+    calculateCentrality(nodeId: string): number
+    getCentralMemories(limit: number): Array<{memoryId: string; centrality: number}>
+    
+    // NEW: Pattern analysis integration
+    analyzeGraphPatterns(memoryId: string): MemoryConnection[]
 }
 ```
+
+This in-memory graph now actively enhances connection discovery through:
+- **2-hop traversal**: Finding indirect relationships via `analyzeGraphPatterns()`
+- **Community detection**: Identifying memory clusters with `detectCommunity()`
+- **Centrality analysis**: Highlighting important memories using degree centrality
+- **Path finding**: Discovering connection paths between any two memories
 
 This in-memory graph is used when:
 - Query depth exceeds 3 hops

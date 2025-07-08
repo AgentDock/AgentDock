@@ -119,37 +119,30 @@ export interface IntelligenceLayerConfig {
     apiKey?: string; // Optional override
   };
 
-  // Optional enhancement layers
+  // Connection detection configuration - Clean rebuild from scratch
   connectionDetection: {
-    method: 'embedding-only' | 'user-rules' | 'small-llm' | 'hybrid';
+    enabled: boolean; // Default: true - simple on/off toggle
 
-    // Connection discovery configuration
-    maxRecentMemories?: number; // Default: 50, range: 10-500
-    temporalWindowDays?: number; // Default: 7
-    enableTemporalAnalysis?: boolean; // Default: false
+    // LLM Configuration - follows PRIME pattern for seamless API key sharing
+    provider?: string; // From env: CONNECTION_PROVIDER || PRIME_PROVIDER
+    apiKey?: string; // From env: CONNECTION_API_KEY || {PROVIDER}_API_KEY
 
-    // User-defined rules (free, configurable)
-    userRules?: {
-      enabled?: boolean;
-      patterns?: ConnectionRule[];
+    // Model selection (environment-based, no hardcoding)
+    model?: string; // From env: CONNECTION_MODEL (default: provider's efficient model)
+    enhancedModel?: string; // From env: CONNECTION_ENHANCED_MODEL (default: provider's powerful model)
+
+    // Smart triage thresholds (65% cost optimization through auto-classification)
+    thresholds: {
+      autoSimilar: number; // Default: 0.8 (40% auto-classified as "similar")
+      autoRelated: number; // Default: 0.6 (25% auto-classified as "related")
+      llmRequired: number; // Default: 0.3 (35% need LLM classification into 5 types)
     };
 
-    // LLM enhancement (optional, cost-aware)
-    llmEnhancement?: {
-      enabled?: boolean;
-      provider?: string; // User's choice
-      model?: string; // Small model (claude-3-haiku, gemini-flash, etc)
-      apiKey?: string; // Or use env var
-      maxTokensPerAnalysis?: number;
-      temperature?: number; // 0.1-0.3 for consistency
-      validateResponses?: boolean; // Always validate with Zod
-      fallbackToEmbedding?: boolean; // When validation fails
-      minConfidence?: number; // LLM confidence threshold
-
-      // Cost configuration - user defines based on their provider/model
-      costPerToken?: number; // e.g., 0.0000002 for input tokens
-      costPerOperation?: number; // Alternative: flat rate per analysis
-    };
+    // Processing configuration
+    maxCandidates?: number; // Default: 20
+    batchSize?: number; // Default: 10
+    temperature?: number; // Default: 0.2
+    maxTokens?: number; // Default: 500
   };
 
   // Temporal pattern analysis (optional)
@@ -179,90 +172,44 @@ export interface IntelligenceLayerConfig {
 }
 
 /**
- * User-configurable connection rule using semantic understanding
+ * The 5 Research-Based Connection Types - Classification Targets
  *
- * Defines patterns for automatically detecting specific types of connections
- * between memories using semantic descriptions instead of regex patterns.
- * This approach is language-agnostic and works with any content type.
+ * These are the fundamental connection types that the LLM classifies content relationships into.
+ * Based on 50+ years of cognitive science research. These are NOT user-configurable rules,
+ * but the classification reality that represents how human memory actually works.
  *
- * Rules are evaluated using embedding similarity between the rule's semantic
- * description and memory content, providing flexible pattern matching without
- * brittle text-based rules.
- *
- * @example Causal relationship rule
- * ```typescript
- * const causalRule: ConnectionRule = {
- *   id: 'user-action-result',
- *   name: 'User Action Results',
- *   description: 'Connects user actions with their immediate results',
- *   semanticDescription: 'user performs an action that causes a system response or change',
- *   connectionType: 'causes',
- *   confidence: 0.85,
- *   semanticThreshold: 0.7,
- *   requiresBothMemories: true,
- *   enabled: true,
- *   createdBy: 'system',
- *   createdAt: new Date()
- * };
- * ```
- *
- * @example Topic relationship rule
- * ```typescript
- * const topicRule: ConnectionRule = {
- *   id: 'ui-preferences',
- *   name: 'UI Preference Connections',
- *   description: 'Groups memories about user interface preferences',
- *   semanticDescription: 'user interface settings, themes, display preferences, or visual customization',
- *   connectionType: 'related',
- *   confidence: 0.7,
- *   semanticThreshold: 0.75,
- *   requiresBothMemories: false, // Either memory can match
- *   enabled: true,
- *   createdBy: 'user-123',
- *   createdAt: new Date()
- * };
- * ```
- *
- * @example Hierarchical relationship rule
- * ```typescript
- * const hierarchyRule: ConnectionRule = {
- *   id: 'feature-components',
- *   name: 'Feature Component Hierarchy',
- *   description: 'Connects features with their sub-components',
- *   semanticDescription: 'software feature composed of smaller components or modules',
- *   connectionType: 'part_of',
- *   confidence: 0.8,
- *   semanticThreshold: 0.8,
- *   requiresBothMemories: true,
- *   language: 'en', // Optional language hint
- *   enabled: true,
- *   createdBy: 'admin',
- *   createdAt: new Date()
- * };
- * ```
+ * @see Collins & Loftus (1975) - Spreading Activation Theory
+ * @see Sowa (1984) - Conceptual Graphs and Dependency Theory
+ * @see Conway (2009) - Memory Opposition and Contradiction
  */
-// User-configurable connection rules (language-agnostic)
-export interface ConnectionRule {
-  id: string;
-  name: string;
-  description: string;
-
-  // Semantic approach - required, no more regex patterns
-  semanticDescription: string; // Natural language description of what to look for
-  semanticEmbedding?: number[]; // Pre-computed embedding of the semantic description
-
-  connectionType: ConnectionType;
-  confidence: number; // 0-1
-  language?: string; // Optional language hint
-
-  // Semantic matching configuration
-  semanticThreshold?: number; // Embedding similarity threshold (default: 0.75)
-  requiresBothMemories?: boolean; // Must match both memories vs either (default: true)
-
-  enabled: boolean;
-  createdBy: string;
-  createdAt: Date;
-}
+export const FIVE_CORE_CONNECTION_TYPES = {
+  similar: {
+    description:
+      'Semantically similar content (same topics, concepts, meaning)',
+    examples: ['JavaScript arrays', 'Python lists'],
+    research: 'Collins & Loftus (1975) - Spreading Activation Theory'
+  },
+  causes: {
+    description: 'One memory leads to/causes the other (causal relationship)',
+    examples: ['Bug reported', 'Fix deployed'],
+    research: 'Sowa (1984) - Conceptual dependency theory'
+  },
+  part_of: {
+    description: 'One memory is component/part of the other (hierarchical)',
+    examples: ['Login component', 'Authentication system'],
+    research: 'Sowa (1984) - Conceptual graphs'
+  },
+  opposite: {
+    description: 'Memories contradict or oppose each other',
+    examples: ['Dark mode preferred', 'Light mode selected'],
+    research: 'Conway (2009) - Memory opposition and contradiction'
+  },
+  related: {
+    description: 'General association or reference between topics',
+    examples: ['React discussion', 'Frontend project'],
+    research: 'Collins & Loftus (1975) - Associative networks'
+  }
+} as const;
 
 /**
  * Memory connection graph for relationship analysis and traversal

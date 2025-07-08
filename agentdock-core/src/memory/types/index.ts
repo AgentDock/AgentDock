@@ -78,6 +78,12 @@ export interface MemoryManagerConfig {
   semantic?: SemanticMemoryConfig;
   procedural?: ProceduralMemoryConfig;
   intelligence?: IntelligenceLayerConfig;
+  consolidation?: {
+    enabled: boolean;
+    minEpisodicAge?: number;
+    similarityThreshold?: number;
+    batchSize?: number;
+  };
   debug?: boolean;
 }
 

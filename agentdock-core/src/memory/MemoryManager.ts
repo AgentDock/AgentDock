@@ -68,6 +68,8 @@
  * ```
  */
 
+import { z } from 'zod';
+
 import {
   createEmbedding,
   getDefaultEmbeddingModel,
@@ -84,19 +86,92 @@ import {
   validateConnectionType,
   VectorMemoryOperations
 } from '../storage/types';
+import { ConsolidationResult } from './base-types';
 import { LazyDecayBatchProcessor } from './decay/LazyDecayBatchProcessor';
 import {
   LazyDecayCalculator,
   LazyDecayConfig
 } from './decay/LazyDecayCalculator';
 import { DecayConfiguration } from './decay/types';
+import { MemoryConsolidator } from './intelligence/consolidation/MemoryConsolidator';
 import { EmbeddingService } from './intelligence/embeddings/EmbeddingService';
 import { MemoryTransaction } from './transactions/MemoryTransaction';
-import { MemoryManagerConfig, MemoryType } from './types';
+import { Memory, MemoryManagerConfig, MemoryType } from './types';
 import { EpisodicMemory } from './types/episodic/EpisodicMemory';
 import { ProceduralMemory } from './types/procedural/ProceduralMemory';
 import { SemanticMemory } from './types/semantic/SemanticMemory';
 import { WorkingMemory } from './types/working/WorkingMemory';
+
+// Zod schemas for consistent parameter validation
+const UserAgentParamsSchema = z.object({
+  userId: z.string().trim().min(1, 'userId is required for memory operations'),
+  agentId: z.string().trim().min(1, 'agentId is required')
+});
+
+const StoreMemoryParamsSchema = UserAgentParamsSchema.extend({
+  content: z.string().trim().min(1, 'content is required')
+});
+
+const RecallParamsSchema = UserAgentParamsSchema.extend({
+  query: z.string().trim().min(1, 'query is required')
+});
+
+const ConnectionParamsSchema = z.object({
+  userId: z.string().trim().min(1, 'userId is required for memory operations'),
+  fromId: z.string().trim().min(1, 'fromId is required'),
+  toId: z.string().trim().min(1, 'toId is required'),
+  strength: z.number().min(0).max(1, 'strength must be between 0 and 1')
+});
+
+// Helper function to convert Zod errors to original format for backward compatibility
+function validateAndThrow<T>(
+  schema: z.ZodSchema<T>,
+  data: unknown,
+  fallbackMessage?: string
+): T {
+  const result = schema.safeParse(data);
+  if (!result.success) {
+    // Check the actual data to determine what fields are empty
+    const dataObj = data as any;
+    const hasEmptyUserId = !dataObj?.userId?.trim();
+    const hasEmptyAgentId = !dataObj?.agentId?.trim();
+    const hasEmptyContent =
+      dataObj?.content !== undefined && !dataObj?.content?.trim();
+    const hasEmptyQuery =
+      dataObj?.query !== undefined && !dataObj?.query?.trim();
+
+    // Handle specific error combinations for test compatibility
+    if (hasEmptyUserId) {
+      throw new Error(
+        'userId must be a non-empty string for memory operations'
+      );
+    } else if (hasEmptyAgentId && (hasEmptyContent || hasEmptyQuery)) {
+      if (fallbackMessage) {
+        throw new Error(fallbackMessage);
+      } else if (hasEmptyContent) {
+        throw new Error('Agent ID and content are required');
+      } else {
+        throw new Error('Agent ID and query are required');
+      }
+    } else if (hasEmptyAgentId) {
+      // If only agentId is empty but content/query are provided, use specific message
+      if (dataObj?.content !== undefined) {
+        throw new Error('Agent ID and content are required');
+      } else if (dataObj?.query !== undefined) {
+        throw new Error('Agent ID and query are required');
+      } else {
+        throw new Error('Agent ID is required');
+      }
+    } else if (fallbackMessage) {
+      throw new Error(fallbackMessage);
+    } else {
+      // Fallback to first error message
+      const errors = result.error.errors;
+      throw new Error(errors[0]?.message || 'Validation failed');
+    }
+  }
+  return result.data;
+}
 
 export class MemoryManager {
   private working: WorkingMemory;
@@ -106,6 +181,9 @@ export class MemoryManager {
   private embeddingService: EmbeddingService | null = null;
   private lazyDecayCalculator!: LazyDecayCalculator;
   private lazyDecayBatchProcessor!: LazyDecayBatchProcessor;
+  private consolidator?: MemoryConsolidator;
+  private consolidationScheduled = new Map<string, boolean>();
+  private consolidationTimers = new Map<string, NodeJS.Timeout>();
 
   constructor(
     private storage: StorageProvider,
@@ -236,6 +314,83 @@ export class MemoryManager {
 
     // Initialize batch processor for lazy decay updates
     this.lazyDecayBatchProcessor = new LazyDecayBatchProcessor(storage);
+
+    // Initialize memory consolidator if enabled
+    if (config.consolidation?.enabled) {
+      // Create adapter to match ConsolidatorStorage interface
+      const consolidatorStorage = {
+        setMemory: async (memory: Memory) => {
+          // Use store method to save memory
+          await this.storage.memory!.store(
+            memory.userId,
+            memory.agentId,
+            memory
+          );
+        },
+        deleteMemory: async (
+          userId: string,
+          agentId: string,
+          type: string,
+          id: string
+        ) => {
+          // MemoryOperations doesn't have deleteMemory, so we skip it
+          logger.warn(
+            LogCategory.STORAGE,
+            'MemoryManager',
+            'Delete operation not supported by storage adapter'
+          );
+        },
+        vectorSearch: undefined, // Not available in base MemoryOperations
+        memory: {
+          getByType: async (
+            userId: string,
+            agentId: string,
+            type: string,
+            options?: any
+          ) => {
+            // Use recall to get memories by type
+            const memories = await this.storage.memory!.recall(
+              userId,
+              agentId,
+              '',
+              {
+                type: type as MemoryType,
+                limit: 1000
+              }
+            );
+
+            // Filter by age if specified
+            if (options?.createdBefore) {
+              return memories.filter(
+                (m) => m.createdAt < options.createdBefore
+              );
+            }
+
+            return memories;
+          }
+        }
+      };
+
+      // Create proper ConsolidationConfig from our simplified config
+      const consolidationConfig = {
+        similarityThreshold: config.consolidation.similarityThreshold || 0.85,
+        maxAge: config.consolidation.minEpisodicAge || 300000, // 5 minutes default
+        preserveOriginals: false,
+        strategies: ['merge'] as (
+          | 'merge'
+          | 'synthesize'
+          | 'abstract'
+          | 'hierarchy'
+        )[],
+        batchSize: config.consolidation.batchSize || 100,
+        enableLLMSummarization: false
+      };
+
+      this.consolidator = new MemoryConsolidator(
+        consolidatorStorage,
+        consolidationConfig
+      );
+    }
   }
 
   /**
@@ -311,14 +466,12 @@ export class MemoryManager {
     type: MemoryType = MemoryType.SEMANTIC,
     options?: { timestamp?: number }
   ): Promise<string> {
-    if (!userId || typeof userId !== 'string' || !userId.trim()) {
-      throw new Error(
-        'userId must be a non-empty string for memory operations'
-      );
-    }
-    if (!agentId || !content?.trim()) {
-      throw new Error('Agent ID and content are required');
-    }
+    // Validate input parameters using Zod
+    validateAndThrow(
+      StoreMemoryParamsSchema,
+      { userId, agentId, content },
+      'Agent ID and content are required'
+    );
 
     // Check if we have vector-enabled storage
     const isVectorMemoryOps = (ops: unknown): ops is VectorMemoryOperations => {
@@ -400,6 +553,11 @@ export class MemoryManager {
         type,
         options?.timestamp
       );
+    }
+
+    // Schedule consolidation for episodic memories if consolidator is enabled
+    if (type === 'episodic' && this.consolidator) {
+      this.scheduleConsolidation(userId, agentId);
     }
 
     return memoryId;
@@ -527,14 +685,12 @@ export class MemoryManager {
     query: string,
     options: { type?: MemoryType; limit?: number } = {}
   ): Promise<any[]> {
-    if (!userId || typeof userId !== 'string' || !userId.trim()) {
-      throw new Error(
-        'userId must be a non-empty string for memory operations'
-      );
-    }
-    if (!agentId || !query?.trim()) {
-      throw new Error('Agent ID and query are required');
-    }
+    // Validate input parameters using Zod
+    validateAndThrow(
+      RecallParamsSchema,
+      { userId, agentId, query },
+      'Agent ID and query are required'
+    );
 
     // Check if we have vector-enabled storage
     const isVectorMemoryOps = (ops: unknown): ops is VectorMemoryOperations => {
@@ -683,14 +839,8 @@ export class MemoryManager {
     agentId: string,
     decayConfig: DecayConfiguration
   ): Promise<void> {
-    if (!userId || typeof userId !== 'string' || !userId.trim()) {
-      throw new Error(
-        'userId must be a non-empty string for memory operations'
-      );
-    }
-    if (!agentId) {
-      throw new Error('Agent ID is required');
-    }
+    // Validate input parameters using Zod
+    validateAndThrow(UserAgentParamsSchema, { userId, agentId });
     if (!decayConfig) {
       throw new Error('Decay configuration is required');
     }
@@ -760,14 +910,8 @@ export class MemoryManager {
     connectionType: ConnectionType,
     strength: number
   ): Promise<void> {
-    if (!userId || typeof userId !== 'string' || !userId.trim()) {
-      throw new Error(
-        'userId must be a non-empty string for memory operations'
-      );
-    }
-    if (!fromId || !toId) {
-      throw new Error('Both memory IDs are required');
-    }
+    // Validate input parameters using Zod
+    ConnectionParamsSchema.parse({ userId, fromId, toId, strength });
     if (!connectionType) {
       throw new Error('Connection type is required');
     }
@@ -830,11 +974,13 @@ export class MemoryManager {
    * ```
    */
   async getStats(userId: string, agentId?: string): Promise<any> {
-    if (!userId || typeof userId !== 'string' || !userId.trim()) {
-      throw new Error(
-        'userId must be a non-empty string for memory operations'
-      );
-    }
+    // Validate input parameters using Zod
+    validateAndThrow(
+      z.object({
+        userId: z.string().min(1, 'userId is required for memory operations')
+      }),
+      { userId }
+    );
     return this.getMemoryOps().getStats(userId, agentId);
   }
 
@@ -868,14 +1014,8 @@ export class MemoryManager {
    * ```
    */
   async clearWorkingMemory(userId: string, agentId: string): Promise<void> {
-    if (!userId || typeof userId !== 'string' || !userId.trim()) {
-      throw new Error(
-        'userId must be a non-empty string for memory operations'
-      );
-    }
-    if (!agentId) {
-      throw new Error('Agent ID is required');
-    }
+    // Validate input parameters using Zod
+    validateAndThrow(UserAgentParamsSchema, { userId, agentId });
     await this.working.clear(userId, agentId);
   }
 
@@ -922,14 +1062,12 @@ export class MemoryManager {
     trigger: string,
     action: string
   ): Promise<any> {
-    if (!userId || typeof userId !== 'string' || !userId.trim()) {
-      throw new Error(
-        'userId must be a non-empty string for memory operations'
-      );
-    }
-    if (!agentId || !trigger || !action) {
-      throw new Error('Agent ID, trigger, and action are required');
-    }
+    // Validate input parameters using Zod
+    const LearnParamsSchema = UserAgentParamsSchema.extend({
+      trigger: z.string().min(1, 'trigger is required'),
+      action: z.string().min(1, 'action is required')
+    });
+    LearnParamsSchema.parse({ userId, agentId, trigger, action });
     return this.procedural.learn(userId, agentId, trigger, action);
   }
 
@@ -986,14 +1124,11 @@ export class MemoryManager {
     agentId: string,
     trigger: string
   ): Promise<any[]> {
-    if (!userId || typeof userId !== 'string' || !userId.trim()) {
-      throw new Error(
-        'userId must be a non-empty string for memory operations'
-      );
-    }
-    if (!agentId || !trigger) {
-      throw new Error('Agent ID and trigger are required');
-    }
+    // Validate input parameters using Zod
+    const RecommendationsParamsSchema = UserAgentParamsSchema.extend({
+      trigger: z.string().min(1, 'trigger is required')
+    });
+    RecommendationsParamsSchema.parse({ userId, agentId, trigger });
     return this.procedural.getRecommendedActions(userId, agentId, trigger);
   }
 
@@ -1047,14 +1182,8 @@ export class MemoryManager {
     agentId: string,
     query: string
   ): Promise<any[]> {
-    if (!userId || typeof userId !== 'string' || !userId.trim()) {
-      throw new Error(
-        'userId must be a non-empty string for memory operations'
-      );
-    }
-    if (!agentId || !query) {
-      throw new Error('Agent ID and query are required');
-    }
+    // Validate input parameters using Zod
+    RecallParamsSchema.parse({ userId, agentId, query });
     return this.semantic.search(userId, agentId, query);
   }
 
@@ -1109,14 +1238,8 @@ export class MemoryManager {
     agentId: string,
     limit?: number
   ): Promise<any[]> {
-    if (!userId || typeof userId !== 'string' || !userId.trim()) {
-      throw new Error(
-        'userId must be a non-empty string for memory operations'
-      );
-    }
-    if (!agentId) {
-      throw new Error('Agent ID is required');
-    }
+    // Validate input parameters using Zod
+    validateAndThrow(UserAgentParamsSchema, { userId, agentId });
     return this.working.recall(userId, agentId, '', limit);
   }
 
@@ -1163,18 +1286,12 @@ export class MemoryManager {
     let embeddingStored = false;
 
     try {
-      // Validate inputs first
-      if (!userId || typeof userId !== 'string' || !userId.trim()) {
-        throw new Error(
-          'userId must be a non-empty string for memory operations'
-        );
-      }
-      if (!agentId) {
-        throw new Error('Agent ID is required');
-      }
-      if (!content) {
-        throw new Error('Content is required');
-      }
+      // Validate inputs first using Zod
+      validateAndThrow(
+        StoreMemoryParamsSchema,
+        { userId, agentId, content },
+        'Agent ID and content are required'
+      );
 
       // Operation 1: Store memory
       transaction.addOperation(
@@ -1327,6 +1444,13 @@ export class MemoryManager {
    * This should be called when the memory manager is no longer needed
    */
   async close(): Promise<void> {
+    // Clear all pending consolidation timers
+    for (const [key, timerId] of this.consolidationTimers.entries()) {
+      clearTimeout(timerId);
+    }
+    this.consolidationTimers.clear();
+    this.consolidationScheduled.clear();
+
     // Clean up all memory type instances
     await Promise.all([
       this.working.destroy(),
@@ -1341,6 +1465,87 @@ export class MemoryManager {
     // Storage cleanup if supported
     if (this.storage.destroy) {
       await this.storage.destroy();
+    }
+  }
+
+  /**
+   * Consolidates memories for a specific agent
+   *
+   * Performs memory consolidation to:
+   * - Convert old episodic memories to semantic memories
+   * - Merge similar memories to reduce redundancy
+   * - Extract patterns and insights from memory clusters
+   *
+   * @param userId - User identifier
+   * @param agentId - Agent identifier
+   * @returns Consolidation results including consolidated count and new memories
+   * @throws {Error} If memory consolidation is not enabled in configuration
+   */
+  async consolidateMemories(
+    userId: string,
+    agentId: string
+  ): Promise<ConsolidationResult[]> {
+    // Validate input parameters using Zod
+    validateAndThrow(UserAgentParamsSchema, { userId, agentId });
+    if (!this.consolidator) {
+      throw new Error('Memory consolidation not enabled');
+    }
+
+    // Use the actual consolidateMemories method with proper configuration
+    const results = await this.consolidator.consolidateMemories(
+      userId,
+      agentId,
+      {
+        strategies: ['merge', 'synthesize'],
+        maxAge: this.config.consolidation?.minEpisodicAge || 300000, // 5 minutes default
+        similarityThreshold:
+          this.config.consolidation?.similarityThreshold || 0.85,
+        batchSize: this.config.consolidation?.batchSize || 100
+      }
+    );
+
+    return results;
+  }
+
+  /**
+   * Schedules automatic memory consolidation
+   *
+   * Consolidation runs after a delay to batch operations and avoid
+   * excessive processing during high-frequency memory storage.
+   *
+   * @param userId - User identifier
+   * @param agentId - Agent identifier
+   * @private
+   */
+  private scheduleConsolidation(userId: string, agentId: string): void {
+    const key = `${userId}:${agentId}`;
+
+    if (!this.consolidationScheduled.has(key)) {
+      this.consolidationScheduled.set(key, true);
+
+      const timerId = setTimeout(async () => {
+        try {
+          await this.consolidateMemories(userId, agentId);
+          logger.info(
+            LogCategory.STORAGE,
+            'MemoryManager',
+            'Memory consolidation completed',
+            { userId, agentId }
+          );
+        } catch (error) {
+          logger.error(
+            LogCategory.STORAGE,
+            'MemoryManager',
+            'Memory consolidation failed',
+            { error: error instanceof Error ? error.message : 'Unknown error' }
+          );
+        } finally {
+          this.consolidationScheduled.delete(key);
+          this.consolidationTimers.delete(key);
+        }
+      }, 300000); // 5 minutes delay
+
+      this.consolidationTimers.set(key, timerId);
     }
   }
 }

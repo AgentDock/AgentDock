@@ -9,6 +9,7 @@
  */
 
 import { PRIMEOrchestratorConfig } from '../../memory/extraction/PRIMEOrchestrator';
+// FIVE_CORE_CONNECTION_TYPES are now built into the LLM classification system
 import { IntelligenceLayerConfig } from '../../memory/intelligence/types';
 import { LifecycleConfig } from '../../memory/lifecycle/types';
 import { MemoryManagerConfig } from '../../memory/types';
@@ -51,20 +52,29 @@ export const localVectorStorageConfig: StorageProviderOptions = {
 /**
  * Intelligence configuration for local development
  *
- * @note Uses embedding-only for local dev (no external API calls)
+ * @note Uses smart triage with auto-classification only (no LLM calls for local dev)
  */
 export const localIntelligenceConfig: IntelligenceLayerConfig = {
   embedding: {
     enabled: true,
-    similarityThreshold: 0.7,
+    similarityThreshold: 0.3, // Base threshold for candidate discovery
     model: 'text-embedding-3-small'
   },
   connectionDetection: {
-    method: 'embedding-only',
-    userRules: {
-      enabled: true,
-      patterns: []
-    }
+    enabled: true, // Simple on/off toggle for AgentDock Pro
+
+    // Smart triage thresholds (local dev uses only auto-classification - no LLM)
+    thresholds: {
+      autoSimilar: 0.8, // 40% auto-classified as "similar" (FREE)
+      autoRelated: 0.6, // 25% auto-classified as "related" (FREE)
+      llmRequired: 1.0 // Set to 1.0 to disable LLM calls for local dev
+    },
+
+    // Processing configuration
+    maxCandidates: 20, // Limit candidates to top-20 for efficiency
+    batchSize: 10, // Batch size for processing
+    temperature: 0.2, // LLM temperature (not used in local)
+    maxTokens: 500 // Max tokens (not used in local)
   },
   costControl: {
     maxLLMCallsPerBatch: 0, // No LLM calls for local
@@ -123,15 +133,12 @@ export const localPRIMEConfig: PRIMEOrchestratorConfig = {
     provider: process.env.PRIME_PROVIDER || 'anthropic',
     apiKey: process.env.PRIME_API_KEY || '',
     maxTokens: 4000,
-    defaultTier: 'fast',
-    autoTierSelection: false,
+    defaultTier: 'standard',
+    autoTierSelection: true,
+    standardModel: 'claude-3-haiku-20240307',
+    advancedModel: 'claude-3-sonnet-20240229',
     temperature: 0.3,
-    defaultImportanceThreshold: 0.7,
-    modelTiers: {
-      fast: 'claude-3-haiku-20240307',
-      balanced: 'claude-3-sonnet-20240229',
-      accurate: 'claude-3-opus-20240229'
-    }
+    defaultImportanceThreshold: 0.7
   },
   batchSize: 10,
   maxRetries: 2,

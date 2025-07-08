@@ -395,7 +395,7 @@ describe('SemanticMemory - Actual Implementation', () => {
 
       expect(retrieved).not.toBeNull();
       expect(retrieved?.category).toBe('general'); // Default
-      expect(retrieved?.confidence).toBe(0.8); // Default
+      expect(retrieved?.confidence).toBe(0.5); // Default from SEMANTIC_MEMORY_DEFAULTS
       expect(retrieved?.facts).toEqual([]); // Default
       expect(retrieved?.relations).toEqual([]); // Default
       expect(retrieved?.sourceIds).toEqual([]); // Default
@@ -428,7 +428,7 @@ describe('SemanticMemory - Actual Implementation', () => {
       expect(stats).toMatchObject({
         totalMemories: expect.any(Number),
         memoriesByCategory: expect.any(Object),
-        avgConfidence: 0.8, // Expected default
+        avgConfidence: 0.5, // Expected default from SEMANTIC_MEMORY_DEFAULTS
         avgImportance: expect.any(Number),
         totalFacts: 0, // Not implemented yet
         totalRelations: 0, // Not implemented yet

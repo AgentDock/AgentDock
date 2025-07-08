@@ -2,8 +2,9 @@
 
 **Author**: AgentDock Team  
 **Date**: July 2025  
-**Status**: Implementation Ready  
-**Purpose**: Implement intelligent tool workflow learning and execution
+**Status**: Post-Launch Enhancement  
+**Purpose**: Enhance existing procedural memory with multi-step workflow execution capabilities  
+**Timeline**: After core AgentDock platform priorities complete
 
 ---
 
@@ -20,10 +21,10 @@ Unify and enhance AgentDock's existing workflow learning capabilities by creatin
 - No unified interface for both auto-learned and user-submitted workflow automation
 
 **Technical Challenge**:
-- Two separate procedural systems exist with different purposes and naming confusion:
-  - `ProceduralMemory` (memory type) - stores simple trigger→action patterns  
-  - `ProceduralMemoryManager` (service) - learns tool sequence patterns
-- Must be unified into a single, coherent workflow learning and execution system
+- Need unified workflow learning and execution system for multi-step tool automation
+- Complex workflows (15+ steps) require deterministic replay capabilities  
+- User-submitted workflows need validation and execution framework
+- Performance optimization required for large-scale pattern recognition
 
 ## Solution Architecture
 
@@ -41,7 +42,7 @@ Building on AgentDock's existing procedural learning foundation, the system prov
 ```
 /agentdock-core/src/orchestration/workflow-learning/
 ├── WorkflowLearningService.ts     # Core learning and execution service
-├── WorkflowLearningTypes.ts       # Workflow data structures
+├── types.ts                       # Workflow data structures and interfaces
 ├── index.ts                       # Service exports
 └── __tests__/
     └── WorkflowLearningService.test.ts
@@ -51,9 +52,9 @@ Building on AgentDock's existing procedural learning foundation, the system prov
 
 ```typescript
 // Clean separation of concerns
-WorkflowLearningService  // Service that learns workflows
+WorkflowLearningService  // Service that learns and executes workflows
     ↓ stores patterns in
-ProceduralMemory        // Memory type that stores patterns
+ProceduralMemory        // Memory type that stores trigger→action patterns
     ↓ uses
 Storage Layer           // Existing storage with user isolation
 ```
@@ -162,13 +163,13 @@ export class LLMOrchestrationService {
     // Existing tool tracking logic...
     
     // Add workflow learning
-    if (this.config.workflowLearning?.enabled && toolNamesFound) {
+    if (this.config.workflowLearning?.enabled && this.shouldLearnWorkflow(event)) {
       const executionData = {
         userId: this.sessionContext.userId,
         agentId: this.sessionContext.agentId,
-        toolSequence: this.getSessionTools(),
-        success: this.evaluateSuccess(event),
-        context: this.getExecutionContext()
+        toolSequence: this.getSessionToolSequence(),
+        success: this.evaluateExecutionSuccess(event),
+        context: this.extractWorkflowContext()
       };
       
       // Learn workflow patterns (async, non-blocking)
@@ -177,13 +178,32 @@ export class LLMOrchestrationService {
       });
     }
   }
+
+  private shouldLearnWorkflow(event: StepFinishEvent): boolean {
+    const toolSequence = this.getSessionToolSequence();
+    return (
+      toolSequence.length >= this.config.workflowLearning.minStepsToLearn && // Default: 3
+      this.allToolsSuccessful(toolSequence) &&
+      this.isWithinLearningWindow(toolSequence) // Within 5-minute execution window
+    );
+  }
+
+  private evaluateExecutionSuccess(event: StepFinishEvent): boolean {
+    // All tools succeeded AND no exceptions thrown AND task completed
+    return event.success && !this.hasSessionErrors() && this.taskCompleted();
+  }
+
+  private extractWorkflowContext(): string {
+    // Combine session context + tool parameters for pattern matching
+    return `${this.sessionContext.taskDescription} | ${this.getToolParameterSummary()}`;
+  }
 }
 ```
 
 ### Data Structures (Clean Naming)
 
 ```typescript
-// /orchestration/workflow-learning/WorkflowLearningTypes.ts
+// /orchestration/workflow-learning/types.ts
 
 interface ToolWorkflow {
   id: string;
@@ -228,12 +248,15 @@ interface ToolExecutionData {
 }
 
 interface WorkflowLearningConfig {
-  enabled: boolean;
-  minStepsToLearn: number;        // Default: 3
-  minSuccessRate: number;         // Default: 0.6
-  confidenceThreshold: number;    // Default: 0.8
-  maxWorkflowsPerAgent: number;   // Default: 1000
-  learningTimeout: number;        // Default: 100ms
+  enabled: boolean;               // Feature flag for workflow learning
+  minStepsToLearn: number;        // Minimum tools to form pattern (Default: 3)
+  minSuccessRate: number;         // Minimum success rate for suggestions (Default: 0.6)
+  confidenceThreshold: number;    // Minimum confidence for auto-suggestions (Default: 0.8)
+  maxWorkflowsPerAgent: number;   // Storage limit per agent (Default: 1000)
+  learningTimeout: number;        // Max learning processing time (Default: 100ms)
+  learningWindow: number;         // Max time between tools to group as workflow (Default: 300000ms / 5min)
+  autoExecute: boolean;           // Enable automatic workflow execution (Default: false)
+  suggestionMode: 'manual' | 'automatic' | 'hybrid'; // How to present suggestions (Default: 'manual')
 }
 ```
 
@@ -293,26 +316,72 @@ export async function GET(request: Request) {
 }
 ```
 
+## Integration Specifications
+
+### Learning Trigger Conditions
+
+The system learns workflows when ALL conditions are met:
+
+1. **Minimum Tool Sequence**: 3+ consecutive successful tool calls
+2. **Success Criteria**: All tools return success=true with no exceptions thrown
+3. **Execution Window**: Tools executed within 5-minute window (configurable)
+4. **Task Completion**: Session indicates successful task completion
+5. **Feature Enabled**: `workflowLearning.enabled = true` in configuration
+
+### Context Extraction Strategy
+
+Workflow context combines multiple sources for pattern matching:
+
+```typescript
+WorkflowContext = {
+  taskDescription: session.context.taskDescription,
+  toolParameters: extractedParameterPatterns,
+  executionEnvironment: session.metadata.environment,
+  userIntent: inferredFromToolSequence,
+  successIndicators: taskCompletionSignals
+}
+```
+
+### Suggestion Integration Points
+
+Workflows are suggested at specific decision points:
+
+1. **Pre-Planning**: Before agent begins tool sequence planning
+2. **Pattern Recognition**: When current context matches learned patterns
+3. **User Request**: When user asks for workflow recommendations
+4. **Error Recovery**: When similar workflows succeeded in error scenarios
+
+### Production Safety Controls
+
+- **Manual Approval**: All suggestions require explicit user confirmation
+- **Confidence Gating**: Only suggest workflows above 80% confidence threshold
+- **Execution Isolation**: Workflow execution separate from normal agent flow
+- **Rollback Support**: Ability to interrupt and revert partial workflow execution
+
 ## Implementation Phases
 
-### Phase 1: Service Consolidation (IMMEDIATE ACTION)
-- **MOVE**: Rename `/memory/procedural/ProceduralMemoryManager.ts` → `/orchestration/workflow-learning/WorkflowLearningService.ts`
-- **UNIFY**: Integrate existing tool pattern learning with procedural memory type storage
-- **CLEAN**: Eliminate naming confusion between memory type and service
-- **UPDATE**: Fix all imports and references (minimal impact - only 2 files affected)
+### Phase 1: Foundation Implementation (COMPLETED)
+- **✅ IMPLEMENTED**: Created `/orchestration/workflow-learning/WorkflowLearningService.ts` for tool pattern learning
+- **✅ UNIFIED**: Integrated tool pattern learning with procedural memory type storage
+- **✅ CLEAN**: Clear separation between memory type and workflow learning service  
+- **✅ STRUCTURED**: Proper module organization with clean imports and exports
+- **✅ READY**: Foundation prepared for workflow execution engine development
 
-### Phase 2: Learning Integration (MOSTLY COMPLETE)
-- **EXISTING**: WorkflowLearningService already tracks tool execution patterns
-- **EXISTING**: Automatic pattern detection from successful tool sequences  
-- **EXISTING**: Workflow storage using procedural memory operations
-- **EXISTING**: Workflow matching and suggestion algorithms
-- **NEEDED**: Connect to LLMOrchestrationService for real-time integration
+### Phase 2: Learning Integration (IMPLEMENTATION NEEDED)
+- **✅ READY**: WorkflowLearningService with pattern learning capabilities
+- **🔧 IMPLEMENT**: Integration with LLMOrchestrationService.handleStepFinish()
+- **🔧 IMPLEMENT**: Tool sequence capture and success evaluation logic
+- **🔧 IMPLEMENT**: Learning trigger conditions and workflow context extraction
+- **🔧 IMPLEMENT**: Configuration system with feature flags and thresholds
+- **🔧 IMPLEMENT**: Async learning pipeline with error handling
 
 ### Phase 3: Execution Engine (PRIMARY DEVELOPMENT)
-- **NEW**: Build deterministic workflow execution with error handling
-- **NEW**: Implement user workflow submission API endpoints  
-- **NEW**: Add partial execution and recovery mechanisms
-- **NEW**: Create workflow performance tracking and metrics
+- **🔧 IMPLEMENT**: Deterministic workflow replay with step-by-step execution
+- **🔧 IMPLEMENT**: User workflow submission API endpoints with validation
+- **🔧 IMPLEMENT**: Workflow suggestion system integrated with agent planning
+- **🔧 IMPLEMENT**: Partial execution recovery and error handling mechanisms
+- **🔧 IMPLEMENT**: Workflow performance tracking and success metrics
+- **🔧 IMPLEMENT**: Manual approval system for workflow suggestions
 
 ### Phase 4: Production Enhancement
 - **EXISTING**: Performance optimized using memory system capabilities

@@ -1,5 +1,5 @@
 /**
- * @fileoverview ProceduralMemoryManager - Learn and suggest tool patterns
+ * @fileoverview WorkflowLearningService - Learn and suggest tool patterns
  *
  * Learns from successful tool usage patterns and provides intelligent suggestions
  * for tool sequences. Key differentiator for AgentDock.
@@ -22,7 +22,7 @@ import {
 } from './types';
 
 /**
- * Manages procedural memory for tool pattern learning and suggestions.
+ * Manages workflow learning for tool pattern recognition and suggestions.
  *
  * Key features:
  * - Learns from successful tool execution patterns
@@ -30,7 +30,7 @@ import {
  * - Uses configurable learning thresholds
  * - Pattern merging and optimization
  */
-export class ProceduralMemoryManager {
+export class WorkflowLearningService {
   private readonly storage: StorageProvider;
   private readonly config: ProceduralConfig;
   private readonly llm: any;
@@ -52,7 +52,7 @@ export class ProceduralMemoryManager {
 
     logger.debug(
       LogCategory.STORAGE,
-      'ProceduralMemoryManager',
+      'WorkflowLearningService',
       'Initialized',
       {
         minSuccessRate: config.minSuccessRate
@@ -107,7 +107,7 @@ export class ProceduralMemoryManager {
     } catch (error) {
       logger.error(
         LogCategory.STORAGE,
-        'ProceduralMemoryManager',
+        'WorkflowLearningService',
         'Record execution failed',
         {
           agentId,
@@ -141,7 +141,7 @@ export class ProceduralMemoryManager {
     } catch (error) {
       logger.error(
         LogCategory.STORAGE,
-        'ProceduralMemoryManager',
+        'WorkflowLearningService',
         'Suggestion failed',
         {
           agentId,

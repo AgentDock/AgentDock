@@ -55,7 +55,7 @@ export interface MemoryEvolution {
   source?: string;
 
   /** Additional context about the change */
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 /**

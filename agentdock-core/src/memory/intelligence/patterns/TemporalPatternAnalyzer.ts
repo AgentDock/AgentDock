@@ -45,7 +45,7 @@ interface CostTracker {
       cost: number;
       memoriesExtracted: number;
       messagesProcessed: number;
-      metadata: Record<string, any>;
+      metadata: Record<string, unknown>;
     }
   ): Promise<void>;
 

@@ -15,7 +15,7 @@ export interface ToolCall {
   tool: string;
 
   /** Parameters passed to the tool */
-  params: Record<string, any>;
+  params: Record<string, unknown>;
 
   /** How long the tool took to execute (in milliseconds) */
   duration: number;
@@ -103,7 +103,7 @@ export interface ProceduralMemory {
   keywords: string[];
 
   /** Additional metadata */
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 /**
@@ -166,7 +166,7 @@ export interface SuggestionContext {
   context?: string;
 
   /** User preferences */
-  preferences?: Record<string, any>;
+  preferences?: Record<string, unknown>;
 
   /** Time constraints */
   timeConstraints?: {

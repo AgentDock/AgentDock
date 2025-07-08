@@ -40,7 +40,7 @@ export interface CostRecord {
   timestamp: Date;
 
   /** Additional metadata about the extraction */
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 /**

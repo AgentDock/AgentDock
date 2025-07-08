@@ -7,10 +7,10 @@
  * @author AgentDock Core Team
  */
 
-// Core lifecycle components
+// TEMP: Core lifecycle components - Removed for lazy decay implementation
 export { MemoryEvolutionTracker } from './MemoryEvolutionTracker';
-export { MemoryLifecycleManager } from './MemoryLifecycleManager';
-export { LifecycleScheduler } from './LifecycleScheduler';
+// export { MemoryLifecycleManager } from './MemoryLifecycleManager';
+// export { LifecycleScheduler } from './LifecycleScheduler';
 
 // Type definitions
 export type {
@@ -25,5 +25,5 @@ export type {
   LifecycleInsights
 } from './types';
 
-// Scheduler configuration
-export type { ScheduleConfig } from './LifecycleScheduler';
+// TEMP: Scheduler configuration - Removed for lazy decay implementation
+// export type { ScheduleConfig } from './LifecycleScheduler';

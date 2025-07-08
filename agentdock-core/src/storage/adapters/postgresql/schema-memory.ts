@@ -87,6 +87,12 @@ export async function initializeMemorySchema(
         resonance REAL NOT NULL DEFAULT 1.0 CHECK (resonance >= 0),
         access_count INTEGER NOT NULL DEFAULT 0,
         
+        -- LAZY DECAY SYSTEM FIELDS
+        never_decay BOOLEAN NOT NULL DEFAULT FALSE,
+        custom_half_life INTEGER CHECK (custom_half_life > 0),
+        reinforceable BOOLEAN NOT NULL DEFAULT TRUE,
+        status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'archived')),
+        
         -- Timestamps with timezone
         created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -434,6 +440,72 @@ export async function getMemoryStats(
       avgResonance: totalMemories > 0 ? totalResonance / totalMemories : 0,
       totalConnections: parseInt(connectionsResult.rows[0]?.total || '0')
     };
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * LAZY DECAY MIGRATION - Add lazy decay fields to existing memories table
+ */
+export async function migrateToLazyDecay(
+  pool: Pool,
+  schema: string = 'public'
+): Promise<void> {
+  logger.debug(
+    LogCategory.STORAGE,
+    'MemorySchema',
+    'Starting lazy decay migration',
+    { schema }
+  );
+
+  const client = await pool.connect();
+  try {
+    // Check if migration is needed by checking for never_decay column
+    const columnCheck = await client.query(`
+      SELECT column_name 
+      FROM information_schema.columns 
+      WHERE table_schema = $1 AND table_name = 'memories' AND column_name = 'never_decay'
+    `, [schema]);
+
+    if (columnCheck.rows.length > 0) {
+      logger.debug(
+        LogCategory.STORAGE,
+        'MemorySchema',
+        'Lazy decay migration already applied'
+      );
+      return;
+    }
+
+    // Add lazy decay columns
+    await client.query(`
+      ALTER TABLE ${schema}.memories 
+      ADD COLUMN never_decay BOOLEAN NOT NULL DEFAULT FALSE,
+      ADD COLUMN custom_half_life INTEGER CHECK (custom_half_life > 0),
+      ADD COLUMN reinforceable BOOLEAN NOT NULL DEFAULT TRUE,
+      ADD COLUMN status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'archived'))
+    `);
+
+    // Add index for lazy decay queries
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_memories_lazy_decay 
+        ON ${schema}.memories(agent_id, status, never_decay, custom_half_life)
+        WHERE status = 'active'
+    `);
+
+    logger.debug(
+      LogCategory.STORAGE,
+      'MemorySchema',
+      'Lazy decay migration completed successfully'
+    );
+  } catch (error) {
+    logger.error(
+      LogCategory.STORAGE,
+      'MemorySchema',
+      'Lazy decay migration failed',
+      { error: error instanceof Error ? error.message : String(error) }
+    );
+    throw error;
   } finally {
     client.release();
   }

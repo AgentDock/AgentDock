@@ -88,6 +88,11 @@ export interface PRIMERule {
   importance: number;
   threshold?: number;
   isActive?: boolean;
+
+  // LAZY DECAY PREVENTION FIELDS
+  neverDecay?: boolean; // Memories extracted by this rule never decay
+  customHalfLife?: number; // Custom decay rate in days for this rule
+  reinforceable?: boolean; // Memories from this rule can be strengthened
 }
 
 export interface PRIMEExtractionContext {
@@ -291,6 +296,11 @@ JSON: [{content, type, importance, reasoning}]`;
             ? context.message.timestamp.getTime()
             : context.message?.timestamp || Date.now();
 
+        // Find matching rule for decay settings
+        const matchingRule = context.userRules.find(
+          rule => rule.type === memory.type && rule.isActive !== false
+        );
+
         return {
           id: this.generateMemoryId(),
           userId: context.userId,
@@ -306,6 +316,12 @@ JSON: [{content, type, importance, reasoning}]`;
           updatedAt: Date.now(),
           lastAccessedAt: messageTime,
 
+          // LAZY DECAY FIELDS from matching rule
+          neverDecay: matchingRule?.neverDecay,
+          customHalfLife: matchingRule?.customHalfLife,
+          reinforceable: matchingRule?.reinforceable,
+          status: 'active',
+
           // Optional metadata
           metadata: {
             extractionMethod: 'prime',
@@ -313,7 +329,8 @@ JSON: [{content, type, importance, reasoning}]`;
             tier: tier,
             tokenCount: this.estimateTokens(prompt),
             originalMessageTime: messageTime,
-            extractionTime: Date.now()
+            extractionTime: Date.now(),
+            ruleId: matchingRule?.id
           }
         };
       });

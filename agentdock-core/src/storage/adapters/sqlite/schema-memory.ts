@@ -34,6 +34,12 @@ export async function initializeMemorySchema(db: Database): Promise<void> {
         resonance REAL NOT NULL DEFAULT 1.0 CHECK (resonance >= 0),
         access_count INTEGER NOT NULL DEFAULT 0,
         
+        -- LAZY DECAY SYSTEM FIELDS
+        never_decay INTEGER NOT NULL DEFAULT 0 CHECK (never_decay IN (0, 1)),
+        custom_half_life INTEGER CHECK (custom_half_life > 0),
+        reinforceable INTEGER NOT NULL DEFAULT 1 CHECK (reinforceable IN (0, 1)),
+        status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'archived')),
+        
         -- Integer timestamps for performance
         created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
         updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
@@ -364,5 +370,74 @@ export function optimizeMemoryDatabase(db: Database): void {
         error: error instanceof Error ? error.message : String(error)
       }
     );
+  }
+}
+
+/**
+ * LAZY DECAY MIGRATION - Add lazy decay fields to existing memories table
+ */
+export function migrateToLazyDecay(db: Database): void {
+  logger.debug(
+    LogCategory.STORAGE,
+    'SQLiteMemorySchema',
+    'Starting lazy decay migration'
+  );
+
+  try {
+    // Check if migration is needed by checking for never_decay column
+    const columnCheck = db.prepare(`
+      SELECT name FROM pragma_table_info('memories') WHERE name = 'never_decay'
+    `).get();
+
+    if (columnCheck) {
+      logger.debug(
+        LogCategory.STORAGE,
+        'SQLiteMemorySchema',
+        'Lazy decay migration already applied'
+      );
+      return;
+    }
+
+    // Add lazy decay columns
+    db.exec(`
+      ALTER TABLE memories 
+      ADD COLUMN never_decay INTEGER NOT NULL DEFAULT 0 CHECK (never_decay IN (0, 1))
+    `);
+
+    db.exec(`
+      ALTER TABLE memories 
+      ADD COLUMN custom_half_life INTEGER CHECK (custom_half_life > 0)
+    `);
+
+    db.exec(`
+      ALTER TABLE memories 
+      ADD COLUMN reinforceable INTEGER NOT NULL DEFAULT 1 CHECK (reinforceable IN (0, 1))
+    `);
+
+    db.exec(`
+      ALTER TABLE memories 
+      ADD COLUMN status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'archived'))
+    `);
+
+    // Add index for lazy decay queries
+    db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_memories_lazy_decay 
+        ON memories(agent_id, status, never_decay, custom_half_life)
+        WHERE status = 'active'
+    `);
+
+    logger.debug(
+      LogCategory.STORAGE,
+      'SQLiteMemorySchema',
+      'Lazy decay migration completed successfully'
+    );
+  } catch (error) {
+    logger.error(
+      LogCategory.STORAGE,
+      'SQLiteMemorySchema',
+      'Lazy decay migration failed',
+      { error: error instanceof Error ? error.message : String(error) }
+    );
+    throw error;
   }
 }

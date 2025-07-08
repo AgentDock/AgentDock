@@ -9,6 +9,7 @@
 
 import { z } from 'zod';
 
+import { ErrorCode, wrapError } from '../../../errors';
 import { CoreLLM } from '../../../llm/core-llm';
 import { createLLM } from '../../../llm/create-llm';
 import { LLMProvider } from '../../../llm/types';
@@ -33,8 +34,6 @@ const TemporalAnalysisSchema = z.object({
   insights: z.string().optional()
 });
 
-type TemporalAnalysis = z.infer<typeof TemporalAnalysisSchema>;
-
 /**
  * Cost tracker interface - following batch processing pattern
  */
@@ -54,6 +53,56 @@ interface CostTracker {
 }
 
 /**
+ * Storage interface for temporal pattern analysis
+ * Defines the expected structure and methods for storage operations
+ */
+interface TemporalPatternStorage {
+  /**
+   * Query memories within a specific time range for an agent
+   */
+  getMemoriesInTimeRange(
+    agentId: string,
+    timeRange?: { start: Date; end: Date }
+  ): Promise<Memory[]>;
+
+  /**
+   * Get memories by their IDs
+   */
+  getMemoriesByIds(memoryIds: string[]): Promise<Memory[]>;
+
+  /**
+   * Query memories with additional filters
+   */
+  queryMemories(
+    agentId: string,
+    filters: {
+      startTime?: Date;
+      endTime?: Date;
+      limit?: number;
+      offset?: number;
+    }
+  ): Promise<Memory[]>;
+}
+
+/**
+ * Storage adapter interface for temporal pattern analysis
+ * This allows us to work with both StorageProvider and specialized storage interfaces
+ */
+type TemporalStorageAdapter =
+  | TemporalPatternStorage
+  | {
+      memory?: {
+        recall?: (
+          userId: string,
+          agentId: string,
+          query: string,
+          options?: any
+        ) => Promise<Memory[]>;
+        getById?: (userId: string, memoryId: string) => Promise<Memory | null>;
+      };
+    };
+
+/**
  * Language-agnostic temporal pattern analyzer using progressive enhancement
  */
 export class TemporalPatternAnalyzer {
@@ -61,7 +110,7 @@ export class TemporalPatternAnalyzer {
   private costTracker: CostTracker;
 
   constructor(
-    private storage: any,
+    private storage: TemporalStorageAdapter,
     private config: IntelligenceLayerConfig,
     costTracker?: CostTracker
   ) {
@@ -99,7 +148,24 @@ export class TemporalPatternAnalyzer {
   }
 
   /**
-   * Analyze temporal patterns for an agent using progressive enhancement
+   * Analyze temporal patterns for an agent using progressive enhancement.
+   *
+   * This method performs a comprehensive analysis of memory access patterns over time,
+   * using both statistical analysis and optional LLM enhancement for deeper insights.
+   *
+   * @param agentId - The unique identifier of the agent to analyze
+   * @param timeRange - Optional time range to limit the analysis period
+   * @param timeRange.start - Start date for the analysis period
+   * @param timeRange.end - End date for the analysis period
+   * @returns Promise resolving to an array of detected temporal patterns, sorted by confidence
+   *
+   * @example
+   * ```typescript
+   * const patterns = await analyzer.analyzePatterns('agent-123', {
+   *   start: new Date('2024-01-01'),
+   *   end: new Date('2024-01-31')
+   * });
+   * ```
    */
   async analyzePatterns(
     agentId: string,
@@ -163,13 +229,22 @@ export class TemporalPatternAnalyzer {
 
       return uniquePatterns;
     } catch (error) {
+      const agentError = wrapError(
+        'storage',
+        'Temporal pattern analysis failed',
+        error,
+        ErrorCode.STORAGE_READ,
+        { agentId: agentId.substring(0, 8) }
+      );
+
       logger.error(
         LogCategory.STORAGE,
         'TemporalPatternAnalyzer',
-        'Error analyzing temporal patterns',
+        agentError.message,
         {
           agentId: agentId.substring(0, 8),
-          error: error instanceof Error ? error.message : String(error)
+          errorCode: agentError.code,
+          details: agentError.details
         }
       );
       return [];
@@ -177,7 +252,28 @@ export class TemporalPatternAnalyzer {
   }
 
   /**
-   * Detect activity clusters (periods of high memory activity)
+   * Detect activity clusters representing periods of high memory activity.
+   *
+   * This method identifies time periods where memory creation activity is significantly
+   * higher than normal, which can indicate important events or focused work sessions.
+   *
+   * @param agentId - The unique identifier of the agent to analyze
+   * @param timeRange - Optional time range to limit the cluster detection period
+   * @param timeRange.start - Start date for the analysis period
+   * @param timeRange.end - End date for the analysis period
+   * @returns Promise resolving to an array of activity clusters, sorted by intensity (highest first)
+   *
+   * @example
+   * ```typescript
+   * const clusters = await analyzer.detectActivityClusters('agent-123', {
+   *   start: new Date('2024-01-01'),
+   *   end: new Date('2024-01-31')
+   * });
+   *
+   * clusters.forEach(cluster => {
+   *   console.log(`Cluster: ${cluster.memoryIds.length} memories, intensity: ${cluster.intensity}`);
+   * });
+   * ```
    */
   async detectActivityClusters(
     agentId: string,
@@ -222,13 +318,22 @@ export class TemporalPatternAnalyzer {
 
       return clusters.sort((a, b) => b.intensity - a.intensity);
     } catch (error) {
+      const agentError = wrapError(
+        'storage',
+        'Activity cluster detection failed',
+        error,
+        ErrorCode.STORAGE_READ,
+        { agentId: agentId.substring(0, 8) }
+      );
+
       logger.error(
         LogCategory.STORAGE,
         'TemporalPatternAnalyzer',
-        'Error detecting activity clusters',
+        agentError.message,
         {
           agentId: agentId.substring(0, 8),
-          error: error instanceof Error ? error.message : String(error)
+          errorCode: agentError.code,
+          details: agentError.details
         }
       );
       return [];
@@ -536,8 +641,31 @@ Focus on statistically significant patterns with confidence scores.`
     agentId: string,
     timeRange?: { start: Date; end: Date }
   ): Promise<Memory[]> {
-    // This would query storage for memories in time range
-    // For now, return empty array
+    // Check if storage has the specialized interface
+    if ('getMemoriesInTimeRange' in this.storage) {
+      return await this.storage.getMemoriesInTimeRange(agentId, timeRange);
+    }
+
+    // Fallback to generic storage interface
+    if (this.storage.memory?.recall) {
+      // Use recall with time-based query as fallback
+      const timeQuery = timeRange
+        ? `memories from ${timeRange.start.toISOString()} to ${timeRange.end.toISOString()}`
+        : 'all memories';
+
+      return await this.storage.memory.recall('system', agentId, timeQuery, {
+        limit: 1000, // Large limit for analysis
+        timeRange
+      });
+    }
+
+    // If no compatible interface, return empty array
+    logger.warn(
+      LogCategory.STORAGE,
+      'TemporalPatternAnalyzer',
+      'Storage does not support time-range queries',
+      { agentId: agentId.substring(0, 8) }
+    );
     return [];
   }
 

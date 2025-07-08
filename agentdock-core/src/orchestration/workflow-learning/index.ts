@@ -1,9 +1,9 @@
 /**
  * @fileoverview Workflow Learning Module
- * 
+ *
  * Exports for the workflow learning system that captures tool execution patterns
  * and enables deterministic replay of complex workflows.
- * 
+ *
  * @author AgentDock Core Team
  */
 

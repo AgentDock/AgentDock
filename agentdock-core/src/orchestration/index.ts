@@ -27,6 +27,7 @@ import {
 // Export other modules
 export * from './state';
 export * from './sequencer';
+export * from './workflow-learning';
 
 /**
  * Context for tool filtering
@@ -39,11 +40,7 @@ export interface ToolContext {
 /**
  * Options for configuring the orchestration manager
  */
-export interface OrchestrationManagerOptions
-  extends OrchestrationStateManagerOptions {
-  // Removed lightweight option
-  // Cleanup options are now part of OrchestrationStateManagerOptions
-}
+export type OrchestrationManagerOptions = OrchestrationStateManagerOptions;
 
 /**
  * Simplified orchestration manager

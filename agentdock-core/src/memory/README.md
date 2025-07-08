@@ -12,7 +12,7 @@ The AgentDock Core Memory System provides a production-ready, four-layer memory 
 - **Working Memory**: Session-scoped conversation context with TTL management
 - **Episodic Memory**: Time-ordered experiences with configurable decay
 - **Semantic Memory**: Long-term knowledge with confidence scoring and consolidation
-- **Procedural Memory**: Learned behavioral patterns with reinforcement learning
+- **Procedural Memory**: Learned behavioral patterns (type implementation in memory, workflow management in orchestration)
 
 **Core Systems**
 - **PRIME Extraction**: Intelligent memory extraction with tier-based model selection
@@ -50,7 +50,7 @@ agentdock-core/src/memory/
 │   ├── working/               # WorkingMemory implementation
 │   ├── episodic/              # EpisodicMemory with decay
 │   ├── semantic/              # SemanticMemory with consolidation
-│   └── procedural/            # ProceduralMemory with learning
+│   └── procedural/            # ProceduralMemory type (storage interface)
 │
 ├── tracking/                  # Cost & Performance Tracking
 │   ├── CostTracker.ts         # Production cost monitoring
@@ -74,11 +74,6 @@ agentdock-core/src/memory/
 │   ├── LazyDecayCalculator.ts       # On-demand decay calculation
 │   └── LazyDecayBatchProcessor.ts   # Efficient update batching
 │
-├── procedural/                # Procedural Memory System
-│   ├── index.ts               # Procedural exports
-│   ├── types.ts               # Procedural type definitions
-│   └── ProceduralMemoryManager.ts   # Procedural memory management
-│
 ├── config/                    # Configuration Presets
 │   ├── recall-presets.ts      # Preset configurations
 │   └── intelligence-layer-config.ts # Intelligence layer settings
@@ -87,6 +82,11 @@ agentdock-core/src/memory/
     ├── unit/                  # Component tests
     ├── integration/           # Cross-system tests
     └── performance/           # Performance validation
+
+agentdock-core/src/orchestration/workflow-learning/
+├── index.ts                   # Workflow learning exports
+├── WorkflowLearningService.ts # Procedural pattern management
+└── types.ts                   # Workflow learning types
 ```
 
 ## Public API
@@ -309,6 +309,10 @@ interface ProceduralMemoryConfig {
     minSupport: number;    // Minimum pattern support
   };
 }
+
+// Note: Procedural memory type provides storage interface.
+// Workflow learning and pattern management handled by:
+// agentdock-core/src/orchestration/workflow-learning/WorkflowLearningService.ts
 ```
 
 ## Memory Connections
@@ -654,6 +658,49 @@ const memory = await createMemorySystem({
     auditLogging: true
   }
 });
+```
+
+## Workflow Learning Integration
+
+The **WorkflowLearningService** in the orchestration layer manages procedural pattern learning and suggestions, while the **ProceduralMemory** type in the memory layer provides the storage interface.
+
+### Workflow Learning Service
+```typescript
+import { WorkflowLearningService } from '@agentdock/core/orchestration/workflow-learning';
+
+// Initialize with storage and configuration
+const workflowLearning = new WorkflowLearningService(storage, {
+  minSuccessRate: 0.7,
+  contextSimilarityThreshold: 0.8,
+  learnFromFailures: false
+});
+
+// Record tool execution patterns
+await workflowLearning.recordToolExecution(
+  agentId,
+  toolSequence,
+  context,
+  success
+);
+
+// Get intelligent tool suggestions
+const suggestions = await workflowLearning.suggestToolSequence(
+  agentId,
+  suggestionContext
+);
+```
+
+### Integration with Memory System
+```typescript
+// Memory system provides procedural memory type for storage
+const proceduralMemory = memoryManager.getProceduralMemory();
+
+// Workflow learning service manages patterns and suggestions
+const workflowLearning = new WorkflowLearningService(storage, config);
+
+// Both work together for complete procedural intelligence
+await proceduralMemory.store(userId, agentId, patternData);
+const suggestions = await workflowLearning.suggestToolSequence(agentId, context);
 ```
 
 This system is under active development. Key areas for contribution include storage adapter optimization, memory connection algorithms, cost optimization strategies, performance benchmarking, and security enhancements.

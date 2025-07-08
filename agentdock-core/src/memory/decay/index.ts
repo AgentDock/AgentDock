@@ -1,15 +1,27 @@
 /**
- * @fileoverview Decay Module - Configurable memory decay system
+ * @fileoverview Decay Module - Lazy memory decay system
  *
- * Exports for the decay and lifecycle management system.
- * Provides user-configurable decay rules with no hardcoded business logic.
+ * Exports for the lazy decay system that calculates decay on-demand
+ * instead of using scheduled batch processes.
  *
  * @author AgentDock Core Team
  */
 
-// Core decay engine
-export { ConfigurableDecayEngine } from './ConfigurableDecayEngine';
+// LAZY DECAY SYSTEM - New implementation
+export { LazyDecayCalculator } from './LazyDecayCalculator';
+export { LazyDecayBatchProcessor } from './LazyDecayBatchProcessor';
 
-// Type definitions
+// Type definitions for lazy decay
+export type { 
+  DecayCalculationResult, 
+  LazyDecayConfig 
+} from './LazyDecayCalculator';
+
+export type { 
+  BatchProcessorConfig,
+  BatchProcessingResult 
+} from './LazyDecayBatchProcessor';
+
+// Legacy type definitions (kept for compatibility)
 export type { DecayRule, DecayConfiguration } from './types';
 export type { DecayResult } from '../base-types';

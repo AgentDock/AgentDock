@@ -1,8 +1,8 @@
 /**
  * @fileoverview PostgreSQL Vector Adapter Memory Operations Tests
- * 
+ *
  * CRITICAL TESTS for production readiness - addresses zero test coverage gap
- * 
+ *
  * Architect Approved Test Plan:
  * - Core functionality with 70% vector + 30% text hybrid search
  * - Graceful degradation when pgvector unavailable
@@ -21,16 +21,26 @@ import { PostgreSQLVectorAdapter } from '../index';
 const TEST_CONFIG = {
   // Use test database or skip if no DATABASE_URL
   connectionString: process.env.DATABASE_URL || process.env.POSTGRES_TEST_URL,
-  enableSkipWhenUnavailable: !process.env.CI, // Skip locally if no DB, fail in CI
+  enableSkipWhenUnavailable: !process.env.CI // Skip locally if no DB, fail in CI
 };
 
 // Mock embeddings for deterministic testing (1536 dimensions for text-embedding-3-small)
 const MOCK_EMBEDDINGS = {
-  darkMode: Array(1536).fill(0).map((_, i) => i % 2 === 0 ? 0.1 : -0.1),
-  lightMode: Array(1536).fill(0).map((_, i) => i % 2 === 0 ? -0.1 : 0.1),
-  authentication: Array(1536).fill(0).map((_, i) => i % 3 === 0 ? 0.2 : -0.05),
-  debugging: Array(1536).fill(0).map((_, i) => i % 4 === 0 ? 0.15 : -0.08),
-  similar: Array(1536).fill(0).map((_, i) => i % 2 === 0 ? 0.09 : -0.11), // Similar to darkMode
+  darkMode: Array(1536)
+    .fill(0)
+    .map((_, i) => (i % 2 === 0 ? 0.1 : -0.1)),
+  lightMode: Array(1536)
+    .fill(0)
+    .map((_, i) => (i % 2 === 0 ? -0.1 : 0.1)),
+  authentication: Array(1536)
+    .fill(0)
+    .map((_, i) => (i % 3 === 0 ? 0.2 : -0.05)),
+  debugging: Array(1536)
+    .fill(0)
+    .map((_, i) => (i % 4 === 0 ? 0.15 : -0.08)),
+  similar: Array(1536)
+    .fill(0)
+    .map((_, i) => (i % 2 === 0 ? 0.09 : -0.11)) // Similar to darkMode
 };
 
 // Test memory data
@@ -55,7 +65,8 @@ const TEST_MEMORIES: MemoryData[] = [
     userId: 'test_user_001',
     agentId: 'test_agent_001',
     type: MemoryType.EPISODIC,
-    content: 'Successfully debugged authentication issue by checking JWT token expiration',
+    content:
+      'Successfully debugged authentication issue by checking JWT token expiration',
     importance: 0.9,
     resonance: 0.8,
     accessCount: 3,
@@ -70,7 +81,8 @@ const TEST_MEMORIES: MemoryData[] = [
     userId: 'test_user_001',
     agentId: 'test_agent_001',
     type: MemoryType.PROCEDURAL,
-    content: 'When API returns 500 error, first check database connection timeouts',
+    content:
+      'When API returns 500 error, first check database connection timeouts',
     importance: 0.85,
     resonance: 0.75,
     accessCount: 7,
@@ -88,13 +100,20 @@ describe('PostgreSQL Vector Adapter Memory Operations', () => {
 
   beforeAll(async () => {
     // Skip tests if no database configuration available
-    if (!TEST_CONFIG.connectionString && TEST_CONFIG.enableSkipWhenUnavailable) {
-      console.warn('Skipping PostgreSQL Vector tests - no DATABASE_URL configured');
+    if (
+      !TEST_CONFIG.connectionString &&
+      TEST_CONFIG.enableSkipWhenUnavailable
+    ) {
+      console.warn(
+        'Skipping PostgreSQL Vector tests - no DATABASE_URL configured'
+      );
       return;
     }
 
     if (!TEST_CONFIG.connectionString) {
-      throw new Error('DATABASE_URL required for PostgreSQL Vector tests in CI environment');
+      throw new Error(
+        'DATABASE_URL required for PostgreSQL Vector tests in CI environment'
+      );
     }
 
     try {
@@ -102,31 +121,37 @@ describe('PostgreSQL Vector Adapter Memory Operations', () => {
         connectionString: TEST_CONFIG.connectionString,
         max: 5,
         idleTimeoutMillis: 30000,
-        connectionTimeoutMillis: 5000,
+        connectionTimeoutMillis: 5000
       });
 
       adapter = new PostgreSQLVectorAdapter({
         connectionString: TEST_CONFIG.connectionString,
         namespace: 'test_pgvector',
         enableVector: true,
-        defaultDimension: 1536,
+        defaultDimension: 1536
       });
 
       await adapter.initialize();
-      
+
       // Verify pgvector extension is available
       const client = await pool.connect();
       try {
-        await client.query('SELECT 1 FROM pg_extension WHERE extname = $1', ['vector']);
+        await client.query('SELECT 1 FROM pg_extension WHERE extname = $1', [
+          'vector'
+        ]);
       } catch (error) {
-        console.warn('pgvector extension not available - some tests will be skipped');
+        console.warn(
+          'pgvector extension not available - some tests will be skipped'
+        );
       } finally {
         client.release();
       }
-
     } catch (error) {
       if (TEST_CONFIG.enableSkipWhenUnavailable) {
-        console.warn('Skipping PostgreSQL Vector tests - database unavailable:', error);
+        console.warn(
+          'Skipping PostgreSQL Vector tests - database unavailable:',
+          error
+        );
         return;
       }
       throw error;
@@ -144,7 +169,7 @@ describe('PostgreSQL Vector Adapter Memory Operations', () => {
 
   beforeEach(async () => {
     if (!adapter) return;
-    
+
     // Clean up test data
     await adapter.clear('test_');
   });
@@ -178,10 +203,9 @@ describe('PostgreSQL Vector Adapter Memory Operations', () => {
 
       // Verify embedding was stored (if adapter supports it)
       if ('getMemoryEmbedding' in adapter.memory) {
-        const storedEmbedding = await (adapter.memory as any).getMemoryEmbedding(
-          memory.userId,
-          memoryId
-        );
+        const storedEmbedding = await (
+          adapter.memory as any
+        ).getMemoryEmbedding(memory.userId, memoryId);
         expect(storedEmbedding).toBeDefined();
         expect(storedEmbedding).toHaveLength(1536);
       }
@@ -231,7 +255,7 @@ describe('PostgreSQL Vector Adapter Memory Operations', () => {
       }
 
       // Wait a moment for indexing
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Test hybrid search for dark mode related content
       const results = await (adapter.memory as any).hybridSearch(
@@ -249,10 +273,10 @@ describe('PostgreSQL Vector Adapter Memory Operations', () => {
 
       expect(results).toBeDefined();
       expect(Array.isArray(results)).toBe(true);
-      
+
       // Should find at least the dark mode memory
       expect(results.length).toBeGreaterThan(0);
-      
+
       // First result should be the dark mode memory (most relevant)
       const topResult = results[0];
       expect(topResult.content).toContain('dark mode');
@@ -285,9 +309,11 @@ describe('PostgreSQL Vector Adapter Memory Operations', () => {
       );
 
       expect(results.length).toBeGreaterThan(0);
-      
+
       // Should find the authentication memory
-      const authMemory = results.find((m: any) => m.content.includes('authentication'));
+      const authMemory = results.find((m: any) =>
+        m.content.includes('authentication')
+      );
       expect(authMemory).toBeDefined();
     });
 
@@ -298,8 +324,10 @@ describe('PostgreSQL Vector Adapter Memory Operations', () => {
       }
 
       // Query with embedding that shouldn't match anything
-      const randomEmbedding = Array(1536).fill(0).map(() => Math.random() * 2 - 1);
-      
+      const randomEmbedding = Array(1536)
+        .fill(0)
+        .map(() => Math.random() * 2 - 1);
+
       const results = await (adapter.memory as any).hybridSearch(
         'test_user_001',
         'test_agent_001',
@@ -335,7 +363,7 @@ describe('PostgreSQL Vector Adapter Memory Operations', () => {
         'test_agent_001',
         'preferences',
         MOCK_EMBEDDINGS.darkMode,
-        { 
+        {
           limit: 10,
           filter: { type: MemoryType.SEMANTIC }
         }
@@ -358,7 +386,7 @@ describe('PostgreSQL Vector Adapter Memory Operations', () => {
       // Create adapter with invalid connection
       const invalidAdapter = new PostgreSQLVectorAdapter({
         connectionString: 'postgresql://invalid:5432/nonexistent',
-        namespace: 'test_invalid',
+        namespace: 'test_invalid'
       });
 
       // Should throw meaningful error
@@ -374,18 +402,21 @@ describe('PostgreSQL Vector Adapter Memory Operations', () => {
       // Create adapter with standard configuration (remove queryTimeoutMs)
       const timeoutAdapter = new PostgreSQLVectorAdapter({
         connectionString: TEST_CONFIG.connectionString!,
-        namespace: 'test_timeout',
+        namespace: 'test_timeout'
       });
 
       try {
         await timeoutAdapter.initialize();
-        
+
         // Test that adapter can handle normal operations
         const memory = TEST_MEMORIES[0];
         const embedding = MOCK_EMBEDDINGS.darkMode;
 
         // Store and retrieve memory (normal operation)
-        if (timeoutAdapter.memory && 'storeMemoryWithEmbedding' in timeoutAdapter.memory) {
+        if (
+          timeoutAdapter.memory &&
+          'storeMemoryWithEmbedding' in timeoutAdapter.memory
+        ) {
           await (timeoutAdapter.memory as any).storeMemoryWithEmbedding(
             memory.userId,
             memory.agentId,
@@ -394,7 +425,10 @@ describe('PostgreSQL Vector Adapter Memory Operations', () => {
           );
 
           // Verify storage was successful
-          const retrieved = await timeoutAdapter.memory.getById!(memory.userId, memory.id);
+          const retrieved = await timeoutAdapter.memory.getById!(
+            memory.userId,
+            memory.id
+          );
           expect(retrieved).toBeDefined();
         }
       } finally {
@@ -410,14 +444,14 @@ describe('PostgreSQL Vector Adapter Memory Operations', () => {
 
       // This test would require a PostgreSQL instance without pgvector
       // For now, we test the error handling code path
-      
+
       const memory = TEST_MEMORIES[0];
       const embedding = MOCK_EMBEDDINGS.darkMode;
 
       // If pgvector is not available, operations should either:
       // 1. Throw a clear error message, or
       // 2. Fall back to text-only operations
-      
+
       // We can't easily test this without a separate DB instance,
       // but we ensure the error handling exists
       expect(typeof adapter.initialize).toBe('function');
@@ -432,16 +466,18 @@ describe('PostgreSQL Vector Adapter Memory Operations', () => {
       }
 
       const memories = TEST_MEMORIES.slice(0, 2); // Test with 2 memories
-      
+
       // Store memories individually (since batchStore doesn't exist)
       const memoryIds: string[] = [];
-      
+
       for (let i = 0; i < memories.length; i++) {
         const memory = memories[i];
         const embedding = Object.values(MOCK_EMBEDDINGS)[i];
-        
+
         if ('storeMemoryWithEmbedding' in adapter.memory) {
-          const memoryId = await (adapter.memory as any).storeMemoryWithEmbedding(
+          const memoryId = await (
+            adapter.memory as any
+          ).storeMemoryWithEmbedding(
             memory.userId,
             memory.agentId,
             memory,
@@ -457,7 +493,10 @@ describe('PostgreSQL Vector Adapter Memory Operations', () => {
 
       // Verify both memories are retrievable
       for (const memoryId of memoryIds) {
-        const retrieved = await adapter.memory.getById!('test_user_001', memoryId);
+        const retrieved = await adapter.memory.getById!(
+          'test_user_001',
+          memoryId
+        );
         expect(retrieved).toBeDefined();
       }
     });
@@ -491,9 +530,12 @@ describe('PostgreSQL Vector Adapter Memory Operations', () => {
           MOCK_EMBEDDINGS.darkMode
         );
         expect(validId).toBe(validMemory.id);
-        
+
         // Clean up
-        const retrieved = await adapter.memory.getById?.(validMemory.userId, validMemory.id);
+        const retrieved = await adapter.memory.getById?.(
+          validMemory.userId,
+          validMemory.id
+        );
         expect(retrieved).toBeDefined();
       }
     });
@@ -518,7 +560,7 @@ describe('PostgreSQL Vector Adapter Memory Operations', () => {
 
       // Measure hybrid search performance
       const startTime = Date.now();
-      
+
       const results = await (adapter.memory as any).hybridSearch(
         'test_user_001',
         'test_agent_001',
@@ -526,15 +568,17 @@ describe('PostgreSQL Vector Adapter Memory Operations', () => {
         MOCK_EMBEDDINGS.authentication,
         { limit: 10 }
       );
-      
+
       const duration = Date.now() - startTime;
 
       // Record baseline (not enforcing SLA yet, just measuring)
-      console.log(`Hybrid search baseline: ${duration}ms for ${results.length} results`);
-      
+      console.log(
+        `Hybrid search baseline: ${duration}ms for ${results.length} results`
+      );
+
       // Loose assertion - should complete within reasonable time
       expect(duration).toBeLessThan(5000); // 5 seconds max for test environment
       expect(results).toBeDefined();
     });
   });
-}); 
+});

@@ -25,7 +25,7 @@ function estimateTokens(text: string): number {
 
 export class EpisodicMemory extends BaseMemoryType<EpisodicMemoryConfig> {
   protected readonly type = 'episodic';
-  
+
   constructor(
     storage: StorageProvider,
     private episodicConfig: EpisodicMemoryConfig,

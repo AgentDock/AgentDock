@@ -1557,9 +1557,9 @@ export class MemoryManager {
 
   /**
    * Track memory access events for evolution tracking
-   * 
+   *
    * @param userId - User identifier
-   * @param agentId - Agent identifier  
+   * @param agentId - Agent identifier
    * @param memories - Array of accessed memories
    * @private
    */
@@ -1573,7 +1573,7 @@ export class MemoryManager {
     }
 
     try {
-      const accessEvents = memories.map(memory => ({
+      const accessEvents = memories.map((memory) => ({
         memoryId: memory.id,
         userId,
         agentId,

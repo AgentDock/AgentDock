@@ -138,19 +138,19 @@ export class LazyDecayCalculator {
 
       // Calculate time-based decay
       let halfLife = memory.customHalfLife ?? this.config.defaultHalfLife;
-      
+
       // Apply temporal pattern influence on decay rate
       if (memory.metadata?.temporalInsights) {
         const insights = memory.metadata.temporalInsights as any;
         if (insights.patterns && Array.isArray(insights.patterns)) {
           const patterns = insights.patterns;
-          
+
           // Memories from burst periods decay slower (up to 30% slower)
           const burstPattern = patterns.find((p: any) => p.type === 'burst');
           if (burstPattern) {
-            halfLife *= (1 + burstPattern.confidence * 0.3);
+            halfLife *= 1 + burstPattern.confidence * 0.3;
           }
-          
+
           // Memories from regular daily patterns also decay slower (up to 20% slower)
           const dailyPattern = patterns.find((p: any) => p.type === 'daily');
           if (dailyPattern && dailyPattern.confidence > 0.7) {
@@ -158,7 +158,7 @@ export class LazyDecayCalculator {
           }
         }
       }
-      
+
       const daysSinceLastAccess =
         (accessTime - memory.lastAccessedAt) / (1000 * 60 * 60 * 24);
 

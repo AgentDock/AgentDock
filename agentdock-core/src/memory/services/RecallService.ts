@@ -2,7 +2,11 @@ import { Pool } from 'pg';
 
 import { LogCategory, logger } from '../../logging';
 import { MemoryError } from '../../shared/errors/memory-errors';
-import { StorageProvider, ScoredMemoryData, MemoryOperations } from '../../storage/types';
+import {
+  MemoryOperations,
+  ScoredMemoryData,
+  StorageProvider
+} from '../../storage/types';
 import { MemoryConnectionManager } from '../intelligence/connections/MemoryConnectionManager';
 import { EmbeddingService } from '../intelligence/embeddings/EmbeddingService';
 import { IntelligenceLayerConfig } from '../intelligence/types';
@@ -183,7 +187,8 @@ export class RecallService {
     if (this.intelligenceConfig?.embedding?.enabled) {
       this.embeddingConfig = {
         provider: this.intelligenceConfig.embedding.provider || 'openai',
-        model: this.intelligenceConfig.embedding.model || 'text-embedding-3-small'
+        model:
+          this.intelligenceConfig.embedding.model || 'text-embedding-3-small'
         // Note: dimensions are determined by the model
       };
 
@@ -300,8 +305,11 @@ export class RecallService {
     }
 
     // Track memory access events
-    if (this.storage?.evolution?.trackEventBatch && limitedMemories.length > 0) {
-      const accessEvents = limitedMemories.map(memory => ({
+    if (
+      this.storage?.evolution?.trackEventBatch &&
+      limitedMemories.length > 0
+    ) {
+      const accessEvents = limitedMemories.map((memory) => ({
         memoryId: memory.id,
         userId: query.userId,
         agentId: query.agentId,
@@ -313,8 +321,8 @@ export class RecallService {
           memoryType: memory.type
         }
       }));
-      
-      this.storage.evolution.trackEventBatch(accessEvents).catch(error => {
+
+      this.storage.evolution.trackEventBatch(accessEvents).catch((error) => {
         logger.warn(
           LogCategory.STORAGE,
           'RecallService',
@@ -425,15 +433,17 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
         // Convert hybrid results to unified format
         for (const memory of hybridResults) {
           // Extract relevance score from result
-          // Note: Using any here because different storage adapters may return 
+          // Note: Using any here because different storage adapters may return
           // score under different field names (score, hybrid_score, relevance_score)
-          const relevanceScore = 
-            (memory as any).score || 
-            (memory as any).hybrid_score || 
-            (memory as any).relevance_score || 
+          const relevanceScore =
+            (memory as any).score ||
+            (memory as any).hybrid_score ||
+            (memory as any).relevance_score ||
             0.5;
 
-          results.push(this.convertToUnifiedResult(memory, type, relevanceScore, true));
+          results.push(
+            this.convertToUnifiedResult(memory, type, relevanceScore, true)
+          );
         }
 
         logger.info(
@@ -468,7 +478,9 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
               query.query
             );
             if (relevance > 0.1) {
-              results.push(this.convertToUnifiedResult(memory, type, relevance));
+              results.push(
+                this.convertToUnifiedResult(memory, type, relevance)
+              );
             }
           }
           break;
@@ -505,7 +517,9 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
               textRelevance * 0.7 + temporalRelevance * 0.3;
 
             if (combinedRelevance > 0.1) {
-              results.push(this.convertToUnifiedResult(memory, type, combinedRelevance));
+              results.push(
+                this.convertToUnifiedResult(memory, type, combinedRelevance)
+              );
             }
           }
           break;
@@ -531,7 +545,9 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
             );
 
             if (combinedRelevance > 0.1) {
-              results.push(this.convertToUnifiedResult(memory, type, combinedRelevance));
+              results.push(
+                this.convertToUnifiedResult(memory, type, combinedRelevance)
+              );
             }
           }
           break;
@@ -552,7 +568,9 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
               (matchResult.confidence + matchResult.contextMatch) / 2;
 
             if (proceduralRelevance > 0.1) {
-              results.push(this.convertToUnifiedResult(memory, type, proceduralRelevance));
+              results.push(
+                this.convertToUnifiedResult(memory, type, proceduralRelevance)
+              );
             }
           }
           break;
@@ -743,7 +761,8 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
     memories.forEach((m) => enriched.set(m.id, m));
 
     // Determine how many top memories to traverse from
-    const connectionHops = query.connectionHops || this.config.defaultConnectionHops || 1;
+    const connectionHops =
+      query.connectionHops || this.config.defaultConnectionHops || 1;
     const topMemoriesToTraverse = Math.min(memories.length, 5);
 
     // For top-ranked memories, discover connected memories
@@ -1090,7 +1109,7 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
   private hasHybridSearch(
     operations: MemoryOperations
   ): operations is MemoryOperations & {
-    hybridSearch: NonNullable<MemoryOperations['hybridSearch']>
+    hybridSearch: NonNullable<MemoryOperations['hybridSearch']>;
   } {
     return typeof operations?.hybridSearch === 'function';
   }
@@ -1101,14 +1120,14 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
   private async ensureEmbeddingService(): Promise<void> {
     if (!this.embeddingService && this.embeddingConfig) {
       const { createEmbedding } = await import('../../llm/create-embedding');
-      
+
       const provider = this.embeddingConfig.provider;
       const apiKey = process.env[`${provider.toUpperCase()}_API_KEY`];
 
       if (!apiKey) {
         throw new Error(
           `${provider} API key required for embedding operations. ` +
-          `Set ${provider.toUpperCase()}_API_KEY environment variable.`
+            `Set ${provider.toUpperCase()}_API_KEY environment variable.`
         );
       }
 
@@ -1145,27 +1164,26 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
 
     const patterns = metadata.temporalInsights.patterns;
     const currentHour = new Date().getHours();
-    
+
     // Check for daily patterns matching current hour
-    const dailyPattern = patterns.find((p: any) => 
-      p.type === 'daily' && 
-      p.peakHours?.includes(currentHour)
+    const dailyPattern = patterns.find(
+      (p: any) => p.type === 'daily' && p.peakHours?.includes(currentHour)
     );
-    
+
     if (dailyPattern) {
       // Apply boost based on pattern confidence (up to 30% boost)
-      const boost = 1.0 + (dailyPattern.confidence * 0.3);
+      const boost = 1.0 + dailyPattern.confidence * 0.3;
       return Math.min(relevance * boost, 1.0); // Cap at 1.0
     }
-    
+
     // Check for burst patterns (always relevant during active periods)
     const burstPattern = patterns.find((p: any) => p.type === 'burst');
     if (burstPattern) {
       // Apply smaller boost for burst memories (up to 15% boost)
-      const boost = 1.0 + (burstPattern.confidence * 0.15);
+      const boost = 1.0 + burstPattern.confidence * 0.15;
       return Math.min(relevance * boost, 1.0);
     }
-    
+
     return relevance;
   }
 
@@ -1179,8 +1197,11 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
     fromHybridSearch: boolean = false
   ): UnifiedMemoryResult {
     // Apply temporal boost to relevance
-    const boostedRelevance = this.applyTemporalBoost(relevance, memory.metadata);
-    
+    const boostedRelevance = this.applyTemporalBoost(
+      relevance,
+      memory.metadata
+    );
+
     return {
       id: memory.id,
       type,

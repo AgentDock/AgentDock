@@ -20,7 +20,7 @@ import { estimateTokens } from './WorkingMemoryUtils';
 
 export class WorkingMemory extends BaseMemoryType<WorkingMemoryConfig> {
   protected readonly type = 'working';
-  
+
   constructor(
     storage: StorageProvider,
     private workingConfig: WorkingMemoryConfig,

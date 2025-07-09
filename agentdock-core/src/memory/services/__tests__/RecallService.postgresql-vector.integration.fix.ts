@@ -2,7 +2,10 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-const filePath = path.join(__dirname, 'RecallService.postgresql-vector.integration.test.ts');
+const filePath = path.join(
+  __dirname,
+  'RecallService.postgresql-vector.integration.test.ts'
+);
 let content = fs.readFileSync(filePath, 'utf8');
 
 // Fix 1: Add test helper imports

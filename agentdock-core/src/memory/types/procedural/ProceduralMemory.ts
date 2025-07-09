@@ -26,7 +26,7 @@ function estimateTokens(text: string): number {
 
 export class ProceduralMemory extends BaseMemoryType<ProceduralMemoryConfig> {
   protected readonly type = 'procedural';
-  
+
   constructor(
     storage: StorageProvider,
     private proceduralConfig: ProceduralMemoryConfig,

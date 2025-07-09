@@ -1,14 +1,14 @@
 /**
  * @fileoverview RecallService + PostgreSQL Vector Integration Tests
- * 
+ *
  * CRITICAL INTEGRATION TESTS for production readiness
- * 
+ *
  * Validates our recent RecallService hybrid search implementation:
  * - hasHybridSearch() type guard functionality
  * - Embedding generation and storage flow
  * - Proper fallback when hybrid search unavailable
  * - Integration with PostgreSQL Vector adapter
- * 
+ *
  * Architect Approved Requirements:
  * - RecallService correctly identifies vector-capable adapters
  * - minRelevance parameter works with hybrid search
@@ -20,31 +20,46 @@ import { Pool } from 'pg';
 
 import { LogCategory } from '../../../logging';
 import { MemoryType } from '../../../shared/types/memory';
-import { StorageProvider } from '../../../storage/types';
 import { PostgreSQLVectorAdapter } from '../../../storage/adapters/postgresql-vector';
 import { SQLiteAdapter } from '../../../storage/adapters/sqlite';
+import { StorageProvider } from '../../../storage/types';
+import { MemoryConnectionManager } from '../../intelligence/connections/MemoryConnectionManager';
 import { IntelligenceLayerConfig } from '../../intelligence/types';
 import { CostTracker } from '../../tracking/CostTracker';
-import { MemoryConnectionManager } from '../../intelligence/connections/MemoryConnectionManager';
 import { EpisodicMemory } from '../../types/episodic/EpisodicMemory';
 import { ProceduralMemory } from '../../types/procedural/ProceduralMemory';
 import { SemanticMemory } from '../../types/semantic/SemanticMemory';
 import { WorkingMemory } from '../../types/working/WorkingMemory';
 import { RecallService } from '../RecallService';
 import { RecallConfig, RecallQuery, RecallResult } from '../RecallServiceTypes';
-import { createTestWorkingMemoryConfig, createTestEpisodicMemoryConfig, createTestSemanticMemoryConfig, createTestProceduralMemoryConfig, createTestIntelligenceLayerConfig } from './test-helpers';
+import {
+  createTestEpisodicMemoryConfig,
+  createTestIntelligenceLayerConfig,
+  createTestProceduralMemoryConfig,
+  createTestSemanticMemoryConfig,
+  createTestWorkingMemoryConfig
+} from './test-helpers';
+
 // Test configuration
 const TEST_CONFIG = {
   connectionString: process.env.DATABASE_URL || process.env.POSTGRES_TEST_URL,
-  enableSkipWhenUnavailable: !process.env.CI,
+  enableSkipWhenUnavailable: !process.env.CI
 };
 
 // Mock embeddings for testing (1536 dimensions)
 const MOCK_EMBEDDINGS = {
-  query1: Array(1536).fill(0).map((_, i) => i % 2 === 0 ? 0.1 : -0.1),
-  query2: Array(1536).fill(0).map((_, i) => i % 3 === 0 ? 0.2 : -0.05),
-  darkMode: Array(1536).fill(0).map((_, i) => i % 2 === 0 ? 0.1 : -0.1),
-  authentication: Array(1536).fill(0).map((_, i) => i % 3 === 0 ? 0.2 : -0.05),
+  query1: Array(1536)
+    .fill(0)
+    .map((_, i) => (i % 2 === 0 ? 0.1 : -0.1)),
+  query2: Array(1536)
+    .fill(0)
+    .map((_, i) => (i % 3 === 0 ? 0.2 : -0.05)),
+  darkMode: Array(1536)
+    .fill(0)
+    .map((_, i) => (i % 2 === 0 ? 0.1 : -0.1)),
+  authentication: Array(1536)
+    .fill(0)
+    .map((_, i) => (i % 3 === 0 ? 0.2 : -0.05))
 };
 
 // Test memory data
@@ -69,7 +84,8 @@ const TEST_MEMORIES = [
     userId: 'test_user_recall',
     agentId: 'test_agent_recall',
     type: MemoryType.EPISODIC,
-    content: 'Successfully implemented JWT authentication with proper token validation',
+    content:
+      'Successfully implemented JWT authentication with proper token validation',
     importance: 0.9,
     resonance: 0.8,
     accessCount: 3,
@@ -107,13 +123,20 @@ describe('RecallService + PostgreSQL Vector Integration', () => {
 
   beforeAll(async () => {
     // Skip tests if no database configuration
-    if (!TEST_CONFIG.connectionString && TEST_CONFIG.enableSkipWhenUnavailable) {
-      console.warn('Skipping RecallService integration tests - no DATABASE_URL configured');
+    if (
+      !TEST_CONFIG.connectionString &&
+      TEST_CONFIG.enableSkipWhenUnavailable
+    ) {
+      console.warn(
+        'Skipping RecallService integration tests - no DATABASE_URL configured'
+      );
       return;
     }
 
     if (!TEST_CONFIG.connectionString) {
-      throw new Error('DATABASE_URL required for RecallService integration tests in CI');
+      throw new Error(
+        'DATABASE_URL required for RecallService integration tests in CI'
+      );
     }
 
     try {
@@ -122,7 +145,7 @@ describe('RecallService + PostgreSQL Vector Integration', () => {
         connectionString: TEST_CONFIG.connectionString,
         namespace: 'test_recall_integration',
         enableVector: true,
-        defaultDimension: 1536,
+        defaultDimension: 1536
       });
 
       await pgVectorAdapter.initialize();
@@ -130,26 +153,40 @@ describe('RecallService + PostgreSQL Vector Integration', () => {
       // Initialize SQLite adapter for comparison
       sqliteAdapter = new SQLiteAdapter({
         path: ':memory:',
-        namespace: 'test_recall_sqlite',
+        namespace: 'test_recall_sqlite'
       });
 
       await sqliteAdapter.initialize();
 
       // Initialize memory types
-      workingMemory = new WorkingMemory(pgVectorAdapter, createTestWorkingMemoryConfig());
-      episodicMemory = new EpisodicMemory(pgVectorAdapter, createTestEpisodicMemoryConfig());
-      semanticMemory = new SemanticMemory(pgVectorAdapter, createTestSemanticMemoryConfig());
-      proceduralMemory = new ProceduralMemory(pgVectorAdapter, createTestProceduralMemoryConfig());
+      workingMemory = new WorkingMemory(
+        pgVectorAdapter,
+        createTestWorkingMemoryConfig()
+      );
+      episodicMemory = new EpisodicMemory(
+        pgVectorAdapter,
+        createTestEpisodicMemoryConfig()
+      );
+      semanticMemory = new SemanticMemory(
+        pgVectorAdapter,
+        createTestSemanticMemoryConfig()
+      );
+      proceduralMemory = new ProceduralMemory(
+        pgVectorAdapter,
+        createTestProceduralMemoryConfig()
+      );
 
       // Test pool for direct operations
       pool = new Pool({
         connectionString: TEST_CONFIG.connectionString,
-        max: 3,
+        max: 3
       });
-
     } catch (error) {
       if (TEST_CONFIG.enableSkipWhenUnavailable) {
-        console.warn('Skipping RecallService integration tests - database unavailable:', error);
+        console.warn(
+          'Skipping RecallService integration tests - database unavailable:',
+          error
+        );
         return;
       }
       throw error;
@@ -179,7 +216,9 @@ describe('RecallService + PostgreSQL Vector Integration', () => {
   describe('RecallService Vector-Capable Adapter Detection (MUST HAVE)', () => {
     it('should correctly identify PostgreSQL Vector as vector-capable adapter', async () => {
       if (!pgVectorAdapter) {
-        console.log('Skipping test - PostgreSQL Vector adapter not initialized');
+        console.log(
+          'Skipping test - PostgreSQL Vector adapter not initialized'
+        );
         return;
       }
 
@@ -236,12 +275,15 @@ describe('RecallService + PostgreSQL Vector Integration', () => {
 
       // Test hasHybridSearch type guard
       expect(pgVectorAdapter.memory).toBeDefined();
-      
+
       // Access the private hasHybridSearch method via reflection for testing
       const hasHybridSearchMethod = (recallService as any).hasHybridSearch;
       expect(typeof hasHybridSearchMethod).toBe('function');
-      
-      const supportsHybridSearch = hasHybridSearchMethod.call(recallService, pgVectorAdapter.memory);
+
+      const supportsHybridSearch = hasHybridSearchMethod.call(
+        recallService,
+        pgVectorAdapter.memory
+      );
       expect(supportsHybridSearch).toBe(true);
     });
 
@@ -269,10 +311,22 @@ describe('RecallService + PostgreSQL Vector Integration', () => {
       };
 
       // Create memory instances with SQLite adapter
-      const workingMemorySQLite = new WorkingMemory(sqliteAdapter, createTestWorkingMemoryConfig());
-      const episodicMemorySQLite = new EpisodicMemory(sqliteAdapter, createTestEpisodicMemoryConfig());
-      const semanticMemorySQLite = new SemanticMemory(sqliteAdapter, createTestSemanticMemoryConfig());
-      const proceduralMemorySQLite = new ProceduralMemory(sqliteAdapter, createTestProceduralMemoryConfig());
+      const workingMemorySQLite = new WorkingMemory(
+        sqliteAdapter,
+        createTestWorkingMemoryConfig()
+      );
+      const episodicMemorySQLite = new EpisodicMemory(
+        sqliteAdapter,
+        createTestEpisodicMemoryConfig()
+      );
+      const semanticMemorySQLite = new SemanticMemory(
+        sqliteAdapter,
+        createTestSemanticMemoryConfig()
+      );
+      const proceduralMemorySQLite = new ProceduralMemory(
+        sqliteAdapter,
+        createTestProceduralMemoryConfig()
+      );
 
       // Create RecallService with SQLite adapter
       const recallServiceSQLite = new RecallService(
@@ -287,9 +341,13 @@ describe('RecallService + PostgreSQL Vector Integration', () => {
 
       // Test hasHybridSearch type guard
       expect(sqliteAdapter.memory).toBeDefined();
-      
-      const hasHybridSearchMethod = (recallServiceSQLite as any).hasHybridSearch;
-      const supportsHybridSearch = hasHybridSearchMethod.call(recallServiceSQLite, sqliteAdapter.memory);
+
+      const hasHybridSearchMethod = (recallServiceSQLite as any)
+        .hasHybridSearch;
+      const supportsHybridSearch = hasHybridSearchMethod.call(
+        recallServiceSQLite,
+        sqliteAdapter.memory
+      );
       expect(supportsHybridSearch).toBe(false);
     });
   });
@@ -297,7 +355,9 @@ describe('RecallService + PostgreSQL Vector Integration', () => {
   describe('Embedding Generation and Storage Flow (MUST HAVE)', () => {
     it('should generate embeddings for queries and use hybrid search', async () => {
       if (!pgVectorAdapter || !pgVectorAdapter.memory) {
-        console.log('Skipping test - PostgreSQL Vector adapter not initialized');
+        console.log(
+          'Skipping test - PostgreSQL Vector adapter not initialized'
+        );
         return;
       }
 
@@ -357,7 +417,9 @@ describe('RecallService + PostgreSQL Vector Integration', () => {
           memory.userId,
           memory.agentId,
           memory,
-          memory.content.includes('dark mode') ? MOCK_EMBEDDINGS.darkMode : MOCK_EMBEDDINGS.authentication
+          memory.content.includes('dark mode')
+            ? MOCK_EMBEDDINGS.darkMode
+            : MOCK_EMBEDDINGS.authentication
         );
       }
 
@@ -366,7 +428,7 @@ describe('RecallService + PostgreSQL Vector Integration', () => {
       (recallService as any).embeddingService = mockEmbeddingService;
 
       // Wait for indexing
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Test recall with query that should generate embedding
       const results = await recallService.recall({
@@ -381,13 +443,17 @@ describe('RecallService + PostgreSQL Vector Integration', () => {
       expect(results.memories.length).toBeGreaterThan(0);
 
       // Should find the dark mode memory
-      const darkModeMemory = results.memories.find(m => m.content.includes('dark mode'));
+      const darkModeMemory = results.memories.find((m) =>
+        m.content.includes('dark mode')
+      );
       expect(darkModeMemory).toBeDefined();
     });
 
     it('should handle embedding generation failures gracefully', async () => {
       if (!pgVectorAdapter) {
-        console.log('Skipping test - PostgreSQL Vector adapter not initialized');
+        console.log(
+          'Skipping test - PostgreSQL Vector adapter not initialized'
+        );
         return;
       }
 
@@ -443,12 +509,18 @@ describe('RecallService + PostgreSQL Vector Integration', () => {
 
       // Store test memories without embeddings (using regular store)
       for (const memory of TEST_MEMORIES) {
-        await pgVectorAdapter.memory!.store(memory.userId, memory.agentId, memory);
+        await pgVectorAdapter.memory!.store(
+          memory.userId,
+          memory.agentId,
+          memory
+        );
       }
 
       // Mock embedding service to fail
       const failingEmbeddingService = {
-        generateEmbedding: jest.fn().mockRejectedValue(new Error('API rate limit exceeded')),
+        generateEmbedding: jest
+          .fn()
+          .mockRejectedValue(new Error('API rate limit exceeded'))
       };
       (recallService as any).embeddingService = failingEmbeddingService;
 
@@ -470,7 +542,9 @@ describe('RecallService + PostgreSQL Vector Integration', () => {
   describe('Hybrid Search with minRelevance Parameter (ARCHITECT REFINEMENT)', () => {
     it('should respect minRelevance parameter in hybrid search', async () => {
       if (!pgVectorAdapter || !pgVectorAdapter.memory) {
-        console.log('Skipping test - PostgreSQL Vector adapter not initialized');
+        console.log(
+          'Skipping test - PostgreSQL Vector adapter not initialized'
+        );
         return;
       }
 
@@ -549,9 +623,9 @@ describe('RecallService + PostgreSQL Vector Integration', () => {
       // Should return fewer or no results due to high relevance threshold
       expect(results).toBeDefined();
       expect(Array.isArray(results)).toBe(true);
-      
+
       // All returned results should meet the relevance threshold
-      results.memories.forEach(result => {
+      results.memories.forEach((result) => {
         expect(result.relevance).toBeGreaterThanOrEqual(0.8);
       });
     });
@@ -560,7 +634,9 @@ describe('RecallService + PostgreSQL Vector Integration', () => {
   describe('Connection Enrichment with Vector Results (ARCHITECT REFINEMENT)', () => {
     it('should enrich vector search results with memory connections', async () => {
       if (!pgVectorAdapter || !pgVectorAdapter.memory) {
-        console.log('Skipping test - PostgreSQL Vector adapter not initialized');
+        console.log(
+          'Skipping test - PostgreSQL Vector adapter not initialized'
+        );
         return;
       }
 
@@ -621,7 +697,9 @@ describe('RecallService + PostgreSQL Vector Integration', () => {
           memory.userId,
           memory.agentId,
           memory,
-          memory.content.includes('dark mode') ? MOCK_EMBEDDINGS.darkMode : MOCK_EMBEDDINGS.authentication
+          memory.content.includes('dark mode')
+            ? MOCK_EMBEDDINGS.darkMode
+            : MOCK_EMBEDDINGS.authentication
         );
       }
 
@@ -645,10 +723,10 @@ describe('RecallService + PostgreSQL Vector Integration', () => {
 
       // Verify that connection enrichment was attempted
       // (Results may or may not have connections depending on the memory graph)
-      const hasConnections = results.memories.some(result => 
-        result.relationships && result.relationships.length > 0
+      const hasConnections = results.memories.some(
+        (result) => result.relationships && result.relationships.length > 0
       );
-      
+
       // This test validates that the enrichment process doesn't break
       // the hybrid search functionality
       expect(results.memories[0]).toBeDefined();
@@ -658,7 +736,9 @@ describe('RecallService + PostgreSQL Vector Integration', () => {
   describe('E2E Smoke Test (ARCHITECT REQUIREMENT)', () => {
     it('should complete full E2E workflow: store with mock embedding → recall via hybrid search', async () => {
       if (!pgVectorAdapter || !pgVectorAdapter.memory) {
-        console.log('Skipping test - PostgreSQL Vector adapter not initialized');
+        console.log(
+          'Skipping test - PostgreSQL Vector adapter not initialized'
+        );
         return;
       }
 
@@ -754,9 +834,13 @@ describe('RecallService + PostgreSQL Vector Integration', () => {
       expect(results.memories.length).toBeGreaterThan(0);
 
       // Should find our test memory
-      const foundMemory = results.memories.find(m => m.id === 'e2e_test_memory');
+      const foundMemory = results.memories.find(
+        (m) => m.id === 'e2e_test_memory'
+      );
       expect(foundMemory).toBeDefined();
-      expect(foundMemory!.content).toBe('E2E test memory for hybrid search validation');
+      expect(foundMemory!.content).toBe(
+        'E2E test memory for hybrid search validation'
+      );
       expect(foundMemory!.relevance).toBeGreaterThan(0);
 
       // Verify hybrid search was used (not just text search)
@@ -768,7 +852,9 @@ describe('RecallService + PostgreSQL Vector Integration', () => {
   describe('Fallback Behavior (MUST HAVE)', () => {
     it('should fallback to text search when hybrid search fails', async () => {
       if (!pgVectorAdapter || !pgVectorAdapter.memory) {
-        console.log('Skipping test - PostgreSQL Vector adapter not initialized');
+        console.log(
+          'Skipping test - PostgreSQL Vector adapter not initialized'
+        );
         return;
       }
 
@@ -802,7 +888,11 @@ describe('RecallService + PostgreSQL Vector Integration', () => {
 
       // Store test memories without embeddings
       for (const memory of TEST_MEMORIES) {
-        await pgVectorAdapter.memory!.store(memory.userId, memory.agentId, memory);
+        await pgVectorAdapter.memory!.store(
+          memory.userId,
+          memory.agentId,
+          memory
+        );
       }
 
       // Test recall should fallback to text search
@@ -818,8 +908,10 @@ describe('RecallService + PostgreSQL Vector Integration', () => {
       expect(results.memories.length).toBeGreaterThan(0);
 
       // Should find memories using text search
-      const foundMemory = results.memories.find(m => m.content.includes('dark mode'));
+      const foundMemory = results.memories.find((m) =>
+        m.content.includes('dark mode')
+      );
       expect(foundMemory).toBeDefined();
     });
   });
-}); 
+});

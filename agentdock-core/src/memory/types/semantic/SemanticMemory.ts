@@ -24,7 +24,7 @@ function estimateTokens(text: string): number {
 
 export class SemanticMemory extends BaseMemoryType<SemanticMemoryConfig> {
   protected readonly type = 'semantic';
-  
+
   constructor(
     storage: StorageProvider,
     private semanticConfig: SemanticMemoryConfig,

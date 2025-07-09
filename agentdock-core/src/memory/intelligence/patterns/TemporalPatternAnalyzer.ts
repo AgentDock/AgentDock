@@ -194,7 +194,11 @@ export class TemporalPatternAnalyzer {
       );
 
       // Get memories for analysis
-      const memories = await this.getMemoriesInTimeRange(agentId, timeRange, userId);
+      const memories = await this.getMemoriesInTimeRange(
+        agentId,
+        timeRange,
+        userId
+      );
 
       if (memories.length < 5) {
         logger.info(
@@ -290,7 +294,11 @@ export class TemporalPatternAnalyzer {
     userId?: string
   ): Promise<ActivityCluster[]> {
     try {
-      const memories = await this.getMemoriesInTimeRange(agentId, timeRange, userId);
+      const memories = await this.getMemoriesInTimeRange(
+        agentId,
+        timeRange,
+        userId
+      );
 
       if (memories.length < 3) {
         return [];
@@ -664,8 +672,8 @@ Focus on statistically significant patterns with confidence scores.`
 
       return await this.storage.memory.recall(
         userId || 'system', // Use provided userId or fallback to 'system'
-        agentId, 
-        timeQuery, 
+        agentId,
+        timeQuery,
         {
           limit: 1000, // Large limit for analysis
           timeRange

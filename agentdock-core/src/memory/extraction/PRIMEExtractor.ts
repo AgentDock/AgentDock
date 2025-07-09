@@ -404,7 +404,7 @@ JSON: [{content, type, importance, reasoning}]`;
       // Smart tier thresholds
       tierThresholds:
         config.autoTierSelection !== false
-        ? {
+          ? {
               advancedMinChars:
                 config.tierThresholds?.advancedMinChars ||
                 Number(process.env.PRIME_ADVANCED_MIN_CHARS) ||
@@ -413,8 +413,8 @@ JSON: [{content, type, importance, reasoning}]`;
                 config.tierThresholds?.advancedMinRules ||
                 Number(process.env.PRIME_ADVANCED_MIN_RULES) ||
                 5
-          }
-        : undefined,
+            }
+          : undefined,
 
       // Core settings with sensible defaults
       defaultImportanceThreshold: config.defaultImportanceThreshold || 0.7,

@@ -2,13 +2,15 @@
  * Test helpers for RecallService tests
  */
 
-import { WorkingMemoryConfig } from '../../types/working/WorkingMemoryTypes';
-import { EpisodicMemoryConfig } from '../../types/episodic/EpisodicMemoryTypes';
-import { SemanticMemoryConfig } from '../../types/semantic/SemanticMemoryTypes';
-import { ProceduralMemoryConfig } from '../../types/procedural/ProceduralMemoryTypes';
 import { IntelligenceLayerConfig } from '../../intelligence/types';
+import { EpisodicMemoryConfig } from '../../types/episodic/EpisodicMemoryTypes';
+import { ProceduralMemoryConfig } from '../../types/procedural/ProceduralMemoryTypes';
+import { SemanticMemoryConfig } from '../../types/semantic/SemanticMemoryTypes';
+import { WorkingMemoryConfig } from '../../types/working/WorkingMemoryTypes';
 
-export function createTestWorkingMemoryConfig(overrides?: Partial<WorkingMemoryConfig>): WorkingMemoryConfig {
+export function createTestWorkingMemoryConfig(
+  overrides?: Partial<WorkingMemoryConfig>
+): WorkingMemoryConfig {
   return {
     maxTokens: 8192,
     ttlSeconds: 3600,
@@ -19,7 +21,9 @@ export function createTestWorkingMemoryConfig(overrides?: Partial<WorkingMemoryC
   };
 }
 
-export function createTestEpisodicMemoryConfig(overrides?: Partial<EpisodicMemoryConfig>): EpisodicMemoryConfig {
+export function createTestEpisodicMemoryConfig(
+  overrides?: Partial<EpisodicMemoryConfig>
+): EpisodicMemoryConfig {
   return {
     maxMemoriesPerSession: 1000,
     decayRate: 0.01,
@@ -30,7 +34,9 @@ export function createTestEpisodicMemoryConfig(overrides?: Partial<EpisodicMemor
   };
 }
 
-export function createTestSemanticMemoryConfig(overrides?: Partial<SemanticMemoryConfig>): SemanticMemoryConfig {
+export function createTestSemanticMemoryConfig(
+  overrides?: Partial<SemanticMemoryConfig>
+): SemanticMemoryConfig {
   return {
     deduplicationThreshold: 0.9,
     maxMemoriesPerCategory: 1000,
@@ -42,7 +48,9 @@ export function createTestSemanticMemoryConfig(overrides?: Partial<SemanticMemor
   };
 }
 
-export function createTestProceduralMemoryConfig(overrides?: Partial<ProceduralMemoryConfig>): ProceduralMemoryConfig {
+export function createTestProceduralMemoryConfig(
+  overrides?: Partial<ProceduralMemoryConfig>
+): ProceduralMemoryConfig {
   return {
     minSuccessRate: 0.7,
     maxPatternsPerCategory: 100,
@@ -54,7 +62,9 @@ export function createTestProceduralMemoryConfig(overrides?: Partial<ProceduralM
   };
 }
 
-export function createTestIntelligenceLayerConfig(overrides?: Partial<IntelligenceLayerConfig>): IntelligenceLayerConfig {
+export function createTestIntelligenceLayerConfig(
+  overrides?: Partial<IntelligenceLayerConfig>
+): IntelligenceLayerConfig {
   return {
     temporal: {
       enabled: false,

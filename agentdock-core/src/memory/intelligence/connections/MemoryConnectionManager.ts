@@ -242,7 +242,7 @@ class ConnectionDiscoveryQueue extends EventEmitter {
  *     maxCandidates: 50,
  *     thresholds: {
  *       autoSimilar: 0.9,     // Higher thresholds = more auto-classification (FREE)
- *       autoRelated: 0.8,     // Aggressive cost optimization  
+ *       autoRelated: 0.8,     // Aggressive cost optimization
  *       llmRequired: 1.0      // Disable LLM classification (no costs)
  *     }
  *   }
@@ -259,7 +259,7 @@ class ConnectionDiscoveryQueue extends EventEmitter {
  *     maxCandidates: 100,
  *     thresholds: {
  *       autoSimilar: 0.8,         // 40% auto-classified as "similar" (FREE)
- *       autoRelated: 0.6,         // 25% auto-classified as "related" (FREE) 
+ *       autoRelated: 0.6,         // 25% auto-classified as "related" (FREE)
  *       llmRequired: 0.3          // 35% need LLM classification (PAID)
  *     }
  *   },
@@ -713,20 +713,20 @@ export class MemoryConnectionManager {
     const insights2 = memory2.metadata?.temporalInsights as any;
     const patterns1 = insights1?.patterns;
     const patterns2 = insights2?.patterns;
-    
+
     if (!patterns1 || !patterns2) {
       return null;
     }
-    
+
     // Check for same burst period
     const burst1 = patterns1.find((p: any) => p.type === 'burst');
     const burst2 = patterns2.find((p: any) => p.type === 'burst');
-    
+
     if (burst1 && burst2) {
       // Calculate time distance between memories
       const timeDiff = Math.abs(memory1.createdAt - memory2.createdAt);
       const thirtyMinutes = 30 * 60 * 1000;
-      
+
       if (timeDiff <= thirtyMinutes) {
         return {
           connectionType: 'related',
@@ -735,16 +735,16 @@ export class MemoryConnectionManager {
         };
       }
     }
-    
+
     // Check for matching daily patterns
     const daily1 = patterns1.find((p: any) => p.type === 'daily');
     const daily2 = patterns2.find((p: any) => p.type === 'daily');
-    
+
     if (daily1?.peakHours && daily2?.peakHours) {
-      const commonHours = daily1.peakHours.filter((h: number) => 
+      const commonHours = daily1.peakHours.filter((h: number) =>
         daily2.peakHours.includes(h)
       );
-      
+
       if (commonHours.length > 0) {
         return {
           connectionType: 'related',
@@ -753,7 +753,7 @@ export class MemoryConnectionManager {
         };
       }
     }
-    
+
     return null;
   }
 
@@ -1124,7 +1124,7 @@ Return JSON: {"connectionType": "type", "confidence": 0.0-1.0, "reasoning": "bri
 
       // Track connection events
       if (this.storage.evolution?.trackEventBatch) {
-        const connectionEvents = connections.flatMap(conn => [
+        const connectionEvents = connections.flatMap((conn) => [
           {
             memoryId: conn.sourceMemoryId,
             userId,
@@ -1152,15 +1152,17 @@ Return JSON: {"connectionType": "type", "confidence": 0.0-1.0, "reasoning": "bri
             }
           }
         ]);
-        
-        this.storage.evolution.trackEventBatch(connectionEvents).catch((error: any) => {
-          logger.warn(
-            LogCategory.STORAGE,
-            'MemoryConnectionManager',
-            'Failed to track connection events',
-            { error: error instanceof Error ? error.message : String(error) }
-          );
-        });
+
+        this.storage.evolution
+          .trackEventBatch(connectionEvents)
+          .catch((error: any) => {
+            logger.warn(
+              LogCategory.STORAGE,
+              'MemoryConnectionManager',
+              'Failed to track connection events',
+              { error: error instanceof Error ? error.message : String(error) }
+            );
+          });
       }
 
       logger.info(

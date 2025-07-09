@@ -20,7 +20,7 @@ export abstract class BaseMemoryType<TConfig = any> {
   protected temporalAnalyzer?: TemporalPatternAnalyzer;
   private pendingOperations = new Set<{ abort: () => void }>();
   private isDestroyed = false;
-  
+
   /**
    * The memory type identifier
    */
@@ -104,24 +104,26 @@ export abstract class BaseMemoryType<TConfig = any> {
 
     // Track memory creation event
     if (this.storage.evolution?.trackEvent) {
-      this.storage.evolution.trackEvent({
-        memoryId,
-        userId,
-        agentId,
-        type: 'created',
-        timestamp: Date.now(),
-        metadata: {
-          source: this.type,
-          memoryType: this.type
-        }
-      }).catch(error => {
-        logger.warn(
-          LogCategory.STORAGE,
-          'BaseMemoryType',
-          'Failed to track memory creation event',
-          { error: error instanceof Error ? error.message : String(error) }
-        );
-      });
+      this.storage.evolution
+        .trackEvent({
+          memoryId,
+          userId,
+          agentId,
+          type: 'created',
+          timestamp: Date.now(),
+          metadata: {
+            source: this.type,
+            memoryType: this.type
+          }
+        })
+        .catch((error) => {
+          logger.warn(
+            LogCategory.STORAGE,
+            'BaseMemoryType',
+            'Failed to track memory creation event',
+            { error: error instanceof Error ? error.message : String(error) }
+          );
+        });
     }
 
     return memoryId;
@@ -175,35 +177,35 @@ export abstract class BaseMemoryType<TConfig = any> {
 
         if (memory && this.temporalAnalyzer) {
           // Analyze patterns and store them in memory metadata
-          const patterns = await this.temporalAnalyzer.analyzePatterns(agentId, undefined, userId);
-          
+          const patterns = await this.temporalAnalyzer.analyzePatterns(
+            agentId,
+            undefined,
+            userId
+          );
+
           if (patterns.length > 0 && this.storage.memory?.update) {
             // Extract lightweight temporal insights
             const temporalInsights = {
-              patterns: patterns.map(p => ({
+              patterns: patterns.map((p) => ({
                 type: p.type,
                 confidence: p.confidence,
-                peakHours: p.type === 'daily' && p.metadata?.peakTimes 
-                  ? p.metadata.peakTimes.map((d: Date) => d.getHours())
-                  : [],
+                peakHours:
+                  p.type === 'daily' && p.metadata?.peakTimes
+                    ? p.metadata.peakTimes.map((d: Date) => d.getHours())
+                    : [],
                 frequency: p.frequency,
                 description: p.metadata?.description
               })),
               lastAnalyzed: Date.now()
             };
-            
+
             // Update the memory with temporal insights
-            await this.storage.memory.update(
-              userId,
-              agentId,
-              memoryId,
-              {
-                metadata: {
-                  ...memory.metadata,
-                  temporalInsights
-                }
+            await this.storage.memory.update(userId, agentId, memoryId, {
+              metadata: {
+                ...memory.metadata,
+                temporalInsights
               }
-            );
+            });
           }
         }
       } catch (error) {

@@ -310,8 +310,15 @@ export interface MemoryEvent {
   memoryId: string;
   userId: string;
   agentId: string;
-  type: 'created' | 'accessed' | 'updated' | 'decayed' | 
-        'connected' | 'consolidated' | 'deleted' | 'archived';
+  type:
+    | 'created'
+    | 'accessed'
+    | 'updated'
+    | 'decayed'
+    | 'connected'
+    | 'consolidated'
+    | 'deleted'
+    | 'archived';
   timestamp: number;
   metadata?: {
     value?: number; // For decay tracking
@@ -330,12 +337,12 @@ export interface EvolutionOperations {
    * Track a single memory event
    */
   trackEvent(event: MemoryEvent): Promise<void>;
-  
+
   /**
    * Track multiple events in batch (for performance)
    */
   trackEventBatch(events: MemoryEvent[]): Promise<void>;
-  
+
   /**
    * Query evolution history for a specific memory
    */

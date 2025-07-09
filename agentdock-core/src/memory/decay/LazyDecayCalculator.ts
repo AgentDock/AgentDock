@@ -50,6 +50,12 @@ export interface LazyDecayConfig {
 
   /** Minimum time between updates (prevents excessive database writes) */
   minUpdateIntervalMs: number;
+
+  /** Threshold for significant change to trigger updates (default: 0.1) */
+  significantChangeThreshold: number;
+
+  /** Access count threshold for reinforcement (default: 5) */
+  accessCountThreshold: number;
 }
 
 /**
@@ -69,6 +75,8 @@ export class LazyDecayCalculator {
       reinforcementFactor: config.reinforcementFactor ?? 0.1,
       maxResonance: config.maxResonance ?? 2.0,
       minUpdateIntervalMs: config.minUpdateIntervalMs ?? 60000, // 1 minute
+      significantChangeThreshold: config.significantChangeThreshold ?? 0.1,
+      accessCountThreshold: config.accessCountThreshold ?? 5,
       ...config
     };
 
@@ -114,7 +122,7 @@ export class LazyDecayCalculator {
           this.config.enableReinforcement &&
           memory.reinforceable !== false &&
           memory.accessCount &&
-          memory.accessCount > 5
+          memory.accessCount > this.config.accessCountThreshold
         ) {
           // Only reinforce frequently accessed memories
           result.newResonance = this.applyReinforcement(memory.resonance);
@@ -176,7 +184,7 @@ export class LazyDecayCalculator {
         this.config.enableReinforcement &&
         memory.reinforceable !== false &&
         memory.accessCount &&
-        memory.accessCount > 5
+        memory.accessCount > this.config.accessCountThreshold
       ) {
         // Only reinforce frequently accessed memories
         result.newResonance = this.applyReinforcement(result.newResonance);
@@ -185,7 +193,8 @@ export class LazyDecayCalculator {
 
       // Determine if update is needed - LAZY: Only update on significant changes (10%+)
       const significantChange =
-        Math.abs(result.newResonance - memory.resonance) > 0.1;
+        Math.abs(result.newResonance - memory.resonance) >
+        this.config.significantChangeThreshold;
       result.shouldUpdate = significantChange;
 
       // Set reason

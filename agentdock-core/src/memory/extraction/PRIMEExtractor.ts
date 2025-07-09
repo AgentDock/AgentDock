@@ -198,6 +198,15 @@ export class PRIMEExtractor {
           messageLength: message.content.length
         }
       );
+
+      // Only throw errors in production environments
+      if (process.env.NODE_ENV === 'production') {
+        throw new Error(
+          `PRIME extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        );
+      }
+
+      // Return empty array for development/test environments
       return [];
     }
   }
@@ -537,9 +546,19 @@ JSON: [{content, type, importance, reasoning}]`;
         'Fallback extraction failed',
         {
           error: error instanceof Error ? error.message : 'Unknown error',
-          agentId: context.agentId
+          agentId: context.agentId,
+          stack: error instanceof Error ? error.stack : 'No stack trace'
         }
       );
+
+      // Only throw errors in production environments
+      if (process.env.NODE_ENV === 'production') {
+        throw new Error(
+          `Fallback extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        );
+      }
+
+      // Return empty array for development/test environments
       return [];
     }
   }

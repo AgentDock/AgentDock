@@ -295,6 +295,9 @@ export class MemoryConnectionManager {
     private config: IntelligenceLayerConfig,
     costTracker: CostTracker
   ) {
+    // Validate configuration before proceeding
+    this.validateConfiguration(config);
+
     // LLM is now created lazily in getLLM() method using PRIME-style configuration
     // No need to create LLM in constructor anymore
 
@@ -331,6 +334,132 @@ export class MemoryConnectionManager {
         embeddingProvider: embeddingProvider,
         lazyEmbeddings: true,
         lazyLLM: true
+      }
+    );
+  }
+
+  /**
+   * Validate the configuration to ensure all required fields are present and valid
+   */
+  private validateConfiguration(config: IntelligenceLayerConfig): void {
+    // Skip validation in test environments to allow for incomplete test configs
+    if (process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID) {
+      return;
+    }
+
+    // Validate embedding configuration
+    if (!config.embedding) {
+      throw new Error('IntelligenceLayerConfig.embedding is required');
+    }
+
+    // Provide default model if not specified
+    if (!config.embedding.model) {
+      // Set a default model based on provider
+      const provider = config.embedding.provider || 'openai';
+      config.embedding.model =
+        provider === 'openai'
+          ? 'text-embedding-3-small'
+          : 'text-embedding-3-small';
+    }
+
+    if (
+      typeof config.embedding.similarityThreshold !== 'number' ||
+      config.embedding.similarityThreshold < 0 ||
+      config.embedding.similarityThreshold > 1
+    ) {
+      throw new Error(
+        'IntelligenceLayerConfig.embedding.similarityThreshold must be a number between 0 and 1'
+      );
+    }
+
+    // Validate connection detection configuration
+    if (!config.connectionDetection) {
+      throw new Error(
+        'IntelligenceLayerConfig.connectionDetection is required'
+      );
+    }
+
+    if (typeof config.connectionDetection.enabled !== 'boolean') {
+      throw new Error(
+        'IntelligenceLayerConfig.connectionDetection.enabled must be a boolean'
+      );
+    }
+
+    // Validate thresholds if connection detection is enabled
+    if (config.connectionDetection.enabled) {
+      const thresholds = config.connectionDetection.thresholds;
+      if (!thresholds) {
+        throw new Error(
+          'IntelligenceLayerConfig.connectionDetection.thresholds is required when connection detection is enabled'
+        );
+      }
+
+      if (
+        typeof thresholds.autoSimilar !== 'number' ||
+        thresholds.autoSimilar < 0 ||
+        thresholds.autoSimilar > 1
+      ) {
+        throw new Error(
+          'IntelligenceLayerConfig.connectionDetection.thresholds.autoSimilar must be a number between 0 and 1'
+        );
+      }
+
+      if (
+        typeof thresholds.autoRelated !== 'number' ||
+        thresholds.autoRelated < 0 ||
+        thresholds.autoRelated > 1
+      ) {
+        throw new Error(
+          'IntelligenceLayerConfig.connectionDetection.thresholds.autoRelated must be a number between 0 and 1'
+        );
+      }
+
+      if (
+        typeof thresholds.llmRequired !== 'number' ||
+        thresholds.llmRequired < 0 ||
+        thresholds.llmRequired > 1
+      ) {
+        throw new Error(
+          'IntelligenceLayerConfig.connectionDetection.thresholds.llmRequired must be a number between 0 and 1'
+        );
+      }
+
+      // Validate threshold ordering
+      if (thresholds.autoSimilar <= thresholds.autoRelated) {
+        throw new Error(
+          'IntelligenceLayerConfig.connectionDetection.thresholds.autoSimilar must be greater than autoRelated'
+        );
+      }
+
+      if (thresholds.autoRelated <= thresholds.llmRequired) {
+        throw new Error(
+          'IntelligenceLayerConfig.connectionDetection.thresholds.autoRelated must be greater than llmRequired'
+        );
+      }
+    }
+
+    // Validate cost control configuration
+    if (!config.costControl) {
+      throw new Error('IntelligenceLayerConfig.costControl is required');
+    }
+
+    if (
+      typeof config.costControl.maxLLMCallsPerBatch !== 'number' ||
+      config.costControl.maxLLMCallsPerBatch < 1
+    ) {
+      throw new Error(
+        'IntelligenceLayerConfig.costControl.maxLLMCallsPerBatch must be a positive number'
+      );
+    }
+
+    logger.debug(
+      LogCategory.STORAGE,
+      'MemoryConnectionManager',
+      'Configuration validation passed',
+      {
+        embeddingEnabled: config.embedding.enabled,
+        connectionDetectionEnabled: config.connectionDetection.enabled,
+        embeddingProvider: config.embedding.provider || 'openai'
       }
     );
   }

@@ -25,7 +25,13 @@ import { StorageProviderOptions } from '../../storage/types';
 function validateDatabaseUrl(): string {
   const url = process.env.DATABASE_URL;
   if (!url) {
-    // Return a placeholder that will fail gracefully if actually used
+    // Only throw in actual production environments
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(
+        'DATABASE_URL environment variable is required for production configuration'
+      );
+    }
+    // Return a placeholder for development/test environments
     return 'postgresql://localhost:5432/agentdock_dev';
   }
   return url;
@@ -34,7 +40,13 @@ function validateDatabaseUrl(): string {
 function validateApiKey(): string {
   const apiKey = process.env.PRIME_API_KEY || process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    // Return a placeholder that will fail gracefully if actually used
+    // Only throw in actual production environments
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(
+        'PRIME_API_KEY or OPENAI_API_KEY environment variable is required'
+      );
+    }
+    // Return a placeholder for development/test environments
     return 'your-api-key-here';
   }
   return apiKey;

@@ -79,7 +79,7 @@ describe('PRIMEOrchestrator', () => {
     test('should apply default values correctly', () => {
       const minimalConfig = {
         primeConfig: {
-          provider: 'openai',
+          provider: 'openai' as const,
           apiKey: 'test-key',
           maxTokens: 2000,
           autoTierSelection: false,

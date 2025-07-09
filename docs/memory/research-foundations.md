@@ -2,7 +2,7 @@
 
 > **Scientific basis for AgentDock's memory connection system**
 
-AgentDock's memory architecture is grounded in decades of cognitive science research on how human memory works. This document explains the scientific principles behind our design decisions.
+AgentDock's memory architecture is informed by established cognitive science principles on how human memory works. This document explains the theoretical foundations behind our design decisions.
 
 ## Core Research Principles
 
@@ -103,18 +103,11 @@ flowchart TD
 2. **Rule Path** (User Rules): Like learned patterns
 3. **Deep Path** (LLM): Like conscious reasoning
 
-### 4. Temporal Memory Organization
+### 4. Temporal Pattern Detection
 
-Research shows memories cluster around significant events and follow predictable patterns:
+Our system implements practical temporal pattern analysis to identify usage patterns and memory activity clustering:
 
-**Conway (2009)** demonstrated that autobiographical memories cluster around significant events, forming **temporal landmarks** that organize memory retrieval.
-
-**Burt, Kemp & Conway (2003)** showed that memory accessibility follows temporal patterns:
-- **Recency Effect**: Recent memories are more accessible
-- **Reminiscence Bump**: Memories from significant periods show increased recall
-- **Temporal Clustering**: Related memories from similar time periods activate together
-
-**Brown, Rips & Shevell (1985)** established that temporal context serves as a powerful retrieval cue, with memories from similar time periods showing enhanced accessibility.
+**Conway (2009)** provided insights into episodic memory structure that inform our approach to temporal pattern detection.
 
 ```mermaid
 gantt
@@ -137,10 +130,10 @@ gantt
 ```
 
 **Key Insights:**
-- Memories from similar time periods activate together (**temporal clustering**)
-- Significant events create **temporal landmarks** that enhance recall
 - **Burst periods** of high activity strengthen memory formation
 - **Daily patterns** reflect natural cognitive rhythms
+- Temporal proximity influences connection strength
+- Pattern detection enables intelligent memory organization
 
 ## Scientific Validation
 
@@ -148,24 +141,20 @@ Our approach aligns with established cognitive principles:
 
 | Principle | Research | Our Implementation |
 |-----------|----------|-------------------|
-| **Spreading Activation** | Collins & Loftus, 1975 | Connection strength propagation |
+| **Connection Networks** | Collins & Loftus, 1975 | Multi-hop graph traversal |
 | **Semantic Networks** | Sowa, 1984 | Typed connection relationships |
 | **Memory Interdependence** | Greenberg & Verfaellie, 2010 | Episodic→Semantic promotion |
-| **Temporal Clustering** | Conway, 2009 | Burst detection & patterns |
-| **Temporal Landmarks** | Burt, Kemp & Conway, 2003 | Significant event markers |
-| **Temporal Context Cues** | Brown, Rips & Shevell, 1985 | Time-based retrieval enhancement |
+| **Temporal Patterns** | Conway, 2009 | Activity pattern detection |
 
 ## Key Insights for Developers
 
-1. **Not Random**: Connection types based on 50+ years of memory research
+1. **Not Random**: Connection types based on established cognitive science principles
 2. **Biologically Inspired**: Mimics human memory organization
 3. **Computationally Efficient**: Leverages known patterns from cognitive science
 4. **Proven Effective**: These principles power human intelligence
 
 ## References
 
-- Brown, N. R., Rips, L. J., & Shevell, S. K. (1985). The subjective dates of natural events in very-long-term memory. *Cognitive Psychology*, 17(2), 139-177.
-- Burt, C. D., Kemp, S., & Conway, M. A. (2003). Themes, events, and episodes in autobiographical memory. *Memory & Cognition*, 31(2), 317-325.
 - Collins, A. M., & Loftus, E. F. (1975). A spreading-activation theory of semantic processing. *Psychological Review*, 82(6), 407-428.
 - Conway, M. A. (2009). Episodic memories. *Neuropsychologia*, 47(11), 2305-2313.
 - Greenberg, D. L., & Verfaellie, M. (2010). Interdependence of episodic and semantic memory. *Journal of the International Neuropsychological Society*, 16(5), 748-753.

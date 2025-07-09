@@ -155,7 +155,7 @@ graph TB
 ## Core Features
 
 ### **Research-Based Design**
-Based on 50+ years of cognitive science research, AgentDock implements proven memory principles:
+Based on established cognitive science principles, AgentDock implements proven memory concepts:
 - **Spreading Activation**: Related memories activate automatically  
 - **Episodic-Semantic Interdependence**: Experiences become general knowledge over time
 - **Connection Types**: Grounded in semantic network theory (similar, causal, temporal, hierarchical)

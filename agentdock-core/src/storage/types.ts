@@ -9,7 +9,7 @@ import { MemoryType } from '../shared/types/memory';
 
 /**
  * Connection types for memory relationships
- * Based on cognitive science research and database schema design
+ * Based on knowledge representation principles and database schema design
  */
 export type ConnectionType =
   | 'similar' // Semantically similar content

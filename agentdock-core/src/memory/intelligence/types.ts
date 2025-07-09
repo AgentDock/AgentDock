@@ -173,7 +173,7 @@ export interface IntelligenceLayerConfig {
  * The 5 Research-Based Connection Types - Classification Targets
  *
  * These are the fundamental connection types that the LLM classifies content relationships into.
- * Based on 50+ years of cognitive science research. These are NOT user-configurable rules,
+ * Based on established cognitive science principles. These are NOT user-configurable rules,
  * but the classification reality that represents how human memory actually works.
  *
  * @see Collins & Loftus (1975) - Spreading Activation Theory
@@ -200,7 +200,7 @@ export const FIVE_CORE_CONNECTION_TYPES = {
   opposite: {
     description: 'Memories contradict or oppose each other',
     examples: ['Dark mode preferred', 'Light mode selected'],
-    research: 'Conway (2009) - Memory opposition and contradiction'
+    research: 'Knowledge representation - Contradictory relationships'
   },
   related: {
     description: 'General association or reference between topics',

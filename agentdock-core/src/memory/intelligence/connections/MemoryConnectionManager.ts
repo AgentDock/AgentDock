@@ -762,7 +762,7 @@ export class MemoryConnectionManager {
    *
    * Uses PRIME-style configuration for seamless API key sharing.
    * Classifies memory relationships into the 5 fundamental connection types
-   * identified by 50+ years of cognitive science research.
+   * established in cognitive science and knowledge representation.
    *
    * @param memory1 First memory content to analyze
    * @param memory2 Second memory content to analyze

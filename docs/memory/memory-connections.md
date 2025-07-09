@@ -4,7 +4,7 @@ AgentDock's memory connection system automatically discovers relationships betwe
 
 ## Quick Overview (TLDR)
 
-Most AI systems store information in isolation. AgentDock automatically discovers five types of relationships between memories based on cognitive science research:
+Most AI systems store information in isolation. AgentDock automatically discovers five types of relationships between memories based on established knowledge representation principles:
 
 - **Similar:** Related semantic content ("pasta recipe" ↔ "Italian cooking")
 - **Causal:** Cause-and-effect relationships ("error occurred" → "bug fix applied")  
@@ -12,7 +12,7 @@ Most AI systems store information in isolation. AgentDock automatically discover
 - **Part Of:** Hierarchical relationships ("login system" → "authentication project")
 - **Opposite:** Conflicting information ("prefers dark mode" ↔ "prefers light mode")
 
-> **Research Background:** These connection types are grounded in 50+ years of cognitive science and semantic network theory. For scientific foundations and research citations, see [Research Foundations](./research-foundations.md).
+> **Theoretical Background:** These connection types are informed by cognitive science and semantic network theory. For theoretical foundations and research citations, see [Research Foundations](./research-foundations.md).
 
 **Default behavior:** Connections work automatically with zero configuration. System uses smart triage for cost optimization.
 

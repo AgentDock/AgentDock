@@ -59,7 +59,7 @@ graph TD
      "nodes": ["llm.anthropic", "mcp.cursor"],
      "nodeConfigurations": {
        "llm.anthropic": {
-         "model": "claude-3-sonnet-20240229"
+         "model": "gpt-4.1"
        },
        "mcp.cursor": {
          "transport": {

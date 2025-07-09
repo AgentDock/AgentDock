@@ -101,7 +101,7 @@ interface VoiceProviderConfig {
 
 The system will integrate with leading voice AI providers:
 
-1. **OpenAI Realtime API**: End-to-end speech-to-speech with GPT-4o
+1. **OpenAI Realtime API**: End-to-end speech-to-speech with GPT-4.1
 2. **ElevenLabs**: High-quality voice synthesis and voice-to-voice capabilities
 3. **Sesame AI**: Advanced voice models with natural conversational abilities
 
@@ -117,7 +117,7 @@ import { createWebRTCVoiceNode } from '@/lib/voice/webrtc-factory';
 const voiceNode = createWebRTCVoiceNode('voice-1', agentNode, {
   provider: 'openai',
   apiKey: process.env.OPENAI_API_KEY!,
-  modelId: 'gpt-4o-realtime'
+  modelId: 'gpt-4.1-realtime'
 });
 
 // Set up audio stream

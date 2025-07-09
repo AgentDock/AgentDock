@@ -125,7 +125,6 @@ The Telemetry & Observability feature connects with other roadmap items:
 
 - **Advanced Memory Systems**: Trace memory operations and retrieval effectiveness
 - **Platform Integration**: Monitor cross-platform interactions and performance
-- **Generalist Agent**: Track complex web-based tasks and their execution
 - **Voice AI Agents**: Measure voice processing latency and quality
 - **Evaluation Framework**: Provides data for the [Agent Evaluation Framework](./evaluation-framework.md)
 

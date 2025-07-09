@@ -2,13 +2,18 @@
 
 This document outlines the planned features and future direction for AgentDock. Most improvements target the core AgentDock framework (`agentdock-core`), which is under active development and will be published as a versioned NPM package upon reaching a stable release. Some items may also involve the open-source client.
 
+## Completed
+
+| Feature | Description |
+|---------|-------------|
+| [**Storage Abstraction Layer**](../storage/storage-abstraction.md) | ✅ Flexible storage system with 15 production-ready adapters |
+| [**Advanced Memory Systems**](../memory/README.md) | ✅ Four-layer cognitive architecture with PRIME extraction, hybrid search, and memory connections |
+| [**Vector Storage Integration**](../storage/vector-storage.md) | ✅ Embedding-based retrieval for documents and memory (PostgreSQL + pgvector, SQLite + sqlite-vec fully integrated) |
+
 ## In Progress
 
 | Feature | Description |
 |---------|-------------|
-| [**Storage Abstraction Layer**](./roadmap/storage-abstraction.md) | Flexible storage system with pluggable providers |
-| [**Advanced Memory Systems**](./roadmap/advanced-memory.md) | Long-term context management |
-| [**Vector Storage Integration**](./roadmap/vector-storage.md) | Embedding-based retrieval for documents and memory |
 | [**Evaluation for AI Agents**](./roadmap/evaluation-framework.md) | Comprehensive testing and evaluation framework |
 
 ## Planned
@@ -26,7 +31,6 @@ This document outlines the planned features and future direction for AgentDock. 
 | Feature | Description |
 |---------|-------------|
 | [**Code Playground**](./roadmap/code-playground.md) | Sandboxed code generation and execution with rich visualization capabilities |
-| [**Generalist AI Agent**](./roadmap/generalist-agent.md) | Manus-like agent that can use browser and execute complex tasks |
 
 ## Workflow System
 

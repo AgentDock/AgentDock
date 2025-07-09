@@ -73,8 +73,8 @@ Use the helper functions in `src/test/setup.ts` to create standardized mock obje
 import { createMockCoreLLM, createMockOrchestrationManager } from '../../test/setup';
 
 const mockLLM = createMockCoreLLM({
-  provider: 'anthropic',
-  modelId: 'claude-3-opus-20240229'
+  provider: 'openai',
+  modelId: 'gpt-4.1'
 });
 
 const mockOrchestrationManager = createMockOrchestrationManager();

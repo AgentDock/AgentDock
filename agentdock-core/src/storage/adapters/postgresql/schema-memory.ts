@@ -8,6 +8,7 @@
 import { Pool } from 'pg';
 
 import { LogCategory, logger } from '../../../logging';
+import { SQLIdentifierValidator } from '../shared/sql-identifier-validator';
 
 /**
  * Memory types supported by the system
@@ -44,20 +45,23 @@ export async function initializeMemorySchema(
     { schema }
   );
 
+  // Validate and escape schema name to prevent SQL injection
+  const secureSchema = SQLIdentifierValidator.securePostgreSQLSchema(schema);
+
   const client = await pool.connect();
   try {
     // Create schema if needed
     if (schema !== 'public') {
-      await client.query(`CREATE SCHEMA IF NOT EXISTS ${schema}`);
+      await client.query(`CREATE SCHEMA IF NOT EXISTS ${secureSchema}`);
     }
 
     // Enable pgvector extension for vector similarity search
     await client.query(`CREATE EXTENSION IF NOT EXISTS vector`);
 
-    // Create enum types
+    // Create enum types with validated schema
     await client.query(`
       DO $$ BEGIN
-        CREATE TYPE ${schema}.memory_type AS ENUM ('working', 'episodic', 'semantic', 'procedural');
+        CREATE TYPE ${secureSchema}.memory_type AS ENUM ('working', 'episodic', 'semantic', 'procedural');
       EXCEPTION
         WHEN duplicate_object THEN null;
       END $$;
@@ -65,7 +69,7 @@ export async function initializeMemorySchema(
 
     await client.query(`
       DO $$ BEGIN
-        CREATE TYPE ${schema}.connection_type AS ENUM ('related', 'causes', 'part_of', 'similar', 'opposite');
+        CREATE TYPE ${secureSchema}.connection_type AS ENUM ('related', 'causes', 'part_of', 'similar', 'opposite');
       EXCEPTION
         WHEN duplicate_object THEN null;
       END $$;
@@ -73,14 +77,14 @@ export async function initializeMemorySchema(
 
     // Create memories table with partitioning support
     await client.query(`
-      CREATE TABLE IF NOT EXISTS ${schema}.memories (
+      CREATE TABLE IF NOT EXISTS ${secureSchema}.memories (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         agent_id UUID NOT NULL,
         user_id UUID NOT NULL,
         
         -- Memory content and type
         content TEXT NOT NULL,
-        type ${schema}.memory_type NOT NULL,
+        type ${secureSchema}.memory_type NOT NULL,
         
         -- Importance and decay
         importance REAL NOT NULL DEFAULT 0.5 CHECK (importance >= 0 AND importance <= 1),
@@ -135,8 +139,8 @@ export async function initializeMemorySchema(
       await client
         .query(
           `
-        CREATE TABLE IF NOT EXISTS ${schema}.memories_${currentYear}_q${i + 1} 
-        PARTITION OF ${schema}.memories
+        CREATE TABLE IF NOT EXISTS ${secureSchema}.memories_${currentYear}_q${i + 1} 
+        PARTITION OF ${secureSchema}.memories
         FOR VALUES FROM ('${currentYear}-${quarter.start}') 
         TO ('${endYear}-${quarter.end}');
       `
@@ -149,84 +153,84 @@ export async function initializeMemorySchema(
     // High-performance indexes - Updated for user isolation
     await client.query(`
       CREATE INDEX IF NOT EXISTS idx_memories_user_agent_type 
-        ON ${schema}.memories(user_id, agent_id, type, created_at DESC);
+        ON ${secureSchema}.memories(user_id, agent_id, type, created_at DESC);
     `);
 
     await client.query(`
       CREATE INDEX IF NOT EXISTS idx_memories_user_agent_importance 
-        ON ${schema}.memories(user_id, agent_id, importance DESC);
+        ON ${secureSchema}.memories(user_id, agent_id, importance DESC);
     `);
 
     await client.query(`
       CREATE INDEX IF NOT EXISTS idx_memories_user_recall 
-        ON ${schema}.memories(user_id, agent_id, importance DESC, created_at DESC);
+        ON ${secureSchema}.memories(user_id, agent_id, importance DESC, created_at DESC);
     `);
 
     await client.query(`
       CREATE INDEX IF NOT EXISTS idx_memories_agent_type_importance 
-        ON ${schema}.memories(agent_id, type, importance DESC);
+        ON ${secureSchema}.memories(agent_id, type, importance DESC);
     `);
 
     await client.query(`
       CREATE INDEX IF NOT EXISTS idx_memories_agent_resonance 
-        ON ${schema}.memories(agent_id, resonance DESC) 
+        ON ${secureSchema}.memories(agent_id, resonance DESC) 
         WHERE resonance > 0.5;
     `);
 
     await client.query(`
       CREATE INDEX IF NOT EXISTS idx_memories_keywords_gin 
-        ON ${schema}.memories USING GIN (keywords);
+        ON ${secureSchema}.memories USING GIN (keywords);
     `);
 
     await client.query(`
       CREATE INDEX IF NOT EXISTS idx_memories_metadata_gin 
-        ON ${schema}.memories USING GIN (metadata);
+        ON ${secureSchema}.memories USING GIN (metadata);
     `);
 
     await client.query(`
       CREATE INDEX IF NOT EXISTS idx_memories_active 
-        ON ${schema}.memories(agent_id, importance DESC) 
+        ON ${secureSchema}.memories(agent_id, importance DESC) 
         WHERE importance > 0.3 AND resonance > 0.1;
     `);
 
     // Vector similarity search index (pgvector HNSW)
     await client.query(`
       CREATE INDEX IF NOT EXISTS idx_memories_embedding_hnsw 
-        ON ${schema}.memories USING hnsw (embedding vector_cosine_ops)
+        ON ${secureSchema}.memories USING hnsw (embedding vector_cosine_ops)
         WHERE embedding IS NOT NULL;
     `);
 
     // Memory connections table (Zettelkasten)
     await client.query(`
-      CREATE TABLE IF NOT EXISTS ${schema}.memory_connections (
+      CREATE TABLE IF NOT EXISTS ${secureSchema}.memory_connections (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         source_memory_id UUID NOT NULL,
         target_memory_id UUID NOT NULL,
-        connection_type ${schema}.connection_type NOT NULL,
+        connection_type ${secureSchema}.connection_type NOT NULL,
         strength REAL NOT NULL DEFAULT 0.5 CHECK (strength >= 0 AND strength <= 1),
         reason TEXT,
         created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
         
         UNIQUE(source_memory_id, target_memory_id),
-        FOREIGN KEY (source_memory_id) REFERENCES ${schema}.memories(id) ON DELETE CASCADE,
-        FOREIGN KEY (target_memory_id) REFERENCES ${schema}.memories(id) ON DELETE CASCADE
+        FOREIGN KEY (source_memory_id) REFERENCES ${secureSchema}.memories(id) ON DELETE CASCADE,
+        FOREIGN KEY (target_memory_id) REFERENCES ${secureSchema}.memories(id) ON DELETE CASCADE
       );
     `);
 
     // Bidirectional search indexes
     await client.query(`
       CREATE INDEX IF NOT EXISTS idx_connections_source 
-        ON ${schema}.memory_connections(source_memory_id, strength DESC);
+        ON ${secureSchema}.memory_connections(source_memory_id, strength DESC);
     `);
 
     await client.query(`
       CREATE INDEX IF NOT EXISTS idx_connections_target 
-        ON ${schema}.memory_connections(target_memory_id, strength DESC);
+        ON ${secureSchema}.memory_connections(target_memory_id, strength DESC);
     `);
 
     // Procedural patterns table
     await client.query(`
-      CREATE TABLE IF NOT EXISTS ${schema}.procedural_patterns (
+      CREATE TABLE IF NOT EXISTS ${secureSchema}.procedural_patterns (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         agent_id UUID NOT NULL,
         pattern_name TEXT NOT NULL,
@@ -244,12 +248,12 @@ export async function initializeMemorySchema(
 
     await client.query(`
       CREATE INDEX IF NOT EXISTS idx_patterns_agent_success 
-        ON ${schema}.procedural_patterns(agent_id, success_count DESC);
+        ON ${secureSchema}.procedural_patterns(agent_id, success_count DESC);
     `);
 
     // Update trigger for updated_at
     await client.query(`
-      CREATE OR REPLACE FUNCTION ${schema}.update_updated_at_column()
+      CREATE OR REPLACE FUNCTION ${secureSchema}.update_updated_at_column()
       RETURNS TRIGGER AS $$
       BEGIN
         NEW.updated_at = CURRENT_TIMESTAMP;
@@ -261,8 +265,8 @@ export async function initializeMemorySchema(
     await client.query(`
       DO $$ BEGIN
         CREATE TRIGGER update_memories_updated_at BEFORE UPDATE
-          ON ${schema}.memories FOR EACH ROW
-          EXECUTE FUNCTION ${schema}.update_updated_at_column();
+          ON ${secureSchema}.memories FOR EACH ROW
+          EXECUTE FUNCTION ${secureSchema}.update_updated_at_column();
       EXCEPTION
         WHEN duplicate_object THEN null;
       END $$;
@@ -271,8 +275,8 @@ export async function initializeMemorySchema(
     await client.query(`
       DO $$ BEGIN
         CREATE TRIGGER update_patterns_updated_at BEFORE UPDATE
-          ON ${schema}.procedural_patterns FOR EACH ROW
-          EXECUTE FUNCTION ${schema}.update_updated_at_column();
+          ON ${secureSchema}.procedural_patterns FOR EACH ROW
+          EXECUTE FUNCTION ${secureSchema}.update_updated_at_column();
       EXCEPTION
         WHEN duplicate_object THEN null;
       END $$;
@@ -297,6 +301,9 @@ export async function createMemoryPartition(
   year: number,
   month: number
 ): Promise<void> {
+  // Validate and escape schema name to prevent SQL injection
+  const secureSchema = SQLIdentifierValidator.securePostgreSQLSchema(schema);
+
   const startDate = new Date(year, month - 1, 1);
   const endDate = new Date(year, month, 1);
 
@@ -305,8 +312,8 @@ export async function createMemoryPartition(
   const client = await pool.connect();
   try {
     await client.query(`
-      CREATE TABLE IF NOT EXISTS ${schema}.${partitionName}
-      PARTITION OF ${schema}.memories
+      CREATE TABLE IF NOT EXISTS ${secureSchema}.${partitionName}
+      PARTITION OF ${secureSchema}.memories
       FOR VALUES FROM ('${startDate.toISOString().split('T')[0]}') 
       TO ('${endDate.toISOString().split('T')[0]}')
     `);
@@ -341,11 +348,14 @@ export async function cleanupDecayedMemories(
     daysOld: number;
   }
 ): Promise<number> {
+  // Validate and escape schema name to prevent SQL injection
+  const secureSchema = SQLIdentifierValidator.securePostgreSQLSchema(schema);
+
   const client = await pool.connect();
   try {
     const result = await client.query(
       `
-      DELETE FROM ${schema}.memories 
+      DELETE FROM ${secureSchema}.memories 
       WHERE resonance < $1
         AND last_accessed_at < CURRENT_TIMESTAMP - INTERVAL '${thresholds.daysOld} days'
         AND type != 'semantic'
@@ -385,6 +395,9 @@ export async function getMemoryStats(
   avgResonance: number;
   totalConnections: number;
 }> {
+  // Validate and escape schema name to prevent SQL injection
+  const secureSchema = SQLIdentifierValidator.securePostgreSQLSchema(schema);
+
   const client = await pool.connect();
   try {
     const whereClause = agentId ? `WHERE agent_id = $1` : '';
@@ -397,7 +410,7 @@ export async function getMemoryStats(
         type,
         AVG(importance) as avg_importance,
         AVG(resonance) as avg_resonance
-      FROM ${schema}.memories
+      FROM ${secureSchema}.memories
       ${whereClause}
       GROUP BY type
     `,
@@ -407,11 +420,11 @@ export async function getMemoryStats(
     const connectionsResult = await client.query(
       `
       SELECT COUNT(*) as total
-      FROM ${schema}.memory_connections mc
+      FROM ${secureSchema}.memory_connections mc
       ${
         agentId
           ? `WHERE EXISTS (
-        SELECT 1 FROM ${schema}.memories m 
+        SELECT 1 FROM ${secureSchema}.memories m 
         WHERE m.id = mc.source_memory_id 
         AND m.agent_id = $1
       )`
@@ -459,6 +472,9 @@ export async function migrateToLazyDecay(
     { schema }
   );
 
+  // Validate and escape schema name to prevent SQL injection
+  const secureSchema = SQLIdentifierValidator.securePostgreSQLSchema(schema);
+
   const client = await pool.connect();
   try {
     // Check if migration is needed by checking for never_decay column
@@ -482,7 +498,7 @@ export async function migrateToLazyDecay(
 
     // Add lazy decay columns
     await client.query(`
-      ALTER TABLE ${schema}.memories 
+      ALTER TABLE ${secureSchema}.memories 
       ADD COLUMN never_decay BOOLEAN NOT NULL DEFAULT FALSE,
       ADD COLUMN custom_half_life INTEGER CHECK (custom_half_life > 0),
       ADD COLUMN reinforceable BOOLEAN NOT NULL DEFAULT TRUE,
@@ -492,7 +508,7 @@ export async function migrateToLazyDecay(
     // Add index for lazy decay queries
     await client.query(`
       CREATE INDEX IF NOT EXISTS idx_memories_lazy_decay 
-        ON ${schema}.memories(agent_id, status, never_decay, custom_half_life)
+        ON ${secureSchema}.memories(agent_id, status, never_decay, custom_half_life)
         WHERE status = 'active'
     `);
 

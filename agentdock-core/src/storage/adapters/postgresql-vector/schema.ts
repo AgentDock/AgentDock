@@ -5,6 +5,7 @@
 import { Pool } from 'pg';
 
 import { LogCategory, logger } from '../../../logging';
+import { SQLIdentifierValidator } from '../shared/sql-identifier-validator';
 import { VectorCollectionConfig, VectorIndexType, VectorMetric } from './types';
 
 /**
@@ -29,7 +30,30 @@ export const VectorSQL = {
    * Create vector collection table
    */
   CREATE_COLLECTION: (name: string, dimension: number, schema?: string) => {
-    const tableName = schema ? `"${schema}"."${name}"` : `"${name}"`;
+    // Validate and escape identifiers to prevent SQL injection
+    const validCollection =
+      SQLIdentifierValidator.validateSQLiteCollection(name);
+    const escapedCollection =
+      SQLIdentifierValidator.escapePostgreSQL(validCollection);
+
+    // Validate dimension parameter
+    if (!Number.isInteger(dimension) || dimension < 1 || dimension > 10000) {
+      throw new Error(
+        `Invalid dimension: ${dimension}. Must be integer between 1 and 10000`
+      );
+    }
+
+    let tableName: string;
+    if (schema) {
+      const validSchema =
+        SQLIdentifierValidator.validatePostgreSQLSchema(schema);
+      const escapedSchema =
+        SQLIdentifierValidator.escapePostgreSQL(validSchema);
+      tableName = `${escapedSchema}.${escapedCollection}`;
+    } else {
+      tableName = escapedCollection;
+    }
+
     return `
       CREATE TABLE IF NOT EXISTS ${tableName} (
         id VARCHAR(255) PRIMARY KEY,
@@ -45,9 +69,25 @@ export const VectorSQL = {
    * Create metadata index
    */
   CREATE_METADATA_INDEX: (name: string, schema?: string) => {
-    const tableName = schema ? `"${schema}"."${name}"` : `"${name}"`;
+    // Validate and escape identifiers to prevent SQL injection
+    const validCollection =
+      SQLIdentifierValidator.validateSQLiteCollection(name);
+    const escapedCollection =
+      SQLIdentifierValidator.escapePostgreSQL(validCollection);
+
+    let tableName: string;
+    if (schema) {
+      const validSchema =
+        SQLIdentifierValidator.validatePostgreSQLSchema(schema);
+      const escapedSchema =
+        SQLIdentifierValidator.escapePostgreSQL(validSchema);
+      tableName = `${escapedSchema}.${escapedCollection}`;
+    } else {
+      tableName = escapedCollection;
+    }
+
     return `
-      CREATE INDEX IF NOT EXISTS idx_${name}_metadata 
+      CREATE INDEX IF NOT EXISTS idx_${validCollection}_metadata 
       ON ${tableName} USING GIN (metadata)
     `;
   },
@@ -62,13 +102,35 @@ export const VectorSQL = {
     options: any = {},
     schema?: string
   ) => {
-    const tableName = schema ? `"${schema}"."${name}"` : `"${name}"`;
+    // Validate and escape identifiers to prevent SQL injection
+    const validCollection =
+      SQLIdentifierValidator.validateSQLiteCollection(name);
+    const escapedCollection =
+      SQLIdentifierValidator.escapePostgreSQL(validCollection);
+
+    let tableName: string;
+    if (schema) {
+      const validSchema =
+        SQLIdentifierValidator.validatePostgreSQLSchema(schema);
+      const escapedSchema =
+        SQLIdentifierValidator.escapePostgreSQL(validSchema);
+      tableName = `${escapedSchema}.${escapedCollection}`;
+    } else {
+      tableName = escapedCollection;
+    }
+
     const distance = getDistanceOperator(metric);
 
     if (indexType === VectorIndexType.IVFFLAT) {
       const lists = options.lists || 100;
+      // Validate lists parameter
+      if (!Number.isInteger(lists) || lists < 1 || lists > 10000) {
+        throw new Error(
+          `Invalid lists parameter: ${lists}. Must be integer between 1 and 10000`
+        );
+      }
       return `
-        CREATE INDEX IF NOT EXISTS idx_${name}_vector 
+        CREATE INDEX IF NOT EXISTS idx_${validCollection}_vector 
         ON ${tableName} 
         USING ivfflat (embedding ${distance})
         WITH (lists = ${lists})
@@ -79,8 +141,23 @@ export const VectorSQL = {
     if (indexType === VectorIndexType.HNSW) {
       const m = options.m || 16;
       const efConstruction = options.efConstruction || 64;
+      // Validate HNSW parameters
+      if (!Number.isInteger(m) || m < 1 || m > 100) {
+        throw new Error(
+          `Invalid m parameter: ${m}. Must be integer between 1 and 100`
+        );
+      }
+      if (
+        !Number.isInteger(efConstruction) ||
+        efConstruction < 1 ||
+        efConstruction > 1000
+      ) {
+        throw new Error(
+          `Invalid efConstruction parameter: ${efConstruction}. Must be integer between 1 and 1000`
+        );
+      }
       return `
-        CREATE INDEX IF NOT EXISTS idx_${name}_vector 
+        CREATE INDEX IF NOT EXISTS idx_${validCollection}_vector 
         ON ${tableName} 
         USING hnsw (embedding ${distance})
         WITH (m = ${m}, ef_construction = ${efConstruction})
@@ -94,7 +171,23 @@ export const VectorSQL = {
    * Drop collection
    */
   DROP_COLLECTION: (name: string, schema?: string) => {
-    const tableName = schema ? `"${schema}"."${name}"` : `"${name}"`;
+    // Validate and escape identifiers to prevent SQL injection
+    const validCollection =
+      SQLIdentifierValidator.validateSQLiteCollection(name);
+    const escapedCollection =
+      SQLIdentifierValidator.escapePostgreSQL(validCollection);
+
+    let tableName: string;
+    if (schema) {
+      const validSchema =
+        SQLIdentifierValidator.validatePostgreSQLSchema(schema);
+      const escapedSchema =
+        SQLIdentifierValidator.escapePostgreSQL(validSchema);
+      tableName = `${escapedSchema}.${escapedCollection}`;
+    } else {
+      tableName = escapedCollection;
+    }
+
     return `DROP TABLE IF EXISTS ${tableName} CASCADE`;
   },
 

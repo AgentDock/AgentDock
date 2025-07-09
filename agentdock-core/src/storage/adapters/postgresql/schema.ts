@@ -5,6 +5,7 @@
 import { Pool } from 'pg';
 
 import { LogCategory, logger } from '../../../logging';
+import { SQLIdentifierValidator } from '../shared/sql-identifier-validator';
 
 /**
  * Initialize database tables and indexes
@@ -20,16 +21,19 @@ export async function initializeSchema(
     { schema }
   );
 
+  // Validate and escape schema name to prevent SQL injection
+  const secureSchema = SQLIdentifierValidator.securePostgreSQLSchema(schema);
+
   const client = await pool.connect();
   try {
     // Create schema if it doesn't exist
     if (schema !== 'public') {
-      await client.query(`CREATE SCHEMA IF NOT EXISTS ${schema}`);
+      await client.query(`CREATE SCHEMA IF NOT EXISTS ${secureSchema}`);
     }
 
-    // Create tables
+    // Create tables with validated schema name
     await client.query(`
-      CREATE TABLE IF NOT EXISTS ${schema}.kv_store (
+      CREATE TABLE IF NOT EXISTS ${secureSchema}.kv_store (
         key TEXT PRIMARY KEY,
         value JSONB NOT NULL,
         expires_at BIGINT,
@@ -42,18 +46,18 @@ export async function initializeSchema(
 
     await client.query(`
       CREATE INDEX IF NOT EXISTS idx_${schema}_kv_namespace 
-      ON ${schema}.kv_store(namespace)
+      ON ${secureSchema}.kv_store(namespace)
     `);
 
     await client.query(`
       CREATE INDEX IF NOT EXISTS idx_${schema}_kv_expires_at 
-      ON ${schema}.kv_store(expires_at)
+      ON ${secureSchema}.kv_store(expires_at)
       WHERE expires_at IS NOT NULL
     `);
 
-    // List table
+    // List table with validated schema name
     await client.query(`
-      CREATE TABLE IF NOT EXISTS ${schema}.list_store (
+      CREATE TABLE IF NOT EXISTS ${secureSchema}.list_store (
         key TEXT NOT NULL,
         position INTEGER NOT NULL,
         value JSONB NOT NULL,
@@ -65,7 +69,7 @@ export async function initializeSchema(
 
     await client.query(`
       CREATE INDEX IF NOT EXISTS idx_${schema}_list_namespace 
-      ON ${schema}.list_store(namespace)
+      ON ${secureSchema}.list_store(namespace)
     `);
 
     logger.debug(
@@ -85,11 +89,14 @@ export async function cleanupExpired(
   pool: Pool,
   schema: string
 ): Promise<number> {
+  // Validate and escape schema name to prevent SQL injection
+  const secureSchema = SQLIdentifierValidator.securePostgreSQLSchema(schema);
+
   const client = await pool.connect();
   try {
     const result = await client.query(
       `
-      DELETE FROM ${schema}.kv_store 
+      DELETE FROM ${secureSchema}.kv_store 
       WHERE expires_at IS NOT NULL 
       AND expires_at < $1
     `,

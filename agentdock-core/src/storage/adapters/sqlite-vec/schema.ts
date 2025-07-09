@@ -5,6 +5,7 @@
 import Database from 'better-sqlite3';
 
 import { LogCategory, logger } from '../../../logging';
+import { SQLIdentifierValidator } from '../shared/sql-identifier-validator';
 import { VectorCollectionConfig, VectorMetric } from './types';
 
 /**
@@ -105,13 +106,24 @@ export async function createVectorCollection(
 ): Promise<void> {
   const { name, dimension, metric = 'cosine' } = config;
 
-  // Create the vec0 virtual table
-  const createTableSQL = `CREATE VIRTUAL TABLE IF NOT EXISTS ${name} USING vec0(embedding float[${dimension}])`;
+  // Validate and escape collection name to prevent SQL injection
+  const secureCollectionName =
+    SQLIdentifierValidator.secureSQLiteCollection(name);
+
+  // Validate dimension parameter
+  if (!Number.isInteger(dimension) || dimension < 1 || dimension > 10000) {
+    throw new Error(
+      `Invalid dimension: ${dimension}. Must be integer between 1 and 10000`
+    );
+  }
+
+  // Create the vec0 virtual table with validated parameters
+  const createTableSQL = `CREATE VIRTUAL TABLE IF NOT EXISTS ${secureCollectionName} USING vec0(embedding float[${dimension}])`;
 
   try {
     db.prepare(createTableSQL).run();
 
-    // Track the collection in our metadata table
+    // Track the collection in our metadata table using parameterized query
     const insertMetadata = db.prepare(
       `INSERT OR REPLACE INTO vec_collections (name, dimension, metric) VALUES (?, ?, ?)`
     );
@@ -141,10 +153,14 @@ export async function dropVectorCollection(
   name: string
 ): Promise<void> {
   try {
-    // Drop the virtual table
-    db.prepare(`DROP TABLE IF EXISTS ${name}`).run();
+    // Validate and escape collection name to prevent SQL injection
+    const secureCollectionName =
+      SQLIdentifierValidator.secureSQLiteCollection(name);
 
-    // Remove from metadata
+    // Drop the virtual table with validated name
+    db.prepare(`DROP TABLE IF EXISTS ${secureCollectionName}`).run();
+
+    // Remove from metadata using parameterized query
     db.prepare('DELETE FROM vec_collections WHERE name = ?').run(name);
 
     logger.info(

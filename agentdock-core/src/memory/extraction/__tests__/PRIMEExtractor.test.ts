@@ -2,6 +2,7 @@
  * @fileoverview Tests for PRIMEExtractor
  */
 
+import { LLMProvider } from '../../../llm/types';
 import { CostTracker } from '../../tracking/CostTracker';
 import { MemoryMessage, MemoryType } from '../../types/common';
 import { PRIMEConfig, PRIMEExtractor, PRIMERule } from '../PRIMEExtractor';
@@ -17,7 +18,7 @@ describe('PRIMEExtractor', () => {
 
   beforeEach(() => {
     config = {
-      provider: 'anthropic',
+      provider: 'anthropic' as LLMProvider,
       apiKey: 'test-key',
       maxTokens: 4000,
       autoTierSelection: false,
@@ -50,17 +51,17 @@ describe('PRIMEExtractor', () => {
     test('should throw when provider is invalid', () => {
       const invalidConfig = {
         ...config,
-        provider: 'invalid-provider'
+        provider: 'invalid-provider' as LLMProvider
       };
 
       expect(() => new PRIMEExtractor(invalidConfig, mockCostTracker)).toThrow(
-        'Configuration error for provider: Invalid provider "invalid-provider". Must be one of: openai, anthropic, azure, bedrock'
+        'Configuration error for provider: Invalid provider "invalid-provider". Must be one of: openai, anthropic, cerebras, deepseek, gemini, groq'
       );
     });
 
     test('should apply environment variable defaults', () => {
       const envConfig = {
-        provider: 'openai',
+        provider: 'openai' as LLMProvider,
         apiKey: 'env-test-key',
         maxTokens: 2000,
         autoTierSelection: true,

@@ -3,6 +3,9 @@ import { Message } from 'agentdock-core';
 
 import { POST } from '@/app/api/chat/[agentId]/route';
 
+// Mock API key for tests
+process.env.OPENAI_API_KEY = 'test-key-for-tests';
+
 describe.skip('Chat Route E2E', () => {
   const mockMessages: Message[] = [{ id: '1', role: 'user', content: 'Hello' }];
 

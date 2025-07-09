@@ -12,6 +12,85 @@ import {
 } from '../types';
 
 /**
+ * Validate SQL identifier to prevent injection attacks.
+ * Only allows alphanumeric characters and underscores.
+ */
+function validateSQLIdentifier(identifier: string): string {
+  if (!identifier || typeof identifier !== 'string') {
+    throw new Error('SQL identifier must be a non-empty string');
+  }
+
+  // Remove any whitespace
+  const trimmed = identifier.trim();
+
+  // Check for valid identifier pattern (letters, numbers, underscores only)
+  const validPattern = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
+  if (!validPattern.test(trimmed)) {
+    throw new Error(
+      `Invalid SQL identifier: "${identifier}". Only alphanumeric characters and underscores are allowed.`
+    );
+  }
+
+  // Check length constraints
+  if (trimmed.length > 63) {
+    throw new Error(
+      `SQL identifier too long: "${identifier}". Maximum 63 characters allowed.`
+    );
+  }
+
+  // Check against reserved words (basic SQLite reserved words)
+  const reservedWords = [
+    'SELECT',
+    'INSERT',
+    'UPDATE',
+    'DELETE',
+    'DROP',
+    'CREATE',
+    'ALTER',
+    'TABLE',
+    'INDEX',
+    'VIEW',
+    'TRIGGER',
+    'DATABASE',
+    'AND',
+    'OR',
+    'NOT',
+    'NULL',
+    'TRUE',
+    'FALSE',
+    'WHERE',
+    'FROM',
+    'VALUES',
+    'ORDER',
+    'BY',
+    'LIMIT',
+    'GROUP',
+    'HAVING',
+    'UNION',
+    'JOIN',
+    'INNER',
+    'LEFT',
+    'RIGHT'
+  ];
+
+  if (reservedWords.includes(trimmed.toUpperCase())) {
+    throw new Error(`Cannot use reserved word as identifier: "${identifier}"`);
+  }
+
+  return trimmed;
+}
+
+/**
+ * Escape SQL identifier by wrapping in double quotes.
+ * This prevents injection while allowing the identifier to be used safely.
+ */
+function escapeIdentifier(identifier: string): string {
+  // Double any existing double quotes to escape them
+  const escaped = identifier.replace(/"/g, '""');
+  return `"${escaped}"`;
+}
+
+/**
  * Insert vector into collection using sqlite-vec vec0 virtual table
  */
 export async function insertVector(
@@ -22,19 +101,23 @@ export async function insertVector(
   options: VectorInsertOptions = {}
 ): Promise<void> {
   try {
+    // SECURITY FIX: Validate and escape collection name to prevent SQL injection
+    const validatedCollection = validateSQLIdentifier(collection);
+    const escapedCollection = escapeIdentifier(validatedCollection);
+
     // Convert vector to JSON string format for sqlite-vec
     const vectorJson = JSON.stringify(vector);
 
-    // Insert into the vec0 virtual table
+    // Insert into the vec0 virtual table with escaped collection name
     const stmt = db.prepare(
-      `INSERT INTO ${collection}(rowid, embedding) VALUES (?, ?)`
+      `INSERT INTO ${escapedCollection}(rowid, embedding) VALUES (?, ?)`
     );
     stmt.run(id, vectorJson);
 
     logger.debug(
       LogCategory.STORAGE,
       'SQLiteVec',
-      `Inserted vector for id ${id} into collection ${collection}`,
+      `Inserted vector for id ${id} into collection ${validatedCollection}`,
       { dimensions: vector.length }
     );
   } catch (error) {
@@ -63,15 +146,19 @@ export async function searchVectors(
   const { limit = 10, threshold } = options;
 
   try {
+    // SECURITY FIX: Validate and escape collection name to prevent SQL injection
+    const validatedCollection = validateSQLIdentifier(collection);
+    const escapedCollection = escapeIdentifier(validatedCollection);
+
     // Convert query vector to JSON string
     const queryVectorJson = JSON.stringify(queryVector);
 
-    // Build the search query using sqlite-vec's MATCH syntax
+    // Build the search query using sqlite-vec's MATCH syntax with escaped collection name
     let sql = `
       SELECT 
         rowid as id,
         distance
-      FROM ${collection}
+      FROM ${escapedCollection}
       WHERE embedding MATCH ?
       ORDER BY distance ASC
       LIMIT ?
@@ -85,7 +172,7 @@ export async function searchVectors(
         SELECT 
           rowid as id,
           distance
-        FROM ${collection}
+        FROM ${escapedCollection}
         WHERE embedding MATCH ? AND distance <= ?
         ORDER BY distance ASC
         LIMIT ?
@@ -103,7 +190,7 @@ export async function searchVectors(
     }));
 
     logger.debug(LogCategory.STORAGE, 'SQLiteVec', `Vector search completed`, {
-      collection,
+      collection: validatedCollection,
       queryDimensions: queryVector.length,
       resultsCount: results.length,
       limit,
@@ -131,24 +218,28 @@ export async function updateVector(
   vector: number[]
 ): Promise<void> {
   try {
+    // SECURITY FIX: Validate and escape collection name to prevent SQL injection
+    const validatedCollection = validateSQLIdentifier(collection);
+    const escapedCollection = escapeIdentifier(validatedCollection);
+
     const vectorJson = JSON.stringify(vector);
 
-    // Update the vector using rowid
+    // Update the vector using rowid with escaped collection name
     const stmt = db.prepare(
-      `UPDATE ${collection} SET embedding = ? WHERE rowid = ?`
+      `UPDATE ${escapedCollection} SET embedding = ? WHERE rowid = ?`
     );
     const result = stmt.run(vectorJson, id);
 
     if (result.changes === 0) {
       throw new Error(
-        `Vector with id ${id} not found in collection ${collection}`
+        `Vector with id ${id} not found in collection ${validatedCollection}`
       );
     }
 
     logger.debug(
       LogCategory.STORAGE,
       'SQLiteVec',
-      `Updated vector for id ${id} in collection ${collection}`,
+      `Updated vector for id ${id} in collection ${validatedCollection}`,
       { dimensions: vector.length }
     );
   } catch (error) {
@@ -174,7 +265,11 @@ export async function deleteVector(
   id: string
 ): Promise<boolean> {
   try {
-    const stmt = db.prepare(`DELETE FROM ${collection} WHERE rowid = ?`);
+    // SECURITY FIX: Validate and escape collection name to prevent SQL injection
+    const validatedCollection = validateSQLIdentifier(collection);
+    const escapedCollection = escapeIdentifier(validatedCollection);
+
+    const stmt = db.prepare(`DELETE FROM ${escapedCollection} WHERE rowid = ?`);
     const result = stmt.run(id);
 
     const success = result.changes > 0;
@@ -183,13 +278,13 @@ export async function deleteVector(
       logger.debug(
         LogCategory.STORAGE,
         'SQLiteVec',
-        `Deleted vector for id ${id} from collection ${collection}`
+        `Deleted vector for id ${id} from collection ${validatedCollection}`
       );
     } else {
       logger.warn(
         LogCategory.STORAGE,
         'SQLiteVec',
-        `Vector with id ${id} not found in collection ${collection}`
+        `Vector with id ${id} not found in collection ${validatedCollection}`
       );
     }
 
@@ -217,8 +312,12 @@ export async function getVector(
   id: string
 ): Promise<number[] | null> {
   try {
+    // SECURITY FIX: Validate and escape collection name to prevent SQL injection
+    const validatedCollection = validateSQLIdentifier(collection);
+    const escapedCollection = escapeIdentifier(validatedCollection);
+
     const stmt = db.prepare(
-      `SELECT embedding FROM ${collection} WHERE rowid = ?`
+      `SELECT embedding FROM ${escapedCollection} WHERE rowid = ?`
     );
     const row = stmt.get(id) as { embedding: string } | undefined;
 
@@ -232,7 +331,7 @@ export async function getVector(
     logger.debug(
       LogCategory.STORAGE,
       'SQLiteVec',
-      `Retrieved vector for id ${id} from collection ${collection}`,
+      `Retrieved vector for id ${id} from collection ${validatedCollection}`,
       { dimensions: vector.length }
     );
 
@@ -259,14 +358,20 @@ export async function getCollectionStats(
   collection: string
 ): Promise<{ count: number; avgDistance?: number }> {
   try {
-    // Get count of vectors in collection
-    const countStmt = db.prepare(`SELECT COUNT(*) as count FROM ${collection}`);
+    // SECURITY FIX: Validate and escape collection name to prevent SQL injection
+    const validatedCollection = validateSQLIdentifier(collection);
+    const escapedCollection = escapeIdentifier(validatedCollection);
+
+    // Get count of vectors in collection with escaped collection name
+    const countStmt = db.prepare(
+      `SELECT COUNT(*) as count FROM ${escapedCollection}`
+    );
     const countResult = countStmt.get() as { count: number };
 
     logger.debug(
       LogCategory.STORAGE,
       'SQLiteVec',
-      `Collection stats for ${collection}`,
+      `Collection stats for ${validatedCollection}`,
       { count: countResult.count }
     );
 

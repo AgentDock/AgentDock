@@ -12,6 +12,7 @@ import { z } from 'zod';
 
 import { CoreLLM } from '../../../llm/core-llm';
 import { createLLM } from '../../../llm/create-llm';
+import { LLMProvider } from '../../../llm/types';
 import { LogCategory, logger } from '../../../logging';
 import { generateId } from '../../../storage/utils';
 import { ConsolidationResult } from '../../base-types';
@@ -91,7 +92,7 @@ export class MemoryConsolidator {
     // Only create LLM if summarization is enabled
     if (config.enableLLMSummarization && config.llmConfig) {
       this.llm = createLLM({
-        provider: config.llmConfig.provider as any,
+        provider: config.llmConfig.provider as LLMProvider,
         model: config.llmConfig.model,
         apiKey:
           process.env[`${config.llmConfig.provider.toUpperCase()}_API_KEY`] ||

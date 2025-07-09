@@ -413,6 +413,54 @@ for await (const chunk of stream) {
 }
 ```
 
+## Embedding Support
+
+When adding a new LLM provider, consider whether it supports embeddings for memory connections:
+
+### **Providers with Embedding Support**
+- ✅ **OpenAI** - `text-embedding-3-small`, `text-embedding-3-large` 
+- ✅ **Google** - `text-embedding-004`
+- ✅ **Mistral** - `mistral-embed` (when AI SDK package available)
+
+### **Providers without Embedding Support**  
+- ❌ **Anthropic, Groq, Cerebras, DeepSeek** - No embedding models available
+
+### **Implementation Notes**
+- Embedding support is **optional** - agents work perfectly without memory connections
+- Missing embedding support gracefully disables memory connection features
+- The LLM layer handles provider validation and throws clear error messages
+- Update the provider list in `createEmbedding()` when new embedding providers are added
+
+### **Adding Embedding Support**
+
+If your provider supports embeddings, add it to `src/llm/create-embedding.ts`:
+
+```typescript
+export function createEmbedding(config: EmbeddingConfig): EmbeddingModel<string> {
+  switch (config.provider) {
+    case 'openai':
+      // OpenAI implementation
+      break;
+    case 'google':
+      // Google implementation
+      break;
+    case 'your-provider':
+      if (!config.apiKey) {
+        throw createError('llm', 'Your Provider API key is required for embeddings', ErrorCode.LLM_API_KEY);
+      }
+      
+      const provider = createYourProvider({ apiKey: config.apiKey });
+      return provider.embedding(config.model || 'your-embedding-model');
+    
+    case 'your-provider-without-embeddings':
+      throw createError('llm', 'Your Provider does not currently support embeddings', ErrorCode.LLM_EXECUTION);
+      
+    default:
+      throw createError('llm', `Provider ${config.provider} does not support embeddings`, ErrorCode.LLM_EXECUTION);
+  }
+}
+```
+
 ## Conclusion
 
 By following these steps, you can add a new LLM provider to the AgentDock Core framework. The unified implementation makes it easy to add new providers while maintaining a consistent interface for all LLM operations. 

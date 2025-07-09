@@ -16,7 +16,7 @@
   "nodes": ["llm.groq", "search"],
   "nodeConfigurations": {
     "llm.groq": {
-      "model": "qwen-qwq-32b",
+      "model": "qwen/qwen3-32b",
       "temperature": 0.7,
       "maxTokens": 4096,
       "useCustomApiKey": false

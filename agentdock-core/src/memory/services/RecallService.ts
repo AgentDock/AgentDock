@@ -1132,7 +1132,16 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
       }
 
       const embeddingModel = createEmbedding({
-        provider: provider as any,
+        provider: provider as
+          | 'openai'
+          | 'google'
+          | 'mistral'
+          | 'voyage'
+          | 'cohere'
+          | 'anthropic'
+          | 'groq'
+          | 'cerebras'
+          | 'deepseek',
         apiKey,
         model: this.embeddingConfig.model
       });

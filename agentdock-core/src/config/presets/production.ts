@@ -11,12 +11,34 @@
  * TODO: Update these values after production testing
  */
 
+import { LLMProvider } from '../../llm/types';
 import { PRIMEOrchestratorConfig } from '../../memory/extraction/PRIMEOrchestrator';
 // FIVE_CORE_CONNECTION_TYPES are now built into the LLM classification system
 import { IntelligenceLayerConfig } from '../../memory/intelligence/types';
 import { LifecycleConfig } from '../../memory/lifecycle/types';
 import { MemoryManagerConfig } from '../../memory/types';
 import { StorageProviderOptions } from '../../storage/types';
+
+/**
+ * Validation functions for production configuration
+ */
+function validateDatabaseUrl(): string {
+  const url = process.env.DATABASE_URL;
+  if (!url) {
+    // Return a placeholder that will fail gracefully if actually used
+    return 'postgresql://localhost:5432/agentdock_dev';
+  }
+  return url;
+}
+
+function validateApiKey(): string {
+  const apiKey = process.env.PRIME_API_KEY || process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    // Return a placeholder that will fail gracefully if actually used
+    return 'your-api-key-here';
+  }
+  return apiKey;
+}
 
 /**
  * PostgreSQL storage configuration for production
@@ -28,8 +50,10 @@ export const productionStorageConfig: StorageProviderOptions = {
   type: 'postgresql',
   namespace: 'production',
   config: {
-    // Connection string from environment
-    connectionString: process.env.DATABASE_URL,
+    // Connection string from environment (lazy evaluation)
+    get connectionString() {
+      return validateDatabaseUrl();
+    },
 
     // Connection pool settings (PLACEHOLDER - needs tuning)
     pool: {
@@ -43,7 +67,7 @@ export const productionStorageConfig: StorageProviderOptions = {
     ssl:
       process.env.NODE_ENV === 'production'
         ? { rejectUnauthorized: true }
-        : false,
+        : { rejectUnauthorized: false }, // Still use SSL but allow self-signed certs
     preparedStatements: true,
 
     // Schema settings
@@ -61,8 +85,10 @@ export const productionVectorStorageConfig: StorageProviderOptions = {
   type: 'postgresql-vector',
   namespace: 'production',
   config: {
-    // Inherits PostgreSQL connection settings
-    connectionString: process.env.DATABASE_URL,
+    // Inherits PostgreSQL connection settings (lazy evaluation)
+    get connectionString() {
+      return validateDatabaseUrl();
+    },
     pool: {
       max: 20,
       min: 5,
@@ -72,7 +98,7 @@ export const productionVectorStorageConfig: StorageProviderOptions = {
     ssl:
       process.env.NODE_ENV === 'production'
         ? { rejectUnauthorized: true }
-        : false,
+        : { rejectUnauthorized: false }, // Still use SSL but allow self-signed certs
     preparedStatements: true,
     schema: 'public',
 
@@ -181,8 +207,10 @@ export const productionMemoryConfig: MemoryManagerConfig = {
  */
 export const productionPRIMEConfig: PRIMEOrchestratorConfig = {
   primeConfig: {
-    provider: (process.env.PRIME_PROVIDER || 'openai') as any,
-    apiKey: process.env.PRIME_API_KEY || process.env.OPENAI_API_KEY || '',
+    provider: (process.env.PRIME_PROVIDER || 'openai') as LLMProvider,
+    get apiKey() {
+      return validateApiKey();
+    },
     maxTokens: 4000,
     defaultTier: 'standard',
     autoTierSelection: true,

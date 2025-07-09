@@ -310,23 +310,19 @@ export {
   // PRIME extraction system
   PRIMEExtractor,
   PRIMEOrchestrator,
-  createPRIMEOrchestrator
+  createPRIMEOrchestrator,
+  // Factory functions for easy setup
+  createMemorySystem,
+  createLocalMemory,
+  createProductionMemory,
+  type MemorySystem,
+  type MemorySystemOptions,
+  // Preset configurations for RecallService
+  RECALL_CONFIG_PRESETS,
+  getRecallPreset,
+  validateHybridWeights,
+  type RecallPresetName
 } from './memory';
-
-/**
- * @todo SUGGESTED: Add these convenience exports after implementing factory functions
- * ```typescript
- * // Would be exported after implementing the factory functions in ./memory:
- * export {
- *   createMemorySystem,      // Complete memory system with all components
- *   createRecallService,     // Standalone RecallService with presets
- *   createQuickRecall,       // Fastest way to get a working RecallService
- *   createMemoryManager,     // Standalone MemoryManager with presets
- *   RECALL_CONFIG_PRESETS,   // Preset configurations for RecallService
- *   MEMORY_CONFIG_PRESETS    // Preset configurations for MemoryManager
- * } from './memory';
- * ```
- */
 
 // Export all orchestration components explicitly
 export {

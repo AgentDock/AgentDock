@@ -14,11 +14,13 @@ import { z } from 'zod';
 import { createError, ErrorCode } from '../../../errors/index';
 import {
   createEmbedding,
+  EmbeddingConfig,
   getDefaultEmbeddingModel,
   getEmbeddingDimensions
 } from '../../../llm';
 import { CoreLLM } from '../../../llm/core-llm';
 import { createLLM } from '../../../llm/create-llm';
+import { LLMProvider } from '../../../llm/types';
 import { LogCategory, logger } from '../../../logging';
 import {
   MemoryConnection,
@@ -29,7 +31,12 @@ import { CostTracker } from '../../tracking/CostTracker';
 import { Memory } from '../../types/common';
 import { EmbeddingService } from '../embeddings/EmbeddingService';
 import { ConnectionGraph } from '../graph/ConnectionGraph';
-import { IntelligenceLayerConfig } from '../types';
+import { IntelligenceLayerConfig, TemporalPattern } from '../types';
+
+// Extended temporal pattern with additional properties used in this file
+interface ExtendedTemporalPattern extends TemporalPattern {
+  peakHours?: number[];
+}
 
 // Zod schema for LLM response validation
 const ConnectionAnalysisSchema = z.object({
@@ -709,8 +716,12 @@ export class MemoryConnectionManager {
     memory1: Memory,
     memory2: Memory
   ): ConnectionAnalysis | null {
-    const insights1 = memory1.metadata?.temporalInsights as any;
-    const insights2 = memory2.metadata?.temporalInsights as any;
+    const insights1 = memory1.metadata?.temporalInsights as
+      | { patterns: ExtendedTemporalPattern[] }
+      | undefined;
+    const insights2 = memory2.metadata?.temporalInsights as
+      | { patterns: ExtendedTemporalPattern[] }
+      | undefined;
     const patterns1 = insights1?.patterns;
     const patterns2 = insights2?.patterns;
 
@@ -719,8 +730,8 @@ export class MemoryConnectionManager {
     }
 
     // Check for same burst period
-    const burst1 = patterns1.find((p: any) => p.type === 'burst');
-    const burst2 = patterns2.find((p: any) => p.type === 'burst');
+    const burst1 = patterns1.find((p) => p.type === 'burst');
+    const burst2 = patterns2.find((p) => p.type === 'burst');
 
     if (burst1 && burst2) {
       // Calculate time distance between memories
@@ -737,12 +748,12 @@ export class MemoryConnectionManager {
     }
 
     // Check for matching daily patterns
-    const daily1 = patterns1.find((p: any) => p.type === 'daily');
-    const daily2 = patterns2.find((p: any) => p.type === 'daily');
+    const daily1 = patterns1.find((p) => p.type === 'daily');
+    const daily2 = patterns2.find((p) => p.type === 'daily');
 
     if (daily1?.peakHours && daily2?.peakHours) {
       const commonHours = daily1.peakHours.filter((h: number) =>
-        daily2.peakHours.includes(h)
+        daily2.peakHours!.includes(h)
       );
 
       if (commonHours.length > 0) {
@@ -884,7 +895,11 @@ Return JSON: {"connectionType": "type", "confidence": 0.0-1.0, "reasoning": "bri
             this.config.connectionDetection.model ||
             this.getStandardModel(provider));
 
-      this.llm = createLLM({ provider: provider as any, apiKey, model });
+      this.llm = createLLM({
+        provider: provider as LLMProvider,
+        apiKey,
+        model
+      });
 
       logger.debug(
         LogCategory.STORAGE,
@@ -1257,7 +1272,7 @@ Return JSON: {"connectionType": "type", "confidence": 0.0-1.0, "reasoning": "bri
         );
         this.embeddingConfig.provider = 'mock'; // Update config to reflect mock usage
       } else {
-        // Real provider needs API key
+        // Use LLM layer to create embedding - it handles provider support checking
         const apiKey = process.env[`${provider.toUpperCase()}_API_KEY`];
 
         if (!apiKey) {
@@ -1273,8 +1288,9 @@ Return JSON: {"connectionType": "type", "confidence": 0.0-1.0, "reasoning": "bri
           );
         }
 
+        // Let LLM layer handle provider support - it will throw proper errors
         this.embeddingModel = createEmbedding({
-          provider: provider as any,
+          provider: provider as EmbeddingConfig['provider'],
           apiKey,
           model: this.embeddingConfig.model,
           dimensions: this.embeddingConfig.dimensions

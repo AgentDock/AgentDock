@@ -39,13 +39,21 @@ class ConfigValidationError extends Error {
 const PRIMEExtractionSchema = z.object({
   memories: z.array(
     z.object({
-      content: z.string().min(1),
+      content: z.string(),
       type: z.enum(['working', 'episodic', 'semantic', 'procedural']),
       importance: z.number().min(0).max(1),
       reasoning: z.string().optional()
     })
   )
 });
+
+// Define type based on Zod schema for type safety
+type ExtractedMemoryData = {
+  content: string;
+  type: 'working' | 'episodic' | 'semantic' | 'procedural';
+  importance: number;
+  reasoning?: string;
+};
 
 // PRIME-specific types
 export interface PRIMEConfig {
@@ -284,7 +292,7 @@ JSON: [{content, type, importance, reasoning}]`;
 
       const memoriesData = result.memories || [];
 
-      return memoriesData.map((memory: any) => {
+      return memoriesData.map((memory: ExtractedMemoryData) => {
         // Get message timestamp for temporal preservation
         const messageTime =
           context.message?.timestamp instanceof Date

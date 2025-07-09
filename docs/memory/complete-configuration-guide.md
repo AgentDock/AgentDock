@@ -15,10 +15,19 @@ import { createMemorySystem } from 'agentdock-core';
 
 const memory = await createMemorySystem();
 
-// Store memory
+// METHOD 1: Manual Direct Storage (bypasses PRIME)
 await memory.store('user-123', 'User prefers dark mode');
 
-// Recall memory  
+// METHOD 2: Automatic PRIME Extraction (AI-powered)
+const extractedMemories = await memory.addMessage('user-123', {
+  id: 'msg-123',
+  agentId: 'default',
+  content: 'I love dark mode and high contrast themes',
+  role: 'user',
+  timestamp: Date.now()
+});
+
+// Recall memories (works with both methods)
 const results = await memory.recall('user-123', 'user preferences');
 ```
 
@@ -72,6 +81,68 @@ const memory = await createMemorySystem({
 
 ---
 
+## 🧠 **Memory Creation Methods**
+
+The memory system provides two distinct methods for creating memories:
+
+### **Method 1: Manual Direct Storage**
+Use when you know exactly what memory to create. Bypasses AI extraction.
+
+```typescript
+// Direct storage with full control
+await memoryManager.store(
+  'user-123',           // userId
+  'agent-456',          // agentId
+  'User is allergic to peanuts',  // content
+  MemoryType.SEMANTIC,  // type: semantic, episodic, working, procedural
+  { 
+    timestamp: Date.now(),      // Optional: custom timestamp
+    neverDecay: true,          // Optional: prevent decay
+    customHalfLife: 365        // Optional: days before 50% decay
+  }
+);
+```
+
+**Best for:**
+- Critical information (medical conditions, legal requirements)
+- Pre-processed or validated data
+- Migration from other systems
+- Testing and debugging
+
+### **Method 2: Automatic PRIME Extraction**
+AI analyzes messages to extract multiple relevant memories automatically.
+
+```typescript
+// Let AI determine what's important
+const memories = await memory.addMessage('user-123', {
+  id: 'msg-789',
+  agentId: 'agent-456',
+  content: 'I work night shifts so I prefer afternoon meetings. Also, I\'m lactose intolerant.',
+  role: 'user',
+  timestamp: Date.now()
+});
+// Returns: Array of extracted memories with AI-determined types and importance
+```
+
+**Best for:**
+- Natural conversations
+- Complex messages with multiple facts
+- When you want AI to determine importance
+- Real-time chat applications
+
+### **Comparison**
+
+| Feature | Manual Storage | PRIME Extraction |
+|---------|---------------|------------------|
+| AI Processing | None | Full analysis |
+| Control | Complete | AI-guided |
+| Speed | Fastest | Slower (AI processing) |
+| Cost | Storage only | Storage + AI tokens |
+| Memory Count | 1 per call | 0-N per message |
+| Use Case | Known facts | Conversations |
+
+---
+
 ## 🎛️ **Environment Variables That Actually Work**
 
 ### **Minimal Setup (Just Works™)**
@@ -92,16 +163,16 @@ CONNECTION_ALWAYS_ADVANCED=true       # ✅ VERIFIED WORKING
 ```bash
 # Use same model for everything (simple & predictable)
 OPENAI_API_KEY=sk-xxx
-PRIME_MODEL=gpt-4o                    # ✅ VERIFIED WORKING
-CONNECTION_MODEL=gpt-4o               # ✅ VERIFIED WORKING
+PRIME_MODEL=gpt-4.1                   # ✅ VERIFIED WORKING
+CONNECTION_MODEL=gpt-4.1              # ✅ VERIFIED WORKING
 ```
 
 ### **Cost Optimization**
 ```bash
 # Use cheapest models (save money)
 OPENAI_API_KEY=sk-xxx
-PRIME_MODEL=gpt-4o-mini              # ✅ VERIFIED WORKING
-CONNECTION_MODEL=gpt-4o-mini         # ✅ VERIFIED WORKING
+PRIME_MODEL=gpt-4.1-mini             # ✅ VERIFIED WORKING
+CONNECTION_MODEL=gpt-4.1-mini        # ✅ VERIFIED WORKING
 ```
 
 ### **Smart Balance (Default)**
@@ -139,8 +210,8 @@ const memory = await createMemorySystem();
 **Environment Variables:**
 ```bash
 OPENAI_API_KEY=sk-xxx
-PRIME_MODEL=gpt-4o-mini     # Saves ~80% on costs
-CONNECTION_MODEL=gpt-4o-mini
+PRIME_MODEL=gpt-4.1-mini    # Saves ~80% on costs
+CONNECTION_MODEL=gpt-4.1-mini
 ```
 
 ### Example 2: Medical App (Safety First)
@@ -154,10 +225,10 @@ const memory = await createMemorySystem({
 ```
 **Environment Variables:**
 ```bash
-ANTHROPIC_API_KEY=sk-ant-xxx
+OPENAI_API_KEY=sk-xxx
 PRIME_DEFAULT_TIER=advanced      # Always use best models
-CONNECTION_ALWAYS_ADVANCED=true   # Safety first
-PRIME_PROVIDER=anthropic         # Conservative AI provider
+CONNECTION_ALWAYS_ADVANCED=true  # Safety first
+PRIME_PROVIDER=openai            # Industry standard provider
 ```
 
 ### Example 3: Customer Support (High Volume)
@@ -221,9 +292,9 @@ const memory = await createMemorySystem({
     // Custom PRIME configuration
     prime: {
       primeConfig: {
-        provider: 'anthropic',
-        standardModel: 'claude-3-haiku-20240307',
-        advancedModel: 'claude-3-sonnet-20240229',
+        provider: 'openai',
+        standardModel: 'gpt-4.1-mini',
+        advancedModel: 'gpt-4.1',
         autoTierSelection: true,
         tierThresholds: {
           advancedMinChars: 300,  // Custom threshold
@@ -244,7 +315,17 @@ const memory = await createMemorySystem({
     recall: {
       defaultLimit: 20,          // More results
       cacheResults: true,
-      cacheTTL: 600             // 10-minute cache
+      cacheTTL: 600,             // 10-minute cache
+      defaultConnectionHops: 2   // Graph traversal depth: 1=direct, 2=friends-of-friends, 3=research-depth
+    },
+
+    // Intelligence layer configuration
+    intelligence: {
+      temporal: { enabled: true },           // Enable temporal pattern analysis
+      connectionDetection: {
+        enabled: true,                       // Enable memory connections
+        method: 'embedding-only'             // Cost-optimized connection discovery
+      }
     },
     
     // Custom storage configuration for pgvector
@@ -269,12 +350,62 @@ const memory = await createMemorySystem({
 
 ---
 
+## 🧠 **Intelligence Layer Configuration**
+
+The intelligence layer adds advanced memory features like temporal patterns and connection discovery:
+
+### **Temporal Pattern Analysis**
+```typescript
+intelligence: {
+  temporal: { enabled: true }  // Analyzes memory access patterns over time
+}
+```
+- **What it does**: Detects daily, weekly, and burst patterns in memory creation
+- **Benefits**: Provides relevance boost during peak activity hours
+- **Storage**: Patterns stored as `temporalInsights` in memory metadata
+- **Performance**: Statistical analysis with optional LLM enhancement
+
+### **Connection Discovery**
+```typescript
+intelligence: {
+  connectionDetection: {
+    enabled: true,
+    method: 'embedding-only'  // Cost-optimized approach
+  }
+}
+```
+- **What it does**: Automatically discovers relationships between memories
+- **Methods**: `embedding-only` (fast, cheap) or `enhanced` (includes LLM analysis)
+- **Connection types**: similar, related, causes, part_of, opposite
+- **Performance**: 65% cost reduction through smart triage
+
+### **Connection Hops Configuration**
+```typescript
+recall: {
+  defaultConnectionHops: 2  // How deep to traverse memory connections
+}
+```
+- **1 hop**: Direct connections only (fastest)
+- **2 hops**: Friends-of-friends (balanced)  
+- **3 hops**: Research depth (most comprehensive)
+- **Presets**: Default/Performance/Precision use 1, Research uses 3
+
+### **Evolution Tracking**
+Evolution tracking is automatically enabled when storage supports it:
+```typescript
+// Events tracked: created, accessed, updated, connected
+// Storage: via storage.evolution.trackEvent() interface
+// Performance: Batched processing for efficiency
+```
+
+---
+
 ## 🔑 **Environment Variables Reference**
 
 ### **Core System Variables**
 ```bash
 # Embedding Configuration
-EMBEDDING_PROVIDER=openai             # Provider: openai, anthropic, etc
+EMBEDDING_PROVIDER=openai             # Provider: openai
 EMBEDDING_MODEL=text-embedding-3-small # Model for embeddings
 
 # Recall Cache Configuration (Performance Optimization)
@@ -291,9 +422,9 @@ PRIME_API_KEY=sk-xxx                  # Dedicated API key
 OPENAI_API_KEY=sk-xxx                 # Fallback API key
 
 # 2-Tier Model Control ✅ VERIFIED
-PRIME_MODEL=gpt-4o                    # Override both tiers
-PRIME_STANDARD_MODEL=gpt-4o-mini      # Standard tier only
-PRIME_ADVANCED_MODEL=gpt-4o           # Advanced tier only  
+PRIME_MODEL=gpt-4.1                   # Override both tiers
+PRIME_STANDARD_MODEL=gpt-4.1-mini     # Standard tier only
+PRIME_ADVANCED_MODEL=gpt-4.1          # Advanced tier only  
 PRIME_DEFAULT_TIER=standard           # Force tier (standard|advanced)
 
 # Smart Thresholds
@@ -313,9 +444,9 @@ CONNECTION_PROVIDER=openai            # Override provider
 CONNECTION_API_KEY=sk-xxx             # Override API key
 
 # 2-Tier Model Control ✅ VERIFIED  
-CONNECTION_MODEL=gpt-4o               # Override both tiers
-CONNECTION_STANDARD_MODEL=gpt-4o-mini # Standard tier only
-CONNECTION_ENHANCED_MODEL=gpt-4o      # Advanced tier only
+CONNECTION_MODEL=gpt-4.1              # Override both tiers
+CONNECTION_STANDARD_MODEL=gpt-4.1-mini # Standard tier only
+CONNECTION_ENHANCED_MODEL=gpt-4.1     # Advanced tier only
 CONNECTION_ALWAYS_ADVANCED=false      # Force advanced (true|false)
 CONNECTION_PREFER_QUALITY=false       # Bias toward quality in production
 
@@ -407,15 +538,13 @@ const results = await memory.recall('user-123', 'JavaScript', {
 ```bash
 # Fix: Set a provider API key
 export OPENAI_API_KEY=sk-xxx
-# or
-export ANTHROPIC_API_KEY=sk-ant-xxx
 ```
 
 ### "High API costs"
 ```bash
 # Fix: Use cheaper models
-export PRIME_MODEL=gpt-4o-mini
-export CONNECTION_MODEL=gpt-4o-mini
+export PRIME_MODEL=gpt-4.1-mini
+export CONNECTION_MODEL=gpt-4.1-mini
 ```
 
 ### "Storage connection failed"
@@ -534,9 +663,8 @@ const memory = await createMemorySystem({
 
 ## 📖 **Related Documentation**
 
-- [Memory Types Deep Dive](./memory-types.md)
 - [Architecture Overview](./architecture-overview.md)
-- [Testing Guide](./testing-connections.md)
+- [Memory Connections](./memory-connections.md)
 
 ---
 

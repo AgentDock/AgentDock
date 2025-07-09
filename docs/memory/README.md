@@ -45,6 +45,22 @@ Each layer serves a distinct purpose and works together to create agents that tr
 | Memory Connections | Implemented | Progressive enhancement approach |
 | Preset Configurations | Implemented | Default, Precision, Performance, Research |
 | Lazy Memory Decay System | Implemented | On-demand decay calculation, 65-100% write avoidance |
+| Temporal Pattern Integration | Implemented | Pattern storage, recall boost, decay influence |
+| Configurable Connection Hops | Implemented | 1-3 hops based on recall preset |
+| Basic Evolution Tracking | Implemented | Memory lifecycle events (created, accessed) |
+
+## Work in Progress - Full System Integration
+
+The memory system is production-ready and the following integrations are being developed to wire everything together:
+
+| Integration | Target | Description |
+|-------------|--------|-------------|
+| Message Persistence Layer | Q3 2025 | Server-side conversation history storage for seamless memory extraction |
+| HTTP/REST Adapter | Q3 2025 | Universal API access for agentdock-core operations |
+| Session Management Bridge | Q3 2025 | Automatic conversation-to-memory pipeline |
+| Workflow Learning Service | Q3 2025 | Public API for procedural memory patterns |
+
+These enhancements will enable the memory system to automatically process conversations from any HTTP source. The agentdock-core transformation and open source client evolution are actively under development.
 
 ## How AgentDock Memory Works
 
@@ -233,18 +249,43 @@ const memory = await createMemorySystem({
   databaseUrl: process.env.DATABASE_URL
 });
 
-// Three integration approaches:
-// 1. Direct storage: memory.store(userId, content, type)
-// 2. Message processing: memory.addMessage(userId, message)  
-// 3. Batch conversation analysis: Use PRIME extraction system
-import { PRIMEExtractor, PRIMEOrchestrator } from 'agentdock-core';
+// Two primary methods for adding memories:
 
-// Historical memory injection with timestamps
-const memoryId = await memoryManager.store(
+// METHOD 1: Manual Direct Storage (bypasses PRIME extraction)
+// Use when you know exactly what memory to create
+const manualMemoryId = await memoryManager.store(
+  'user-123',
+  'agent-456', 
+  'User prefers dark mode interfaces',
+  MemoryType.SEMANTIC  // or 'semantic' string
+);
+
+// METHOD 2: Automatic PRIME Extraction (AI-powered)
+// Processes messages to intelligently extract multiple memories
+const extractedMemories = await memory.addMessage('user-123', {
+  id: 'msg-789',
+  agentId: 'agent-456',
+  content: 'I prefer email notifications over SMS and usually check my email in the morning',
+  role: 'user',
+  timestamp: Date.now()
+});
+// Returns array of memories extracted by AI
+
+// Advanced: Batch conversation processing with PRIME
+import { PRIMEOrchestrator } from 'agentdock-core';
+const result = await primeOrchestrator.processMessages(
+  'user-123',
+  'agent-456',
+  conversationMessages  // Array of messages
+);
+
+// Advanced: Historical memory injection with custom timestamps
+// Note: Custom timestamps only work with vector-enabled storage
+const historicalMemoryId = await memoryManager.store(
   'user-123',
   'agent-456',
   'User completed onboarding last year',
-  'episodic',
+  MemoryType.EPISODIC,
   { timestamp: Date.now() - (365 * 24 * 60 * 60 * 1000) }
 );
 ```
@@ -366,13 +407,11 @@ This is an open-source framework. Users are responsible for:
 ## Documentation Navigation
 
 - **[Complete Configuration Guide](./complete-configuration-guide.md)** - **START HERE** - ALL configuration options including 2-tier models, storage, presets, and environment variables
-- **[Connection System Introduction](./connection-system-intro.md)** - **PUBLIC-FACING** - Brief overview of memory connections for non-technical audiences
 - **[Architecture Overview](./architecture-overview.md)** - Technical architecture and implementation details
 - **[Conversational RAG](./retrieval-augmented-generation.md)** - RAG implementation and hybrid retrieval strategy  
-- **[Memory Connections](./memory-connections.md)** - Technical connection discovery and configuration
+- **[Memory Connections](./memory-connections.md)** - **INCLUDES TLDR** - Complete guide to connection discovery with simplified overview
 - **[Graph Architecture](./graph-architecture.md)** - Technical implementation of connection system
 - **[Memory Consolidation](./consolidation-guide.md)** - Memory optimization and lifecycle management
-- **[Testing Connections](./testing-connections.md)** - How to test and troubleshoot the connection system
 - **[Research Foundations](./research-foundations.md)** - Scientific background and cognitive science principles
 
 ---

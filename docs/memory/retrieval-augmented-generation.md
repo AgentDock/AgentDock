@@ -294,8 +294,9 @@ Unlike traditional RAG systems optimized for knowledge lookup, AgentDock's memor
 - **BEIR benchmark validation** with consistent hybrid search advantages
 - **Enterprise scalability** with configurable performance tiers
 - **Zero infrastructure overhead** - works with existing PostgreSQL/SQLite
+- **Enhanced relevance** with temporal patterns and configurable connection traversal
 
-AgentDock transforms RAG from a document lookup system into an intelligent memory companion for conversational AI.
+AgentDock transforms RAG from a document lookup system into an intelligent memory companion for conversational AI. Enhanced with temporal patterns and configurable connection traversal - see [Memory Connections](./memory-connections.md) for advanced recall features.
 
 ## See Also
 

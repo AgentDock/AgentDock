@@ -1,8 +1,6 @@
 # Research Foundations of Memory Connections
 
 > **Scientific basis for AgentDock's memory connection system**
->
-> See also: [Memory System README](./README.md) | [Memory Connections](./memory-connections.md)
 
 AgentDock's memory architecture is grounded in decades of cognitive science research on how human memory works. This document explains the scientific principles behind our design decisions.
 
@@ -105,13 +103,22 @@ flowchart TD
 2. **Rule Path** (User Rules): Like learned patterns
 3. **Deep Path** (LLM): Like conscious reasoning
 
-### Temporal Patterns
+### 4. Temporal Memory Organization
 
-Research shows memories cluster around significant events (**Conway, 2009**):
+Research shows memories cluster around significant events and follow predictable patterns:
+
+**Conway (2009)** demonstrated that autobiographical memories cluster around significant events, forming **temporal landmarks** that organize memory retrieval.
+
+**Burt, Kemp & Conway (2003)** showed that memory accessibility follows temporal patterns:
+- **Recency Effect**: Recent memories are more accessible
+- **Reminiscence Bump**: Memories from significant periods show increased recall
+- **Temporal Clustering**: Related memories from similar time periods activate together
+
+**Brown, Rips & Shevell (1985)** established that temporal context serves as a powerful retrieval cue, with memories from similar time periods showing enhanced accessibility.
 
 ```mermaid
 gantt
-    title Memory Activity Patterns
+    title Memory Activity Patterns (Research-Based)
     dateFormat HH:mm
     axisFormat %H:%M
     
@@ -123,7 +130,17 @@ gantt
     section Burst Detection
     Incident response  :crit, 16:00, 120m
     Related memories   :active, 16:30, 90m
+    
+    section Temporal Clustering
+    Learning session   :done, 11:00, 2h
+    Follow-up practice :done, 13:30, 1h
 ```
+
+**Key Insights:**
+- Memories from similar time periods activate together (**temporal clustering**)
+- Significant events create **temporal landmarks** that enhance recall
+- **Burst periods** of high activity strengthen memory formation
+- **Daily patterns** reflect natural cognitive rhythms
 
 ## Scientific Validation
 
@@ -135,6 +152,8 @@ Our approach aligns with established cognitive principles:
 | **Semantic Networks** | Sowa, 1984 | Typed connection relationships |
 | **Memory Interdependence** | Greenberg & Verfaellie, 2010 | Episodic→Semantic promotion |
 | **Temporal Clustering** | Conway, 2009 | Burst detection & patterns |
+| **Temporal Landmarks** | Burt, Kemp & Conway, 2003 | Significant event markers |
+| **Temporal Context Cues** | Brown, Rips & Shevell, 1985 | Time-based retrieval enhancement |
 
 ## Key Insights for Developers
 
@@ -145,8 +164,16 @@ Our approach aligns with established cognitive principles:
 
 ## References
 
+- Brown, N. R., Rips, L. J., & Shevell, S. K. (1985). The subjective dates of natural events in very-long-term memory. *Cognitive Psychology*, 17(2), 139-177.
+- Burt, C. D., Kemp, S., & Conway, M. A. (2003). Themes, events, and episodes in autobiographical memory. *Memory & Cognition*, 31(2), 317-325.
 - Collins, A. M., & Loftus, E. F. (1975). A spreading-activation theory of semantic processing. *Psychological Review*, 82(6), 407-428.
 - Conway, M. A. (2009). Episodic memories. *Neuropsychologia*, 47(11), 2305-2313.
 - Greenberg, D. L., & Verfaellie, M. (2010). Interdependence of episodic and semantic memory. *Journal of the International Neuropsychological Society*, 16(5), 748-753.
 - Sowa, J. F. (1984). *Conceptual Structures: Information Processing in Mind and Machine*. Addison-Wesley.
 - Tulving, E. (1972). Episodic and semantic memory. In *Organization of memory* (pp. 381-403). Academic Press.
+
+## Related Documentation
+
+- **[Memory Connections](./memory-connections.md)** - See these research principles implemented in AgentDock's connection system
+- **[Graph Architecture](./graph-architecture.md)** - Technical implementation of spreading activation and semantic networks
+- **[Architecture Overview](./architecture-overview.md)** - How the four-layer memory system reflects cognitive science principles

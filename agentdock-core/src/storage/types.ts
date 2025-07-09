@@ -86,8 +86,8 @@ export interface MemoryConnection {
 
   /** Optional metadata for the connection */
   metadata?: {
-    /** Method used to create connection */
-    method?: 'embedding' | 'user-rules' | 'small-llm' | 'hybrid';
+    /** Smart triage method used to create connection */
+    triageMethod?: 'auto-similar' | 'auto-related' | 'llm-classified';
     /** Confidence score for the connection */
     confidence?: number;
     /** Algorithm used for connection discovery */

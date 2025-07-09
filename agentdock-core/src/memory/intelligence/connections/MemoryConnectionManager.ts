@@ -233,36 +233,34 @@ class ConnectionDiscoveryQueue extends EventEmitter {
  * await connectionManager.createConnections('user-123', connections);
  * ```
  *
- * @example With semantic rules
+ * @example Cost-optimized configuration
  * ```typescript
  * const config = {
  *   embedding: { enabled: true, similarityThreshold: 0.7 },
  *   connectionDetection: {
- *     method: 'hybrid',
- *     userRules: {
- *       enabled: true,
- *       patterns: [{
- *         id: 'user-action',
- *         semanticDescription: 'user performs an action that affects the system',
- *         connectionType: 'causal',
- *         confidence: 0.8
- *       }]
+ *     enabled: true,
+ *     maxCandidates: 50,
+ *     thresholds: {
+ *       autoSimilar: 0.9,     // Higher thresholds = more auto-classification (FREE)
+ *       autoRelated: 0.8,     // Aggressive cost optimization  
+ *       llmRequired: 1.0      // Disable LLM classification (no costs)
  *     }
  *   }
  * };
  * ```
  *
- * @example LLM-enhanced analysis
+ * @example Production quality configuration
  * ```typescript
  * const config = {
  *   embedding: { enabled: true },
  *   connectionDetection: {
- *     method: 'hybrid',
- *     llmEnhancement: {
- *       enabled: true,
- *       provider: 'openai',
- *       model: 'gpt-4-turbo-preview',
- *       temperature: 0.2
+ *     enabled: true,
+ *     enhancedModel: 'gpt-4o',    // High-quality model for complex analysis
+ *     maxCandidates: 100,
+ *     thresholds: {
+ *       autoSimilar: 0.8,         // 40% auto-classified as "similar" (FREE)
+ *       autoRelated: 0.6,         // 25% auto-classified as "related" (FREE) 
+ *       llmRequired: 0.3          // 35% need LLM classification (PAID)
  *     }
  *   },
  *   costControl: {

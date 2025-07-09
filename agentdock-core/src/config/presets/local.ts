@@ -130,13 +130,13 @@ export const localMemoryConfig: MemoryManagerConfig = {
  */
 export const localPRIMEConfig: PRIMEOrchestratorConfig = {
   primeConfig: {
-    provider: process.env.PRIME_PROVIDER || 'anthropic',
-    apiKey: process.env.PRIME_API_KEY || '',
+    provider: process.env.PRIME_PROVIDER || 'openai',
+    apiKey: process.env.PRIME_API_KEY || process.env.OPENAI_API_KEY || '',
     maxTokens: 4000,
     defaultTier: 'standard',
     autoTierSelection: true,
-    standardModel: 'claude-3-haiku-20240307',
-    advancedModel: 'claude-3-sonnet-20240229',
+    standardModel: 'gpt-4o-mini',
+    advancedModel: 'gpt-4o',
     temperature: 0.3,
     defaultImportanceThreshold: 0.7
   },

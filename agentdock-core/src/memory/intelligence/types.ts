@@ -44,22 +44,15 @@ import { Memory } from '../types/common';
  *     apiKey: process.env.GOOGLE_API_KEY
  *   },
  *   connectionDetection: {
- *     method: 'hybrid',
- *     maxRecentMemories: 100,
- *     temporalWindowDays: 7,
- *     enableTemporalAnalysis: true,
- *     userRules: {
- *       enabled: true,
- *       patterns: [semanticRules]
- *     },
- *     llmEnhancement: {
- *       enabled: true,
- *       provider: 'openai',
- *       model: 'gpt-4-turbo-preview',
- *       temperature: 0.2,
- *       validateResponses: true,
- *       fallbackToEmbedding: true,
- *       costPerToken: 0.00001
+ *     enabled: true,
+ *     enhancedModel: 'gpt-4o',
+ *     maxCandidates: 100,
+ *     batchSize: 10,
+ *     temperature: 0.2,
+ *     thresholds: {
+ *       autoSimilar: 0.8,     // 40% auto-classified as "similar" (FREE)
+ *       autoRelated: 0.6,     // 25% auto-classified as "related" (FREE)
+ *       llmRequired: 0.3      // 35% need LLM classification (PAID)
  *     }
  *   },
  *   temporal: {
@@ -93,11 +86,12 @@ import { Memory } from '../types/common';
  *     similarityThreshold: 0.8 // Higher threshold = fewer LLM calls
  *   },
  *   connectionDetection: {
- *     method: 'user-rules', // Free semantic rules only
- *     maxRecentMemories: 25, // Smaller comparison set
- *     userRules: {
- *       enabled: true,
- *       patterns: [costEffectiveRules]
+ *     enabled: true,
+ *     maxCandidates: 25, // Smaller comparison set
+ *     thresholds: {
+ *       autoSimilar: 0.9,     // Higher thresholds = more auto-classification (FREE)
+ *       autoRelated: 0.8,     // Aggressive cost optimization
+ *       llmRequired: 1.0      // Disable LLM classification (no costs)
  *     }
  *   },
  *   costControl: {

@@ -1,7 +1,5 @@
 # Memory Consolidation Guide
 
-> See also: [Memory System README](./README.md) | [Memory Connections](./memory-connections.md) | [Graph Architecture](./graph-architecture.md)
-
 Memory consolidation in AgentDock is an intelligent optimization system that prevents memory bloat while improving knowledge quality through automatic conversion, deduplication, and synthesis.
 
 ## What is Memory Consolidation?
@@ -34,7 +32,7 @@ Consolidation solves these by creating a more efficient, intelligent memory stru
 - Text concatenation
 
 ### What Costs Extra Money
-- LLM API calls (OpenAI/Anthropic)
+- LLM API calls (OpenAI)
 - Cloud embedding services
 - External API usage
 
@@ -113,6 +111,7 @@ flowchart TD
 - **Keyword Overlap**: Shared important terms
 - **Metadata Similarity**: Same categories, entities, or topics
 - **Temporal Proximity**: Memories created around the same time
+- **Temporal Pattern Matching**: Memories from similar activity patterns (daily routines, burst periods)
 
 **Example Merge:**
 ```typescript
@@ -139,6 +138,29 @@ The system supports multiple strategies that can be combined:
 | **Synthesize** | LLM creates new summary from multiple | Medium similarity (0.7-0.9) | Medium |
 | **Abstract** | Extract high-level patterns | Pattern recognition | Low |
 | **Hierarchy** | Create parent-child relationships | Categorical organization | High |
+
+### Temporal Pattern Integration
+
+Consolidation now considers temporal patterns when grouping memories:
+
+```typescript
+// Memories from the same burst period are prioritized for consolidation
+const burstMemories = memories.filter(m => 
+  m.metadata.temporalInsights?.patterns?.some(p => p.type === 'burst')
+);
+
+// Daily patterns inform consolidation timing
+const dailyPatterns = getTemporalPatterns(memories, 'daily');
+if (dailyPatterns.length > 0) {
+  // Schedule consolidation during low-activity periods
+  scheduleConsolidation(offPeakHours);
+}
+```
+
+**Benefits:**
+- **Burst Memory Consolidation**: Memories from intense activity periods are consolidated together
+- **Pattern-Aware Grouping**: Similar temporal patterns help identify related memories
+- **Optimal Timing**: Consolidation runs during low-activity periods for better performance
 
 ## Configuration
 
@@ -171,7 +193,7 @@ const advancedConfig = {
     enableLLMSummarization: true,     // Use AI for better synthesis
     llmConfig: {
       provider: 'openai',
-      model: 'gpt-4o-mini',           // Fast, cheap model
+      model: 'gpt-4.1-mini',          // Cost-effective model
       maxTokensPerSummary: 200,
       temperature: 0.3,               // Low for consistency
       costPerToken: 0.0000002

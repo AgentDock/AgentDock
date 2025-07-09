@@ -1,8 +1,6 @@
 # Memory Graph Architecture
 
-> **Technical documentation for developers and architects**. 
->
-> See also: [Memory System README](./README.md) | [Memory Connections](./memory-connections.md)
+> **Technical documentation for developers and architects**
 
 This document provides the technical rationale and implementation details behind AgentDock's decision to use a hybrid SQL + in-memory graph approach instead of a dedicated graph database.
 
@@ -434,3 +432,9 @@ This pragmatic approach delivers the benefits of connected knowledge while maint
 - Systems with dense graphs (>100 connections per node)
 
 For most agent memory use cases, this architecture provides the right balance of functionality, performance, and maintainability.
+
+## Related Documentation
+
+- **[Memory Connections](./memory-connections.md)** - Complete guide to connection discovery and configuration using this SQL + graph architecture
+- **[Research Foundations](./research-foundations.md)** - Cognitive science principles behind memory connection types
+- **[Complete Configuration Guide](./complete-configuration-guide.md)** - Environment variables and production settings

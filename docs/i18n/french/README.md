@@ -229,7 +229,6 @@ Les implémentations d'exemple présentent des cas d'utilisation spécialisés e
 | **Raisonnement Cognitif** | Aborde des problèmes complexes en utilisant un raisonnement structuré & outils cognitifs | Disponible  |
 | **Planificateur d'Agent** | Agent spécialisé pour concevoir et implémenter d'autres agents IA            | Disponible  |
 | [**Environnement de développement isolé (Code Playground)**](../../docs/roadmap/code-playground.md) | Génération et exécution de code en sandbox avec capacités de visualisation riches | Planifié    |
-| [**Agent IA Généraliste**](../../docs/roadmap/generalist-agent.md) | Agent de type Manus pouvant utiliser un navigateur et exécuter des tâches complexes | Planifié    |
 
 ## 🔐 Détails de Configuration de l'Environnement
 

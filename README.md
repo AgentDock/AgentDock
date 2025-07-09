@@ -288,7 +288,6 @@ Example implementations showcase specialized use cases and advanced functionalit
 | **Cognitive Reasoner** | Tackles complex problems using structured reasoning & cognitive tools | Available |
 | **Agent Planner** | Specialized agent for designing and implementing other AI agents | Available |
 | [**Code Playground**](docs/roadmap/code-playground.md) | Sandboxed code generation and execution with rich visualization capabilities | Planned |
-| [**Generalist AI Agent**](docs/roadmap/generalist-agent.md) | Manus-like agent that can use browser and execute complex tasks | Planned |
 
 
 

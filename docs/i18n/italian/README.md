@@ -229,7 +229,6 @@ Le implementazioni esempio mostrano casi d'uso specializzati e funzionalità ava
 | **Ragionatore Cognitivo**    | Affronta problemi complessi usando ragionamento strutturato e strumenti cognitivi             | Disponibile |
 | **Pianificatore Agenti**     | Agente specializzato per progettare e implementare altri agenti AI                            | Disponibile |
 | [**Playground di Codice (Code Playground)**](../../docs/roadmap/code-playground.md) | Generazione ed esecuzione di codice sandboxed con ricche capacità di visualizzazione         | Pianificato |
-| [**Agente AI Generalista**](../../docs/roadmap/generalist-agent.md) | Agente simile a Manus che può usare il browser ed eseguire compiti complessi               | Pianificato |
 
 ## 🔐 Dettagli Configurazione Ambiente
 

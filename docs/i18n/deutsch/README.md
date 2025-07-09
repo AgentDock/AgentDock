@@ -229,7 +229,6 @@ Beispielimplementierungen zeigen spezialisierte Anwendungsfälle und erweiterte 
 | **Kognitiver Reasoner**   | Bewältigt komplexe Probleme mithilfe strukturierter Logik & kognitiver Werkzeuge          | Verfügbar    |
 | **Agenten-Planer**        | Spezialisierter Agent zum Entwerfen und Implementieren anderer KI-Agenten                  | Verfügbar    |
 | [**Code Playground (Code-Spielwiese)**](../../docs/roadmap/code-playground.md) | Sandboxed Code-Generierung und -Ausführung mit reichhaltigen Visualisierungsfunktionen   | Geplant      |
-| [**Generalistischer KI-Agent**](../../docs/roadmap/generalist-agent.md)| Manus-ähnlicher Agent, der Browser verwenden und komplexe Aufgaben ausführen kann         | Geplant      |
 
 ## 🔐 Details zur Umgebungskonfiguration
 

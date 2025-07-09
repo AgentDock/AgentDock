@@ -229,7 +229,6 @@ AgentDock, önceden yapılandırılmış birkaç ajan şablonu içerir. Bunları
 | **Bilişsel Muhakemeci**    | Yapılandırılmış muhakeme ve bilişsel araçlar kullanarak karmaşık sorunları ele alır | Mevcut      |
 | **Ajan Planlayıcı**       | Diğer yapay zeka ajanlarını tasarlamak ve uygulamak için özel ajan        | Mevcut      |
 | [**Kod Oyun Alanı (Code Playground)**](../../docs/roadmap/code-playground.md) | Zengin görselleştirme yetenekleriyle korumalı kod oluşturma ve yürütme     | Planlandı   |
-| [**Genelci Yapay Zeka Ajanı**](../../docs/roadmap/generalist-agent.md) | Tarayıcı kullanabilen ve karmaşık görevleri yürütebilen Manus benzeri ajan | Planlandı   |
 
 ## 🔐 Ortam Yapılandırma Detayları
 

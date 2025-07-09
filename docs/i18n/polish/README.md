@@ -229,7 +229,6 @@ Przykładowe implementacje prezentują wyspecjalizowane przypadki użycia i zaaw
 | **Rozumujący Kognitywny**    | Rozwiązuje złożone problemy za pomocą ustrukturyzowanego rozumowania i narzędzi kognitywnych | Dostępny     |
 | **Planista Agentów**         | Wyspecjalizowany agent do projektowania i implementowania innych agentów AI                 | Dostępny     |
 | [**Code Playground (Środowisko Testowe Kodu)**](../../docs/roadmap/code-playground.md) | Generowanie i wykonywanie kodu w piaskownicy z bogatymi możliwościami wizualizacji       | Planowany    |
-| [**Agent AI Ogólnego Przeznaczenia**](../../docs/roadmap/generalist-agent.md)| Agent podobny do Manus, który może używać przeglądarki i wykonywać złożone zadania         | Planowany    |
 
 ## 🔐 Szczegóły Konfiguracji Środowiska
 

@@ -229,7 +229,6 @@ Las implementaciones de ejemplo muestran casos de uso especializados y funcional
 | **Razonador Cognitivo**    | Aborda problemas complejos usando razonamiento estructurado y herramientas cognitivas   | Disponible  |
 | **Planificador de Agentes** | Agente especializado para diseñar e implementar otros agentes de IA                   | Disponible  |
 | [**Playground de Código (Code Playground)**](../../docs/roadmap/code-playground.md) | Generación y ejecución de código en sandbox con ricas capacidades de visualización | Planificado |
-| [**Agente de IA Generalista**](../../docs/roadmap/generalist-agent.md) | Agente similar a Manus que puede usar el navegador y ejecutar tareas complejas      | Planificado |
 
 ## 🔐 Detalles de Configuración del Entorno
 

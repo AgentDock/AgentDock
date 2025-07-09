@@ -101,7 +101,7 @@ This repository includes both components, allowing you to use them together or s
    Example snippet for `.env.local` (using Option A - Direct Redis):
    ```dotenv
    # LLM Provider API Keys
-   ANTHROPIC_API_KEY=sk-ant-xxxxxxx
+   OPENAI_API_KEY=sk-xxxxxxx
    OPENAI_API_KEY=sk-xxxxxxx
    # ... other keys ...
 
@@ -154,7 +154,7 @@ Create a `template.json` file in this directory with your agent configuration:
   ],
   "nodeConfigurations": {
     "llm.anthropic": {
-      "model": "claude-3-haiku-20240307",
+      "model": "gpt-4.1-mini",
       "temperature": 0.7,
       "maxTokens": 4096,
       "useCustomApiKey": false
@@ -283,8 +283,8 @@ If you want to use just the AgentDock Core library in your own project:
      // Create an agent
      const agent = new AgentNode('my-agent', {
        agentConfig: config,
-       apiKey: process.env.ANTHROPIC_API_KEY,
-       provider: 'anthropic'
+       apiKey: process.env.OPENAI_API_KEY,
+provider: 'openai'
      });
      
      // Handle a message

@@ -237,7 +237,6 @@ export const docSections: DocSection[] = [
         title: 'Workflow Runtime & Node Types'
       },
       { path: 'roadmap/code-playground', title: 'Code Playground' },
-      { path: 'roadmap/generalist-agent', title: 'Generalist AI Agent' },
       {
         path: 'roadmap/nl-agent-builder',
         title: 'Natural Language Agent Builder'

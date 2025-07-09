@@ -229,7 +229,6 @@ Voorbeeldimplementaties tonen gespecialiseerde use cases en geavanceerde functio
 | **Cognitieve Redeneerder**| Pakt complexe problemen aan met gestructureerd redeneren en cognitieve tools                 | Beschikbaar  |
 | **Agent Planner**         | Gespecialiseerde agent voor het ontwerpen en implementeren van andere AI-agenten              | Beschikbaar  |
 | [**Code Playground**](../../docs/roadmap/code-playground.md)| In sandbox uitgevoerde codegeneratie en uitvoering met rijke visualisatiemogelijkheden             | Gepland      |
-| [**Generalistische AI-Agent**](../../docs/roadmap/generalist-agent.md)| Manus-achtige agent die de browser kan gebruiken en complexe taken kan uitvoeren               | Gepland      |
 
 ## 🔐 Omgevingsconfiguratie Details
 

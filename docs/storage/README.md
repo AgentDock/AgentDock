@@ -1,6 +1,6 @@
-# Storage System Overview
+# Storage System
 
-AgentDock Core provides a flexible and extensible storage abstraction layer designed to handle various data persistence needs. This abstraction layer enables switching between different storage backends without changing application code.
+AgentDock Core provides a comprehensive storage abstraction layer with 15 production-ready adapters for various data persistence needs. This fully-implemented system enables switching between different storage backends without changing application code.
 
 ## Core Concepts
 
@@ -45,8 +45,8 @@ AgentDock Core provides a flexible and extensible storage abstraction layer desi
 Dive deeper into specific storage aspects:
 
 -   [Getting Started Guide](./getting-started.md)
--   [Storage Abstraction Layer (Roadmap)](../roadmap/storage-abstraction.md) - Implementation completed Q2 2025
--   [Advanced Memory Systems (Roadmap)](../roadmap/advanced-memory.md)
+-   [Storage Abstraction Layer](./storage-abstraction.md) - Complete implementation details
+-   [Vector Storage](./vector-storage.md) - AI and embedding storage
 -   [Session Management](../architecture/sessions/session-management.md) (Details usage of storage)
 
 # Storage Abstraction Layer
@@ -471,7 +471,7 @@ await registerVectorAdapters(factory);    // Pinecone, Qdrant, ChromaDB
 ## Related Documentation
 
 - [Getting Started Guide](./getting-started.md)
-- [Advanced Memory Systems](../roadmap/advanced-memory.md)
+- [Memory System Documentation](../memory/README.md)
 - [Session Management](../architecture/sessions/session-management.md)
 
 ## Complete .env.local Examples

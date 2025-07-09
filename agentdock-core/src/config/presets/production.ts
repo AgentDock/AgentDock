@@ -159,7 +159,7 @@ export const productionIntelligenceConfig: IntelligenceLayerConfig = {
     // LLM configuration follows PRIME pattern - shares API keys seamlessly
     // Uses CONNECTION_PROVIDER || PRIME_PROVIDER for seamless integration
     // Uses CONNECTION_API_KEY || {PROVIDER}_API_KEY for shared credentials
-    enhancedModel: 'gpt-4o', // Optional quality upgrade for production
+    enhancedModel: 'gpt-4.1', // Optional quality upgrade for production
 
     // Smart triage thresholds for 65% cost optimization
     thresholds: {
@@ -240,8 +240,8 @@ export const productionPRIMEConfig: PRIMEOrchestratorConfig = {
     maxTokens: 4000,
     defaultTier: 'standard',
     autoTierSelection: true,
-    standardModel: 'gpt-4o-mini',
-    advancedModel: 'gpt-4o',
+    standardModel: 'gpt-4.1-mini',
+    advancedModel: 'gpt-4.1',
     temperature: 0.2,
     defaultImportanceThreshold: 0.7,
     tierThresholds: {

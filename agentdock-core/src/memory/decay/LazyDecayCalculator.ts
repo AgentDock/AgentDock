@@ -13,6 +13,8 @@
  * @author AgentDock Core Team
  */
 
+import { z } from 'zod';
+
 import { LogCategory, logger } from '../../logging';
 import { MemoryData } from '../../storage/types';
 
@@ -30,33 +32,61 @@ export interface DecayCalculationResult {
 }
 
 /**
- * Configuration for lazy decay calculations
+ * Zod schema for lazy decay configuration validation
  */
-export interface LazyDecayConfig {
+const LazyDecayConfigSchema = z.object({
   /** Default half-life in days for memories without custom settings */
-  defaultHalfLife: number;
+  defaultHalfLife: z
+    .number()
+    .positive('defaultHalfLife must be positive')
+    .default(30),
 
   /** Minimum resonance before marking memory for archival */
-  archivalThreshold: number;
+  archivalThreshold: z
+    .number()
+    .min(0, 'archivalThreshold must be >= 0')
+    .max(1, 'archivalThreshold must be <= 1')
+    .default(0.1),
 
   /** Enable reinforcement of frequently accessed memories */
-  enableReinforcement: boolean;
+  enableReinforcement: z.boolean().default(true),
 
   /** Reinforcement factor for accessed memories */
-  reinforcementFactor: number;
+  reinforcementFactor: z
+    .number()
+    .positive('reinforcementFactor must be positive')
+    .max(1, 'reinforcementFactor must be <= 1')
+    .default(0.1),
 
   /** Maximum resonance cap to prevent over-reinforcement */
-  maxResonance: number;
+  maxResonance: z.number().min(1, 'maxResonance must be >= 1').default(2.0),
 
   /** Minimum time between updates (prevents excessive database writes) */
-  minUpdateIntervalMs: number;
+  minUpdateIntervalMs: z
+    .number()
+    .positive('minUpdateIntervalMs must be positive')
+    .int('minUpdateIntervalMs must be an integer')
+    .default(60000),
 
   /** Threshold for significant change to trigger updates (default: 0.1) */
-  significantChangeThreshold: number;
+  significantChangeThreshold: z
+    .number()
+    .min(0, 'significantChangeThreshold must be >= 0')
+    .max(1, 'significantChangeThreshold must be <= 1')
+    .default(0.1),
 
   /** Access count threshold for reinforcement (default: 5) */
-  accessCountThreshold: number;
-}
+  accessCountThreshold: z
+    .number()
+    .positive('accessCountThreshold must be positive')
+    .int('accessCountThreshold must be an integer')
+    .default(5)
+});
+
+/**
+ * Configuration for lazy decay calculations
+ */
+export type LazyDecayConfig = z.infer<typeof LazyDecayConfigSchema>;
 
 /**
  * LazyDecayCalculator - Efficient on-demand decay calculation
@@ -68,21 +98,22 @@ export class LazyDecayCalculator {
   private config: LazyDecayConfig;
 
   constructor(config: Partial<LazyDecayConfig> = {}) {
-    this.config = {
-      defaultHalfLife: config.defaultHalfLife ?? 30, // 30 days default
-      archivalThreshold: config.archivalThreshold ?? 0.1,
-      enableReinforcement: config.enableReinforcement ?? true,
-      reinforcementFactor: config.reinforcementFactor ?? 0.1,
-      maxResonance: config.maxResonance ?? 2.0,
-      minUpdateIntervalMs: config.minUpdateIntervalMs ?? 60000, // 1 minute
-      significantChangeThreshold: config.significantChangeThreshold ?? 0.1,
-      accessCountThreshold: config.accessCountThreshold ?? 5,
-      ...config
-    };
+    try {
+      // Validate and parse configuration with Zod
+      this.config = LazyDecayConfigSchema.parse(config);
 
-    logger.debug(LogCategory.STORAGE, 'LazyDecayCalculator', 'Initialized', {
-      config: this.config
-    });
+      logger.debug(LogCategory.STORAGE, 'LazyDecayCalculator', 'Initialized', {
+        config: this.config
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const issues = error.issues
+          .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
+          .join(', ');
+        throw new Error(`Invalid LazyDecayCalculator configuration: ${issues}`);
+      }
+      throw error;
+    }
   }
 
   /**
@@ -326,16 +357,30 @@ export class LazyDecayCalculator {
    * @param newConfig - Partial configuration to update
    */
   updateConfig(newConfig: Partial<LazyDecayConfig>): void {
-    this.config = { ...this.config, ...newConfig };
+    try {
+      // Validate the merged configuration with Zod
+      const mergedConfig = { ...this.config, ...newConfig };
+      this.config = LazyDecayConfigSchema.parse(mergedConfig);
 
-    logger.debug(
-      LogCategory.STORAGE,
-      'LazyDecayCalculator',
-      'Configuration updated',
-      {
-        newConfig
+      logger.debug(
+        LogCategory.STORAGE,
+        'LazyDecayCalculator',
+        'Configuration updated',
+        {
+          newConfig
+        }
+      );
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const issues = error.issues
+          .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
+          .join(', ');
+        throw new Error(
+          `Invalid LazyDecayCalculator configuration update: ${issues}`
+        );
       }
-    );
+      throw error;
+    }
   }
 
   /**

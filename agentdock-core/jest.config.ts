@@ -10,5 +10,10 @@ export default {
     '!src/**/*.test.ts',
     '!src/**/*.spec.ts',
     '!src/test/**/*'
-  ]
+  ],
+  globals: {
+    'ts-jest': {
+      tsconfig: 'tsconfig.test.json'
+    }
+  }
 };

@@ -404,7 +404,7 @@ JSON: [{content, type, importance, reasoning}]`;
       // Smart tier thresholds
       tierThresholds:
         config.autoTierSelection !== false
-          ? {
+        ? {
               advancedMinChars:
                 config.tierThresholds?.advancedMinChars ||
                 Number(process.env.PRIME_ADVANCED_MIN_CHARS) ||
@@ -413,8 +413,8 @@ JSON: [{content, type, importance, reasoning}]`;
                 config.tierThresholds?.advancedMinRules ||
                 Number(process.env.PRIME_ADVANCED_MIN_RULES) ||
                 5
-            }
-          : undefined,
+          }
+        : undefined,
 
       // Core settings with sensible defaults
       defaultImportanceThreshold: config.defaultImportanceThreshold || 0.7,
@@ -429,24 +429,24 @@ JSON: [{content, type, importance, reasoning}]`;
 
   private getStandardModel(provider: string): string {
     const models: Record<string, string> = {
-      openai: 'gpt-4o-mini',
+      openai: 'gpt-4.1-mini',
       anthropic: 'claude-3-haiku-20240307',
       gemini: 'gemini-1.5-flash',
-      azure: 'gpt-4o-mini',
+      azure: 'gpt-4.1-mini',
       bedrock: 'claude-3-haiku-20240307'
     };
-    return models[provider] || 'gpt-4o-mini';
+    return models[provider] || 'gpt-4.1-mini';
   }
 
   private getAdvancedModel(provider: string): string {
     const models: Record<string, string> = {
-      openai: 'gpt-4o',
+      openai: 'gpt-4.1',
       anthropic: 'claude-3-sonnet-20240229',
       gemini: 'gemini-1.5-pro',
-      azure: 'gpt-4o',
+      azure: 'gpt-4.1',
       bedrock: 'claude-3-sonnet-20240229'
     };
-    return models[provider] || 'gpt-4o';
+    return models[provider] || 'gpt-4.1';
   }
 
   // Helper methods

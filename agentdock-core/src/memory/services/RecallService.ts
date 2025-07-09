@@ -2,8 +2,9 @@ import { Pool } from 'pg';
 
 import { LogCategory, logger } from '../../logging';
 import { MemoryError } from '../../shared/errors/memory-errors';
-import { StorageProvider } from '../../storage/types';
+import { StorageProvider, ScoredMemoryData, MemoryOperations } from '../../storage/types';
 import { MemoryConnectionManager } from '../intelligence/connections/MemoryConnectionManager';
+import { EmbeddingService } from '../intelligence/embeddings/EmbeddingService';
 import { IntelligenceLayerConfig } from '../intelligence/types';
 import { CostTracker } from '../tracking/CostTracker';
 import { MemoryType } from '../types/common';
@@ -23,7 +24,6 @@ import {
   calculateCombinedRelevance,
   calculateTemporalRelevance,
   calculateTextRelevance,
-  convertToUnifiedResult,
   findMemoryRelationships,
   mergeHybridResults,
   optimizeQuery,
@@ -140,6 +140,13 @@ export class RecallService {
   };
 
   private connectionManager?: MemoryConnectionManager;
+  private embeddingConfig?: {
+    provider: string;
+    model: string;
+    apiKey?: string;
+    baseURL?: string;
+  };
+  private embeddingService?: EmbeddingService;
 
   constructor(
     private workingMemory: WorkingMemory,
@@ -148,7 +155,7 @@ export class RecallService {
     private proceduralMemory: ProceduralMemory,
     private config: RecallConfig,
     private intelligenceConfig?: IntelligenceLayerConfig,
-    storage?: StorageProvider
+    private storage?: StorageProvider
   ) {
     // Initialize connection manager if intelligence config enables it
     if (intelligenceConfig?.connectionDetection && storage) {
@@ -168,6 +175,25 @@ export class RecallService {
             intelligenceConfig.connectionDetection.enabled,
           maxCandidates:
             intelligenceConfig.connectionDetection.maxCandidates || 20
+        }
+      );
+    }
+
+    // Store embedding config for lazy initialization
+    if (this.intelligenceConfig?.embedding?.enabled) {
+      this.embeddingConfig = {
+        provider: this.intelligenceConfig.embedding.provider || 'openai',
+        model: this.intelligenceConfig.embedding.model || 'text-embedding-3-small'
+        // Note: dimensions are determined by the model
+      };
+
+      logger.info(
+        LogCategory.STORAGE,
+        'RecallService',
+        'Embedding service configuration stored for hybrid search',
+        {
+          provider: this.embeddingConfig.provider,
+          model: this.embeddingConfig.model
         }
       );
     }
@@ -273,6 +299,31 @@ export class RecallService {
       throw new Error(`All memory searches failed: ${errorMessage}`);
     }
 
+    // Track memory access events
+    if (this.storage?.evolution?.trackEventBatch && limitedMemories.length > 0) {
+      const accessEvents = limitedMemories.map(memory => ({
+        memoryId: memory.id,
+        userId: query.userId,
+        agentId: query.agentId,
+        type: 'accessed' as const,
+        timestamp: Date.now(),
+        metadata: {
+          query: query.query,
+          relevance: memory.relevance,
+          memoryType: memory.type
+        }
+      }));
+      
+      this.storage.evolution.trackEventBatch(accessEvents).catch(error => {
+        logger.warn(
+          LogCategory.STORAGE,
+          'RecallService',
+          'Failed to track memory access events',
+          { error: error instanceof Error ? error.message : String(error) }
+        );
+      });
+    }
+
     // Cache result
     const result: RecallResult = {
       memories: limitedMemories,
@@ -328,6 +379,80 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
     const results: UnifiedMemoryResult[] = [];
 
     try {
+      // Check if storage supports hybrid search and embedding is enabled
+      if (
+        this.storage?.memory &&
+        this.hasHybridSearch(this.storage.memory) &&
+        this.embeddingConfig &&
+        this.config.enableVectorSearch !== false
+      ) {
+        // Initialize embedding service if needed
+        await this.ensureEmbeddingService();
+
+        // Generate query embedding
+        const queryEmbedding = await this.embeddingService!.generateEmbedding(
+          query.query
+        );
+
+        logger.debug(
+          LogCategory.STORAGE,
+          'RecallService',
+          'Executing hybrid search',
+          {
+            userId: query.userId.substring(0, 8),
+            agentId: query.agentId.substring(0, 8),
+            memoryType: type,
+            queryLength: query.query.length,
+            embeddingDimensions: queryEmbedding.embedding.length
+          }
+        );
+
+        // Execute hybrid search
+        const hybridResults = await this.storage.memory!.hybridSearch(
+          query.userId,
+          query.agentId,
+          query.query,
+          queryEmbedding.embedding,
+          {
+            limit: query.limit || this.config.defaultLimit,
+            filter: { type },
+            vectorWeight: this.config.hybridSearchWeights?.vector || 0.7,
+            textWeight: this.config.hybridSearchWeights?.text || 0.3,
+            threshold: query.minRelevance || this.config.minRelevanceThreshold
+          }
+        );
+
+        // Convert hybrid results to unified format
+        for (const memory of hybridResults) {
+          // Extract relevance score from result
+          // Note: Using any here because different storage adapters may return 
+          // score under different field names (score, hybrid_score, relevance_score)
+          const relevanceScore = 
+            (memory as any).score || 
+            (memory as any).hybrid_score || 
+            (memory as any).relevance_score || 
+            0.5;
+
+          results.push(this.convertToUnifiedResult(memory, type, relevanceScore, true));
+        }
+
+        logger.info(
+          LogCategory.STORAGE,
+          'RecallService',
+          'Hybrid search completed',
+          {
+            userId: query.userId.substring(0, 8),
+            agentId: query.agentId.substring(0, 8),
+            memoryType: type,
+            resultsFound: results.length,
+            usingProvider: this.embeddingConfig.provider
+          }
+        );
+
+        return results;
+      }
+
+      // Fallback to text-based search for each memory type
       switch (type) {
         case MemoryType.WORKING: {
           const workingResults = await this.workingMemory.recall(
@@ -343,7 +468,7 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
               query.query
             );
             if (relevance > 0.1) {
-              results.push(convertToUnifiedResult(memory, type, relevance));
+              results.push(this.convertToUnifiedResult(memory, type, relevance));
             }
           }
           break;
@@ -380,9 +505,7 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
               textRelevance * 0.7 + temporalRelevance * 0.3;
 
             if (combinedRelevance > 0.1) {
-              results.push(
-                convertToUnifiedResult(memory, type, combinedRelevance)
-              );
+              results.push(this.convertToUnifiedResult(memory, type, combinedRelevance));
             }
           }
           break;
@@ -408,9 +531,7 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
             );
 
             if (combinedRelevance > 0.1) {
-              results.push(
-                convertToUnifiedResult(memory, type, combinedRelevance)
-              );
+              results.push(this.convertToUnifiedResult(memory, type, combinedRelevance));
             }
           }
           break;
@@ -431,9 +552,7 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
               (matchResult.confidence + matchResult.contextMatch) / 2;
 
             if (proceduralRelevance > 0.1) {
-              results.push(
-                convertToUnifiedResult(memory, type, proceduralRelevance)
-              );
+              results.push(this.convertToUnifiedResult(memory, type, proceduralRelevance));
             }
           }
           break;
@@ -482,6 +601,12 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
 
     return memories
       .map((memory) => {
+        // Check if this memory already has scores from hybrid search
+        if (memory.metadata?.fromHybridSearch === true) {
+          return memory; // Keep existing score from hybrid search
+        }
+
+        // For text-only search results, compute relevance scores
         const textScore = calculateTextRelevance(memory.content, query.query);
         const temporalScore = calculateTemporalRelevance(
           memory.timestamp,
@@ -489,8 +614,8 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
           query.timeRange
         );
 
-        // Vector score would come from embedding similarity
-        const vectorScore = this.config.enableVectorSearch ? 0.5 : 0;
+        // Vector score is 0 for text-only search (no vector component)
+        const vectorScore = 0;
 
         // Procedural score based on pattern match and usage
         const proceduralScore =
@@ -618,7 +743,7 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
     memories.forEach((m) => enriched.set(m.id, m));
 
     // Determine how many top memories to traverse from
-    const connectionHops = query.connectionHops || 1;
+    const connectionHops = query.connectionHops || this.config.defaultConnectionHops || 1;
     const topMemoriesToTraverse = Math.min(memories.length, 5);
 
     // For top-ranked memories, discover connected memories
@@ -957,6 +1082,120 @@ Original conversation: ${conversationDate.toLocaleDateString('en-US', { weekday:
 
     // Reset cleanup flag
     this.cleanupInProgress = false;
+  }
+
+  /**
+   * Type guard to check if storage has hybrid search capability
+   */
+  private hasHybridSearch(
+    operations: MemoryOperations
+  ): operations is MemoryOperations & {
+    hybridSearch: NonNullable<MemoryOperations['hybridSearch']>
+  } {
+    return typeof operations?.hybridSearch === 'function';
+  }
+
+  /**
+   * Ensure embedding service is initialized
+   */
+  private async ensureEmbeddingService(): Promise<void> {
+    if (!this.embeddingService && this.embeddingConfig) {
+      const { createEmbedding } = await import('../../llm/create-embedding');
+      
+      const provider = this.embeddingConfig.provider;
+      const apiKey = process.env[`${provider.toUpperCase()}_API_KEY`];
+
+      if (!apiKey) {
+        throw new Error(
+          `${provider} API key required for embedding operations. ` +
+          `Set ${provider.toUpperCase()}_API_KEY environment variable.`
+        );
+      }
+
+      const embeddingModel = createEmbedding({
+        provider: provider as any,
+        apiKey,
+        model: this.embeddingConfig.model
+      });
+
+      this.embeddingService = new EmbeddingService(
+        embeddingModel,
+        this.embeddingConfig
+      );
+
+      logger.info(
+        LogCategory.STORAGE,
+        'RecallService',
+        'Embedding service initialized for hybrid search',
+        {
+          provider: this.embeddingConfig.provider,
+          model: this.embeddingConfig.model
+        }
+      );
+    }
+  }
+
+  /**
+   * Apply temporal boost based on memory's temporal patterns
+   */
+  private applyTemporalBoost(relevance: number, metadata: any): number {
+    if (!metadata?.temporalInsights?.patterns) {
+      return relevance;
+    }
+
+    const patterns = metadata.temporalInsights.patterns;
+    const currentHour = new Date().getHours();
+    
+    // Check for daily patterns matching current hour
+    const dailyPattern = patterns.find((p: any) => 
+      p.type === 'daily' && 
+      p.peakHours?.includes(currentHour)
+    );
+    
+    if (dailyPattern) {
+      // Apply boost based on pattern confidence (up to 30% boost)
+      const boost = 1.0 + (dailyPattern.confidence * 0.3);
+      return Math.min(relevance * boost, 1.0); // Cap at 1.0
+    }
+    
+    // Check for burst patterns (always relevant during active periods)
+    const burstPattern = patterns.find((p: any) => p.type === 'burst');
+    if (burstPattern) {
+      // Apply smaller boost for burst memories (up to 15% boost)
+      const boost = 1.0 + (burstPattern.confidence * 0.15);
+      return Math.min(relevance * boost, 1.0);
+    }
+    
+    return relevance;
+  }
+
+  /**
+   * Convert memory data from storage to unified result format
+   */
+  private convertToUnifiedResult(
+    memory: any, // Different memory types have different structures, any is appropriate here
+    type: MemoryType,
+    relevance: number,
+    fromHybridSearch: boolean = false
+  ): UnifiedMemoryResult {
+    // Apply temporal boost to relevance
+    const boostedRelevance = this.applyTemporalBoost(relevance, memory.metadata);
+    
+    return {
+      id: memory.id,
+      type,
+      content: memory.content,
+      relevance: boostedRelevance,
+      confidence: (memory as any).confidence || 0.8,
+      timestamp: memory.createdAt || Date.now(),
+      context: memory.metadata || {},
+      relationships: [],
+      metadata: {
+        ...(memory.metadata || {}),
+        fromHybridSearch,
+        temporalBoostApplied: boostedRelevance !== relevance
+      }
+    };
   }
 }
 

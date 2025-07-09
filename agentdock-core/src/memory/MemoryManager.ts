@@ -733,6 +733,9 @@ export class MemoryManager {
         }
       )) as MemoryData[];
 
+      // Track access events for recalled memories
+      await this.trackMemoryAccess(userId, agentId, memories);
+
       // Apply on-demand decay calculation during recall
       return await this.applyLazyDecayToMemories(memories);
     }
@@ -778,6 +781,9 @@ export class MemoryManager {
           }
         )) as MemoryData[];
       }
+
+      // Track access events for recalled memories
+      await this.trackMemoryAccess(userId, agentId, memories);
 
       // Apply on-demand decay calculation to search results
       return await this.applyLazyDecayToMemories(memories);
@@ -1546,6 +1552,47 @@ export class MemoryManager {
       }, 300000); // 5 minutes delay
 
       this.consolidationTimers.set(key, timerId);
+    }
+  }
+
+  /**
+   * Track memory access events for evolution tracking
+   * 
+   * @param userId - User identifier
+   * @param agentId - Agent identifier  
+   * @param memories - Array of accessed memories
+   * @private
+   */
+  private async trackMemoryAccess(
+    userId: string,
+    agentId: string,
+    memories: MemoryData[]
+  ): Promise<void> {
+    if (!this.storage.evolution?.trackEventBatch || memories.length === 0) {
+      return;
+    }
+
+    try {
+      const accessEvents = memories.map(memory => ({
+        memoryId: memory.id,
+        userId,
+        agentId,
+        type: 'accessed' as const,
+        timestamp: Date.now(),
+        metadata: {
+          source: 'MemoryManager',
+          queryType: 'recall'
+        }
+      }));
+
+      await this.storage.evolution.trackEventBatch(accessEvents);
+    } catch (error) {
+      logger.warn(
+        LogCategory.STORAGE,
+        'MemoryManager',
+        'Failed to track memory access events',
+        { error: error instanceof Error ? error.message : String(error) }
+      );
     }
   }
 }

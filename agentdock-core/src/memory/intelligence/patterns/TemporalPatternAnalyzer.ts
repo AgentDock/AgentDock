@@ -177,7 +177,8 @@ export class TemporalPatternAnalyzer {
    */
   async analyzePatterns(
     agentId: string,
-    timeRange?: { start: Date; end: Date }
+    timeRange?: { start: Date; end: Date },
+    userId?: string
   ): Promise<TemporalPattern[]> {
     try {
       logger.debug(
@@ -193,7 +194,7 @@ export class TemporalPatternAnalyzer {
       );
 
       // Get memories for analysis
-      const memories = await this.getMemoriesInTimeRange(agentId, timeRange);
+      const memories = await this.getMemoriesInTimeRange(agentId, timeRange, userId);
 
       if (memories.length < 5) {
         logger.info(
@@ -285,10 +286,11 @@ export class TemporalPatternAnalyzer {
    */
   async detectActivityClusters(
     agentId: string,
-    timeRange?: { start: Date; end: Date }
+    timeRange?: { start: Date; end: Date },
+    userId?: string
   ): Promise<ActivityCluster[]> {
     try {
-      const memories = await this.getMemoriesInTimeRange(agentId, timeRange);
+      const memories = await this.getMemoriesInTimeRange(agentId, timeRange, userId);
 
       if (memories.length < 3) {
         return [];
@@ -647,7 +649,8 @@ Focus on statistically significant patterns with confidence scores.`
    */
   private async getMemoriesInTimeRange(
     agentId: string,
-    timeRange?: { start: Date; end: Date }
+    timeRange?: { start: Date; end: Date },
+    userId?: string
   ): Promise<Memory[]> {
     // Check if storage has the specialized interface
     if ('getMemoriesInTimeRange' in this.storage) {
@@ -656,15 +659,18 @@ Focus on statistically significant patterns with confidence scores.`
 
     // Fallback to generic storage interface
     if (this.storage.memory?.recall) {
-      // Use recall with time-based query as fallback
-      const timeQuery = timeRange
-        ? `memories from ${timeRange.start.toISOString()} to ${timeRange.end.toISOString()}`
-        : 'all memories';
+      // Use recall with empty query to get all memories
+      const timeQuery = ''; // Empty query matches all memories in InMemoryStorageAdapter
 
-      return await this.storage.memory.recall('system', agentId, timeQuery, {
-        limit: 1000, // Large limit for analysis
-        timeRange
-      });
+      return await this.storage.memory.recall(
+        userId || 'system', // Use provided userId or fallback to 'system'
+        agentId, 
+        timeQuery, 
+        {
+          limit: 1000, // Large limit for analysis
+          timeRange
+        }
+      );
     }
 
     // If no compatible interface, return empty array

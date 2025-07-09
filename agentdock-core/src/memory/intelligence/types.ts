@@ -22,8 +22,12 @@ import { Memory } from '../types/common';
  *     similarityThreshold: 0.7
  *   },
  *   connectionDetection: {
- *     method: 'embedding-only',
- *     maxRecentMemories: 50
+ *     enabled: true,
+ *     thresholds: {
+ *       autoSimilar: 0.8,
+ *       autoRelated: 0.6,
+ *       llmRequired: 0.3
+ *     }
  *   },
  *   costControl: {
  *     maxLLMCallsPerBatch: 10,
@@ -635,7 +639,7 @@ export interface ConsolidationCandidate {
  *   enableLLMSummarization: true,
  *   llmConfig: {
  *     provider: 'openai',
- *     model: 'gpt-4o-mini', // Cost-effective model
+ *     model: 'gpt-4.1-mini', // Cost-effective model
  *     costPerToken: 0.000002,
  *     maxTokensPerSummary: 150
  *   }

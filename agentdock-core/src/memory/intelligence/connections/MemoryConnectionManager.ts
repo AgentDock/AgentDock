@@ -255,7 +255,7 @@ class ConnectionDiscoveryQueue extends EventEmitter {
  *   embedding: { enabled: true },
  *   connectionDetection: {
  *     enabled: true,
- *     enhancedModel: 'gpt-4o',    // High-quality model for complex analysis
+ *     enhancedModel: 'gpt-4.1',   // High-quality model for complex analysis
  *     maxCandidates: 100,
  *     thresholds: {
  *       autoSimilar: 0.8,         // 40% auto-classified as "similar" (FREE)
@@ -664,6 +664,12 @@ export class MemoryConnectionManager {
         : this.config.connectionDetection.thresholds.llmRequired
     };
 
+    // Check for temporal connections first (FREE) - memories from same burst period
+    const temporalConnection = this.checkTemporalConnection(memory1, memory2);
+    if (temporalConnection) {
+      return temporalConnection;
+    }
+
     // 40% auto-classified as "similar" (FREE) - High semantic similarity
     if (embeddingSimilarity >= thresholds.autoSimilar) {
       return {
@@ -693,6 +699,62 @@ export class MemoryConnectionManager {
       confidence: 0,
       reasoning: `Below similarity threshold: ${embeddingSimilarity.toFixed(3)}`
     };
+  }
+
+  /**
+   * Check for temporal connections between memories
+   * Memories from same burst period or matching temporal patterns are connected
+   */
+  private checkTemporalConnection(
+    memory1: Memory,
+    memory2: Memory
+  ): ConnectionAnalysis | null {
+    const insights1 = memory1.metadata?.temporalInsights as any;
+    const insights2 = memory2.metadata?.temporalInsights as any;
+    const patterns1 = insights1?.patterns;
+    const patterns2 = insights2?.patterns;
+    
+    if (!patterns1 || !patterns2) {
+      return null;
+    }
+    
+    // Check for same burst period
+    const burst1 = patterns1.find((p: any) => p.type === 'burst');
+    const burst2 = patterns2.find((p: any) => p.type === 'burst');
+    
+    if (burst1 && burst2) {
+      // Calculate time distance between memories
+      const timeDiff = Math.abs(memory1.createdAt - memory2.createdAt);
+      const thirtyMinutes = 30 * 60 * 1000;
+      
+      if (timeDiff <= thirtyMinutes) {
+        return {
+          connectionType: 'related',
+          confidence: Math.min(burst1.confidence, burst2.confidence),
+          reasoning: 'Same burst activity period - temporal connection'
+        };
+      }
+    }
+    
+    // Check for matching daily patterns
+    const daily1 = patterns1.find((p: any) => p.type === 'daily');
+    const daily2 = patterns2.find((p: any) => p.type === 'daily');
+    
+    if (daily1?.peakHours && daily2?.peakHours) {
+      const commonHours = daily1.peakHours.filter((h: number) => 
+        daily2.peakHours.includes(h)
+      );
+      
+      if (commonHours.length > 0) {
+        return {
+          connectionType: 'related',
+          confidence: Math.min(daily1.confidence, daily2.confidence) * 0.8,
+          reasoning: `Same daily activity pattern - peak hours: ${commonHours.join(', ')}`
+        };
+      }
+    }
+    
+    return null;
   }
 
   /**
@@ -866,20 +928,20 @@ Return JSON: {"connectionType": "type", "confidence": 0.0-1.0, "reasoning": "bri
 
   private getStandardModel(provider: string): string {
     const models: Record<string, string> = {
-      openai: 'gpt-4o-mini',
+      openai: 'gpt-4.1-mini',
       anthropic: 'claude-3-haiku-20240307',
       gemini: 'gemini-1.5-flash'
     };
-    return models[provider] || 'gpt-4o-mini';
+    return models[provider] || 'gpt-4.1-mini';
   }
 
   private getAdvancedModel(provider: string): string {
     const models: Record<string, string> = {
-      openai: 'gpt-4o',
+      openai: 'gpt-4.1',
       anthropic: 'claude-3-sonnet-20240229',
       gemini: 'gemini-1.5-pro'
     };
-    return models[provider] || 'gpt-4o';
+    return models[provider] || 'gpt-4.1';
   }
 
   private async getProviderName(): Promise<string> {
@@ -1060,6 +1122,47 @@ Return JSON: {"connectionType": "type", "confidence": 0.0-1.0, "reasoning": "bri
         }
       }
 
+      // Track connection events
+      if (this.storage.evolution?.trackEventBatch) {
+        const connectionEvents = connections.flatMap(conn => [
+          {
+            memoryId: conn.sourceMemoryId,
+            userId,
+            agentId: 'unknown', // TODO: Extract from memory or pass as parameter
+            type: 'connected' as const,
+            timestamp: Date.now(),
+            metadata: {
+              connectionId: conn.id,
+              connectionType: conn.connectionType,
+              targetMemoryId: conn.targetMemoryId,
+              source: 'MemoryConnectionManager'
+            }
+          },
+          {
+            memoryId: conn.targetMemoryId,
+            userId,
+            agentId: 'unknown', // TODO: Extract from memory or pass as parameter
+            type: 'connected' as const,
+            timestamp: Date.now(),
+            metadata: {
+              connectionId: conn.id,
+              connectionType: conn.connectionType,
+              sourceMemoryId: conn.sourceMemoryId,
+              source: 'MemoryConnectionManager'
+            }
+          }
+        ]);
+        
+        this.storage.evolution.trackEventBatch(connectionEvents).catch((error: any) => {
+          logger.warn(
+            LogCategory.STORAGE,
+            'MemoryConnectionManager',
+            'Failed to track connection events',
+            { error: error instanceof Error ? error.message : String(error) }
+          );
+        });
+      }
+
       logger.info(
         LogCategory.STORAGE,
         'MemoryConnectionManager',
@@ -1095,7 +1198,7 @@ Return JSON: {"connectionType": "type", "confidence": 0.0-1.0, "reasoning": "bri
 
     // Default cost rates per token by provider (rough estimates)
     const costPerToken = {
-      openai: 0.00000015, // gpt-4o-mini
+      openai: 0.00000015, // gpt-4.1-mini
       anthropic: 0.00000025, // claude-3-haiku
       gemini: 0.00000015 // gemini-1.5-flash
     };

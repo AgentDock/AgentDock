@@ -107,6 +107,13 @@ export interface RecallConfig {
   maxRelatedDepth: number;
   cacheResults: boolean;
   cacheTTL: number;
+  /**
+   * Default number of hops for graph traversal
+   * @default 1 - Direct connections only
+   * @recommended 2 - Includes second-degree connections
+   * @maximum 3 - As per docs/memory/graph-architecture.md
+   */
+  defaultConnectionHops?: number;
 }
 
 export interface SearchStrategy {

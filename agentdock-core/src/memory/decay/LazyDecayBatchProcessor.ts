@@ -185,6 +185,9 @@ export class LazyDecayBatchProcessor {
           processingTimeMs: Date.now() - startTime
         }
       );
+
+      // Note: We can't track decay events here because MemoryUpdate doesn't include userId/agentId
+      // Evolution tracking for decay happens in the storage layer instead
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);

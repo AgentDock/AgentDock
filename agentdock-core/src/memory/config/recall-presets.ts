@@ -23,7 +23,8 @@ const defaultPreset: RecallConfig = {
   enableRelatedMemories: true,
   maxRelatedDepth: 2,
   cacheResults: true,
-  cacheTTL: 300 // 5 minutes (seconds, not milliseconds)
+  cacheTTL: 300, // 5 minutes (seconds, not milliseconds)
+  defaultConnectionHops: 1 // Conservative default for balanced performance
 };
 
 /**
@@ -43,7 +44,8 @@ const precisionPreset: RecallConfig = {
   enableRelatedMemories: true,
   maxRelatedDepth: 2,
   cacheResults: true,
-  cacheTTL: 600 // 10 minutes for stability (seconds)
+  cacheTTL: 600, // 10 minutes for stability (seconds)
+  defaultConnectionHops: 1 // Conservative for safety-critical domains
 };
 
 /**
@@ -63,7 +65,8 @@ const performancePreset: RecallConfig = {
   enableRelatedMemories: false, // Disabled for performance
   maxRelatedDepth: 1,
   cacheResults: true,
-  cacheTTL: 180 // 3 minutes for faster updates (seconds)
+  cacheTTL: 180, // 3 minutes for faster updates (seconds)
+  defaultConnectionHops: 1 // Minimal traversal for speed
 };
 
 /**
@@ -83,7 +86,8 @@ const researchPreset: RecallConfig = {
   enableRelatedMemories: true,
   maxRelatedDepth: 4,
   cacheResults: true,
-  cacheTTL: 900 // 15 minutes for deep analysis (seconds)
+  cacheTTL: 900, // 15 minutes for deep analysis (seconds)
+  defaultConnectionHops: 3 // Maximum depth as per docs/memory/graph-architecture.md
 };
 
 /**

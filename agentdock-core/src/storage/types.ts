@@ -295,6 +295,58 @@ export interface StorageProvider {
    * Memory operations (optional - not all storage providers support memory operations)
    */
   memory?: MemoryOperations;
+
+  /**
+   * Evolution tracking operations (optional - lightweight event tracking)
+   * This is for tracking memory lifecycle events for analytics
+   */
+  evolution?: EvolutionOperations;
+}
+
+/**
+ * Lightweight memory event for evolution tracking
+ */
+export interface MemoryEvent {
+  memoryId: string;
+  userId: string;
+  agentId: string;
+  type: 'created' | 'accessed' | 'updated' | 'decayed' | 
+        'connected' | 'consolidated' | 'deleted' | 'archived';
+  timestamp: number;
+  metadata?: {
+    value?: number; // For decay tracking
+    connectionId?: string; // For connection tracking
+    query?: string; // For access tracking
+    source?: string; // Component that triggered
+    [key: string]: any;
+  };
+}
+
+/**
+ * Evolution tracking operations for memory analytics
+ */
+export interface EvolutionOperations {
+  /**
+   * Track a single memory event
+   */
+  trackEvent(event: MemoryEvent): Promise<void>;
+  
+  /**
+   * Track multiple events in batch (for performance)
+   */
+  trackEventBatch(events: MemoryEvent[]): Promise<void>;
+  
+  /**
+   * Query evolution history for a specific memory
+   */
+  getEvolutionHistory?(
+    memoryId: string,
+    options?: {
+      startTime?: number;
+      endTime?: number;
+      eventTypes?: MemoryEvent['type'][];
+    }
+  ): Promise<MemoryEvent[]>;
 }
 
 /**
@@ -358,6 +410,29 @@ export interface MemoryOperations {
    * @param updates - Array of memory updates to apply
    */
   batchUpdateMemories?(updates: MemoryUpdate[]): Promise<void>;
+
+  /**
+   * Hybrid search combining vector similarity and text search
+   * @param userId - User ID for isolation
+   * @param agentId - Agent ID
+   * @param query - Text query for search
+   * @param queryEmbedding - Vector embedding of the query
+   * @param options - Search options including weights and filters
+   * @returns Array of memories with relevance scores
+   */
+  hybridSearch?(
+    userId: string,
+    agentId: string,
+    query: string,
+    queryEmbedding: number[],
+    options: {
+      limit?: number;
+      vectorWeight?: number;
+      textWeight?: number;
+      threshold?: number;
+      filter?: { type?: MemoryType };
+    }
+  ): Promise<Array<MemoryData & { score?: number }>>;
 }
 
 /**
@@ -547,3 +622,13 @@ export interface StorageProviderOptions {
 export type StorageProviderFactory = (
   options?: Record<string, any>
 ) => StorageProvider;
+
+/**
+ * Extended memory data type for results with scores
+ * Used for hybrid search results that include relevance scores
+ */
+export interface ScoredMemoryData extends MemoryData {
+  score?: number;
+  hybrid_score?: number;
+  relevance_score?: number;
+}

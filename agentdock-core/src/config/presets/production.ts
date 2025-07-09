@@ -25,13 +25,20 @@ import { StorageProviderOptions } from '../../storage/types';
 function validateDatabaseUrl(): string {
   const url = process.env.DATABASE_URL;
   if (!url) {
-    // Only throw in actual production environments
-    if (process.env.NODE_ENV === 'production') {
+    // Skip validation during build time or CI
+    const isBuildTime =
+      process.env.VERCEL ||
+      process.env.CI ||
+      process.env.NODE_ENV === 'test' ||
+      process.env.JEST_WORKER_ID;
+
+    // Only throw in actual production runtime (not build time)
+    if (process.env.NODE_ENV === 'production' && !isBuildTime) {
       throw new Error(
         'DATABASE_URL environment variable is required for production configuration'
       );
     }
-    // Return a placeholder for development/test environments
+    // Return a placeholder for development/test/build environments
     return 'postgresql://localhost:5432/agentdock_dev';
   }
   return url;
@@ -40,13 +47,20 @@ function validateDatabaseUrl(): string {
 function validateApiKey(): string {
   const apiKey = process.env.PRIME_API_KEY || process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    // Only throw in actual production environments
-    if (process.env.NODE_ENV === 'production') {
+    // Skip validation during build time or CI
+    const isBuildTime =
+      process.env.VERCEL ||
+      process.env.CI ||
+      process.env.NODE_ENV === 'test' ||
+      process.env.JEST_WORKER_ID;
+
+    // Only throw in actual production runtime (not build time)
+    if (process.env.NODE_ENV === 'production' && !isBuildTime) {
       throw new Error(
         'PRIME_API_KEY or OPENAI_API_KEY environment variable is required'
       );
     }
-    // Return a placeholder for development/test environments
+    // Return a placeholder for development/test/build environments
     return 'your-api-key-here';
   }
   return apiKey;
@@ -359,13 +373,23 @@ export const productionAutoScalePreset = {
   storage: {
     ...productionStorageConfig,
     config: {
-      ...productionStorageConfig.config,
+      // Connection string from environment (lazy evaluation)
+      get connectionString() {
+        return validateDatabaseUrl();
+      },
+      // Don't spread the config object to avoid triggering getters during build
       pool: {
         max: 10, // Lower per-instance for auto-scaling
         min: 2,
         idleTimeoutMillis: 10000,
         connectionTimeoutMillis: 3000
-      }
+      },
+      ssl:
+        process.env.NODE_ENV === 'production'
+          ? { rejectUnauthorized: true }
+          : { rejectUnauthorized: false },
+      preparedStatements: true,
+      schema: 'public'
     }
   },
   settings: {

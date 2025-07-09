@@ -29,7 +29,13 @@ export const productionStorageConfig: StorageProviderOptions = {
   namespace: 'production',
   config: {
     // Connection string from environment
-    connectionString: process.env.DATABASE_URL,
+    connectionString: (() => {
+      const url = process.env.DATABASE_URL;
+      if (!url) {
+        throw new Error('DATABASE_URL environment variable is required');
+      }
+      return url;
+    })(),
 
     // Connection pool settings (PLACEHOLDER - needs tuning)
     pool: {
@@ -42,7 +48,7 @@ export const productionStorageConfig: StorageProviderOptions = {
     // Security and performance
     ssl:
       process.env.NODE_ENV === 'production'
-        ? { rejectUnauthorized: false }
+        ? { rejectUnauthorized: true }
         : false,
     preparedStatements: true,
 
@@ -62,7 +68,13 @@ export const productionVectorStorageConfig: StorageProviderOptions = {
   namespace: 'production',
   config: {
     // Inherits PostgreSQL connection settings
-    connectionString: process.env.DATABASE_URL,
+    connectionString: (() => {
+      const url = process.env.DATABASE_URL;
+      if (!url) {
+        throw new Error('DATABASE_URL environment variable is required');
+      }
+      return url;
+    })(),
     pool: {
       max: 20,
       min: 5,
@@ -71,7 +83,7 @@ export const productionVectorStorageConfig: StorageProviderOptions = {
     },
     ssl:
       process.env.NODE_ENV === 'production'
-        ? { rejectUnauthorized: false }
+        ? { rejectUnauthorized: true }
         : false,
     preparedStatements: true,
     schema: 'public',
@@ -181,8 +193,16 @@ export const productionMemoryConfig: MemoryManagerConfig = {
  */
 export const productionPRIMEConfig: PRIMEOrchestratorConfig = {
   primeConfig: {
-    provider: process.env.PRIME_PROVIDER || 'openai',
-    apiKey: process.env.PRIME_API_KEY || process.env.OPENAI_API_KEY || '',
+    provider: (process.env.PRIME_PROVIDER || 'openai') as any,
+    apiKey: (() => {
+      const key = process.env.PRIME_API_KEY || process.env.OPENAI_API_KEY;
+      if (!key) {
+        throw new Error(
+          'PRIME_API_KEY or OPENAI_API_KEY environment variable is required'
+        );
+      }
+      return key;
+    })(),
     maxTokens: 4000,
     defaultTier: 'standard',
     autoTierSelection: true,

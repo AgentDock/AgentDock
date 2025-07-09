@@ -124,14 +124,30 @@ export const localMemoryConfig: MemoryManagerConfig = {
 };
 
 /**
+ * Validates and returns API key for PRIME configuration
+ * Throws clear error if no API key is available
+ */
+function validatePrimeApiKey(): string {
+  const apiKey = process.env.PRIME_API_KEY || process.env.OPENAI_API_KEY;
+
+  if (!apiKey) {
+    throw new Error(
+      'PRIME API key is required. Please set either PRIME_API_KEY or OPENAI_API_KEY environment variable.'
+    );
+  }
+
+  return apiKey;
+}
+
+/**
  * Batch processing configuration for local development
  *
  * @note 100% extraction rate for local development, rules-only (no API costs)
  */
 export const localPRIMEConfig: PRIMEOrchestratorConfig = {
   primeConfig: {
-    provider: process.env.PRIME_PROVIDER || 'openai',
-    apiKey: process.env.PRIME_API_KEY || process.env.OPENAI_API_KEY || '',
+    provider: (process.env.PRIME_PROVIDER || 'openai') as any,
+    apiKey: validatePrimeApiKey(),
     maxTokens: 4000,
     defaultTier: 'standard',
     autoTierSelection: true,

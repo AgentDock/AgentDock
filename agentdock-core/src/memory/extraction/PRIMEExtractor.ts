@@ -22,7 +22,7 @@ import { z } from 'zod';
 
 import { CoreLLM } from '../../llm/core-llm';
 import { createLLM } from '../../llm/create-llm';
-import { LLMConfig } from '../../llm/types';
+import { LLMConfig, LLMProvider } from '../../llm/types';
 import { LogCategory, logger } from '../../logging';
 import { CostTracker } from '../tracking/CostTracker';
 import { Memory, MemoryMessage, MemoryType } from '../types/common';
@@ -50,7 +50,7 @@ const PRIMEExtractionSchema = z.object({
 // PRIME-specific types
 export interface PRIMEConfig {
   // LLM Configuration - REQUIRED
-  provider: string; // e.g., 'anthropic', 'openai'
+  provider: LLMProvider; // e.g., 'anthropic', 'openai'
   apiKey: string; // API key for the provider
   maxTokens: number; // Default: 4000
 
@@ -263,7 +263,7 @@ JSON: [{content, type, importance, reasoning}]`;
     context: PRIMEExtractionContext
   ): Promise<Memory[]> {
     const llmConfig: LLMConfig = {
-      provider: this.config.provider as any,
+      provider: this.config.provider,
       model:
         tier === 'advanced'
           ? this.config.advancedModel
@@ -358,8 +358,17 @@ JSON: [{content, type, importance, reasoning}]`;
       );
     }
 
-    const provider = process.env.PRIME_PROVIDER || config.provider || 'openai';
-    const validProviders = ['openai', 'anthropic', 'azure', 'bedrock'];
+    const provider = (process.env.PRIME_PROVIDER ||
+      config.provider ||
+      'openai') as LLMProvider;
+    const validProviders: LLMProvider[] = [
+      'openai',
+      'anthropic',
+      'cerebras',
+      'deepseek',
+      'gemini',
+      'groq'
+    ];
     if (!validProviders.includes(provider)) {
       throw new ConfigValidationError(
         'provider',

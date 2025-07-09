@@ -572,6 +572,18 @@ Focus on statistically significant patterns with confidence scores.`
         temperature: 0.3
       });
 
+      // Add cost tracking
+      await this.costTracker.trackExtraction(agentId, {
+        extractorType: 'temporal-pattern-llm',
+        cost: 0.01, // Adjust based on LLM pricing
+        memoriesExtracted: result.patterns.length,
+        messagesProcessed: 1,
+        metadata: {
+          memoriesAnalyzed: memories.length,
+          patternsFound: result.patterns.length
+        }
+      });
+
       // Convert LLM results to TemporalPattern format
       return result.patterns.map((pattern: any) => ({
         type: pattern.type,

@@ -1124,11 +1124,32 @@ Return JSON: {"connectionType": "type", "confidence": 0.0-1.0, "reasoning": "bri
 
       // Track connection events
       if (this.storage.evolution?.trackEventBatch) {
+        // Extract agentId from the first connection's source memory
+        let agentId = 'unknown';
+        if (connections.length > 0) {
+          try {
+            const sourceMemory = await this.getMemoryById(
+              userId,
+              connections[0].sourceMemoryId
+            );
+            if (sourceMemory?.agentId) {
+              agentId = sourceMemory.agentId;
+            }
+          } catch (error) {
+            logger.warn(
+              LogCategory.STORAGE,
+              'MemoryConnectionManager',
+              'Failed to extract agentId from source memory, using unknown',
+              { error: error instanceof Error ? error.message : String(error) }
+            );
+          }
+        }
+
         const connectionEvents = connections.flatMap((conn) => [
           {
             memoryId: conn.sourceMemoryId,
             userId,
-            agentId: 'unknown', // TODO: Extract from memory or pass as parameter
+            agentId,
             type: 'connected' as const,
             timestamp: Date.now(),
             metadata: {
@@ -1141,7 +1162,7 @@ Return JSON: {"connectionType": "type", "confidence": 0.0-1.0, "reasoning": "bri
           {
             memoryId: conn.targetMemoryId,
             userId,
-            agentId: 'unknown', // TODO: Extract from memory or pass as parameter
+            agentId,
             type: 'connected' as const,
             timestamp: Date.now(),
             metadata: {

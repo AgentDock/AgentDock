@@ -1,6 +1,6 @@
 # Complete AgentDock Configuration Guide
 
-## 🚀 **THE 3-SECOND SETUP**
+## **THE 3-SECOND SETUP**
 
 ```bash
 # 1. Set your API key
@@ -33,7 +33,7 @@ const results = await memory.recall('user-123', 'user preferences');
 
 ---
 
-## 📋 **Quick Start Options**
+## **Quick Start Options**
 
 ### Option 1: Zero Configuration (Recommended)
 ```typescript
@@ -81,7 +81,7 @@ const memory = await createMemorySystem({
 
 ---
 
-## 🧠 **Memory Creation Methods**
+## **Memory Creation Methods**
 
 The memory system provides two distinct methods for creating memories:
 
@@ -143,7 +143,7 @@ const memories = await memory.addMessage('user-123', {
 
 ---
 
-## 🎛️ **Environment Variables That Actually Work**
+## **Environment Variables That Actually Work**
 
 ### **Minimal Setup (Just Works™)**
 ```bash
@@ -184,7 +184,7 @@ OPENAI_API_KEY=sk-xxx
 
 ---
 
-## 📊 **Available Presets**
+## **Available Presets**
 
 | Environment | Description | Database | Use Case |
 |-------------|-------------|----------|----------|
@@ -200,7 +200,7 @@ OPENAI_API_KEY=sk-xxx
 
 ---
 
-## 💡 **Real-World Examples**
+## **Real-World Examples**
 
 ### Example 1: Startup (Simple & Cheap)
 ```typescript
@@ -280,7 +280,7 @@ NODE_ENV=production
 
 ---
 
-## 🔧 **Advanced Customization**
+## **Advanced Customization**
 
 Only use this if the presets don't meet your needs:
 
@@ -350,7 +350,7 @@ const memory = await createMemorySystem({
 
 ---
 
-## 🧠 **Intelligence Layer Configuration**
+## **Intelligence Layer Configuration**
 
 The intelligence layer adds advanced memory features like temporal patterns and connection discovery:
 
@@ -400,7 +400,7 @@ Evolution tracking is automatically enabled when storage supports it:
 
 ---
 
-## 🔑 **Environment Variables Reference**
+## **Environment Variables Reference**
 
 ### **Core System Variables**
 ```bash
@@ -507,7 +507,7 @@ MEMORY_ENCRYPTION_KEY=xxx            # Encryption key for PII
 
 ---
 
-## 🔍 **Advanced Recall Features**
+## **Advanced Recall Features**
 
 ### **Connection Graph Configuration**
 ```typescript
@@ -521,18 +521,18 @@ const results = await memory.recall('user-123', 'JavaScript', {
 });
 ```
 
-## 🗄️ **Storage Adapter Priority**
+## **Storage Adapter Priority**
 
 | Adapter | Status | Use Case | Performance |
 |---------|--------|----------|-------------|
-| **pgvector** | ✅ **PRODUCTION-READY** | **Primary choice** - PostgreSQL with vectors | 10k+ QPS with proper indexing |
-| **postgresql** | ✅ Production-Ready | PostgreSQL without vectors | High performance |
-| **sqlite-vec** | ✅ Supported | Local development with vectors | Good for <50k vectors |
-| **sqlite** | ✅ Supported | Local development | Fast for small datasets |
-| **memory** | ⚠️ Testing Only | No persistence | In-memory only |
-| ChromaDB/Pinecone/Qdrant | 🔧 Community Extensible | Base classes for extension | Varies |
+| **pgvector** | **PRODUCTION-READY** | **Primary choice** - PostgreSQL with vectors | 10k+ QPS with proper indexing |
+| **postgresql** | Production-Ready | PostgreSQL without vectors | High performance |
+| **sqlite-vec** | Supported | Local development with vectors | Good for <50k vectors |
+| **sqlite** | Supported | Local development | Fast for small datasets |
+| **memory** | Testing Only | No persistence | In-memory only |
+| ChromaDB/Pinecone/Qdrant | Community Extensible | Base classes for extension | Varies |
 
-## ❓ **Troubleshooting**
+## **Troubleshooting**
 
 ### "No API key found"
 ```bash
@@ -575,7 +575,7 @@ export PGVECTOR_IVFFLAT_PROBES=20   # Increase for better accuracy
 
 ---
 
-## 🧠 **Memory Lifecycle Configuration Examples**
+## **Memory Lifecycle Configuration Examples**
 
 ### **Therapy Agent: Never Forget Critical Information**
 ```typescript
@@ -651,7 +651,7 @@ const memory = await createMemorySystem({
 
 ---
 
-## 🏆 **Best Practices**
+## **Best Practices**
 
 1. **Start Simple**: Use `createMemorySystem()` with no options first
 2. **Environment Variables First**: Set API keys in environment, not code
@@ -661,11 +661,11 @@ const memory = await createMemorySystem({
 
 ---
 
-## 📖 **Related Documentation**
+## **Related Documentation**
 
 - [Architecture Overview](./architecture-overview.md)
 - [Memory Connections](./memory-connections.md)
 
 ---
 
-**That's it! You now have everything you need to configure AgentDock. Start with the 3-second setup and expand as needed.** 🚀
+**That's it! You now have everything you need to configure AgentDock. Start with the 3-second setup and expand as needed.**

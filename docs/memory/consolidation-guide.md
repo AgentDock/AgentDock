@@ -44,12 +44,12 @@ After a configurable age threshold (default: 7 days), important episodic memorie
 
 ```mermaid
 flowchart LR
-    A[Episodic Memory<br/>"User said 'I prefer email over phone' on Jan 1"] 
-    B[Age Check<br/>7+ days old?]
-    C[Importance Check<br/>≥ 0.5?]
-    D[Extract Knowledge<br/>LLM or Simple]
-    E[Semantic Memory<br/>"User prefers email communication"]
-    F[Archive/Delete<br/>Original]
+    A["Episodic Memory<br/>User said I prefer email over phone on Jan 1"] 
+    B["Age Check<br/>7+ days old?"]
+    C["Importance Check<br/>≥ 0.5?"]
+    D["Extract Knowledge<br/>LLM or Simple"]
+    E["Semantic Memory<br/>User prefers email communication"]
+    F["Archive/Delete<br/>Original"]
     
     A --> B
     B -->|Yes| C

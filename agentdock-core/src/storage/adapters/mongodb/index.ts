@@ -46,6 +46,7 @@ export class MongoDBAdapter extends BaseStorageAdapter {
 
   // Namespace-specific operation caches
   private kvOpsCache = new Map<string, MongoKVOperations>();
+  private listOpsCache = new Map<string, MongoListOperations>();
   private batchOpsCache = new Map<string, MongoBatchOperations>();
 
   constructor(options: MongoDBAdapterOptions) {
@@ -310,7 +311,14 @@ export class MongoDBAdapter extends BaseStorageAdapter {
     if (end === undefined) {
       end = -1;
     }
-    const range = await this.listOps.lrange(key, start, end);
+
+    const actualNamespace = options?.namespace || this.namespace;
+    let listOps = this.listOps;
+    if (actualNamespace !== this.namespace) {
+      listOps = this.getListOps(actualNamespace);
+    }
+
+    const range = await listOps.lrange(key, start, end);
     return range.length > 0 ? (range as T[]) : null;
   }
 
@@ -323,13 +331,20 @@ export class MongoDBAdapter extends BaseStorageAdapter {
     options?: StorageOptions
   ): Promise<void> {
     await this.ensureInitialized();
+
+    const actualNamespace = options?.namespace || this.namespace;
+    let listOps = this.listOps;
+    if (actualNamespace !== this.namespace) {
+      listOps = this.getListOps(actualNamespace);
+    }
+
     // Clear existing list
-    const fullKey = this.keyManager.createKey(key, this.namespace);
+    const fullKey = this.keyManager.createKey(key, actualNamespace);
     await this.connection.listCollection.deleteOne({ _id: fullKey });
 
     // Add new values
     if (values.length > 0) {
-      await this.listOps.rpush(key, ...values);
+      await listOps.rpush(key, ...values);
     }
   }
 
@@ -338,7 +353,9 @@ export class MongoDBAdapter extends BaseStorageAdapter {
    */
   async deleteList(key: string, options?: StorageOptions): Promise<boolean> {
     await this.ensureInitialized();
-    const fullKey = this.keyManager.createKey(key, this.namespace);
+
+    const actualNamespace = options?.namespace || this.namespace;
+    const fullKey = this.keyManager.createKey(key, actualNamespace);
     const result = await this.connection.listCollection.deleteOne({
       _id: fullKey
     });
@@ -361,6 +378,23 @@ export class MongoDBAdapter extends BaseStorageAdapter {
       this.kvOpsCache.set(key, kvOps);
     }
     return kvOps;
+  }
+
+  /**
+   * Get cached list operations for namespace
+   */
+  private getListOps(namespace?: string): MongoListOperations {
+    const key = namespace || 'default';
+    let listOps = this.listOpsCache.get(key);
+    if (!listOps) {
+      listOps = new MongoListOperations(
+        this.connection.listCollection,
+        this.keyManager,
+        namespace
+      );
+      this.listOpsCache.set(key, listOps);
+    }
+    return listOps;
   }
 
   /**

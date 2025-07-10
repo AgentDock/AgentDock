@@ -5,7 +5,7 @@
 import { Pool } from 'pg';
 
 import { LogCategory, logger } from '../../../logging';
-import { SQLIdentifierValidator } from '../shared/sql-identifier-validator';
+import { parseSqlIdentifier, quotePgIdentifier } from '../../utils/sql-utils';
 
 /**
  * Initialize database tables and indexes
@@ -21,105 +21,153 @@ export async function initializeSchema(
     { schema }
   );
 
-  // Validate and escape schema name to prevent SQL injection
-  const secureSchema = SQLIdentifierValidator.securePostgreSQLSchema(schema);
+  // Validate and quote schema name safely
+  const validatedSchema = parseSqlIdentifier(schema, 'schema name');
+  const quotedSchema = quotePgIdentifier(validatedSchema);
 
   const client = await pool.connect();
   try {
     // Create schema if it doesn't exist
-    if (schema !== 'public') {
-      await client.query(`CREATE SCHEMA IF NOT EXISTS ${secureSchema}`);
-    }
+    await client.query(`CREATE SCHEMA IF NOT EXISTS ${quotedSchema}`);
 
-    // Create tables with validated schema name
+    // Create memories table
     await client.query(`
-      CREATE TABLE IF NOT EXISTS ${secureSchema}.kv_store (
-        key TEXT PRIMARY KEY,
-        value JSONB NOT NULL,
-        expires_at BIGINT,
-        namespace TEXT,
-        metadata JSONB,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      CREATE TABLE IF NOT EXISTS ${quotedSchema}.memories (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        agent_id TEXT NOT NULL,
+        type TEXT NOT NULL,
+        content TEXT NOT NULL,
+        importance DECIMAL(3,2) NOT NULL DEFAULT 0.5,
+        metadata JSONB DEFAULT '{}',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        accessed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        access_count INTEGER NOT NULL DEFAULT 0
       )
     `);
 
+    // Create indexes for efficient queries
     await client.query(`
-      CREATE INDEX IF NOT EXISTS idx_${schema}_kv_namespace 
-      ON ${secureSchema}.kv_store(namespace)
+      CREATE INDEX IF NOT EXISTS idx_memories_user_agent 
+      ON ${quotedSchema}.memories(user_id, agent_id)
     `);
 
     await client.query(`
-      CREATE INDEX IF NOT EXISTS idx_${schema}_kv_expires_at 
-      ON ${secureSchema}.kv_store(expires_at)
-      WHERE expires_at IS NOT NULL
+      CREATE INDEX IF NOT EXISTS idx_memories_type 
+      ON ${quotedSchema}.memories(type)
     `);
 
-    // List table with validated schema name
     await client.query(`
-      CREATE TABLE IF NOT EXISTS ${secureSchema}.list_store (
-        key TEXT NOT NULL,
-        position INTEGER NOT NULL,
-        value JSONB NOT NULL,
-        namespace TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY (key, position)
+      CREATE INDEX IF NOT EXISTS idx_memories_importance 
+      ON ${quotedSchema}.memories(importance DESC)
+    `);
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_memories_created_at 
+      ON ${quotedSchema}.memories(created_at DESC)
+    `);
+
+    // Create memory connections table for relationship mapping
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS ${quotedSchema}.memory_connections (
+        id SERIAL PRIMARY KEY,
+        from_memory_id TEXT NOT NULL,
+        to_memory_id TEXT NOT NULL,
+        connection_type TEXT NOT NULL,
+        strength DECIMAL(3,2) NOT NULL DEFAULT 0.5,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        FOREIGN KEY (from_memory_id) REFERENCES ${quotedSchema}.memories(id) ON DELETE CASCADE,
+        FOREIGN KEY (to_memory_id) REFERENCES ${quotedSchema}.memories(id) ON DELETE CASCADE
       )
     `);
 
+    // Create indexes for memory connections
     await client.query(`
-      CREATE INDEX IF NOT EXISTS idx_${schema}_list_namespace 
-      ON ${secureSchema}.list_store(namespace)
+      CREATE INDEX IF NOT EXISTS idx_memory_connections_from 
+      ON ${quotedSchema}.memory_connections(from_memory_id)
     `);
 
-    logger.debug(
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_memory_connections_to 
+      ON ${quotedSchema}.memory_connections(to_memory_id)
+    `);
+
+    logger.info(
       LogCategory.STORAGE,
       'PostgreSQLSchema',
-      'Schema initialization complete'
+      'Database schema initialized successfully',
+      { schema: validatedSchema }
     );
+  } catch (error) {
+    logger.error(
+      LogCategory.STORAGE,
+      'PostgreSQLSchema',
+      'Failed to initialize database schema',
+      { schema: validatedSchema, error }
+    );
+    throw error;
   } finally {
     client.release();
   }
 }
 
 /**
- * Clean up expired items from the database
+ * Drop all tables in the schema
  */
-export async function cleanupExpired(
+export async function dropSchema(pool: Pool, schema: string): Promise<void> {
+  // Validate and quote schema name safely
+  const validatedSchema = parseSqlIdentifier(schema, 'schema name');
+  const quotedSchema = quotePgIdentifier(validatedSchema);
+
+  const client = await pool.connect();
+  try {
+    await client.query(`DROP SCHEMA IF EXISTS ${quotedSchema} CASCADE`);
+
+    logger.info(
+      LogCategory.STORAGE,
+      'PostgreSQLSchema',
+      'Schema dropped successfully',
+      { schema: validatedSchema }
+    );
+  } catch (error) {
+    logger.error(
+      LogCategory.STORAGE,
+      'PostgreSQLSchema',
+      'Failed to drop schema',
+      { schema: validatedSchema, error }
+    );
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * Check if schema exists
+ */
+export async function schemaExists(
   pool: Pool,
   schema: string
-): Promise<number> {
-  // Validate and escape schema name to prevent SQL injection
-  const secureSchema = SQLIdentifierValidator.securePostgreSQLSchema(schema);
+): Promise<boolean> {
+  // Validate schema name
+  const validatedSchema = parseSqlIdentifier(schema, 'schema name');
 
   const client = await pool.connect();
   try {
     const result = await client.query(
-      `
-      DELETE FROM ${secureSchema}.kv_store 
-      WHERE expires_at IS NOT NULL 
-      AND expires_at < $1
-    `,
-      [Date.now()]
+      'SELECT EXISTS(SELECT 1 FROM information_schema.schemata WHERE schema_name = $1)',
+      [validatedSchema]
     );
 
-    if (result.rowCount && result.rowCount > 0) {
-      logger.debug(
-        LogCategory.STORAGE,
-        'PostgreSQLSchema',
-        'Cleaned up expired items',
-        {
-          count: result.rowCount
-        }
-      );
-    }
-
-    return result.rowCount || 0;
+    return result.rows[0]?.exists || false;
   } catch (error) {
-    logger.warn(LogCategory.STORAGE, 'PostgreSQLSchema', 'Cleanup failed', {
-      error: error instanceof Error ? error.message : String(error)
-    });
-    return 0;
+    logger.error(
+      LogCategory.STORAGE,
+      'PostgreSQLSchema',
+      'Failed to check schema existence',
+      { schema: validatedSchema, error }
+    );
+    return false;
   } finally {
     client.release();
   }

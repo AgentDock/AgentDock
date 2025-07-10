@@ -8,475 +8,420 @@
  * TypeScript BM25 implementation is available using 'okapibm25' package if required.
  */
 
-import { Database } from 'better-sqlite3';
+import Database from 'better-sqlite3';
 
 import { LogCategory, logger } from '../../../../logging';
+import { BaseMemoryItem, MemoryType } from '../../../../shared/types/memory';
 import {
-  MemoryData,
-  MemoryRecallOptions,
-  VectorMemoryOperations
-} from '../../../types';
-import { SqliteMemoryOperations } from '../../sqlite/operations/memory';
+  DatabaseMemoryQuery,
+  DatabaseRecallOptions,
+  VectorSearchResult
+} from '../../../base-types';
+import { TABLE_NAMES } from '../../../utils/sql-utils';
 
-interface VectorSearchResult {
-  id: string;
-  vector_similarity: number;
+/**
+ * Full memory item interface that extends BaseMemoryItem with storage-specific properties
+ */
+export interface FullMemoryItem extends BaseMemoryItem {
+  userId: string;
+  agentId: string;
+  metadata?: Record<string, unknown>;
+  accessedAt: number;
+  accessCount: number;
 }
 
-interface TextSearchResult {
-  id: string;
-  text_score: number;
-}
-
-interface HybridSearchOptions extends MemoryRecallOptions {
-  vectorWeight?: number; // Default 0.7
-  textWeight?: number; // Default 0.3
-  vectorThreshold?: number; // Default 0.7
+export interface MemorySearchResult extends FullMemoryItem {
+  score: number;
+  distance?: number;
 }
 
 /**
- * SQLite-Vec memory operations with hybrid vector + FTS5 search
+ * Store a memory item with vector embedding
  */
-export class SQLiteVecMemoryOperations
-  extends SqliteMemoryOperations
-  implements VectorMemoryOperations
-{
-  constructor(db: Database) {
-    super(db);
-  }
-
-  /**
-   * Store memory with embedding support
-   */
-  async storeMemoryWithEmbedding(
-    userId: string,
-    agentId: string,
-    memory: MemoryData,
-    embedding: number[]
-  ): Promise<string> {
-    const memoryId = await this.store(userId, agentId, memory);
-
-    // Store embedding in vector table (if vector operations are available)
+export async function storeMemory(
+  db: Database.Database,
+  memory: FullMemoryItem,
+  embedding?: number[]
+): Promise<void> {
+  const transaction = db.transaction(() => {
     try {
-      await this.storeEmbedding(memoryId, embedding);
-    } catch (error) {
-      logger.warn(
-        LogCategory.STORAGE,
-        'SQLiteVecMemoryOps',
-        'Failed to store embedding, continuing without vector search',
-        {
-          memoryId,
-          error: error instanceof Error ? error.message : String(error)
-        }
-      );
-    }
-
-    return memoryId;
-  }
-
-  /**
-   * Hybrid search: Vector similarity + FTS5 BM25 text search
-   */
-  async hybridSearch(
-    userId: string,
-    agentId: string,
-    query: string,
-    queryEmbedding: number[],
-    options: HybridSearchOptions = {}
-  ): Promise<MemoryData[]> {
-    if (!userId?.trim()) {
-      throw new Error('userId is required for memory operations');
-    }
-
-    const vectorWeight = options.vectorWeight || 0.7;
-    const textWeight = options.textWeight || 0.3;
-    const vectorThreshold = options.vectorThreshold || 0.7;
-    const limit = options.limit || 20;
-
-    try {
-      // Run vector and text searches in parallel
-      const [vectorResults, textResults] = await Promise.all([
-        this.searchByVector(userId, agentId, queryEmbedding, options),
-        this.searchByText(userId, agentId, query, options)
-      ]);
-
-      // Hybrid fusion using Reciprocal Rank Fusion (RRF)
-      const fusedResults = this.fuseResults(
-        vectorResults,
-        textResults,
-        vectorWeight,
-        textWeight,
-        limit
-      );
-
-      logger.debug(
-        LogCategory.STORAGE,
-        'SQLiteVecMemoryOps',
-        'Hybrid search completed',
-        {
-          userId: userId.substring(0, 8),
-          agentId,
-          query: query.substring(0, 50),
-          vectorResults: vectorResults.length,
-          textResults: textResults.length,
-          fusedResults: fusedResults.length
-        }
-      );
-
-      return fusedResults;
-    } catch (error) {
-      logger.error(
-        LogCategory.STORAGE,
-        'SQLiteVecMemoryOps',
-        'Hybrid search failed',
-        {
-          userId: userId.substring(0, 8),
-          agentId,
-          query: query.substring(0, 50),
-          error: error instanceof Error ? error.message : String(error)
-        }
-      );
-      throw error;
-    }
-  }
-
-  /**
-   * Vector similarity search
-   */
-  async searchByVector(
-    userId: string,
-    agentId: string,
-    queryEmbedding: number[],
-    options: HybridSearchOptions = {}
-  ): Promise<MemoryData[]> {
-    const threshold = options.vectorThreshold || 0.7;
-    const limit = options.limit || 20;
-    const collectionName = 'memory_embeddings';
-
-    try {
-      // Convert query vector to JSON for sqlite-vec
-      const queryVectorJson = JSON.stringify(queryEmbedding);
-
-      // Search using sqlite-vec with distance threshold
-      const stmt = (this as any).db.prepare(`
-        SELECT 
-          m.*,
-          v.distance as vector_distance,
-          (1.0 - v.distance) as vector_similarity
-        FROM memories m
-        JOIN ${collectionName} v ON m.id = v.rowid
-        WHERE v.embedding MATCH ?
-          AND m.user_id = ? 
-          AND m.agent_id = ?
-          AND v.distance <= ?
-        ORDER BY v.distance ASC
-        LIMIT ?
+      // Insert into memories table
+      const insertMemory = db.prepare(`
+        INSERT OR REPLACE INTO memories (
+          id, user_id, agent_id, type, content, importance, 
+          metadata, created_at, accessed_at, access_count
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `);
 
-      const maxDistance = 1.0 - threshold; // Convert similarity threshold to distance
-      const rows = stmt.all(
-        queryVectorJson,
-        userId,
-        agentId,
-        maxDistance,
-        limit
-      ) as any[];
-
-      logger.debug(
-        LogCategory.STORAGE,
-        'SQLiteVecMemoryOps',
-        'Vector search completed',
-        {
-          userId: userId.substring(0, 8),
-          agentId,
-          queryDimensions: queryEmbedding.length,
-          threshold,
-          results: rows.length
-        }
+      insertMemory.run(
+        memory.id,
+        memory.userId,
+        memory.agentId,
+        memory.type,
+        memory.content,
+        memory.importance,
+        JSON.stringify(memory.metadata || {}),
+        new Date(memory.createdAt).toISOString(),
+        new Date(memory.accessedAt).toISOString(),
+        memory.accessCount || 0
       );
 
-      return rows.map((row) => (this as any).convertRowToMemoryData(row));
-    } catch (error) {
-      logger.warn(
-        LogCategory.STORAGE,
-        'SQLiteVecMemoryOps',
-        'Vector search failed, falling back to regular search',
-        {
-          error: error instanceof Error ? error.message : String(error)
-        }
-      );
-      // Fallback to regular text search
-      return this.recall(userId, agentId, '', options);
-    }
-  }
-
-  /**
-   * FTS5 BM25 text search using native SQLite function
-   */
-  async searchByText(
-    userId: string,
-    agentId: string,
-    query: string,
-    options: HybridSearchOptions = {}
-  ): Promise<MemoryData[]> {
-    const limit = options.limit || 20;
-
-    try {
-      // Use native SQLite FTS5 BM25 function - COMPLETE IMPLEMENTATION
-      const stmt = (this as any).db.prepare(`
-        SELECT 
-          m.*,
-          bm25(memories_fts) as text_score
-        FROM memories m
-        JOIN memories_fts f ON m.id = f.rowid
-        WHERE f.content MATCH ?
-          AND m.user_id = ?
-          AND m.agent_id = ?
-        ORDER BY bm25(memories_fts) DESC
-        LIMIT ?
-      `);
-
-      const rows = stmt.all(query, userId, agentId, limit) as any[];
-
-      logger.debug(
-        LogCategory.STORAGE,
-        'SQLiteVecMemoryOps',
-        'FTS5 BM25 search completed',
-        {
-          userId: userId.substring(0, 8),
-          agentId,
-          query: query.substring(0, 50),
-          results: rows.length
-        }
-      );
-
-      return rows.map((row) => (this as any).convertRowToMemoryData(row));
-    } catch (error) {
-      logger.warn(
-        LogCategory.STORAGE,
-        'SQLiteVecMemoryOps',
-        'FTS5 search failed, falling back to LIKE search',
-        {
-          error: error instanceof Error ? error.message : String(error)
-        }
-      );
-      // Fallback to basic LIKE search
-      return this.recall(userId, agentId, query, options);
-    }
-  }
-
-  /**
-   * Find similar memories by embedding
-   */
-  async findSimilarMemories(
-    userId: string,
-    agentId: string,
-    embedding: number[],
-    threshold: number = 0.8
-  ): Promise<MemoryData[]> {
-    return this.searchByVector(userId, agentId, embedding, {
-      vectorThreshold: threshold,
-      limit: 10
-    });
-  }
-
-  /**
-   * Update memory embedding
-   */
-  async updateMemoryEmbedding(
-    userId: string,
-    memoryId: string,
-    embedding: number[]
-  ): Promise<void> {
-    await this.storeEmbedding(memoryId, embedding);
-  }
-
-  /**
-   * Get memory embedding
-   */
-  async getMemoryEmbedding(
-    userId: string,
-    memoryId: string
-  ): Promise<number[] | null> {
-    const collectionName = 'memory_embeddings';
-
-    try {
-      // First verify the memory belongs to the user for security
-      const memoryExists = await this.getById(userId, memoryId);
-      if (!memoryExists) {
-        return null;
+      // Store embedding if provided
+      if (embedding) {
+        const vectorData = new Float32Array(embedding);
+        const insertEmbedding = db.prepare(`
+          INSERT OR REPLACE INTO ${TABLE_NAMES.MEMORY_EMBEDDINGS}(rowid, embedding) 
+          VALUES (?, ?)
+        `);
+        insertEmbedding.run(memory.id, vectorData);
       }
 
-      // Get embedding from vector collection
-      const stmt = (this as any).db.prepare(
-        `SELECT embedding FROM ${collectionName} WHERE rowid = ?`
-      );
-      const row = stmt.get(memoryId) as { embedding: string } | undefined;
-
-      if (!row) {
-        logger.debug(
-          LogCategory.STORAGE,
-          'SQLiteVecMemoryOps',
-          'No embedding found for memory',
-          { memoryId }
-        );
-        return null;
-      }
-
-      // Parse the JSON vector
-      const embedding = JSON.parse(row.embedding) as number[];
-
       logger.debug(
         LogCategory.STORAGE,
-        'SQLiteVecMemoryOps',
-        'Retrieved embedding for memory',
-        {
-          memoryId,
-          dimensions: embedding.length
-        }
-      );
-
-      return embedding;
-    } catch (error) {
-      logger.warn(
-        LogCategory.STORAGE,
-        'SQLiteVecMemoryOps',
-        'Failed to get memory embedding',
-        {
-          memoryId,
-          error: error instanceof Error ? error.message : String(error)
-        }
-      );
-      return null;
-    }
-  }
-
-  /**
-   * Store embedding in vector table
-   */
-  private async storeEmbedding(
-    memoryId: string,
-    embedding: number[]
-  ): Promise<void> {
-    const collectionName = 'memory_embeddings';
-
-    try {
-      // Ensure collection exists before storing
-      await this.ensureMemoryVectorCollection(embedding.length);
-
-      // Convert embedding to JSON for sqlite-vec
-      const embeddingJson = JSON.stringify(embedding);
-
-      // Store in the vec0 virtual table using memory ID as rowid
-      const stmt = (this as any).db.prepare(
-        `INSERT OR REPLACE INTO ${collectionName}(rowid, embedding) VALUES (?, ?)`
-      );
-      stmt.run(memoryId, embeddingJson);
-
-      logger.debug(
-        LogCategory.STORAGE,
-        'SQLiteVecMemoryOps',
-        'Stored embedding for memory',
-        {
-          memoryId,
-          dimensions: embedding.length
-        }
+        'SQLiteVec',
+        `Stored memory: ${memory.id} for user: ${memory.userId}`
       );
     } catch (error) {
       logger.error(
         LogCategory.STORAGE,
-        'SQLiteVecMemoryOps',
-        'Failed to store embedding',
-        {
-          memoryId,
-          dimensions: embedding.length,
-          error: error instanceof Error ? error.message : String(error)
-        }
+        'SQLiteVec',
+        `Failed to store memory: ${memory.id}`,
+        { error }
       );
       throw error;
     }
+  });
+
+  transaction();
+}
+
+/**
+ * Search memories using vector similarity and text matching
+ */
+export async function searchMemories(
+  db: Database.Database,
+  options: DatabaseRecallOptions
+): Promise<MemorySearchResult[]> {
+  try {
+    const { query, userId, agentId, limit = 10, threshold } = options;
+
+    // For text-based search without embeddings
+    const sql = `
+      SELECT 
+        id, user_id, agent_id, type, content, importance,
+        metadata, created_at, accessed_at, access_count,
+        (CASE 
+          WHEN content LIKE ? THEN 0.9
+          WHEN content LIKE ? THEN 0.7
+          ELSE 0.5
+        END) as score
+      FROM memories 
+      WHERE user_id = ? AND agent_id = ?
+        AND (content LIKE ? OR content LIKE ?)
+      ORDER BY score DESC, importance DESC, accessed_at DESC
+      LIMIT ?
+    `;
+
+    const searchTerm = `%${query}%`;
+    const exactTerm = `%${query}%`;
+
+    const stmt = db.prepare(sql);
+    const rows = stmt.all(
+      exactTerm,
+      searchTerm,
+      userId,
+      agentId,
+      searchTerm,
+      exactTerm,
+      limit
+    ) as Array<{
+      id: string;
+      user_id: string;
+      agent_id: string;
+      type: string;
+      content: string;
+      importance: number;
+      metadata: string;
+      created_at: string;
+      accessed_at: string;
+      access_count: number;
+      score: number;
+    }>;
+
+    const results: MemorySearchResult[] = rows.map((row) => ({
+      id: row.id,
+      userId: row.user_id,
+      agentId: row.agent_id,
+      type: row.type as MemoryType,
+      content: row.content,
+      importance: row.importance,
+      metadata: JSON.parse(row.metadata || '{}'),
+      createdAt: new Date(row.created_at).getTime(),
+      accessedAt: new Date(row.accessed_at).getTime(),
+      accessCount: row.access_count,
+      score: row.score
+    }));
+
+    logger.debug(
+      LogCategory.STORAGE,
+      'SQLiteVec',
+      `Found ${results.length} memories for query: "${query}"`
+    );
+
+    return results;
+  } catch (error) {
+    logger.error(
+      LogCategory.STORAGE,
+      'SQLiteVec',
+      'Failed to search memories',
+      { error }
+    );
+    throw error;
   }
+}
 
-  /**
-   * Ensure memory vector collection exists
-   */
-  private async ensureMemoryVectorCollection(dimension: number): Promise<void> {
-    const collectionName = 'memory_embeddings';
+/**
+ * Vector-based memory search using embeddings
+ */
+export async function vectorSearchMemories(
+  db: Database.Database,
+  queryEmbedding: number[],
+  options: DatabaseRecallOptions
+): Promise<MemorySearchResult[]> {
+  try {
+    const { userId, agentId, limit = 10, threshold } = options;
 
-    try {
-      // Check if collection exists
-      const existsStmt = (this as any).db.prepare(
-        'SELECT 1 FROM vec_collections WHERE name = ? LIMIT 1'
-      );
-      const exists = existsStmt.get(collectionName);
+    // Convert query vector to binary format
+    const queryData = new Float32Array(queryEmbedding);
 
-      if (!exists) {
-        // Create the collection
-        const createTableSQL = `CREATE VIRTUAL TABLE IF NOT EXISTS ${collectionName} USING vec0(embedding float[${dimension}])`;
-        (this as any).db.prepare(createTableSQL).run();
+    // Search using vector similarity with memory filtering
+    let sql = `
+      SELECT 
+        m.id, m.user_id, m.agent_id, m.type, m.content, m.importance,
+        m.metadata, m.created_at, m.accessed_at, m.access_count,
+        v.distance,
+        (1 - v.distance) as score
+      FROM memories m
+      JOIN ${TABLE_NAMES.MEMORY_EMBEDDINGS} v ON m.id = v.rowid
+      WHERE m.user_id = ? AND m.agent_id = ? 
+        AND v.embedding MATCH ?
+    `;
 
-        // Track in metadata
-        const insertMetadata = (this as any).db.prepare(
-          `INSERT OR REPLACE INTO vec_collections (name, dimension, metric) VALUES (?, ?, ?)`
-        );
-        insertMetadata.run(collectionName, dimension, 'cosine');
+    const params: any[] = [userId, agentId, queryData];
 
-        logger.info(
-          LogCategory.STORAGE,
-          'SQLiteVecMemoryOps',
-          `Created memory vector collection with ${dimension} dimensions`
-        );
-      }
-    } catch (error) {
-      logger.warn(
-        LogCategory.STORAGE,
-        'SQLiteVecMemoryOps',
-        'Failed to ensure memory vector collection exists',
-        {
-          error: error instanceof Error ? error.message : String(error)
-        }
-      );
-      // Don't throw - allow memory storage to continue without vectors
+    // Add threshold filter if provided
+    if (threshold !== undefined) {
+      sql += ' AND v.distance <= ?';
+      params.push(1 - threshold); // Convert similarity to distance
     }
+
+    sql += ' ORDER BY v.distance ASC LIMIT ?';
+    params.push(limit);
+
+    const stmt = db.prepare(sql);
+    const rows = stmt.all(...params) as Array<{
+      id: string;
+      user_id: string;
+      agent_id: string;
+      type: string;
+      content: string;
+      importance: number;
+      metadata: string;
+      created_at: string;
+      accessed_at: string;
+      access_count: number;
+      distance: number;
+      score: number;
+    }>;
+
+    const results: MemorySearchResult[] = rows.map((row) => ({
+      id: row.id,
+      userId: row.user_id,
+      agentId: row.agent_id,
+      type: row.type as MemoryType,
+      content: row.content,
+      importance: row.importance,
+      metadata: JSON.parse(row.metadata || '{}'),
+      createdAt: new Date(row.created_at).getTime(),
+      accessedAt: new Date(row.accessed_at).getTime(),
+      accessCount: row.access_count,
+      score: row.score,
+      distance: row.distance
+    }));
+
+    logger.debug(
+      LogCategory.STORAGE,
+      'SQLiteVec',
+      `Vector search found ${results.length} memories`
+    );
+
+    return results;
+  } catch (error) {
+    logger.error(
+      LogCategory.STORAGE,
+      'SQLiteVec',
+      'Failed to perform vector search on memories',
+      { error }
+    );
+    throw error;
   }
+}
 
-  /**
-   * Reciprocal Rank Fusion for combining vector and text results
-   */
-  private fuseResults(
-    vectorResults: MemoryData[],
-    textResults: MemoryData[],
-    vectorWeight: number,
-    textWeight: number,
-    limit: number
-  ): MemoryData[] {
-    const k = 60; // RRF constant
-    const scoreMap = new Map<string, { memory: MemoryData; score: number }>();
+/**
+ * Get memories by query parameters
+ */
+export async function getMemories(
+  db: Database.Database,
+  query: DatabaseMemoryQuery
+): Promise<FullMemoryItem[]> {
+  try {
+    const {
+      userId,
+      agentId,
+      type,
+      minImportance,
+      maxAge,
+      limit = 50,
+      offset = 0
+    } = query;
 
-    // Add vector results with RRF scoring
-    vectorResults.forEach((memory, index) => {
-      const rank = index + 1;
-      const score = vectorWeight * (1 / (k + rank));
-      scoreMap.set(memory.id, { memory, score });
+    let sql = `
+      SELECT 
+        id, user_id, agent_id, type, content, importance,
+        metadata, created_at, accessed_at, access_count
+      FROM memories 
+      WHERE user_id = ? AND agent_id = ?
+    `;
+
+    const params: any[] = [userId, agentId];
+
+    if (type) {
+      sql += ' AND type = ?';
+      params.push(type);
+    }
+
+    if (minImportance !== undefined) {
+      sql += ' AND importance >= ?';
+      params.push(minImportance);
+    }
+
+    if (maxAge !== undefined) {
+      const cutoffDate = new Date(Date.now() - maxAge);
+      sql += ' AND created_at >= ?';
+      params.push(cutoffDate.toISOString());
+    }
+
+    sql += ' ORDER BY importance DESC, created_at DESC LIMIT ? OFFSET ?';
+    params.push(limit, offset);
+
+    const stmt = db.prepare(sql);
+    const rows = stmt.all(...params) as Array<{
+      id: string;
+      user_id: string;
+      agent_id: string;
+      type: string;
+      content: string;
+      importance: number;
+      metadata: string;
+      created_at: string;
+      accessed_at: string;
+      access_count: number;
+    }>;
+
+    const results: FullMemoryItem[] = rows.map((row) => ({
+      id: row.id,
+      userId: row.user_id,
+      agentId: row.agent_id,
+      type: row.type as MemoryType,
+      content: row.content,
+      importance: row.importance,
+      metadata: JSON.parse(row.metadata || '{}'),
+      createdAt: new Date(row.created_at).getTime(),
+      accessedAt: new Date(row.accessed_at).getTime(),
+      accessCount: row.access_count
+    }));
+
+    logger.debug(
+      LogCategory.STORAGE,
+      'SQLiteVec',
+      `Retrieved ${results.length} memories for user: ${userId}`
+    );
+
+    return results;
+  } catch (error) {
+    logger.error(LogCategory.STORAGE, 'SQLiteVec', 'Failed to get memories', {
+      error
     });
-
-    // Add text results with RRF scoring
-    textResults.forEach((memory, index) => {
-      const rank = index + 1;
-      const textScore = textWeight * (1 / (k + rank));
-
-      const existing = scoreMap.get(memory.id);
-      if (existing) {
-        existing.score += textScore; // Combine scores
-      } else {
-        scoreMap.set(memory.id, { memory, score: textScore });
-      }
-    });
-
-    // Sort by combined score and return top results
-    return Array.from(scoreMap.values())
-      .sort((a, b) => b.score - a.score)
-      .slice(0, limit)
-      .map((item) => item.memory);
+    throw error;
   }
+}
+
+/**
+ * Update memory access information
+ */
+export async function updateMemoryAccess(
+  db: Database.Database,
+  memoryId: string
+): Promise<void> {
+  try {
+    const stmt = db.prepare(`
+      UPDATE memories 
+      SET accessed_at = ?, access_count = access_count + 1
+      WHERE id = ?
+    `);
+
+    stmt.run(new Date().toISOString(), memoryId);
+
+    logger.debug(
+      LogCategory.STORAGE,
+      'SQLiteVec',
+      `Updated access for memory: ${memoryId}`
+    );
+  } catch (error) {
+    logger.error(
+      LogCategory.STORAGE,
+      'SQLiteVec',
+      `Failed to update memory access: ${memoryId}`,
+      { error }
+    );
+    throw error;
+  }
+}
+
+/**
+ * Delete a memory and its associated embedding
+ */
+export async function deleteMemory(
+  db: Database.Database,
+  memoryId: string
+): Promise<void> {
+  const transaction = db.transaction(() => {
+    try {
+      // Delete from memories table
+      const deleteMemory = db.prepare('DELETE FROM memories WHERE id = ?');
+      deleteMemory.run(memoryId);
+
+      // Delete associated embedding
+      const deleteEmbedding = db.prepare(`
+        DELETE FROM ${TABLE_NAMES.MEMORY_EMBEDDINGS} WHERE rowid = ?
+      `);
+      deleteEmbedding.run(memoryId);
+
+      logger.debug(
+        LogCategory.STORAGE,
+        'SQLiteVec',
+        `Deleted memory: ${memoryId}`
+      );
+    } catch (error) {
+      logger.error(
+        LogCategory.STORAGE,
+        'SQLiteVec',
+        `Failed to delete memory: ${memoryId}`,
+        { error }
+      );
+      throw error;
+    }
+  });
+
+  transaction();
 }

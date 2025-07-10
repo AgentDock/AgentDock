@@ -5,7 +5,11 @@
 import { Pool } from 'pg';
 
 import { LogCategory, logger } from '../../../logging';
-import { SQLIdentifierValidator } from '../shared/sql-identifier-validator';
+import {
+  parseSqlIdentifier,
+  quotePgIdentifier,
+  TABLE_NAMES
+} from '../../utils/sql-utils';
 import { VectorCollectionConfig, VectorIndexType, VectorMetric } from './types';
 
 /**
@@ -27,266 +31,135 @@ export const VectorSQL = {
   `,
 
   /**
-   * Create vector collection table
+   * Create vector collections metadata table
    */
-  CREATE_COLLECTION: (name: string, dimension: number, schema?: string) => {
-    // Validate and escape identifiers to prevent SQL injection
-    const validCollection =
-      SQLIdentifierValidator.validateSQLiteCollection(name);
-    const escapedCollection =
-      SQLIdentifierValidator.escapePostgreSQL(validCollection);
-
-    // Validate dimension parameter
-    if (!Number.isInteger(dimension) || dimension < 1 || dimension > 10000) {
-      throw new Error(
-        `Invalid dimension: ${dimension}. Must be integer between 1 and 10000`
-      );
-    }
-
-    let tableName: string;
-    if (schema) {
-      const validSchema =
-        SQLIdentifierValidator.validatePostgreSQLSchema(schema);
-      const escapedSchema =
-        SQLIdentifierValidator.escapePostgreSQL(validSchema);
-      tableName = `${escapedSchema}.${escapedCollection}`;
-    } else {
-      tableName = escapedCollection;
-    }
-
-    return `
-      CREATE TABLE IF NOT EXISTS ${tableName} (
-        id VARCHAR(255) PRIMARY KEY,
-        embedding vector(${dimension}) NOT NULL,
-        metadata JSONB,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-      )
-    `;
-  },
+  CREATE_COLLECTIONS_TABLE: (schema: string) => `
+    CREATE TABLE IF NOT EXISTS ${quotePgIdentifier(schema)}.vector_collections (
+      name TEXT PRIMARY KEY,
+      dimension INTEGER NOT NULL,
+      metric TEXT NOT NULL DEFAULT 'cosine',
+      index_type TEXT DEFAULT 'ivfflat',
+      index_options JSONB DEFAULT '{}',
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `,
 
   /**
-   * Create metadata index
+   * Create a vector collection table
    */
-  CREATE_METADATA_INDEX: (name: string, schema?: string) => {
-    // Validate and escape identifiers to prevent SQL injection
-    const validCollection =
-      SQLIdentifierValidator.validateSQLiteCollection(name);
-    const escapedCollection =
-      SQLIdentifierValidator.escapePostgreSQL(validCollection);
-
-    let tableName: string;
-    if (schema) {
-      const validSchema =
-        SQLIdentifierValidator.validatePostgreSQLSchema(schema);
-      const escapedSchema =
-        SQLIdentifierValidator.escapePostgreSQL(validSchema);
-      tableName = `${escapedSchema}.${escapedCollection}`;
-    } else {
-      tableName = escapedCollection;
-    }
-
-    return `
-      CREATE INDEX IF NOT EXISTS idx_${validCollection}_metadata 
-      ON ${tableName} USING GIN (metadata)
-    `;
-  },
+  CREATE_COLLECTION_TABLE: (
+    schema: string,
+    tableName: string,
+    dimension: number
+  ) => `
+    CREATE TABLE IF NOT EXISTS ${quotePgIdentifier(schema)}.${quotePgIdentifier(tableName)} (
+      id TEXT PRIMARY KEY,
+      vector vector(${dimension}) NOT NULL,
+      metadata JSONB DEFAULT '{}',
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `,
 
   /**
    * Create vector index
    */
   CREATE_VECTOR_INDEX: (
-    name: string,
-    indexType: VectorIndexType,
-    metric: VectorMetric,
-    options: any = {},
-    schema?: string
+    schema: string,
+    tableName: string,
+    indexType: string,
+    metric: string
   ) => {
-    // Validate and escape identifiers to prevent SQL injection
-    const validCollection =
-      SQLIdentifierValidator.validateSQLiteCollection(name);
-    const escapedCollection =
-      SQLIdentifierValidator.escapePostgreSQL(validCollection);
+    const quotedSchema = quotePgIdentifier(schema);
+    const quotedTable = quotePgIdentifier(tableName);
+    const indexName = quotePgIdentifier(`idx_${tableName}_vector_${indexType}`);
 
-    let tableName: string;
-    if (schema) {
-      const validSchema =
-        SQLIdentifierValidator.validatePostgreSQLSchema(schema);
-      const escapedSchema =
-        SQLIdentifierValidator.escapePostgreSQL(validSchema);
-      tableName = `${escapedSchema}.${escapedCollection}`;
-    } else {
-      tableName = escapedCollection;
-    }
-
-    const distance = getDistanceOperator(metric);
-
-    if (indexType === VectorIndexType.IVFFLAT) {
-      const lists = options.lists || 100;
-      // Validate lists parameter
-      if (!Number.isInteger(lists) || lists < 1 || lists > 10000) {
-        throw new Error(
-          `Invalid lists parameter: ${lists}. Must be integer between 1 and 10000`
-        );
-      }
-      return `
-        CREATE INDEX IF NOT EXISTS idx_${validCollection}_vector 
-        ON ${tableName} 
-        USING ivfflat (embedding ${distance})
-        WITH (lists = ${lists})
-      `;
-    }
-
-    // HNSW support (if available in newer pgvector versions)
-    if (indexType === VectorIndexType.HNSW) {
-      const m = options.m || 16;
-      const efConstruction = options.efConstruction || 64;
-      // Validate HNSW parameters
-      if (!Number.isInteger(m) || m < 1 || m > 100) {
-        throw new Error(
-          `Invalid m parameter: ${m}. Must be integer between 1 and 100`
-        );
-      }
-      if (
-        !Number.isInteger(efConstruction) ||
-        efConstruction < 1 ||
-        efConstruction > 1000
-      ) {
-        throw new Error(
-          `Invalid efConstruction parameter: ${efConstruction}. Must be integer between 1 and 1000`
-        );
-      }
-      return `
-        CREATE INDEX IF NOT EXISTS idx_${validCollection}_vector 
-        ON ${tableName} 
-        USING hnsw (embedding ${distance})
-        WITH (m = ${m}, ef_construction = ${efConstruction})
-      `;
+    if (indexType === 'ivfflat') {
+      return `CREATE INDEX IF NOT EXISTS ${indexName} ON ${quotedSchema}.${quotedTable} USING ivfflat (vector vector_${metric}_ops) WITH (lists = 100)`;
+    } else if (indexType === 'hnsw') {
+      return `CREATE INDEX IF NOT EXISTS ${indexName} ON ${quotedSchema}.${quotedTable} USING hnsw (vector vector_${metric}_ops)`;
     }
 
     throw new Error(`Unsupported index type: ${indexType}`);
-  },
-
-  /**
-   * Drop collection
-   */
-  DROP_COLLECTION: (name: string, schema?: string) => {
-    // Validate and escape identifiers to prevent SQL injection
-    const validCollection =
-      SQLIdentifierValidator.validateSQLiteCollection(name);
-    const escapedCollection =
-      SQLIdentifierValidator.escapePostgreSQL(validCollection);
-
-    let tableName: string;
-    if (schema) {
-      const validSchema =
-        SQLIdentifierValidator.validatePostgreSQLSchema(schema);
-      const escapedSchema =
-        SQLIdentifierValidator.escapePostgreSQL(validSchema);
-      tableName = `${escapedSchema}.${escapedCollection}`;
-    } else {
-      tableName = escapedCollection;
-    }
-
-    return `DROP TABLE IF EXISTS ${tableName} CASCADE`;
-  },
-
-  /**
-   * Check if collection exists
-   */
-  CHECK_COLLECTION: (name: string, schema?: string) => {
-    return `
-      SELECT EXISTS (
-        SELECT 1 FROM information_schema.tables 
-        WHERE table_name = $1 
-        ${schema ? 'AND table_schema = $2' : 'AND table_schema = current_schema()'}
-      ) as exists
-    `;
-  },
-
-  /**
-   * List collections
-   */
-  LIST_COLLECTIONS: (schema?: string) => {
-    return `
-      SELECT table_name 
-      FROM information_schema.tables 
-      WHERE table_schema = ${schema ? '$1' : 'current_schema()'}
-      AND table_name LIKE 'vec_%'
-      ORDER BY table_name
-    `;
   }
 };
 
 /**
- * Get distance operator for metric
+ * Initialize pgvector extension and schema
  */
-function getDistanceOperator(metric: VectorMetric): string {
-  switch (metric) {
-    case 'euclidean':
-      return 'vector_l2_ops';
-    case 'cosine':
-      return 'vector_cosine_ops';
-    case 'ip':
-      return 'vector_ip_ops';
-    default:
-      return 'vector_l2_ops';
-  }
-}
+export async function initializeVectorSchema(
+  pool: Pool,
+  schema: string = 'public'
+): Promise<void> {
+  logger.debug(
+    LogCategory.STORAGE,
+    'PostgreSQLVectorSchema',
+    'Initializing vector schema',
+    { schema }
+  );
 
-/**
- * Get distance function for metric
- */
-export function getDistanceFunction(metric: VectorMetric): string {
-  switch (metric) {
-    case 'euclidean':
-      return '<->';
-    case 'cosine':
-      return '<=>';
-    case 'ip':
-      return '<#>';
-    default:
-      return '<->';
-  }
-}
+  // Validate schema name
+  const validatedSchema = parseSqlIdentifier(schema, 'schema name');
 
-/**
- * Initialize pgvector extension
- */
-export async function initializePgVector(pool: Pool): Promise<void> {
+  const client = await pool.connect();
   try {
-    // Check if extension exists
-    const checkResult = await pool.query(VectorSQL.CHECK_EXTENSION);
+    // Create pgvector extension
+    await client.query(VectorSQL.CREATE_EXTENSION);
 
-    if (!checkResult.rows[0]?.exists) {
-      // Create extension
-      await pool.query(VectorSQL.CREATE_EXTENSION);
-      logger.info(
-        LogCategory.STORAGE,
-        'PostgreSQLVector',
-        'pgvector extension created'
-      );
-    } else {
-      logger.debug(
-        LogCategory.STORAGE,
-        'PostgreSQLVector',
-        'pgvector extension already exists'
+    // Create schema if needed
+    if (schema !== 'public') {
+      await client.query(
+        `CREATE SCHEMA IF NOT EXISTS ${quotePgIdentifier(validatedSchema)}`
       );
     }
+
+    // Create collections metadata table
+    await client.query(VectorSQL.CREATE_COLLECTIONS_TABLE(validatedSchema));
+
+    // Create default collections
+    await createDefaultCollections(client, validatedSchema);
+
+    logger.info(
+      LogCategory.STORAGE,
+      'PostgreSQLVectorSchema',
+      'Vector schema initialized successfully',
+      { schema: validatedSchema }
+    );
   } catch (error) {
-    // Check if it's a permission error
-    if (error instanceof Error && error.message.includes('permission denied')) {
-      logger.error(
-        LogCategory.STORAGE,
-        'PostgreSQLVector',
-        'Cannot create pgvector extension. Please run: CREATE EXTENSION vector;',
-        { error: error.message }
-      );
-      throw new Error(
-        'pgvector extension not installed. Please ask your database administrator to run: CREATE EXTENSION vector;'
-      );
-    }
+    logger.error(
+      LogCategory.STORAGE,
+      'PostgreSQLVectorSchema',
+      'Failed to initialize vector schema',
+      { schema: validatedSchema, error }
+    );
     throw error;
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * Create default vector collections
+ */
+async function createDefaultCollections(
+  client: any,
+  schema: string
+): Promise<void> {
+  const defaultDimension = 1536; // text-embedding-3-small
+
+  const collections = [
+    { name: TABLE_NAMES.MEMORY_EMBEDDINGS, dimension: defaultDimension },
+    { name: TABLE_NAMES.DOCUMENT_EMBEDDINGS, dimension: defaultDimension },
+    { name: TABLE_NAMES.USER_EMBEDDINGS, dimension: defaultDimension },
+    { name: TABLE_NAMES.AGENT_MEMORIES, dimension: defaultDimension }
+  ];
+
+  for (const collection of collections) {
+    await createVectorCollection(client, schema, {
+      name: collection.name,
+      dimension: collection.dimension,
+      metric: 'cosine',
+      index: { type: 'ivfflat' }
+    });
   }
 }
 
@@ -294,55 +167,68 @@ export async function initializePgVector(pool: Pool): Promise<void> {
  * Create a vector collection
  */
 export async function createVectorCollection(
-  pool: Pool,
-  config: VectorCollectionConfig,
-  schema?: string
+  client: any,
+  schema: string,
+  config: VectorCollectionConfig
 ): Promise<void> {
-  const client = await pool.connect();
+  const { name, dimension, metric = 'cosine', index } = config;
 
   try {
-    await client.query('BEGIN');
+    // Validate collection name
+    const validatedName = parseSqlIdentifier(name, 'collection name');
 
-    // Create table
+    // Create the collection table
     await client.query(
-      VectorSQL.CREATE_COLLECTION(config.name, config.dimension, schema)
+      VectorSQL.CREATE_COLLECTION_TABLE(schema, validatedName, dimension)
     );
-
-    // Create metadata index
-    await client.query(VectorSQL.CREATE_METADATA_INDEX(config.name, schema));
 
     // Create vector index if specified
-    if (config.index) {
-      const metric = config.metric || 'cosine';
-      await client.query(
-        VectorSQL.CREATE_VECTOR_INDEX(
-          config.name,
-          config.index.type as VectorIndexType,
-          metric,
-          config.index,
-          schema
-        )
-      );
+    if (index?.type) {
+      const indexType = index.type as VectorIndexType;
+      if (indexType === 'ivfflat' || indexType === 'hnsw') {
+        await client.query(
+          VectorSQL.CREATE_VECTOR_INDEX(
+            schema,
+            validatedName,
+            indexType,
+            metric
+          )
+        );
+      }
     }
 
-    await client.query('COMMIT');
+    // Register collection in metadata
+    await client.query(
+      `INSERT INTO ${quotePgIdentifier(schema)}.vector_collections (name, dimension, metric, index_type, index_options) 
+       VALUES ($1, $2, $3, $4, $5) 
+       ON CONFLICT (name) DO UPDATE SET 
+         dimension = EXCLUDED.dimension,
+         metric = EXCLUDED.metric,
+         index_type = EXCLUDED.index_type,
+         index_options = EXCLUDED.index_options`,
+      [
+        name,
+        dimension,
+        metric,
+        index?.type || 'ivfflat',
+        JSON.stringify(index || {})
+      ]
+    );
 
-    logger.info(
+    logger.debug(
       LogCategory.STORAGE,
-      'PostgreSQLVector',
-      'Vector collection created',
-      {
-        collection: config.name,
-        dimension: config.dimension,
-        metric: config.metric,
-        indexType: config.index?.type
-      }
+      'PostgreSQLVectorSchema',
+      `Created vector collection: ${name}`,
+      { dimension, metric, indexType: index?.type }
     );
   } catch (error) {
-    await client.query('ROLLBACK');
+    logger.error(
+      LogCategory.STORAGE,
+      'PostgreSQLVectorSchema',
+      `Failed to create vector collection: ${name}`,
+      { error }
+    );
     throw error;
-  } finally {
-    client.release();
   }
 }
 
@@ -351,35 +237,46 @@ export async function createVectorCollection(
  */
 export async function dropVectorCollection(
   pool: Pool,
-  name: string,
-  schema?: string
+  schema: string,
+  collectionName: string
 ): Promise<void> {
-  await pool.query(VectorSQL.DROP_COLLECTION(name, schema));
-
-  logger.info(
-    LogCategory.STORAGE,
-    'PostgreSQLVector',
-    'Vector collection dropped',
-    {
-      collection: name
-    }
+  // Validate names
+  const validatedSchema = parseSqlIdentifier(schema, 'schema name');
+  const validatedCollection = parseSqlIdentifier(
+    collectionName,
+    'collection name'
   );
-}
 
-/**
- * Check if collection exists
- */
-export async function checkCollectionExists(
-  pool: Pool,
-  name: string,
-  schema?: string
-): Promise<boolean> {
-  const params = schema ? [name, schema] : [name];
-  const result = await pool.query(
-    VectorSQL.CHECK_COLLECTION(name, schema),
-    params
-  );
-  return result.rows[0]?.exists || false;
+  const client = await pool.connect();
+  try {
+    // Drop the collection table
+    await client.query(
+      `DROP TABLE IF EXISTS ${quotePgIdentifier(validatedSchema)}.${quotePgIdentifier(validatedCollection)}`
+    );
+
+    // Remove from metadata
+    await client.query(
+      `DELETE FROM ${quotePgIdentifier(validatedSchema)}.vector_collections WHERE name = $1`,
+      [collectionName]
+    );
+
+    logger.debug(
+      LogCategory.STORAGE,
+      'PostgreSQLVectorSchema',
+      `Dropped vector collection: ${collectionName}`,
+      { schema: validatedSchema }
+    );
+  } catch (error) {
+    logger.error(
+      LogCategory.STORAGE,
+      'PostgreSQLVectorSchema',
+      `Failed to drop vector collection: ${collectionName}`,
+      { schema: validatedSchema, error }
+    );
+    throw error;
+  } finally {
+    client.release();
+  }
 }
 
 /**
@@ -387,9 +284,116 @@ export async function checkCollectionExists(
  */
 export async function listVectorCollections(
   pool: Pool,
-  schema?: string
-): Promise<string[]> {
-  const params = schema ? [schema] : [];
-  const result = await pool.query(VectorSQL.LIST_COLLECTIONS(schema), params);
-  return result.rows.map((row) => row.table_name);
+  schema: string
+): Promise<VectorCollectionConfig[]> {
+  // Validate schema name
+  const validatedSchema = parseSqlIdentifier(schema, 'schema name');
+
+  const client = await pool.connect();
+  try {
+    const result = await client.query(
+      `SELECT name, dimension, metric, index_type, index_options 
+       FROM ${quotePgIdentifier(validatedSchema)}.vector_collections 
+       ORDER BY name`
+    );
+
+    return result.rows.map((row) => ({
+      name: row.name,
+      dimension: row.dimension,
+      metric: row.metric as VectorMetric,
+      index: {
+        type: row.index_type as VectorIndexType,
+        ...JSON.parse(row.index_options || '{}')
+      }
+    }));
+  } catch (error) {
+    logger.error(
+      LogCategory.STORAGE,
+      'PostgreSQLVectorSchema',
+      'Failed to list vector collections',
+      { schema: validatedSchema, error }
+    );
+    return [];
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * Check if a vector collection exists
+ */
+export async function collectionExists(
+  pool: Pool,
+  schema: string,
+  collectionName: string
+): Promise<boolean> {
+  // Validate names
+  const validatedSchema = parseSqlIdentifier(schema, 'schema name');
+
+  const client = await pool.connect();
+  try {
+    const result = await client.query(
+      `SELECT EXISTS(SELECT 1 FROM ${quotePgIdentifier(validatedSchema)}.vector_collections WHERE name = $1)`,
+      [collectionName]
+    );
+
+    return result.rows[0]?.exists || false;
+  } catch (error) {
+    logger.error(
+      LogCategory.STORAGE,
+      'PostgreSQLVectorSchema',
+      'Failed to check collection existence',
+      { schema: validatedSchema, collectionName, error }
+    );
+    return false;
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * Get collection metadata
+ */
+export async function getCollectionMetadata(
+  pool: Pool,
+  schema: string,
+  collectionName: string
+): Promise<VectorCollectionConfig | null> {
+  // Validate names
+  const validatedSchema = parseSqlIdentifier(schema, 'schema name');
+
+  const client = await pool.connect();
+  try {
+    const result = await client.query(
+      `SELECT name, dimension, metric, index_type, index_options 
+       FROM ${quotePgIdentifier(validatedSchema)}.vector_collections 
+       WHERE name = $1`,
+      [collectionName]
+    );
+
+    if (result.rows.length === 0) {
+      return null;
+    }
+
+    const row = result.rows[0];
+    return {
+      name: row.name,
+      dimension: row.dimension,
+      metric: row.metric as VectorMetric,
+      index: {
+        type: row.index_type as VectorIndexType,
+        ...JSON.parse(row.index_options || '{}')
+      }
+    };
+  } catch (error) {
+    logger.error(
+      LogCategory.STORAGE,
+      'PostgreSQLVectorSchema',
+      'Failed to get collection metadata',
+      { schema: validatedSchema, collectionName, error }
+    );
+    return null;
+  } finally {
+    client.release();
+  }
 }

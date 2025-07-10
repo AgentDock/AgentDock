@@ -13,16 +13,15 @@ import { PostgreSQLConnection } from '../postgresql/types';
 import { PostgreSQLVectorMemoryOperations } from './operations/memory';
 import {
   deleteVectors,
-  getVectorById,
+  getVector,
   insertVectors,
-  searchVectors,
-  updateVectors
+  searchVectors
 } from './operations/vector';
 import {
-  checkCollectionExists,
+  collectionExists,
   createVectorCollection,
   dropVectorCollection,
-  initializePgVector,
+  initializeVectorSchema,
   listVectorCollections
 } from './schema';
 import {
@@ -41,10 +40,10 @@ export type {
   VectorCollectionConfig,
   VectorData,
   VectorSearchOptions,
-  VectorSearchResult
+  VectorSearchResult,
+  VectorMetric,
+  VectorIndexType
 };
-export type { VectorMetric };
-export { VectorIndexType };
 
 // Export operations
 export { PostgreSQLVectorMemoryOperations } from './operations/memory';
@@ -94,7 +93,7 @@ export class PostgreSQLVectorAdapter
     if (this.vectorOptions.enableVector && !this.isVectorInitialized) {
       // Use parent class connection instead of creating duplicate
       const connection = await this.getConnection();
-      await initializePgVector(connection.pool);
+      await initializeVectorSchema(connection.pool, connection.schema);
 
       // Set IVF Flat probes if configured
       if (this.vectorOptions.ivfflat?.probes) {
@@ -195,11 +194,13 @@ export class PostgreSQLVectorAdapter
       }
     };
 
-    await createVectorCollection(
-      connection.pool,
-      fullConfig,
-      connection.schema
-    );
+    // The function expects (client, schema, config) not (pool, config, schema)
+    const client = await connection.pool.connect();
+    try {
+      await createVectorCollection(client, connection.schema, fullConfig);
+    } finally {
+      client.release();
+    }
   }
 
   /**
@@ -207,7 +208,7 @@ export class PostgreSQLVectorAdapter
    */
   async dropCollection(name: string): Promise<void> {
     const connection = await this.getVectorConnection();
-    await dropVectorCollection(connection.pool, name, connection.schema);
+    await dropVectorCollection(connection.pool, connection.schema, name);
   }
 
   /**
@@ -215,7 +216,7 @@ export class PostgreSQLVectorAdapter
    */
   async collectionExists(name: string): Promise<boolean> {
     const connection = await this.getVectorConnection();
-    return checkCollectionExists(connection.pool, name, connection.schema);
+    return collectionExists(connection.pool, connection.schema, name);
   }
 
   /**
@@ -223,7 +224,12 @@ export class PostgreSQLVectorAdapter
    */
   async listCollections(): Promise<string[]> {
     const connection = await this.getVectorConnection();
-    return listVectorCollections(connection.pool, connection.schema);
+    const collections = await listVectorCollections(
+      connection.pool,
+      connection.schema
+    );
+    // Extract just the names from the VectorCollectionConfig objects
+    return collections.map((config) => config.name);
   }
 
   /**
@@ -236,9 +242,9 @@ export class PostgreSQLVectorAdapter
     const connection = await this.getVectorConnection();
     await insertVectors(
       connection.pool,
+      connection.schema,
       collection,
-      vectors,
-      connection.schema
+      vectors
     );
   }
 
@@ -249,13 +255,8 @@ export class PostgreSQLVectorAdapter
     collection: string,
     vectors: VectorData[]
   ): Promise<void> {
-    const connection = await this.getVectorConnection();
-    await updateVectors(
-      connection.pool,
-      collection,
-      vectors,
-      connection.schema
-    );
+    // Use upsert pattern since we don't have a separate update function
+    await this.insertVectors(collection, vectors);
   }
 
   /**
@@ -263,7 +264,7 @@ export class PostgreSQLVectorAdapter
    */
   async deleteVectors(collection: string, ids: string[]): Promise<void> {
     const connection = await this.getVectorConnection();
-    await deleteVectors(connection.pool, collection, ids, connection.schema);
+    await deleteVectors(connection.pool, connection.schema, collection, ids);
   }
 
   /**
@@ -275,15 +276,13 @@ export class PostgreSQLVectorAdapter
     options?: VectorSearchOptions
   ): Promise<VectorSearchResult[]> {
     const connection = await this.getVectorConnection();
-    const metric = this.vectorOptions.defaultMetric!;
 
     return searchVectors(
       connection.pool,
+      connection.schema,
       collection,
       queryVector,
-      metric,
-      options,
-      connection.schema
+      options
     );
   }
 
@@ -292,7 +291,7 @@ export class PostgreSQLVectorAdapter
    */
   async getVector(collection: string, id: string): Promise<VectorData | null> {
     const connection = await this.getVectorConnection();
-    return getVectorById(connection.pool, collection, id, connection.schema);
+    return getVector(connection.pool, connection.schema, collection, id);
   }
 
   /**
@@ -302,22 +301,8 @@ export class PostgreSQLVectorAdapter
     collection: string,
     vectors: VectorData[]
   ): Promise<void> {
-    // For simplicity, we'll update existing and insert new
-    // In a production system, you might want to use ON CONFLICT UPDATE
-    const existingIds = await Promise.all(
-      vectors.map((v) => this.getVector(collection, v.id))
-    );
-
-    const toUpdate = vectors.filter((_, i) => existingIds[i] !== null);
-    const toInsert = vectors.filter((_, i) => existingIds[i] === null);
-
-    if (toUpdate.length > 0) {
-      await this.updateVectors(collection, toUpdate);
-    }
-
-    if (toInsert.length > 0) {
-      await this.insertVectors(collection, toInsert);
-    }
+    // Since insertVectors now uses UPSERT logic, we can just call it directly
+    await this.insertVectors(collection, vectors);
   }
 
   /**

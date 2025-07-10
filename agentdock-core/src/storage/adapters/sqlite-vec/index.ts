@@ -11,10 +11,17 @@ import { MemoryOperations } from '../../types';
 import { SQLiteAdapter } from '../sqlite';
 import { SQLiteConnectionManager } from '../sqlite/connection';
 import { SQLiteConnection } from '../sqlite/types';
-import { SQLiteVecMemoryOperations } from './operations/memory';
+import {
+  deleteMemory,
+  getMemories,
+  searchMemories,
+  storeMemory,
+  updateMemoryAccess,
+  vectorSearchMemories
+} from './operations/memory';
+import type { FullMemoryItem, MemorySearchResult } from './operations/memory';
 import {
   deleteVector,
-  getCollectionStats,
   getVector,
   insertVector,
   searchVectors,
@@ -23,9 +30,9 @@ import {
 import {
   checkCollectionExists,
   createVectorCollection,
-  createVectorTables,
   dropVectorCollection,
   getCollectionMetadata,
+  initializeSchema,
   initializeSqliteVec,
   listVectorCollections
 } from './schema';
@@ -51,6 +58,19 @@ export type {
 };
 export type { VectorMetric };
 
+// Export memory operation functions
+export {
+  storeMemory,
+  searchMemories,
+  vectorSearchMemories,
+  getMemories,
+  updateMemoryAccess,
+  deleteMemory
+};
+
+// Export types properly
+export type { FullMemoryItem, MemorySearchResult };
+
 // Re-export VectorOperations from base-types
 export type { VectorOperations } from '../../base-types';
 
@@ -73,14 +93,9 @@ export class SQLiteVecAdapter
   private vectorConnectionManager: SQLiteConnectionManager;
   private vectorConnection?: SQLiteConnection;
 
-  // Override parent memory property with vector-enabled operations
-  declare memory?: SQLiteVecMemoryOperations;
-
   protected async initializeMemoryOperations(): Promise<void> {
-    if (!this.vectorConnection) return;
-
-    // Use vector-enhanced memory operations
-    this.memory = new SQLiteVecMemoryOperations(this.vectorConnection.db);
+    // Memory operations are now function-based, no need to initialize a class
+    return;
   }
 
   constructor(options: SQLiteVecAdapterOptions = {}) {
@@ -113,14 +128,11 @@ export class SQLiteVecAdapter
           this.vectorOptions.vecExtensionPath
         );
 
-        // Create vector tables
-        await createVectorTables(this.vectorConnection.db);
+        // Create vector schema
+        await initializeSchema(this.vectorConnection.db);
 
         // Initialize memory schema with FTS5 support
         await initializeMemorySchemaWithFTS5(this.vectorConnection.db);
-
-        // Create enhanced memory operations
-        this.memory = new SQLiteVecMemoryOperations(this.vectorConnection.db);
 
         this.isVectorInitialized = true;
         logger.info(
@@ -257,18 +269,7 @@ export class SQLiteVecAdapter
    */
   async getVector(collection: string, id: string): Promise<VectorData | null> {
     const connection = await this.getVectorConnection();
-    const vector = await getVector(connection.db, collection, id);
-
-    if (!vector) {
-      return null;
-    }
-
-    // Convert the returned number[] to VectorData format
-    return {
-      id: id,
-      vector: vector,
-      metadata: undefined // sqlite-vec doesn't store metadata in the same way
-    };
+    return getVector(connection.db, collection, id);
   }
 
   /**
@@ -294,9 +295,7 @@ export class SQLiteVecAdapter
           collection,
           vector.id,
           vector.vector,
-          {
-            metadata: vector.metadata
-          }
+          vector.metadata
         );
       }
     }

@@ -1,76 +1,86 @@
 /**
- * @fileoverview Vector operations for PostgreSQL with pgvector
+ * @fileoverview PostgreSQL Vector operations for vector search
  */
 
 import { Pool } from 'pg';
 
 import { LogCategory, logger } from '../../../../logging';
-import { getDistanceFunction } from '../schema';
 import {
-  PostgreSQLVectorSearchOptions,
   VectorData,
-  VectorMetric,
   VectorSearchOptions,
   VectorSearchResult
-} from '../types';
+} from '../../../base-types';
+import {
+  parseSqlIdentifier,
+  quotePgIdentifier
+} from '../../../utils/sql-utils';
 
 /**
- * Insert vectors into collection
+ * Get distance operator for vector operations
+ */
+function getDistanceOperator(metric: string): string {
+  switch (metric) {
+    case 'euclidean':
+      return '<->';
+    case 'cosine':
+      return '<=>';
+    case 'ip':
+    case 'dot_product':
+      return '<#>';
+    default:
+      return '<->';
+  }
+}
+
+/**
+ * Insert vectors into a collection
  */
 export async function insertVectors(
   pool: Pool,
+  schema: string,
   collection: string,
-  vectors: VectorData[],
-  schema?: string
+  vectors: VectorData[]
 ): Promise<void> {
-  if (!vectors.length) return;
+  // Validate identifiers
+  const validatedSchema = parseSqlIdentifier(schema, 'schema name');
+  const validatedCollection = parseSqlIdentifier(collection, 'collection name');
 
-  const tableName = schema ? `"${schema}"."${collection}"` : `"${collection}"`;
+  const quotedSchema = quotePgIdentifier(validatedSchema);
+  const quotedCollection = quotePgIdentifier(validatedCollection);
+
   const client = await pool.connect();
-
   try {
     await client.query('BEGIN');
 
-    // Prepare bulk insert
-    const values: any[] = [];
-    const placeholders: string[] = [];
-    let paramIndex = 1;
-
     for (const vector of vectors) {
-      placeholders.push(
-        `($${paramIndex}, $${paramIndex + 1}::vector, $${paramIndex + 2}::jsonb)`
+      await client.query(
+        `INSERT INTO ${quotedSchema}.${quotedCollection} (id, vector, metadata) 
+         VALUES ($1, $2, $3) 
+         ON CONFLICT (id) DO UPDATE SET 
+           vector = EXCLUDED.vector, 
+           metadata = EXCLUDED.metadata`,
+        [
+          vector.id,
+          JSON.stringify(vector.vector),
+          JSON.stringify(vector.metadata || {})
+        ]
       );
-      values.push(
-        vector.id,
-        `[${vector.vector.join(',')}]`,
-        JSON.stringify(vector.metadata || {})
-      );
-      paramIndex += 3;
     }
 
-    const query = `
-      INSERT INTO ${tableName} (id, embedding, metadata)
-      VALUES ${placeholders.join(', ')}
-      ON CONFLICT (id) DO NOTHING
-    `;
-
-    await client.query(query, values);
     await client.query('COMMIT');
 
-    logger.debug(LogCategory.STORAGE, 'PostgreSQLVector', 'Vectors inserted', {
-      collection,
-      count: vectors.length
-    });
+    logger.debug(
+      LogCategory.STORAGE,
+      'PostgreSQLVector',
+      `Inserted ${vectors.length} vectors into collection: ${collection}`
+    );
   } catch (error) {
     await client.query('ROLLBACK');
     logger.error(
       LogCategory.STORAGE,
       'PostgreSQLVector',
-      'Failed to insert vectors',
-      {
-        collection,
-        error: error instanceof Error ? error.message : String(error)
-      }
+      `Failed to insert vectors into collection: ${collection}`,
+      { error }
     );
     throw error;
   } finally {
@@ -79,210 +89,177 @@ export async function insertVectors(
 }
 
 /**
- * Update vectors in collection
- */
-export async function updateVectors(
-  pool: Pool,
-  collection: string,
-  vectors: VectorData[],
-  schema?: string
-): Promise<void> {
-  if (!vectors.length) return;
-
-  const tableName = schema ? `"${schema}"."${collection}"` : `"${collection}"`;
-  const client = await pool.connect();
-
-  try {
-    await client.query('BEGIN');
-
-    // Batch update all vectors in a single query for 100x performance improvement
-    const values: any[] = [];
-    const valuesClauses: string[] = [];
-    let paramIndex = 1;
-
-    for (const vector of vectors) {
-      valuesClauses.push(
-        `($${paramIndex}, $${paramIndex + 1}, $${paramIndex + 2})`
-      );
-      values.push(
-        vector.id,
-        `[${vector.vector.join(',')}]`,
-        JSON.stringify(vector.metadata || {})
-      );
-      paramIndex += 3;
-    }
-
-    const query = `
-      UPDATE ${tableName} AS t
-      SET embedding = v.embedding::vector,
-          metadata = v.metadata::jsonb,
-          updated_at = CURRENT_TIMESTAMP
-      FROM (VALUES ${valuesClauses.join(', ')}) AS v(id, embedding, metadata)
-      WHERE t.id = v.id
-    `;
-
-    await client.query(query, values);
-    await client.query('COMMIT');
-
-    logger.debug(LogCategory.STORAGE, 'PostgreSQLVector', 'Vectors updated', {
-      collection,
-      count: vectors.length
-    });
-  } catch (error) {
-    await client.query('ROLLBACK');
-    logger.error(
-      LogCategory.STORAGE,
-      'PostgreSQLVector',
-      'Failed to update vectors',
-      {
-        collection,
-        error: error instanceof Error ? error.message : String(error)
-      }
-    );
-    throw error;
-  } finally {
-    client.release();
-  }
-}
-
-/**
- * Delete vectors from collection
- */
-export async function deleteVectors(
-  pool: Pool,
-  collection: string,
-  ids: string[],
-  schema?: string
-): Promise<void> {
-  if (!ids.length) return;
-
-  const tableName = schema ? `"${schema}"."${collection}"` : `"${collection}"`;
-
-  const placeholders = ids.map((_, i) => `$${i + 1}`).join(', ');
-  const query = `DELETE FROM ${tableName} WHERE id IN (${placeholders})`;
-
-  await pool.query(query, ids);
-
-  logger.debug(LogCategory.STORAGE, 'PostgreSQLVector', 'Vectors deleted', {
-    collection,
-    count: ids.length
-  });
-}
-
-/**
- * Search for similar vectors
+ * Search vectors in a collection
  */
 export async function searchVectors(
   pool: Pool,
+  schema: string,
   collection: string,
   queryVector: number[],
-  metric: VectorMetric,
-  options: PostgreSQLVectorSearchOptions = {},
-  schema?: string
+  options: VectorSearchOptions = {}
 ): Promise<VectorSearchResult[]> {
-  const tableName = schema ? `"${schema}"."${collection}"` : `"${collection}"`;
-  const k = options.k || 10;
-  const distanceOp = getDistanceFunction(metric);
+  // Validate identifiers
+  const validatedSchema = parseSqlIdentifier(schema, 'schema name');
+  const validatedCollection = parseSqlIdentifier(collection, 'collection name');
 
-  // Build query parts
-  const selectFields = ['id', 'metadata'];
-  const orderByClause = `embedding ${distanceOp} $1::vector`;
+  const quotedSchema = quotePgIdentifier(validatedSchema);
+  const quotedCollection = quotePgIdentifier(validatedCollection);
 
-  if (options.includeScore !== false) {
-    selectFields.push(`embedding ${distanceOp} $1::vector AS score`);
-  }
+  const { limit = 10, threshold, filter } = options;
+  const distanceOp = getDistanceOperator('cosine'); // Default to cosine
 
-  if (options.includeVector) {
-    selectFields.push('embedding');
-  }
+  const client = await pool.connect();
+  try {
+    let sql = `
+      SELECT 
+        id,
+        vector,
+        metadata,
+        (vector ${distanceOp} $1) as distance
+      FROM ${quotedSchema}.${quotedCollection}
+    `;
 
-  // Build WHERE clause for metadata filtering
-  let whereClause = '';
-  const values: any[] = [`[${queryVector.join(',')}]`];
-  let paramIndex = 2;
+    const params: any[] = [JSON.stringify(queryVector)];
+    let paramIndex = 2;
 
-  if (options.filter && Object.keys(options.filter).length > 0) {
-    const conditions: string[] = [];
+    // Add metadata filters
+    if (filter && Object.keys(filter).length > 0) {
+      const filterConditions = Object.entries(filter).map(([key, value]) => {
+        const condition = `metadata->>'${key}' = $${paramIndex}`;
+        params.push(value);
+        paramIndex++;
+        return condition;
+      });
+      sql += ` WHERE ${filterConditions.join(' AND ')}`;
+    }
 
-    for (const [key, value] of Object.entries(options.filter)) {
-      conditions.push(`metadata->>'${key}' = $${paramIndex}`);
-      values.push(String(value));
+    // Add distance threshold
+    if (threshold !== undefined) {
+      const whereClause = sql.includes('WHERE') ? ' AND' : ' WHERE';
+      sql += `${whereClause} (vector ${distanceOp} $1) <= $${paramIndex}`;
+      params.push(threshold);
       paramIndex++;
     }
 
-    whereClause = `WHERE ${conditions.join(' AND ')}`;
-  }
+    sql += ` ORDER BY distance ASC LIMIT $${paramIndex}`;
+    params.push(limit);
 
-  // Add threshold filter if specified
-  if (options.threshold !== undefined) {
-    const thresholdCondition = `embedding ${distanceOp} $1::vector < $${paramIndex}`;
-    if (whereClause) {
-      whereClause += ` AND ${thresholdCondition}`;
-    } else {
-      whereClause = `WHERE ${thresholdCondition}`;
-    }
-    values.push(options.threshold);
-  }
+    const result = await client.query(sql, params);
 
-  const query = `
-    SELECT ${selectFields.join(', ')}
-    FROM ${tableName}
-    ${whereClause}
-    ORDER BY ${orderByClause}
-    LIMIT ${k}
-  `;
-
-  const result = await pool.query(query, values);
-
-  return result.rows.map((row) => {
-    const searchResult: VectorSearchResult = {
+    const results: VectorSearchResult[] = result.rows.map((row) => ({
       id: row.id,
-      score: row.score || 0,
-      metadata: row.metadata
-    };
+      score: 1 - row.distance, // Convert distance to similarity score
+      vector: JSON.parse(row.vector),
+      metadata: JSON.parse(row.metadata || '{}')
+    }));
 
-    if (options.includeVector && row.embedding) {
-      // Parse vector from PostgreSQL format
-      const vectorStr = row.embedding.slice(1, -1); // Remove [ and ]
-      searchResult.vector = vectorStr ? vectorStr.split(',').map(Number) : [];
-    }
+    logger.debug(
+      LogCategory.STORAGE,
+      'PostgreSQLVector',
+      `Found ${results.length} vectors in collection: ${collection}`
+    );
 
-    return searchResult;
-  });
+    return results;
+  } catch (error) {
+    logger.error(
+      LogCategory.STORAGE,
+      'PostgreSQLVector',
+      `Failed to search vectors in collection: ${collection}`,
+      { error }
+    );
+    throw error;
+  } finally {
+    client.release();
+  }
 }
 
 /**
- * Get vector by ID
+ * Delete vectors from a collection
  */
-export async function getVectorById(
+export async function deleteVectors(
   pool: Pool,
+  schema: string,
   collection: string,
-  id: string,
-  schema?: string
-): Promise<VectorData | null> {
-  const tableName = schema ? `"${schema}"."${collection}"` : `"${collection}"`;
+  ids: string[]
+): Promise<void> {
+  if (ids.length === 0) return;
 
-  const query = `
-    SELECT id, embedding, metadata
-    FROM ${tableName}
-    WHERE id = $1
-  `;
+  // Validate identifiers
+  const validatedSchema = parseSqlIdentifier(schema, 'schema name');
+  const validatedCollection = parseSqlIdentifier(collection, 'collection name');
 
-  const result = await pool.query(query, [id]);
+  const quotedSchema = quotePgIdentifier(validatedSchema);
+  const quotedCollection = quotePgIdentifier(validatedCollection);
 
-  if (result.rows.length === 0) {
-    return null;
+  const client = await pool.connect();
+  try {
+    const placeholders = ids.map((_, index) => `$${index + 1}`).join(',');
+
+    await client.query(
+      `DELETE FROM ${quotedSchema}.${quotedCollection} WHERE id IN (${placeholders})`,
+      ids
+    );
+
+    logger.debug(
+      LogCategory.STORAGE,
+      'PostgreSQLVector',
+      `Deleted ${ids.length} vectors from collection: ${collection}`
+    );
+  } catch (error) {
+    logger.error(
+      LogCategory.STORAGE,
+      'PostgreSQLVector',
+      `Failed to delete vectors from collection: ${collection}`,
+      { error }
+    );
+    throw error;
+  } finally {
+    client.release();
   }
+}
 
-  const row = result.rows[0];
+/**
+ * Get a specific vector by ID
+ */
+export async function getVector(
+  pool: Pool,
+  schema: string,
+  collection: string,
+  id: string
+): Promise<VectorData | null> {
+  // Validate identifiers
+  const validatedSchema = parseSqlIdentifier(schema, 'schema name');
+  const validatedCollection = parseSqlIdentifier(collection, 'collection name');
 
-  // Parse vector from PostgreSQL format
-  const vectorStr = row.embedding.slice(1, -1); // Remove [ and ]
-  const vector = vectorStr ? vectorStr.split(',').map(Number) : [];
+  const quotedSchema = quotePgIdentifier(validatedSchema);
+  const quotedCollection = quotePgIdentifier(validatedCollection);
 
-  return {
-    id: row.id,
-    vector,
-    metadata: row.metadata
-  };
+  const client = await pool.connect();
+  try {
+    const result = await client.query(
+      `SELECT id, vector, metadata FROM ${quotedSchema}.${quotedCollection} WHERE id = $1`,
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return null;
+    }
+
+    const row = result.rows[0];
+    return {
+      id: row.id,
+      vector: JSON.parse(row.vector),
+      metadata: JSON.parse(row.metadata || '{}')
+    };
+  } catch (error) {
+    logger.error(
+      LogCategory.STORAGE,
+      'PostgreSQLVector',
+      `Failed to get vector: ${id} from collection: ${collection}`,
+      { error }
+    );
+    throw error;
+  } finally {
+    client.release();
+  }
 }

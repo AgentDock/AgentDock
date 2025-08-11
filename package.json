@@ -68,7 +68,7 @@
     "@radix-ui/react-toggle-group": "^1.1.2",
     "@radix-ui/react-tooltip": "^1.1.8",
     "@types/crypto-js": "^4.2.2",
-    "@types/node": "^20.17.19",
+    "@types/node": "^24.2.1",
     "@vercel/blob": "^0.27.3",
     "@vercel/functions": "^2.0.0",
     "@vercel/speed-insights": "^1.2.0",

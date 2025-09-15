@@ -91,7 +91,7 @@
     "geist": "^1.4.2",
     "input-otp": "^1.4.2",
     "lodash-es": "^4.17.21",
-    "lucide-react": "^0.344.0",
+    "lucide-react": "^0.544.0",
     "mermaid": "^11.6.0",
     "nanoid": "^5.1.5",
     "next": "15.3.1",

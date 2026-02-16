@@ -1,0 +1,48 @@
+---
+title: "Sprint Planning Assistant"
+description: "Transform backlog items into actionable sprint plans with accurate story point estimates, capacity calculations, and risk identification for agile teams"
+slug: "productivity/sprint-planning-assistant"
+tags: ["agile", "scrum", "sprint-planning", "estimation", "productivity"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/productivity/sprint-planning-assistant"
+chatgptDemoUrl: "https://chatgpt.com/share/6991b7fd-ceb0-8004-8995-3f7ffa60c551"
+claudeDemoUrl: "https://claude.ai/public/artifacts/aca23c0f-5641-44fc-a852-fed282c7bea2"
+perplexityDemoUrl: "https://www.perplexity.ai/search/title-sprint-planning-assistan-aNgxRPe2QMOyo6NWz9W6_w#0"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_85fa3558-4d6a-4557-99ed-4c37c58f0ba7?fev=0.2.0"
+---
+
+# Sprint Planning Assistant
+
+You are an experienced Agile Coach with fifteen years facilitating sprint planning for software teams ranging from startups to Fortune 500 companies. You specialize in helping teams estimate work accurately, plan realistic sprints, and identify risks before they derail delivery.
+
+I need help planning a sprint for my team.
+
+Our team has [TEAM_SIZE:number:2-20] developers and we run [SPRINT_LENGTH:select:1-week,2-week,3-week,4-week] sprints. Our methodology is [METHODOLOGY:select:Scrum,Kanban,Scrumban,SAFe,Custom Agile] and we work in the [DOMAIN:select:Web Development,Mobile Development,Backend/API,Data Engineering,DevOps/Infrastructure,Machine Learning,Full Stack,Enterprise Software] space.
+
+Our team's historical velocity is [VELOCITY:select:Unknown - new team,10-20 points per sprint,20-40 points per sprint,40-60 points per sprint,60-80 points per sprint,80+ points per sprint].
+
+Here is our team availability for this sprint. Include any planned time off, holidays, meetings overhead, or reduced capacity:
+
+[TEAM_AVAILABILITY]
+
+Here are the backlog items we are considering for this sprint. Include titles, descriptions, and any existing estimates if available:
+
+[BACKLOG_ITEMS]
+
+Additional context about technical constraints, dependencies on other teams, or business priorities: [ADDITIONAL_CONTEXT?]
+
+Please provide a comprehensive sprint planning analysis that includes the following sections.
+
+First, calculate our sprint capacity. Consider the team size, sprint length, and availability information to determine how many story points or hours we can realistically commit to. Account for typical meeting overhead, code reviews, and unexpected interruptions.
+
+Second, analyze each backlog item and provide a story point estimate using the Fibonacci scale. For each item, explain your reasoning by comparing it to typical work complexity. Flag any items that seem too large and should be broken down.
+
+Third, recommend a sprint goal. This should be a clear, outcome-focused statement that describes what we will achieve, not just what we will build.
+
+Fourth, suggest which items to include in the sprint commitment. Prioritize based on business value and dependencies. Ensure the total does not exceed our calculated capacity and leave a buffer for the unexpected.
+
+Fifth, identify risks and dependencies. Call out any blockers that must be resolved before work begins, dependencies on other teams or external factors, technical risks that could cause estimates to balloon, and anything that threatens our ability to meet the sprint goal.
+
+Sixth, provide a brief sprint planning meeting agenda. Include timeboxes for each activity so the planning session stays focused and efficient.
+
+Format your response with clear headings for each section. Use tables where helpful for comparing estimates. Be direct and practical rather than theoretical.

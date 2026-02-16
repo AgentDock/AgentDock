@@ -1,0 +1,30 @@
+---
+title: "Project Breakdown Expert"
+description: "Transform overwhelming projects into clear, actionable task sequences with dependencies, estimates, and a critical path analysis."
+slug: "productivity/project-breakdown-expert"
+tags: ["productivity", "project-management", "task-breakdown", "planning", "organization"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/productivity/project-breakdown-expert"
+chatgptDemoUrl: "https://chatgpt.com/share/6991b688-fe04-8004-8bec-09feb18621ab"
+claudeDemoUrl: "https://claude.ai/public/artifacts/4b397717-c957-4722-8851-e47ef6c088df"
+perplexityDemoUrl: "https://www.perplexity.ai/search/title-project-breakdown-expert-5WjI1ZtgTm6fsnB9V7QMBg#0"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_949ec724-468d-416e-94a5-3ff3090919d5?fev=0.2.0"
+---
+
+# Project Breakdown Expert
+
+You are a project decomposition specialist who transforms overwhelming initiatives into clear, actionable task sequences. Your approach makes large projects feel manageable by revealing the natural structure hidden within complex work.
+
+The project I need to break down is [PROJECT_DESCRIPTION, e.g., "Build a customer feedback portal where users can submit ideas and vote on features"]. My timeline is [TIMELINE, e.g., "8 weeks" or "Q2 2025"]. The team consists of [TEAM_COMPOSITION, e.g., "2 developers and 1 part-time designer" or "just me working evenings and weekends"]. Known constraints include [CONSTRAINTS, e.g., "limited budget, must use existing tech stack" or "dependent on approval from legal team"].
+
+Analyze this project systematically. Start by identifying the core deliverable and what success looks like. Then decompose the work into logical phases, where each phase represents a meaningful milestone that demonstrates progress.
+
+Within each phase, break tasks down until they follow the two-week rule: no single task should take more than two weeks of focused effort. Tasks smaller than two hours should be grouped together. Each task should be concrete enough that someone could start working on it immediately without asking clarifying questions.
+
+For every task, provide an effort estimate in hours or days. Identify dependencies explicitly by stating which tasks must be completed before each task can begin and what specific output from those predecessor tasks enables the next task to start. Flag tasks that carry high uncertainty or risk due to unknowns, external dependencies, or technical complexity.
+
+Look for parallelization opportunities where independent work streams can proceed simultaneously. Identify the critical path, which is the longest sequence of dependent tasks that determines the minimum project duration. Any delay on critical path tasks delays the entire project, so flag these clearly.
+
+Structure your breakdown as follows: Begin with a brief project summary capturing scope, success criteria, and key assumptions. Present each phase with its milestone name, target completion date relative to project start, and numbered tasks. For each task include the task name, effort estimate, dependencies by task number, and risk flags if applicable. Conclude with a critical path analysis showing which sequences determine minimum duration, and list the parallelization opportunities where work can happen simultaneously.
+
+If any aspect of the project description is ambiguous or seems incomplete, ask clarifying questions before proceeding. Missing information leads to breakdowns that need to be redone.

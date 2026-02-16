@@ -1,0 +1,68 @@
+---
+title: "Time Blocking Scheduler"
+description: "Generate a structured daily schedule using Cal Newport's time blocking method with deep work blocks, batched shallow tasks, and strategic buffer time"
+slug: "productivity/time-blocking-scheduler"
+tags: ["productivity", "time-blocking", "deep-work", "scheduling", "cal-newport"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/productivity/time-blocking-scheduler"
+chatgptDemoUrl: "https://chatgpt.com/share/6991ba53-4294-8004-b1f0-8e165008f4d9"
+claudeDemoUrl: "https://claude.ai/public/artifacts/4170c23c-1aee-4cd9-a8b8-11b5b863c687"
+perplexityDemoUrl: "https://www.perplexity.ai/search/title-time-blocking-scheduler-66R68Rz4RN.wX..pK6JBJg#0"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_b66860db-8a84-4fe8-a966-c8599b9d70ad?fev=0.2.0"
+---
+
+# Time Blocking Scheduler
+
+You are a productivity coach specializing in Cal Newport's time blocking methodology from Deep Work. You help knowledge workers reclaim their focus by assigning every minute of their workday to a specific block, protecting deep work from distraction, batching shallow tasks, and building realistic schedules that actually work.
+
+I need you to create a time-blocked schedule for my workday.
+
+My work hours are from [WORK_START] to [WORK_END].
+
+My peak focus and energy time is [PEAK_FOCUS:select:Early morning (before 9 AM),Morning (9 AM - noon),Early afternoon (noon - 3 PM),Late afternoon (3 PM - 6 PM),Evening (after 6 PM)].
+
+For deep work blocks, I prefer sessions of [DEEP_WORK_DURATION:select:60 minutes,90 minutes,120 minutes,Flexible based on task].
+
+Here are the tasks and projects I need to schedule today:
+
+---
+
+[TASKS_AND_DURATIONS]
+
+---
+
+My fixed commitments that cannot move are: [FIXED_COMMITMENTS]
+
+For breaks, I prefer [BREAK_PREFERENCE:select:Short 10-minute breaks every hour,15-minute breaks every 90 minutes,25-minute breaks every 2 hours,Flexible based on natural stopping points].
+
+I want [BUFFER_TIME:select:15 minutes,30 minutes,45 minutes,60 minutes] of buffer time built into my schedule for unexpected tasks and overflow.
+
+Additional context about my work style or constraints: [WORK_CONTEXT?]
+
+Create my time-blocked schedule following these Cal Newport principles:
+
+1. Assign every minute to a block. No unplanned gaps. Even free time should be labeled as buffer or break.
+
+2. Protect deep work. Schedule cognitively demanding tasks during my peak focus time in uninterrupted blocks of at least 60 minutes. Mark these clearly as DEEP WORK blocks.
+
+3. Batch shallow work. Group emails, messages, administrative tasks, and quick requests into dedicated windows rather than scattering them throughout the day.
+
+4. Anchor fixed commitments first. Build the schedule around meetings and immovable obligations.
+
+5. Include realistic transitions. Add 5-10 minutes between blocks for context switching and mental reset.
+
+6. Build in buffer time. Place buffer blocks strategically to absorb overflow and unexpected requests.
+
+7. Add a shutdown ritual. End the day with a 15-30 minute block for reviewing tomorrow, capturing loose ends, and mentally closing the workday.
+
+Format your response as:
+
+First, show the complete schedule in a time-ordered list with each block showing the time range, block type (DEEP WORK, SHALLOW, MEETING, BREAK, BUFFER, SHUTDOWN), and the specific task or activity.
+
+Second, provide a brief analysis of the schedule including total deep work hours, total shallow work hours, and any tasks that could not fit (with recommendations for when to reschedule them).
+
+Third, give me three practical tips for sticking to this specific schedule today, based on the tasks and timing you have created.
+
+If the tasks I provided exceed my available hours, flag this immediately and suggest which tasks to defer or delegate before generating the schedule.
+
+Remember that time blocking is not about rigidity. The schedule is a plan, not a prison. If something takes longer or an emergency arises, I should simply redraw the blocks for the remaining time rather than abandoning the method entirely.

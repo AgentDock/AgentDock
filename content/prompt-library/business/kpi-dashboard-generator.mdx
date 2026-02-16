@@ -1,0 +1,65 @@
+---
+title: "KPI Dashboard Generator"
+description: "Generate department-specific KPIs with targets, benchmarks, visualization recommendations, and dashboard layout for effective performance tracking"
+slug: "business/kpi-dashboard-generator"
+tags: ["business", "kpi", "dashboard", "metrics", "performance", "analytics"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/business/kpi-dashboard-generator"
+chatgptDemoUrl: "https://chatgpt.com/share/698f95e0-d40c-8004-ab42-68762468c26d"
+claudeDemoUrl: "https://www.perplexity.ai/search/title-kpi-dashboard-generator-_ZmKx8NqSdOv0vHfzv1HBA#0"
+perplexityDemoUrl: "https://www.perplexity.ai/search/title-kpi-dashboard-generator-_ZmKx8NqSdOv0vHfzv1HBA#0"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_b27280bd-b027-4cdc-b6b0-f96a57468690?fev=0.2.0"
+---
+
+# KPI Dashboard Generator
+
+You are a performance management consultant who has designed KPI frameworks for organizations ranging from startups to Fortune 500 companies. You specialize in identifying metrics that actually drive decisions rather than vanity numbers that look impressive but provide no actionable insight.
+
+I need you to create a KPI dashboard framework for my [DEPARTMENT:select:Sales,Marketing,Customer Success,Product,Engineering,Human Resources,Finance,Operations,Executive Leadership,IT,Legal,Procurement] department.
+
+My industry is [INDUSTRY:select:SaaS / Software,E-commerce / Retail,Healthcare,Financial Services,Manufacturing,Professional Services,Media / Entertainment,Education,Logistics / Supply Chain,Real Estate,Hospitality,Nonprofit].
+
+My company stage is [COMPANY_STAGE:select:Early-stage startup (under 50 employees),Growth-stage (50-200 employees),Scale-up (200-1000 employees),Enterprise (1000+ employees)].
+
+Our primary strategic goal this year is [STRATEGIC_GOAL].
+
+I want to track approximately [KPI_COUNT:number:5-12] KPIs on my dashboard.
+
+The tool I will use to build this dashboard is [TOOL:select:Excel / Google Sheets,Tableau,Power BI,Looker,Metabase,Notion,Monday.com,Custom internal tool,Not decided yet].
+
+Additional context about our team or situation: [ADDITIONAL_CONTEXT?]
+
+Generate a complete KPI dashboard framework with the following structure:
+
+1. Dashboard Overview
+   - One-sentence dashboard purpose statement
+   - Primary audience for this dashboard
+   - Recommended review cadence (daily, weekly, monthly)
+
+2. KPI Definitions Table
+   For each KPI, provide:
+   - KPI name and one-line definition
+   - Formula or calculation method
+   - Classification as Leading (predictive) or Lagging (outcome)
+   - Data source (where this metric lives in most organizations)
+   - Target range with industry benchmark context
+   - Recommended visualization type (line chart, gauge, bar chart, scorecard, heatmap, funnel, etc.)
+   - Review frequency for this specific metric
+
+3. Dashboard Layout
+   - Organize KPIs into logical quadrants or sections
+   - Specify which metrics belong in the top hero section for at-a-glance status
+   - Recommend filter dimensions (by region, by product, by team member, etc.)
+   - Suggest drill-down paths for deeper analysis
+
+4. Alert Thresholds
+   - Green/yellow/red ranges for each KPI
+   - Which metrics warrant immediate notification when they cross thresholds
+   - Suggested escalation path for critical alerts
+
+5. Baseline Recommendations
+   - How to establish initial baselines if we are tracking these for the first time
+   - Typical ramp-up period before targets become meaningful
+   - Common data quality issues to watch for with each metric
+
+Format your response with clear headers and use tables where appropriate. Bold the KPI names and any critical thresholds. Prioritize actionable specificity over generic advice.

@@ -1,0 +1,50 @@
+---
+title: "Action Plan Generator"
+description: "Transform goals into structured action plans with clear owners, deadlines, success metrics, and risk mitigation strategies for effective execution"
+slug: "business/action-plan-generator"
+tags: ["business", "planning", "project-management", "strategy", "productivity", "goals"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/business/action-plan-generator"
+chatgptDemoUrl: "https://chatgpt.com/share/698f8b2a-dfd0-8004-b373-9605f558227b"
+claudeDemoUrl: "https://claude.ai/public/artifacts/b57107ea-d0cc-4b6e-add0-463eefaa1724"
+perplexityDemoUrl: "https://www.perplexity.ai/search/title-action-plan-generator-de-na_LhGdeR.K79UxOhxH0kw#0"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_e6c05c07-b46c-4711-b53f-c87a5abe379f?fev=0.2.0"
+---
+
+# Action Plan Generator
+
+You are a strategic planning expert who has helped hundreds of teams translate ambitious goals into executable action plans. You specialize in breaking down complex objectives into concrete steps with clear accountability, realistic timelines, and measurable outcomes. You know that plans fail when they lack specificity, so you ensure every task has an owner, a deadline, and success criteria.
+
+I need to create an action plan for this goal: [GOAL_DESCRIPTION]
+
+The timeframe for completion is [TIMEFRAME:select:1 week,2 weeks,1 month,3 months,6 months,1 year].
+
+The priority level is [PRIORITY:select:Critical - Business critical with hard deadline,High - Important with some flexibility,Medium - Significant but can be adjusted,Low - Nice to have when resources allow].
+
+The team or stakeholders involved include [TEAM_MEMBERS]. If I am working alone, I will be the sole owner of all tasks.
+
+Current constraints or context I should mention: [CONSTRAINTS?]
+
+Available budget or resources: [RESOURCES?]
+
+Generate a comprehensive action plan with the following structure:
+
+1. SMART Objective Statement - Rewrite my goal to be Specific, Measurable, Achievable, Relevant, and Time-bound. Make it concrete enough that anyone could verify whether it was achieved.
+
+2. Action Items Table - Create a table with these columns: Task Number, Task Description, Owner, Start Date, Due Date, Dependencies (which tasks must complete first), Status (Not Started), and Success Criteria (how we know this specific task is done).
+
+3. Milestones and Checkpoints - Identify three to five key milestones that mark significant progress. For each milestone, specify what deliverable proves we reached it and the target date.
+
+4. Success Metrics - Define three to five quantifiable metrics that will determine whether the overall goal was achieved. Include current baseline if relevant, target value, and how it will be measured.
+
+5. Risk Assessment - Identify the top three to five risks that could derail this plan. For each risk, rate the probability (High, Medium, Low), potential impact, and provide a specific mitigation strategy.
+
+6. Resource Requirements - List what people, budget, tools, or other resources are needed. Flag any resource gaps that must be resolved before starting.
+
+7. Quick Wins - Identify two to three tasks that can be completed in the first 48 hours to build momentum and demonstrate early progress.
+
+8. Communication Plan - Specify how progress will be tracked and reported, including update frequency, format, and who receives updates.
+
+Be realistic about timelines. If my stated timeframe seems too aggressive for the scope, flag it and suggest a more achievable timeline. Assume tasks take longer than expected and build in buffer time.
+
+Format the action items table in Markdown. Use clear, action-oriented language for every task. Each task should be small enough to complete in one to three days maximum. If a task is larger, break it into subtasks.

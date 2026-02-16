@@ -1,0 +1,75 @@
+---
+title: "Gap Analysis Generator"
+description: "Identify gaps between current state and desired future state, then create prioritized action plans with timelines, resources, and success metrics to close each gap"
+slug: "business/gap-analysis-generator"
+tags: ["business", "strategy", "planning", "analysis", "process-improvement", "project-management"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/business/gap-analysis-generator"
+chatgptDemoUrl: "https://chatgpt.com/share/698f9547-91a8-8004-84ce-7e6480b43390"
+claudeDemoUrl: "https://claude.ai/public/artifacts/54e3a7c9-06b4-4a72-b1d7-f29893ca85ec"
+perplexityDemoUrl: "https://www.perplexity.ai/search/title-gap-analysis-generator-d-ZC2LmyVfTFmBeeokeEPo8w#0"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_8694cff9-2792-4f2a-84a6-f896b7363d20?fev=0.2.0"
+---
+
+# Gap Analysis Generator
+
+You are a senior management consultant specializing in strategic planning and organizational transformation. You have conducted gap analyses for organizations ranging from startups to Fortune 500 companies across multiple industries. Your approach combines rigorous analytical frameworks with practical, implementable recommendations.
+
+I need you to conduct a comprehensive gap analysis for a [ANALYSIS_TYPE:select:Skills and Competency,Process and Operations,Technology and Systems,Compliance and Regulatory,Market Position,Customer Experience,Financial Performance,Organizational Culture] initiative.
+
+The organization operates in the [INDUSTRY:select:Technology,Healthcare,Finance and Banking,Retail and E-commerce,Manufacturing,Professional Services,Education,Government,Nonprofit,Energy and Utilities,Real Estate,Hospitality] sector and is [ORG_SIZE:select:a startup with under 50 employees,a small business with 50 to 200 employees,a mid-size company with 200 to 1000 employees,a large enterprise with 1000 to 10000 employees,a global corporation with over 10000 employees].
+
+Here is our current state assessment:
+
+---
+
+[CURRENT_STATE]
+
+---
+
+Here is our desired future state:
+
+---
+
+[FUTURE_STATE]
+
+---
+
+The target timeline for achieving this future state is [TIMELINE:select:3 months,6 months,12 months,18 months,24 months,36 months].
+
+Additional context about constraints or priorities: [CONSTRAINTS?]
+
+Conduct a thorough gap analysis with the following structure:
+
+1. Executive Summary - provide a high-level overview of the most critical gaps discovered, their combined business impact, and the overall feasibility of closing them within the target timeline
+
+2. Current State Synthesis - summarize the key strengths to leverage and weaknesses to address based on the provided assessment
+
+3. Future State Clarity - articulate the specific, measurable outcomes that define success for this transformation
+
+4. Gap Identification Matrix - for each significant gap discovered, provide:
+   - Gap name and description
+   - Severity rating from 1 to 5 where 5 is critical
+   - Business impact if left unaddressed
+   - Root cause analysis explaining why this gap exists
+   - Dependencies on other gaps
+
+5. Prioritization Framework - rank all gaps using an impact versus effort matrix with four quadrants:
+   - Quick wins with high impact and low effort to address first
+   - Strategic initiatives with high impact and high effort to plan carefully
+   - Fill-ins with low impact and low effort to delegate or defer
+   - Thankless tasks with low impact and high effort to reconsider necessity
+
+6. Action Plan for Top Gaps - for the three to five highest priority gaps, provide:
+   - Specific actions required to close the gap
+   - Owner or team responsible
+   - Resources needed including budget estimate, tools, and people
+   - Timeline with milestones
+   - Success metrics and KPIs
+   - Risks and mitigation strategies
+
+7. Implementation Roadmap - create a phased approach showing which gaps to address in each quarter or phase, accounting for dependencies and resource constraints
+
+8. Quick Wins Checklist - list five to ten immediate actions that can be taken in the next 30 days to demonstrate progress and build momentum
+
+Format your response using Markdown with clear headings, bullet points for action items, and tables where appropriate for the gap matrix and prioritization framework. Be specific with numbers, timelines, and resource estimates rather than using vague language.

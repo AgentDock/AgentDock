@@ -1,0 +1,42 @@
+---
+title: "Meeting Reduction Advisor"
+description: "Analyze your meeting schedule to identify which meetings can be eliminated, shortened, made async, or restructured to reclaim productive time"
+slug: "productivity/meeting-reduction-advisor"
+tags: ["productivity", "meetings", "time-management", "workplace", "async"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/productivity/meeting-reduction-advisor"
+chatgptDemoUrl: "https://chatgpt.com/share/6991b1cf-0108-8004-bad4-804c631781b7"
+claudeDemoUrl: "https://claude.ai/public/artifacts/4834c27a-8644-430d-a661-ea45a91afe34"
+perplexityDemoUrl: "https://www.perplexity.ai/search/title-meeting-reduction-adviso-_jMn3DpqRie6Bw1MVt7ugg#0"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_0da8345f-f73b-4339-aacf-aadb9e1bcd8d?fev=0.2.0"
+---
+
+# Meeting Reduction Advisor
+
+You are a productivity consultant who specializes in meeting culture transformation. You have helped hundreds of professionals reclaim their calendars by ruthlessly evaluating which meetings actually deserve synchronous time.
+
+I am a [ROLE:select:Individual Contributor,Team Lead,Manager,Director,VP/Executive] at a [COMPANY_TYPE:select:Startup (under 50 people),Growth-stage company (50-500),Enterprise (500+),Agency or consultancy,Nonprofit or government,Remote-first company] in the [INDUSTRY:select:Technology,Finance,Healthcare,Marketing,Consulting,Education,Manufacturing,Retail,Media,Other] industry.
+
+I currently spend approximately [WEEKLY_HOURS:number:5-60] hours per week in meetings. My goal is to reduce this by at least [TARGET_REDUCTION:number:10-50] percent while maintaining effectiveness and relationships.
+
+Here is my current recurring meeting schedule. For each meeting, I have included the name, frequency, duration, number of attendees, whether I own it or just attend, and a brief description of its purpose:
+
+---
+
+[MEETING_LIST]
+
+---
+
+For each meeting, please provide:
+
+First, a quick verdict using one of these categories: eliminate entirely, convert to async, reduce frequency, shorten duration, combine with another meeting, delegate attendance, or keep as is.
+
+Second, your reasoning for the verdict based on these evaluation criteria: Does this meeting have a clear purpose that requires real-time discussion? Could the same outcome be achieved through a document, message, or recording? Is my presence specifically necessary, or could I send someone else or just receive notes? Does the meeting duration match the actual content? If I own the meeting, is it serving attendees well, or are they silently suffering through it?
+
+Third, if you recommend changing the meeting, provide a specific alternative. For async conversions, suggest the tool and format. For shortened meetings, suggest the new duration and structure. For eliminated meetings, explain how to handle any legitimate needs differently.
+
+Fourth, provide a diplomatic script I can use to propose the change to the meeting organizer. This should be professional, assume good intent, and offer a constructive alternative rather than just declining. For politically sensitive meetings like executive staff meetings or skip-levels, acknowledge the dynamics and suggest gentler approaches if direct change is risky.
+
+After analyzing all meetings, provide a summary showing total current weekly meeting hours, projected hours after implementing your recommendations, hours reclaimed per week, and the top three meetings to address first for maximum impact with minimum political risk. Also compare my current meeting load against the benchmark that meetings should ideally take no more than 20 percent of a 40-hour work week.
+
+Additional context about my priorities or constraints: [CONTEXT?]

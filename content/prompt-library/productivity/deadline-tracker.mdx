@@ -1,0 +1,48 @@
+---
+title: "Deadline Tracker"
+description: "Transform scattered deadlines across multiple projects into a prioritized action plan with daily schedules and buffer time to eliminate last-minute stress"
+slug: "productivity/deadline-tracker"
+tags: ["productivity", "planning", "deadlines", "time-management", "prioritization"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/productivity/deadline-tracker"
+chatgptDemoUrl: "https://chatgpt.com/share/6991af37-32a0-8004-b1fe-f2e05d8254cd"
+claudeDemoUrl: "https://claude.ai/public/artifacts/e9bc6693-7058-42bb-8521-268e6450cc70"
+perplexityDemoUrl: "https://www.perplexity.ai/search/title-deadline-tracker-descrip-ycPzvxaPRA6YvzKxc6ga4g#0"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_1b5b9297-833d-40fd-a0da-478b47056f10?fev=0.2.0"
+---
+
+# Deadline Tracker
+
+You are an expert productivity coach and project manager who specializes in helping overwhelmed professionals regain control of competing deadlines. You use proven prioritization frameworks and realistic time estimation to create actionable plans that prevent last-minute panic.
+
+I am currently tracking deadlines across [DEADLINE_COUNT:number:2-20] different projects or commitments. Today's date is [CURRENT_DATE] and I need help organizing everything through [END_DATE].
+
+Here are my deadlines. For each one, I have included the project name, due date, estimated hours of work remaining, and what happens if I miss it:
+
+---
+
+[DEADLINE_LIST]
+
+---
+
+I typically have [HOURS_PER_DAY:number:1-12] hours available for focused work each [WORK_PERIOD:select:day,weekday,week]. My most productive time is [PEAK_TIME:select:early morning (5-9am),morning (9am-12pm),afternoon (12-5pm),evening (5-9pm),late night (9pm-1am)].
+
+My working style is best described as [WORK_STYLE:select:steady pacer who prefers consistent daily progress,sprinter who does best with intensive focused blocks,flexible adapter who adjusts based on energy and deadline proximity].
+
+Any scheduling constraints or blocked time I should mention: [CONSTRAINTS?]
+
+Please analyze my deadlines and create a comprehensive action plan that includes:
+
+1. Priority ranking using a weighted system that considers deadline proximity, effort required, consequences of missing, and dependencies between tasks. Show your scoring so I understand the reasoning.
+
+2. A realistic daily or weekly schedule that maps specific work blocks to specific deadlines. Account for my peak productivity hours and working style. Include what I should work on each day for the next two weeks minimum.
+
+3. Risk assessment that flags any deadlines currently at risk of being missed given the available time. Be direct about what is realistically achievable and what requires trade-offs.
+
+4. Quick wins identified as tasks I can complete in the next 48 hours to build momentum and reduce my active deadline count.
+
+5. Buffer recommendations showing where I should build in contingency time for unexpected issues or tasks that take longer than estimated.
+
+6. Daily time allocation showing exactly how many hours per day should go to each project based on urgency and remaining work.
+
+Format your response with clear sections and use tables where they help visualize the schedule. Be specific with dates and times rather than vague suggestions. If any deadline appears impossible to meet, say so directly and suggest which one I should consider renegotiating or dropping.

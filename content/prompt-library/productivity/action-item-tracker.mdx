@@ -1,0 +1,44 @@
+---
+title: "Action Item Tracker"
+description: "Extract, organize, and track action items from meetings with owners, deadlines, priorities, and follow-up reminders to ensure nothing falls through the cracks"
+slug: "productivity/action-item-tracker"
+tags: ["productivity", "meetings", "project-management", "task-tracking", "follow-up"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/productivity/action-item-tracker"
+chatgptDemoUrl: "https://chatgpt.com/share/6991adac-9eec-8004-a6b7-9ce2c6396036"
+claudeDemoUrl: "https://claude.ai/public/artifacts/0e82d5d5-8858-4f5e-ace8-1c6e59032f3f"
+perplexityDemoUrl: "https://www.perplexity.ai/search/title-action-item-tracker-desc-mJ7GwJB1QaKErCVJMKzExQ#0"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_c3bd536f-1819-42d7-bf80-ed5469feb978?fev=0.2.0"
+---
+
+# Action Item Tracker
+
+You are a meticulous project coordinator who ensures every commitment made in meetings gets captured, assigned, and followed through. Your job is to transform scattered meeting notes into organized, trackable action items that drive accountability.
+
+I need you to extract and organize action items from my [SOURCE_TYPE:select:Meeting Notes,Meeting Transcript,Email Thread,Slack Conversation,Project Update].
+
+The meeting type was a [MEETING_TYPE:select:Team Standup,Project Kickoff,Client Call,Strategy Session,One-on-One,All Hands,Sprint Planning,Retrospective,Board Meeting,Sales Call].
+
+Here is the content to analyze:
+
+---
+
+[MEETING_CONTENT]
+
+---
+
+Today's date is [CURRENT_DATE] for calculating deadlines and overdue status.
+
+Any additional context about the team or project: [CONTEXT?]
+
+Please analyze this content and produce the following:
+
+First, create an Action Items Table with these columns: Item Number, Task Description (clear and specific, starting with a verb), Owner (the person responsible), Deadline (specific date or timeframe), Priority (High, Medium, or Low based on urgency and impact), Status (Not Started, In Progress, Blocked, or Complete), and Dependencies (other items or people this task depends on). If an owner or deadline was not explicitly stated, mark it as TBD and flag it in the risk section.
+
+Second, provide a Summary section that includes the total count of action items, a breakdown by priority level, any items flagged as TBD that need clarification, and items that appear overdue based on the current date.
+
+Third, generate a Follow-Up Email Draft that I can send to attendees. The email should recap key decisions made, list all action items with their owners and deadlines, highlight any items needing immediate attention or clarification, and request confirmation that owners accept their assigned items.
+
+Fourth, create a Next Meeting Agenda suggestion based on items that will need status updates or decisions.
+
+Format the action items table using markdown. Use clear language that anyone on the team can understand without additional context. Flag any action items that seem vague, lack clear success criteria, or could lead to confusion.

@@ -1,0 +1,35 @@
+---
+title: "Packing List Generator"
+description: "Create a comprehensive, personalized packing checklist based on your destination, trip length, activities, and weather conditions"
+slug: "personal/packing-list"
+tags: ["travel", "packing", "checklist", "trip-planning", "organization"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/personal/packing-list"
+chatgptDemoUrl: "https://chatgpt.com/share/6991ab26-e9d8-8004-b470-8d0520566057"
+claudeDemoUrl: "https://claude.ai/public/artifacts/7259536c-9df9-49b9-9120-6a4b7f7ba61b"
+perplexityDemoUrl: "https://www.perplexity.ai/search/title-packing-list-generator-d-nP80GeUSRJ2kJPK5Lie9iA#0"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_d145dc29-a11d-4c15-ab83-c74b315e935c?fev=0.2.0"
+---
+
+# Packing List Generator
+
+You are a travel planning expert who helps people pack efficiently without forgetting essentials or overpacking. You understand how destination type, trip duration, planned activities, and weather all influence what someone needs to bring.
+
+I am planning a trip and need a complete packing checklist. My destination type is [DESTINATION_TYPE:select:beach vacation,city exploration,mountain or hiking trip,business travel,adventure or camping,ski or winter sports,tropical resort,backpacking,road trip,cruise]. The trip will last [TRIP_DURATION:select:weekend (2-3 days),short trip (4-5 days),one week,10-14 days,extended trip (3+ weeks)].
+
+The activities I have planned include: [ACTIVITIES]. The expected weather conditions are [WEATHER:select:hot and sunny (above 85F/30C),warm and pleasant (70-85F/21-30C),mild and variable (55-70F/13-21C),cool (40-55F/4-13C),cold (below 40F/4C),tropical with rain possibility,unpredictable - pack for all conditions].
+
+Additional travel details: I am traveling by [TRANSPORT:select:airplane with carry-on only,airplane with checked luggage,car,train,multiple transport types] and staying in [ACCOMMODATION:select:hotel,vacation rental or Airbnb,hostel,camping or tent,with friends or family,cruise ship,multiple accommodation types].
+
+Please generate a comprehensive packing checklist organized into these categories:
+
+1. Clothing - appropriate quantities based on trip length, include layering options for weather, separate by tops, bottoms, underwear, sleepwear, outerwear, and footwear
+2. Toiletries and Personal Care - travel sizes if flying, include skincare for the climate
+3. Electronics and Chargers - devices, adapters if international, backup power
+4. Documents and Money - IDs, reservations, cards, emergency contacts
+5. Health and Medications - prescriptions, first aid basics, destination-specific items
+6. Activity-Specific Gear - items needed for my planned activities
+7. Comfort and Convenience - items that make travel easier
+8. Often Forgotten Items - things people commonly leave behind
+
+Format each category with checkboxes so I can print and use this as a physical checklist. Include quantity recommendations where relevant. At the end, provide a brief "pack smart" tip specific to my trip type, and note any items I should purchase at my destination instead of packing.

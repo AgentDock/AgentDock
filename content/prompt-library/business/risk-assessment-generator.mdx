@@ -1,0 +1,42 @@
+---
+title: "Risk Assessment Generator"
+description: "Identify, evaluate, and create mitigation strategies for project and business risks with a comprehensive risk register including likelihood-impact scoring and action plans"
+slug: "business/risk-assessment-generator"
+tags: ["business", "project-management", "risk-assessment", "planning", "strategy"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/business/risk-assessment-generator"
+chatgptDemoUrl: "https://chatgpt.com/share/698f997b-7108-8004-99ad-aa6a0f53638f"
+claudeDemoUrl: "https://claude.ai/public/artifacts/b0b2bac8-5c9a-4a4b-a5de-ece7abbfb91d"
+perplexityDemoUrl: "https://www.perplexity.ai/search/title-risk-assessment-generato-QABGjO4aRziJyB4zjR4noQ#0"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_70e89b1d-10ea-4291-809a-457c3f0526b7?fev=0.2.0"
+---
+
+# Risk Assessment Generator
+
+You are a senior risk management consultant with extensive experience helping organizations identify, evaluate, and mitigate risks across complex projects and business operations. You combine analytical rigor with practical experience to create actionable risk assessments that protect organizations while enabling them to pursue their objectives confidently.
+
+I need you to conduct a comprehensive risk assessment for a [ASSESSMENT_TYPE:select:Project,Product Launch,Business Initiative,Operational Process,Strategic Decision,Technology Implementation,Organizational Change,Partnership or Acquisition].
+
+The context is a [INDUSTRY:select:Technology,Healthcare,Finance and Banking,Retail and E-commerce,Manufacturing,Energy,Construction,Professional Services,Government,Education,Nonprofit] organization.
+
+Here is a description of what I need assessed:
+
+[PROJECT_DESCRIPTION]
+
+The time horizon for this assessment is [TIMEFRAME:select:1-3 months,3-6 months,6-12 months,1-2 years,2+ years].
+
+Our risk tolerance level is [RISK_TOLERANCE:select:Conservative - minimize all risks even at higher cost,Moderate - balance risk mitigation with efficiency,Aggressive - accept higher risks for greater opportunity].
+
+Focus areas to prioritize, if any: [FOCUS_AREAS?]
+
+Conduct this risk assessment using a structured methodology. First, identify potential risks across these categories: strategic risks that could affect objectives, operational risks in execution and processes, financial risks to budget and resources, technical risks in systems and technology, compliance risks related to regulations and standards, and external risks from market or environmental factors.
+
+For each identified risk, evaluate it using a five-point scale for both likelihood and impact. Likelihood ranges from rare at one point to almost certain at five points. Impact ranges from negligible at one point to catastrophic at five points. Calculate the risk score by multiplying likelihood times impact, giving scores from one to twenty-five.
+
+Present your assessment as a detailed risk register in table format with these columns: Risk ID using format R001 through R999, Risk Description in one to two sentences, Category matching the six types above, Likelihood from one to five, Impact from one to five, Risk Score as the product, Risk Level as Low for scores one through four or Medium for five through nine or High for ten through fifteen or Critical for sixteen through twenty-five, Preventive Action to reduce likelihood, Contingency Action if risk occurs, Suggested Owner by role, and Monitoring Trigger that signals the risk is materializing.
+
+After the risk register, provide a risk summary that includes the total count of risks by level, the top five risks requiring immediate attention with brief rationale, any risk interdependencies where one risk could trigger others, and recommended review frequency based on the overall risk profile.
+
+Conclude with three to five strategic recommendations for the risk management approach, considering our stated risk tolerance level. Be specific about resource requirements, timeline for implementing controls, and any quick wins that can reduce exposure immediately.
+
+Format your response with clear Markdown headings and a properly formatted table. Use bold for critical risk items and key metrics.

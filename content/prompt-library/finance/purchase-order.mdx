@@ -1,0 +1,64 @@
+---
+title: "Purchase Order Template"
+description: "Create professional purchase orders with itemized products, quantities, and delivery terms"
+slug: "finance/purchase-order"
+tags: ["finance", "procurement", "purchase-order", "business", "vendor"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/finance/purchase-order"
+chatgptDemoUrl: "https://chatgpt.com/share/6991df42-b8c0-8004-ad55-6912b48d869e"
+claudeDemoUrl: "https://claude.ai/public/artifacts/3a13817a-e1e5-4c6a-9d53-656e3539e296"
+perplexityDemoUrl: "https://www.perplexity.ai/search/title-purchase-order-template-OcKVOSyDQe6AQ7ulwVnyzA#0"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_41f012a6-d10c-42c0-814f-31a4cb1e9d6f?fev=0.2.0"
+---
+
+# Purchase Order Template
+
+You are a procurement specialist with extensive experience creating purchase orders that ensure smooth transactions between buyers and suppliers. You understand that a well-structured purchase order serves as a legally binding document that protects both parties, prevents miscommunication about quantities and pricing, and creates a clear record for accounting and inventory management. Your purchase orders are precise, complete, and formatted for immediate use in business transactions.
+
+I need to create a purchase order for [COMPANY_NAME].
+
+My company's billing address is [COMPANY_ADDRESS] and our contact person for this order is [CONTACT_NAME] reachable at [CONTACT_EMAIL] and [CONTACT_PHONE?].
+
+This purchase order is being sent to vendor [VENDOR_NAME] located at [VENDOR_ADDRESS] with vendor contact [VENDOR_CONTACT?] and vendor email [VENDOR_EMAIL?].
+
+The purchase order number is [PO_NUMBER] with an order date of [ORDER_DATE].
+
+The items should be shipped to [SHIP_TO_ADDRESS] which may be the same as or different from our billing address, with attention to [SHIP_TO_ATTENTION?].
+
+The required delivery date is [DELIVERY_DATE] and the shipping method should be [SHIPPING_METHOD:select:Standard Ground,Expedited,Overnight,Freight,Vendor's Choice,Will Call/Pickup,Customer Arranged].
+
+The shipping terms for this order are [SHIPPING_TERMS:select:FOB Origin (buyer pays shipping and assumes risk at origin),FOB Destination (seller pays shipping and assumes risk until delivery),Prepaid and Add (seller prepays and adds to invoice),Collect (buyer pays carrier directly),Free Shipping,Included in Price].
+
+The payment terms are [PAYMENT_TERMS:select:Net 15,Net 30,Net 45,Net 60,Due on Receipt,2/10 Net 30 (2% discount if paid in 10 days),50% Deposit / 50% on Delivery,Payment in Advance,Upon Inspection and Acceptance].
+
+The currency for this order is [CURRENCY:select:USD ($),EUR,GBP,CAD (C$),AUD (A$),MXN,CNY,JPY,INR,Other].
+
+Here are the items to be ordered with their descriptions, part numbers or SKUs if available, quantities, unit of measure, and unit prices: [LINE_ITEMS]
+
+The applicable tax rate is [TAX_RATE?] which should be calculated on the subtotal if your jurisdiction requires it.
+
+Shipping and handling charges are [SHIPPING_COST?] if known, otherwise leave blank for the vendor to confirm.
+
+The order type is [ORDER_TYPE:select:Standard One-Time Order,Blanket Order (ongoing agreement with releases),Rush Order,Replacement Order,Recurring Order] which may affect how the vendor processes fulfillment.
+
+Special instructions or notes for the vendor: [SPECIAL_INSTRUCTIONS?]
+
+Create a complete, professional purchase order document that begins with a clear header section displaying my company name and logo placeholder, full company address, and prominently labeled "PURCHASE ORDER" with the PO number in a format that is easy to reference and file.
+
+Include a vendor information block that lists the supplier's complete name, address, and contact details so there is no ambiguity about who is fulfilling this order.
+
+Present a separate ship-to section if the delivery address differs from the billing address, clearly distinguishing where the goods should be sent and who should receive them.
+
+Display the key dates and terms in a summary section including order date, required delivery date, payment terms, and shipping terms so both parties can quickly reference the expectations without reading through the entire document.
+
+Create a detailed line item table with columns for item number, description or part number, quantity, unit of measure, unit price, and line total. Each product or service should occupy its own row with enough description detail that the vendor can identify exactly what is being ordered. Calculate each line total by multiplying quantity times unit price.
+
+Below the line items, present a totals section showing the subtotal of all line items, any applicable taxes calculated at the specified rate, shipping and handling charges if provided, and a clearly emphasized grand total that represents the full amount the vendor should expect to receive.
+
+Include a terms and conditions section that states this purchase order is subject to the terms specified herein, that the vendor's acknowledgment or shipment constitutes acceptance of these terms, and that no changes to pricing, quantities, or delivery dates are valid without written approval from the buyer.
+
+Add an authorization section with a line for signature, printed name, title, and date to formalize that this purchase order has been properly approved according to the buyer's internal procurement authority.
+
+Close with any special instructions provided, along with a request for the vendor to confirm receipt of the purchase order and provide an estimated ship date.
+
+Format the document so it can be easily transferred to a word processor, printed on company letterhead, or emailed directly to the vendor. Use clear spacing and alignment that projects professionalism and makes the document easy to scan for key information. Ensure all numerical values are properly aligned and totals are calculated accurately, as purchase orders become part of both parties' financial records and are referenced during invoice reconciliation.

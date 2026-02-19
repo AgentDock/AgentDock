@@ -1,0 +1,52 @@
+---
+title: "Receipt Template"
+description: "Create professional receipts for sales, services, and transactions with itemized details"
+slug: "finance/receipt-template"
+tags: ["finance", "receipt", "sales", "transaction", "documentation"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/finance/receipt-template"
+chatgptDemoUrl: "https://chatgpt.com/share/6991e451-a18c-8004-bfba-7a85f067905f"
+claudeDemoUrl: "https://claude.ai/public/artifacts/a31a2675-76a1-4b97-a02b-3edf3c5a90d9"
+perplexityDemoUrl: "https://www.perplexity.ai/search/title-receipt-template-descrip-jbM7VzVRQ.6v3XUvev7kTw#0"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_e41b6ef6-967a-4cad-84cb-68d3e6deb144?fev=0.2.0"
+---
+
+# Receipt Template
+
+You are a professional bookkeeper who specializes in creating clear, accurate receipts that serve as reliable proof of payment for both businesses and customers. You understand that a well-designed receipt confirms the transaction details, provides essential records for accounting and tax purposes, and builds trust with customers who may need to reference the document for returns, expense reports, or warranty claims.
+
+I need to create a receipt for a transaction at [BUSINESS_NAME].
+
+My business contact information is [BUSINESS_ADDRESS] with phone [BUSINESS_PHONE?] and email [BUSINESS_EMAIL?]. If I have a tax identification or business registration number, it is [TAX_ID?].
+
+This receipt should be numbered [RECEIPT_NUMBER] and dated [TRANSACTION_DATE] at [TRANSACTION_TIME?].
+
+The customer for this transaction is [CUSTOMER_NAME?] with contact information [CUSTOMER_CONTACT?]. If no customer information is provided, create a standard point-of-sale receipt without customer details.
+
+The currency for this transaction is [CURRENCY:select:USD ($),EUR,GBP,CAD (C$),AUD (A$),INR,CHF,JPY,MXN,Other].
+
+Here are the items or services purchased with their descriptions, quantities, and unit prices: [LINE_ITEMS]
+
+The applicable tax rate is [TAX_RATE?] which should be calculated on the subtotal. If multiple tax types apply such as state and local taxes, list them separately.
+
+Any discounts applied to this transaction are [DISCOUNTS?] and should show both the discount description and amount.
+
+The total payment received was [AMOUNT_PAID] via [PAYMENT_METHOD:select:Cash,Credit Card,Debit Card,Check,Bank Transfer,Mobile Payment (Apple Pay/Google Pay),PayPal or Venmo,Gift Card,Store Credit,Split Payment,Other]. The transaction or authorization reference is [TRANSACTION_REFERENCE?].
+
+If payment was made by card, the last four digits are [CARD_LAST_FOUR?] and the card type is [CARD_TYPE?].
+
+Additional notes to include on the receipt such as return policy, warranty information, loyalty points earned, or thank you message: [NOTES?]
+
+Create a complete, professional receipt that opens with a header section displaying the business name prominently, followed by complete contact information including address, phone, and email where provided. Include the tax identification number if applicable for the customer's records.
+
+Present the transaction identification clearly showing the receipt number, date, and time so this document can be easily referenced and matched to other records. If customer information was provided, include a section addressing the receipt to them.
+
+Create an itemized section that lists each product or service on its own line with the item description, quantity purchased, unit price, and line total. Keep descriptions concise but clear enough that anyone reviewing the receipt later will understand exactly what was purchased.
+
+Display a totals section that shows the subtotal of all items, then any discounts with their descriptions and amounts deducted, followed by each applicable tax calculated as a line item showing both the rate and amount. Present the grand total prominently so it stands out as the final amount.
+
+Include a payment section that confirms the method of payment, shows the amount tendered and any change given for cash transactions, and displays the transaction reference number or authorization code for card and electronic payments. For card payments, show the card type and last four digits if provided.
+
+If I included additional notes, add a section at the bottom for return policy, warranty terms, loyalty program information, or any thank you message to the customer.
+
+Format the receipt so it can be easily printed on standard receipt paper or letter-sized paper, or copied into a document for digital delivery. Use clear spacing and alignment that looks professional whether this is a quick retail transaction or a detailed service receipt. Ensure all calculations are accurate and the document provides a complete record that both the business and customer can rely on for their records.

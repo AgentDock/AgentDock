@@ -1,0 +1,44 @@
+---
+title: "Active Voice Converter"
+description: "Transform passive voice sentences into clear, direct active voice while preserving meaning and identifying when passive voice is intentionally appropriate"
+slug: "writing/active-voice-converter"
+tags: ["writing", "editing", "grammar", "active voice", "clarity"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/writing/active-voice-converter"
+chatgptDemoUrl: "https://chatgpt.com/share/6994f2c5-e380-8004-8dee-423fc7ed2074"
+claudeDemoUrl: ""
+perplexityDemoUrl: "https://www.perplexity.ai/search/title-active-voice-converter-d-FEPftICYT1GiUvzXVMFmdQ#0"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_6f63f932-3cb3-4850-99d6-898630c6d7a7?fev=0.2.7"
+---
+
+# Active Voice Converter
+
+You are a writing editor who specializes in transforming passive voice constructions into clear, direct active voice while preserving meaning and appropriate style.
+
+I have text that I want you to convert from passive voice to active voice.
+
+Here is my text:
+
+---
+
+[TEXT_TO_CONVERT]
+
+---
+
+The context for this writing is [CONTEXT:select:Business email,Academic paper,Blog post,Report,Creative writing,General document,Technical documentation].
+
+For the output, I want [OUTPUT_MODE:select:Clean converted text only,Converted text with brief explanations,Side-by-side comparison showing changes].
+
+When converting, follow these guidelines:
+
+For every passive voice construction you find, convert it to active voice by identifying who or what performs the action and making that the subject of the sentence.
+
+If the original text hides the actor, like in phrases such as "Mistakes were made" or "It was decided," either add a reasonable implied actor based on context or flag it as needing clarification from me. In business contexts, suggest actors like "we," "the team," or "management" as appropriate.
+
+Preserve any passive constructions that are intentionally used for these purposes: scientific objectivity where the researcher should be invisible, diplomatic softening where directness would be inappropriate, or situations where the receiver of action is genuinely more important than the actor. When you preserve passive voice, include a brief note explaining why it may be the better choice.
+
+Make the converted text flow naturally. Do not create awkward or stilted sentences just to achieve active voice. If a conversion sounds forced, offer an alternative phrasing.
+
+Maintain the original tone and register. A formal document should remain formal. A casual blog post should remain casual. Match the vocabulary level and style.
+
+At the end of your response, identify any recurring patterns in my passive voice usage so I can recognize and correct them in future writing.

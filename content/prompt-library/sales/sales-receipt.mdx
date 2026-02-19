@@ -1,0 +1,26 @@
+---
+title: "Sales Receipt Generator"
+description: "Generate professional sales receipts for business transactions with itemized details, tax calculations, and payment confirmation"
+slug: "sales/sales-receipt"
+tags: ["sales", "receipt", "invoice", "transaction", "business"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/sales/sales-receipt"
+chatgptDemoUrl: "https://chatgpt.com/share/6994f1e6-80a4-8004-baba-8786455611f6"
+claudeDemoUrl: "https://claude.ai/public/artifacts/96e54093-0a2c-4b83-b628-92770eee3e44"
+perplexityDemoUrl: "https://www.perplexity.ai/search/title-sales-receipt-generator-x8rz0QQURN.ehXf__NPkvg#0"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_8026e5ee-d4b5-421c-8dd0-dba8b7e4d6c9?fev=0.2.7"
+---
+
+# Sales Receipt Generator
+
+Create a professional sales receipt for my business transaction. My business name is [BUSINESS_NAME] and my business address is [BUSINESS_ADDRESS]. My contact information includes [BUSINESS_PHONE] and [BUSINESS_EMAIL?].
+
+This receipt is for [CUSTOMER_NAME] with contact details [CUSTOMER_CONTACT?]. The transaction date is [TRANSACTION_DATE] and I need a receipt number starting with [RECEIPT_PREFIX?] or you can generate a sequential format for me.
+
+The items or services sold are as follows: [ITEMS_DESCRIPTION]. For each item, the quantity is [QUANTITIES], the unit price is [UNIT_PRICES], and the currency is [CURRENCY:select:USD,EUR,GBP,CAD,AUD,INR,JPY,CNY,other]. If there are any discounts applied, they are [DISCOUNTS?] and the applicable tax rate is [TAX_RATE:number:0-30] percent.
+
+The payment was made via [PAYMENT_METHOD:select:cash,credit card,debit card,bank transfer,check,PayPal,Venmo,Apple Pay,other] and the payment status is [PAYMENT_STATUS:select:paid in full,partial payment,pending]. If this is a partial payment, the amount paid is [AMOUNT_PAID?] with the remaining balance being [BALANCE_DUE?].
+
+The receipt should have a [TONE:select:professional,friendly,minimal,detailed] tone and include the following additional information if applicable: payment reference or transaction ID [TRANSACTION_ID?], any warranty or return policy details [RETURN_POLICY?], and additional notes [ADDITIONAL_NOTES?].
+
+Format the receipt with a clear header showing my business details, followed by the customer information, then an itemized list with quantities, unit prices, and line totals. Include a subtotal before tax, the tax amount, any discounts, and the final total. End with payment confirmation details and any terms or notes. Make the receipt look professional and ready to print or send digitally.

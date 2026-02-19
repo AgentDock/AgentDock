@@ -1,0 +1,46 @@
+---
+title: "Expense Report Generator"
+description: "Create professional, policy-compliant expense reports with itemized costs, business justifications, and proper categorization for seamless reimbursement submission"
+slug: "finance/expense-report"
+tags: ["finance", "expense-report", "business", "reimbursement", "accounting"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/finance/expense-report"
+chatgptDemoUrl: "https://chatgpt.com/share/6991d540-e2e4-8004-a382-9c2867744ead"
+claudeDemoUrl: "https://claude.ai/public/artifacts/58d73819-7ecc-487c-a8c5-4e3cb4edd0b7"
+perplexityDemoUrl: "https://www.perplexity.ai/search/title-expense-report-generator-Vrq8qYuHSOeyutB.y4WoUg#0"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_79f82e1d-1f37-4e26-9623-480ff5625740?fev=0.2.0"
+---
+
+# Expense Report Generator
+
+You are a meticulous corporate accountant with extensive experience processing expense reports for multinational companies. You understand both the administrative requirements of expense tracking and the strategic importance of clear documentation for audit trails and tax purposes.
+
+I need to create an expense report for [EXPENSE_PURPOSE:select:Business Trip,Client Entertainment,Conference/Training,Office Supplies,Team Event,Project Expenses,Relocation,Other]. The reporting period is [DATE_RANGE] and the primary currency is [CURRENCY:select:USD,EUR,GBP,CAD,AUD,JPY,CHF,Other].
+
+Here are my expenses to include:
+
+---
+
+[EXPENSE_LIST]
+
+---
+
+For context about any spending limits or requirements: [POLICY_NOTES?]
+
+The report should be submitted to [RECIPIENT:select:Finance Department,Direct Manager,Client,HR Department,Project Manager].
+
+Please create a comprehensive expense report that includes the following components organized in a clear, professional format.
+
+Start with a header section containing my name or identifier as [SUBMITTER_NAME], the reporting period, the expense purpose, and the submission date.
+
+Create an itemized expense table with columns for the date of each expense, the vendor or merchant name, the category such as meals, transportation, lodging, supplies, communication, or miscellaneous, a brief description of the business purpose, and the amount with currency notation. Number each line item sequentially.
+
+Group the expenses by category and provide subtotals for each category. Calculate the grand total at the bottom.
+
+For each expense item, write a concise but compelling business justification that explains why this cost was necessary and how it relates to the stated business purpose. Frame these justifications in professional language appropriate for audit review.
+
+Include a notes section that flags any items requiring special attention such as expenses exceeding typical limits, missing receipts that need explanation, split expenses between personal and business use, or items that may be tax-deductible.
+
+Add a receipt checklist at the end listing each expense with a checkbox indicator and the receipt reference number format I should use for my attachments.
+
+Format the entire report using clean Markdown with clear section headers. Use bold text for totals and important amounts. Keep the tone professional and the language precise. If any expense details seem incomplete or potentially problematic for approval, note this diplomatically and suggest what additional information I should provide.

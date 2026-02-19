@@ -1,0 +1,56 @@
+---
+title: "Cash Flow Statement Template"
+description: "Create comprehensive cash flow statements tracking operating, investing, and financing activities with variance analysis and liquidity metrics"
+slug: "finance/cash-flow-statement"
+tags: ["finance", "accounting", "cash-flow", "liquidity", "reporting"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/finance/cash-flow-statement"
+chatgptDemoUrl: "https://chatgpt.com/share/6991d2a5-cab4-8004-a109-6b8fc8092236"
+claudeDemoUrl: "https://claude.ai/public/artifacts/545748f1-af31-4833-a3ec-3ebf56ab1644"
+perplexityDemoUrl: "https://www.perplexity.ai/search/title-cash-flow-statement-temp-mkUv9pihQJaB4t3GxU1h7Q#0"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_3c13f248-bddc-4b8c-9bdb-605ed5ccd350?fev=0.2.0"
+---
+
+# Cash Flow Statement Template
+
+You are a senior financial controller with deep expertise in treasury management and financial reporting. You have prepared cash flow statements for organizations ranging from small businesses to publicly traded companies, understanding that while the income statement shows profitability, the cash flow statement reveals survivability. You know that companies can be profitable on paper yet fail due to poor cash management, and you structure statements that help management understand not just where cash went, but why it moved and what that movement signals about business health.
+
+I need you to create a cash flow statement for [BUSINESS_NAME], operating as a [BUSINESS_TYPE:select:Sole Proprietorship,Partnership,LLC,S-Corporation,C-Corporation,Nonprofit Organization,Government Entity] in the [INDUSTRY:select:Retail,E-commerce,Manufacturing,Professional Services,Technology,Healthcare,Construction,Real Estate,Hospitality,Transportation,Food and Beverage,Agriculture,Financial Services,Education,Nonprofit,Other] sector.
+
+The statement should cover the [REPORTING_PERIOD:select:Monthly,Quarterly,Semi-Annual,Annual,Year-to-Date,Custom Period] period ending on [PERIOD_END_DATE], with all figures reported in [CURRENCY:select:USD ($),EUR,GBP,CAD (C$),AUD (A$),JPY,CHF,INR,Other].
+
+Prepare the statement using the [METHOD:select:Indirect Method (starts with net income and adjusts for non-cash items),Direct Method (shows actual cash receipts and payments)] format. The indirect method is more common for external reporting and reconciles net income to operating cash, while the direct method provides greater transparency into actual cash movements and is preferred for internal management analysis.
+
+For the starting point of the indirect method or reference for direct method adjustments, net income for the period is [NET_INCOME]. If preparing using the indirect method, depreciation and amortization expense totaled [DEPRECIATION_AMORTIZATION], and changes in working capital accounts were as follows: accounts receivable changed by [AR_CHANGE], inventory changed by [INVENTORY_CHANGE?], accounts payable changed by [AP_CHANGE], accrued expenses changed by [ACCRUED_EXPENSES_CHANGE?], and other current assets or liabilities changed by [OTHER_WORKING_CAPITAL_CHANGES?]. Additional non-cash adjustments include [OTHER_NONCASH_ADJUSTMENTS?] such as stock-based compensation, deferred taxes, gains or losses on asset sales, or impairment charges.
+
+For investing activities, cash movements related to long-term assets include purchases of property, plant, and equipment of [PPE_PURCHASES?], proceeds from sale of assets of [ASSET_SALE_PROCEEDS?], purchases of investments or securities of [INVESTMENT_PURCHASES?], proceeds from investment sales or maturities of [INVESTMENT_PROCEEDS?], acquisitions net of cash acquired of [ACQUISITIONS?], and other investing activities of [OTHER_INVESTING?].
+
+For financing activities, cash movements related to capital structure include proceeds from debt issuance of [DEBT_PROCEEDS?], repayments of debt principal of [DEBT_REPAYMENTS?], proceeds from equity issuance of [EQUITY_PROCEEDS?], dividends paid to shareholders of [DIVIDENDS_PAID?], stock repurchases of [STOCK_REPURCHASES?], and other financing activities such as capital lease payments of [OTHER_FINANCING?].
+
+The beginning cash and cash equivalents balance for this period was [BEGINNING_CASH_BALANCE].
+
+For comparative analysis if available, prior period figures include operating cash flow of [PRIOR_OPERATING_CF?], investing cash flow of [PRIOR_INVESTING_CF?], financing cash flow of [PRIOR_FINANCING_CF?], and ending cash balance of [PRIOR_ENDING_CASH?].
+
+Additional context regarding unusual items, one-time transactions, or management concerns to address: [ADDITIONAL_CONTEXT?].
+
+Create a complete cash flow statement that opens with a professional header displaying the company name, statement title identifying this as a Statement of Cash Flows, and the reporting period covered. Include the preparation date and note whether the statement follows the direct or indirect method.
+
+Organize the statement into three clearly delineated sections. The operating activities section should show how cash was generated or consumed by core business operations. For the indirect method, begin with net income and systematically add back non-cash expenses, subtract non-cash gains, and adjust for changes in working capital accounts, providing clear subtotals that build logically to cash provided by or used in operating activities. For the direct method, show actual cash receipts from customers, cash paid to suppliers and employees, interest received, interest paid, and taxes paid, with each line representing a true cash movement.
+
+The investing activities section should detail cash flows from the acquisition and disposal of long-term assets, including property and equipment, investments, and business acquisitions. Present each item separately with purchases shown as outflows and proceeds shown as inflows, calculating net cash used in or provided by investing activities.
+
+The financing activities section should show cash movements related to how the company funds itself through debt and equity. Include proceeds from borrowings, loan repayments, stock issuances, dividend payments, and treasury stock transactions. Calculate net cash provided by or used in financing activities.
+
+Following the three sections, sum the net change in cash and cash equivalents for the period. Add this to the beginning cash balance to arrive at the ending cash balance, and confirm this ties to the balance sheet cash figure if known. If there is a discrepancy, note the difference and identify potential reconciling items.
+
+Calculate and present key cash flow metrics including operating cash flow ratio comparing operating cash to current liabilities, cash flow coverage ratio comparing operating cash to total debt, free cash flow calculated as operating cash flow minus capital expenditures, and the cash conversion cycle if inventory data permits. Include a brief interpretation of what each metric reveals about liquidity and financial flexibility.
+
+Present all monetary figures with consistent formatting using aligned decimal points, parentheses to denote cash outflows, and clear subtotals and totals. Group related items logically and use indentation to show the hierarchical structure of the statement.
+
+If comparative period data was provided, present the statements side by side with columns for each period. Calculate the dollar change and percentage change in each major category and flag any significant variances exceeding twenty percent for management attention. Analyze whether the year-over-year trend in operating cash flow is healthy or concerning relative to net income trends.
+
+Include a supplemental disclosures section noting any significant non-cash investing and financing activities that do not appear in the statement body, such as assets acquired under capital leases, conversion of debt to equity, or stock issued for acquisitions. Also disclose cash paid for interest and income taxes during the period if these amounts differ from income statement figures.
+
+Conclude with a management analysis section of two to three paragraphs that interprets the cash flow story. Address whether operating cash flow adequately covers operating needs and debt service, whether investing cash flows suggest expansion or contraction, whether financing activities indicate strengthening or weakening of the capital structure, and what the free cash flow figure reveals about the company's ability to fund growth, pay dividends, or reduce debt. Note any warning signs such as persistent negative operating cash flow with positive net income, which may indicate aggressive revenue recognition or deteriorating receivables collection.
+
+Format the statement so it integrates cleanly with the income statement and balance sheet as part of a complete financial reporting package. The document should be professional enough for external stakeholders while providing the operational insights management needs to monitor cash health and make informed decisions about liquidity management.

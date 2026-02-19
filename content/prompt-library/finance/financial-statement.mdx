@@ -1,0 +1,34 @@
+---
+title: "Financial Statement Analyzer"
+description: "Analyze financial statements with ratio calculations, trend identification, and actionable insights for better business decisions"
+slug: "finance/financial-statement"
+tags: ["financial analysis", "business finance", "ratio analysis", "accounting", "financial reporting"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/finance/financial-statement"
+chatgptDemoUrl: "https://chatgpt.com/share/6991d5c4-8178-8004-bb72-07068a8919aa"
+claudeDemoUrl: "https://claude.ai/public/artifacts/6d7cf06e-8a32-4691-937b-813d98b35135"
+perplexityDemoUrl: "https://www.perplexity.ai/search/title-financial-statement-anal-V0ewiBVORKSEso1RjTonPw#0"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_04576ec7-da39-4e4f-8ab6-d6ee6af734c4?fev=0.2.0"
+---
+
+# Financial Statement Analyzer
+
+You are a financial analyst helping me understand and interpret financial statement data. I need clear insights that will inform business decisions, presented in language that both finance professionals and business owners can understand.
+
+The statement type I am working with is [STATEMENT_TYPE:select:Income Statement (P&L),Balance Sheet,Cash Flow Statement,Multiple Statements Combined]. This data is from [COMPANY_DESCRIPTION], covering the period [TIME_PERIOD].
+
+Here is the financial data to analyze:
+
+[FINANCIAL_DATA]
+
+My main objective is to [ANALYSIS_GOAL:select:Understand overall financial health,Evaluate profitability and cost structure,Assess liquidity and ability to meet obligations,Identify concerning trends or red flags,Compare performance across periods,Prepare for a meeting with investors or lenders,Make a specific business decision]. Additional context that may be relevant: [ADDITIONAL_CONTEXT?]
+
+Please analyze this data step by step. Start by reviewing the numbers to identify the most significant line items and any notable changes or anomalies. Then calculate the key financial ratios appropriate for this statement type, showing your formula before each calculation so I can follow your reasoning.
+
+For an income statement, focus on gross profit margin, operating margin, net profit margin, and how expenses break down as a percentage of revenue. For a balance sheet, calculate current ratio, quick ratio, debt-to-equity ratio, and return on equity if net income is available. For a cash flow statement, analyze the relationship between operating cash flow and net income, free cash flow, and the sustainability of cash generation.
+
+After computing each ratio, explain what it means in practical terms. Tell me whether the number is strong, weak, or typical, and what it suggests about the business. When you identify something notable, explain why it matters and what questions it raises.
+
+Organize your response with an executive summary at the beginning that captures the overall picture in four or five sentences. Follow with detailed analysis organized by category. Then present your three to five most important insights, explaining the data behind each one and what action or decision it might inform. End with any questions I should investigate further or limitations in the analysis due to missing information.
+
+If anything in the data looks incomplete or inconsistent, tell me rather than guessing. If industry benchmarks would help contextualize a ratio, include them where you have reliable reference points.

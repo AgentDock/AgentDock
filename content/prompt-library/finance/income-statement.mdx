@@ -1,0 +1,52 @@
+---
+title: "Income Statement Template"
+description: "Generate professional income statements with revenue breakdowns, expense categorization, profitability analysis, and actionable financial insights"
+slug: "finance/income-statement"
+tags: ["finance", "income-statement", "accounting", "financial-reporting", "business"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/finance/income-statement"
+chatgptDemoUrl: "https://chatgpt.com/share/6991d6cd-6438-8004-a800-d2cd38f53ea0"
+claudeDemoUrl: "https://chatgpt.com/share/6991d6cd-6438-8004-a800-d2cd38f53ea0"
+perplexityDemoUrl: "https://www.perplexity.ai/search/title-income-statement-templat-quj57TjWSICZbx4n3L8Bvw#0"
+qwenDemoUrl: ""
+---
+
+# Income Statement Template
+
+You are a financial controller who has prepared thousands of income statements across companies ranging from early-stage startups to established enterprises. You understand that an income statement tells the story of how a business generates value and where that value goes. Beyond the numbers, you know how to interpret what each line reveals about operational efficiency, pricing power, and financial sustainability. You make financial data understandable without sacrificing accuracy.
+
+I need you to create an income statement for [COMPANY_NAME] covering the [PERIOD_TYPE:select:month ending,quarter ending,fiscal year ending,twelve months ending] [PERIOD_END_DATE].
+
+This company operates in the [INDUSTRY:select:Software and Technology,Professional Services,Retail and E-commerce,Manufacturing,Healthcare,Food and Beverage,Construction,Real Estate,Financial Services,Education,Transportation and Logistics,Hospitality,Media and Entertainment,Nonprofit,Agriculture] industry, which will inform relevant benchmarks and typical expense structures.
+
+The statement format should be [STATEMENT_FORMAT:select:Single-Step (total revenues minus total expenses in one calculation),Multi-Step (calculates gross profit and operating income as intermediate measures)].
+
+This income statement is being prepared for [PURPOSE:select:Internal management review,Board presentation,Investor due diligence,Loan application,Annual reporting,Tax preparation,Business valuation,Comparison with industry peers].
+
+Here is the financial data for this period. Total revenue from primary business operations is [TOTAL_REVENUE]. If there are multiple revenue streams, they break down as follows with product or service categories and their individual amounts in [REVENUE_BREAKDOWN?].
+
+The cost of goods sold or cost of services, representing the direct costs tied to delivering revenue, totals [COST_OF_GOODS_SOLD?]. This might include raw materials, direct labor, manufacturing overhead, or direct service delivery costs depending on the business model.
+
+Operating expenses for the period are as follows. Salaries, wages, and employee benefits amount to [PAYROLL_TOTAL?]. Sales and marketing expenses including advertising, promotions, and sales commissions total [SALES_MARKETING?]. General and administrative costs covering rent, utilities, office expenses, and professional fees are [GENERAL_ADMIN?]. Research and development expenditures if applicable total [RESEARCH_DEVELOPMENT?]. Depreciation and amortization charges are [DEPRECIATION_AMORTIZATION?]. Any other significant operating expense categories include [OTHER_OPERATING?].
+
+Below the operating line, interest expense on debt is [INTEREST_EXPENSE?] and interest or investment income earned is [INTEREST_INCOME?]. Any other non-operating gains or losses such as asset sales, foreign exchange impacts, or one-time items are [OTHER_NON_OPERATING?].
+
+The income tax provision or estimate for this period is [INCOME_TAX?]. If taxes are not yet calculated, the applicable tax rate is approximately [TAX_RATE?] percent.
+
+For comparative context, the prior period [COMPARISON_PERIOD?] had total revenue of [PRIOR_REVENUE?] and net income of [PRIOR_NET_INCOME?]. The budget or forecast for this period projected revenue of [BUDGET_REVENUE?] and net income of [BUDGET_NET_INCOME?].
+
+Any additional context about unusual items, accounting methods, or specific areas of focus for the analysis includes [ADDITIONAL_CONTEXT?].
+
+Create a complete income statement that begins with a properly formatted header showing the company name, the statement title identifying it as an Income Statement, and the specific period covered. Present all line items in a clear, professionally structured format with amounts properly aligned and subtotals clearly marked.
+
+For a single-step format, group all revenue sources together with a total, then list all expenses together with a total, arriving at net income in one calculation. For a multi-step format, structure the statement to calculate gross profit by subtracting cost of goods sold from net revenue, then show operating expenses by category to arrive at operating income, then incorporate non-operating items and taxes to determine net income.
+
+Calculate and display the following profitability metrics alongside the statement. Gross profit margin shows what percentage of revenue remains after covering direct costs. Operating margin reveals how much of each revenue dollar translates to operating profit before interest and taxes. Net profit margin indicates the final profitability after all costs, calculated as net income divided by total revenue. Express each as a percentage rounded to one decimal place.
+
+If comparative data was provided, present a side-by-side format showing the current period alongside the prior period or budget. Calculate the variance for each major line item in both dollar terms and percentage terms. Highlight any variance exceeding ten percent as warranting attention, briefly noting whether the change appears favorable or unfavorable and what might be driving it.
+
+Following the statement, provide a concise analysis written in clear business language. Open with the headline story summarizing whether the period was profitable and how performance compared to prior periods or expectations. Identify the two or three most significant factors that drove the results, whether positive or negative. Comment on expense control by noting which categories are consuming more or less than typical for the industry. If any line items show unusual patterns or warrant further investigation, flag them specifically. Close with one or two forward-looking observations about what the income statement suggests for future periods or decisions management should consider.
+
+Include standard notes at the bottom indicating the accounting basis, whether cash or accrual, and that figures are presented in the appropriate currency. Note any significant accounting policies or estimates that materially affect the reported numbers. If certain standard line items have zero values or were not provided, note their absence rather than omitting them silently, as this maintains completeness and prevents confusion.
+
+Format the output so the income statement portion can be transferred directly to spreadsheet software or presented as a standalone document, while the analysis section provides the narrative context that transforms numbers into actionable intelligence.

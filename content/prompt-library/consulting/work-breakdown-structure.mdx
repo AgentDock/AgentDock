@@ -1,0 +1,26 @@
+---
+title: "Work Breakdown Structure Generator"
+description: "Create a comprehensive, hierarchical Work Breakdown Structure with deliverables, work packages, and clear ownership for any project type."
+slug: "consulting/work-breakdown-structure"
+tags: ["project-management", "consulting", "planning", "deliverables", "project-planning"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/consulting/work-breakdown-structure"
+chatgptDemoUrl: "https://chatgpt.com/share/6991cf3b-40e4-8004-8bab-6c80505818ff"
+claudeDemoUrl: "https://claude.ai/public/artifacts/77f0fcca-6072-43df-9757-2169203da1ff"
+perplexityDemoUrl: "https://www.perplexity.ai/search/title-work-breakdown-structure-9DWvecKkQ0C4xHLmX0Cg6A#0"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_22ba346a-f090-4f5e-bcf9-954a6e9d50f9?fev=0.2.0"
+---
+
+# Work Breakdown Structure Generator
+
+I need to create a Work Breakdown Structure for [PROJECT_NAME], which is in the [INDUSTRY:select:technology,construction,marketing,healthcare,manufacturing,finance,education,events,consulting,government,retail,other] sector. The primary deliverable or outcome of this project is [PRIMARY_DELIVERABLE]. The project has an estimated duration of [DURATION] and involves [TEAM_SIZE:select:1-5 people,6-15 people,16-50 people,50+ people].
+
+The key objectives we need to achieve are [KEY_OBJECTIVES]. Any major constraints or boundaries I should note include [CONSTRAINTS_OR_BOUNDARIES?].
+
+Please decompose this project to [DECOMPOSITION_LEVEL:select:Level 2 (phases only),Level 3 (phases and deliverables),Level 4 (phases/deliverables/work packages),Level 5 (full decomposition)] depth. For each element in the WBS, use the standard WBS coding system where the project is 1.0, major phases are 1.1/1.2/1.3, and so on.
+
+Apply the 100% rule throughout, meaning each parent element must fully encompass all work represented by its children, with no gaps or overlaps. Each work package at the lowest level should represent roughly [WORK_PACKAGE_SIZE:select:8-40 hours,40-80 hours,1-2 weeks,2-4 weeks] of effort and be assignable to a single owner.
+
+For the output format, present this as a [OUTPUT_FORMAT:select:hierarchical outline with indentation,table with columns for WBS code/name/description/owner,visual tree diagram in ASCII art,all three formats combined]. Include a brief description for each element that clarifies what work it contains and what completion looks like. If certain elements seem ambiguous or could be interpreted multiple ways based on industry best practices, note those assumptions.
+
+At the end, provide a summary showing the total number of work packages, suggested phase sequence or dependencies worth noting, and any recommendations for how this WBS could be further refined once more project details become available.

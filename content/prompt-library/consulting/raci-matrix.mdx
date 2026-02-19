@@ -1,0 +1,44 @@
+---
+title: "RACI Matrix Generator"
+description: "Create a comprehensive RACI responsibility matrix that clearly assigns who is Responsible, Accountable, Consulted, and Informed for every project task and decision"
+slug: "consulting/raci-matrix"
+tags: ["project-management", "raci-matrix", "responsibility-assignment", "team-collaboration", "consulting"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/consulting/raci-matrix"
+chatgptDemoUrl: "https://chatgpt.com/share/6991ca27-d6ac-8004-8b55-5a39e8714a61"
+claudeDemoUrl: "https://claude.ai/public/artifacts/f09b06ec-e943-4edc-b1be-47dbc982a506"
+perplexityDemoUrl: "https://www.perplexity.ai/search/title-raci-matrix-generator-de-2lm0ENmjSRCCpTEsqVN3_Q#0"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_efb8589f-921f-40c1-94bd-e3e168a697b7?fev=0.2.0"
+---
+
+# RACI Matrix Generator
+
+You are an experienced organizational consultant specializing in governance frameworks and project management structures. You have developed RACI matrices for hundreds of projects ranging from small team initiatives to enterprise-wide transformations, and you understand the common pitfalls that make responsibility assignments fail in practice.
+
+I need you to create a RACI responsibility matrix for a project. The project is [PROJECT_NAME] and here is what it involves:
+
+[PROJECT_DESCRIPTION]
+
+The project operates in the [INDUSTRY:select:Technology,Healthcare,Finance,Manufacturing,Retail,Government,Education,Professional Services,Construction,Nonprofit,Energy,Media] industry. The organization size is [ORG_SIZE:select:Startup (under 50),Small Business (50-200),Mid-Market (200-1000),Enterprise (1000-5000),Large Enterprise (5000+)].
+
+Here are the roles or team members involved in this project: [TEAM_ROLES]
+
+Here are the key tasks, activities, or decisions that need RACI assignments. If you do not have a complete list, work with the project description to generate appropriate tasks: [TASKS_OR_DECISIONS?]
+
+The project phase is [PROJECT_PHASE:select:Initiation,Planning,Execution,Monitoring and Control,Closing,Multiple Phases]. Any specific governance concerns or constraints I should know about: [CONSTRAINTS?]
+
+Please deliver the following:
+
+First, create the RACI Matrix itself as a comprehensive table. Each row represents a task, activity, or decision point. Each column represents a role. Use R for Responsible (does the work), A for Accountable (approves and owns the outcome with only one A allowed per row), C for Consulted (provides input before the work), and I for Informed (notified after completion). If a role has no involvement in a task, leave the cell empty. Include at least 15 to 20 tasks unless the project scope suggests fewer. Group related tasks under clear category headers within the table.
+
+Second, provide a RACI Validation Analysis that checks for common problems. Identify any tasks with no Accountable person assigned, any tasks with multiple Accountable persons which violates the single-accountability principle, any roles that appear overloaded with too many R or A assignments, any roles that are rarely involved and might be missing from key activities, and any tasks where everyone is merely Consulted or Informed but no one is actually doing the work.
+
+Third, create a Role Summary showing each role's total count of R, A, C, and I assignments. Add a brief workload assessment noting whether the distribution seems balanced or if certain roles carry disproportionate responsibility.
+
+Fourth, develop Assignment Rationale for the five most critical tasks or decisions. Explain why you assigned each role the way you did, what could go wrong if the assignments were different, and how the accountability structure supports project success.
+
+Fifth, provide Communication Guidelines based on the RACI assignments. Explain how Consulted parties should be engaged in advance, how Informed parties should receive updates, what forums or meetings might be needed for tasks with many stakeholders, and how to escalate when the Accountable person is unavailable.
+
+Finally, include Optimization Recommendations with three to five specific suggestions for improving the responsibility structure. This might include consolidating certain roles, adding a role that seems missing, adjusting assignments to reduce bottlenecks, or establishing clearer boundaries between similar roles.
+
+Format all tables in Markdown. Use clear section headers. Keep recommendations actionable and grounded in real project management challenges rather than theoretical ideals.

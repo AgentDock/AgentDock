@@ -1,0 +1,61 @@
+---
+title: "Power of Attorney Document Generator"
+description: "Draft a comprehensive power of attorney document with proper legal structure, clear delegation of authority, and state-specific considerations"
+slug: "legal/power-of-attorney"
+tags: ["legal", "power-of-attorney", "estate-planning", "legal-documents", "authorization"]
+author: "AgentDock"
+agentdockUrl: "https://agentdock.ai/prompt-library/legal/power-of-attorney"
+chatgptDemoUrl: "https://chatgpt.com/share/699249b6-4cac-8004-9bf2-e84c50799790"
+claudeDemoUrl: "https://claude.ai/public/artifacts/a623f21d-54fe-4288-be8d-e557f61a3cfc"
+perplexityDemoUrl: "https://www.perplexity.ai/search/title-power-of-attorney-docume-h2PvH16hSLaE7K7Zba1Xbw#0"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_7621315b-2141-4a8e-97df-6f392d9f4aaf?fev=0.2.0"
+---
+
+# Power of Attorney Document Generator
+
+IMPORTANT LEGAL DISCLAIMER: This tool generates a draft document for informational and educational purposes only. It does not constitute legal advice, and AI systems cannot provide legal advice. Power of attorney laws vary significantly by state and jurisdiction, with some states requiring specific statutory language, particular witness requirements, or mandatory notarization for the document to be legally enforceable. You must consult with a licensed attorney in your state before signing, filing, or relying on any power of attorney document. An improperly drafted or executed power of attorney may be rejected by banks, financial institutions, healthcare providers, government agencies, or courts. This draft serves as a starting point for discussion with your attorney, not as a final legal document ready for execution.
+
+You are a legal document drafting assistant helping me create a draft power of attorney document. Your role is to structure the document properly and include all standard provisions while clearly noting where state-specific requirements may apply. You are not providing legal advice and cannot guarantee this document will be accepted or enforceable.
+
+I am the principal granting this power of attorney. My full legal name is [PRINCIPAL_NAME] and I reside in [PRINCIPAL_STATE:select:Alabama,Alaska,Arizona,Arkansas,California,Colorado,Connecticut,Delaware,Florida,Georgia,Hawaii,Idaho,Illinois,Indiana,Iowa,Kansas,Kentucky,Louisiana,Maine,Maryland,Massachusetts,Michigan,Minnesota,Mississippi,Missouri,Montana,Nebraska,Nevada,New Hampshire,New Jersey,New Mexico,New York,North Carolina,North Dakota,Ohio,Oklahoma,Oregon,Pennsylvania,Rhode Island,South Carolina,South Dakota,Tennessee,Texas,Utah,Vermont,Virginia,Washington,West Virginia,Wisconsin,Wyoming,District of Columbia,Other US Territory,International].
+
+I want to appoint [AGENT_NAME] as my attorney-in-fact to act on my behalf. Their relationship to me is [AGENT_RELATIONSHIP:select:spouse,adult child,parent,sibling,other family member,trusted friend,professional fiduciary,business partner,attorney].
+
+I would also like to name [SUCCESSOR_AGENT_NAME?] as my successor agent in case the primary agent is unable or unwilling to serve.
+
+The type of power of attorney I need is [POA_TYPE:select:general - broad authority over financial and legal matters,durable - remains effective if I become incapacitated,limited - authority for specific transactions only,medical - healthcare decisions only,financial - financial matters only,springing - takes effect upon a specific triggering event].
+
+The powers I want to grant include [POWERS_GRANTED:select:all financial matters including banking and investments,real estate transactions and property management,business operations and contracts,tax matters and government benefits,healthcare decisions and medical records,specific transaction described below,comprehensive authority over all matters]. If I selected a specific transaction, here are the details: [SPECIFIC_POWERS?]
+
+I want this power of attorney to [EFFECTIVE_DATE:select:take effect immediately upon signing,take effect only if I become incapacitated as certified by physicians,take effect on a specific future date I will specify].
+
+This power of attorney should [DURATION:select:remain in effect until I revoke it in writing,expire on a specific date,expire upon completion of a specific transaction,remain in effect even if I become incapacitated making it durable].
+
+The following limitations or restrictions apply to the authority I am granting: [LIMITATIONS?]
+
+Special instructions or conditions I want included: [SPECIAL_INSTRUCTIONS?]
+
+Please draft a power of attorney document that includes these sections:
+
+1. Title and declaration identifying the type of power of attorney being created
+2. Statement that the principal is of sound mind and acting voluntarily
+3. Identification of the principal with full legal name and address placeholder
+4. Appointment of the primary agent with full legal name and address placeholder
+5. Appointment of any successor agent if one was named
+6. Detailed grant of powers section specifying exactly what authority is being delegated
+7. Durability clause if this document is intended to survive my incapacity
+8. Effective date provision specifying when the powers begin
+9. Expiration or termination conditions
+10. Limitations and restrictions section incorporating any I specified
+11. Agent duties and standard of care the agent must follow
+12. Agent compensation and expense reimbursement terms
+13. Third party reliance provision protecting institutions that rely on this document in good faith
+14. Revocation clause stating this document revokes any prior powers of attorney for the same purposes
+15. Governing law provision identifying the state whose laws apply
+16. Signature block for the principal with date line
+17. Witness signature blocks noting that witness requirements vary by state
+18. Notary acknowledgment block in standard format
+
+After the draft document, provide a checklist titled Next Steps Before This Document Is Valid that includes guidance on what formalities are typically required in the state I selected, whether witnesses and notarization are likely needed based on that state and the type of powers granted, a reminder to have a licensed attorney in my state review the document before I sign it, suggestions for providing copies to relevant financial institutions or healthcare providers, and notes about keeping the original document secure and informing the named agent of their responsibilities.
+
+Format the document with clear section headings using capital letters for major sections. Use formal legal language appropriate for a power of attorney. Include bracketed placeholders like [INSERT PRINCIPAL ADDRESS] or [INSERT DATE OF EXECUTION] where specific information would need to be filled in on the final document. Do not invent addresses or other specific details.

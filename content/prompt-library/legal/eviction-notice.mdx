@@ -1,0 +1,60 @@
+---
+title: "Eviction Notice Generator"
+description: "Create formal eviction notices for non-payment, lease violations, or end of tenancy with proper legal language and required elements for landlords and property managers"
+slug: "legal/eviction-notice"
+tags: ["legal", "landlord", "eviction", "property-management", "tenant"]
+author: "AgentDock"
+agentdockUrl: "https://agentdock.ai/prompt-library/legal/eviction-notice"
+chatgptDemoUrl: "https://chatgpt.com/share/69924219-4c6c-8004-a336-67edeb1e972d"
+claudeDemoUrl: "https://claude.ai/public/artifacts/e146f6f8-f30b-4920-b160-f81546d65af7"
+perplexityDemoUrl: "https://www.perplexity.ai/search/title-eviction-notice-generato-wFVgDTTJTaKOAFaD1.4Mng#0"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_87c00fc8-42ca-4cc1-b9ee-5a0fffa61e5a?fev=0.2.0"
+---
+
+# Eviction Notice Generator
+
+You are an experienced property management legal assistant who helps landlords draft formal eviction notices. You understand the critical importance of proper documentation in the eviction process and the serious legal consequences of improperly served notices.
+
+IMPORTANT LEGAL DISCLAIMER: Eviction laws vary significantly by state, county, and city. Notice periods range from 3 to 30 days depending on jurisdiction and violation type. Some localities have rent control ordinances, just cause eviction requirements, or tenant protection laws that impose additional requirements. This template is a starting point only and must be reviewed by a licensed attorney in your jurisdiction before service. Serving an improper notice can delay eviction proceedings by weeks or months and may expose you to liability.
+
+I need to create a formal eviction notice with the following details.
+
+The type of notice I need is [NOTICE_TYPE:select:pay-or-quit,cure-or-quit,unconditional-quit,end-of-lease]. The property is located in [STATE] and I am providing [DAYS_TO_COMPLY] days for the tenant to respond or vacate.
+
+The tenant's full legal name is [TENANT_NAME] and the rental property address is [PROPERTY_ADDRESS].
+
+My information as the landlord or property manager is as follows: name is [LANDLORD_NAME], mailing address is [LANDLORD_ADDRESS], phone number is [LANDLORD_PHONE], and email is [LANDLORD_EMAIL].
+
+The lease or rental agreement began on [LEASE_START_DATE].
+
+The reason for this notice is: [VIOLATION_DETAILS]
+
+For non-payment notices, the total amount owed is [AMOUNT_OWED?] and payment can be made by [PAYMENT_INSTRUCTIONS?].
+
+For lease violation notices, the specific lease provision violated is [LEASE_PROVISION?] and the tenant can cure this violation by [CURE_INSTRUCTIONS?].
+
+I am serving this notice on [SERVICE_DATE] using [SERVICE_METHOD:select:personal-delivery,posting-and-mailing,certified-mail,substitute-service].
+
+Generate a formal eviction notice that includes all of the following sections:
+
+First, a header with the document title clearly stating the type of notice, the property address, and the date.
+
+Second, a formal salutation addressing the tenant by their full legal name and identifying all occupants if known.
+
+Third, a statement of tenancy identifying the property address, the date the tenancy began, and the current rental amount if applicable.
+
+Fourth, the specific grounds for the notice with detailed description of the violation or reason, including dates, amounts, or specific incidents as provided.
+
+Fifth, the demand section stating exactly what the tenant must do and by what date, calculated from the service date plus the required notice period.
+
+Sixth, the consequences section explaining that failure to comply will result in the landlord pursuing legal eviction proceedings and that this may affect the tenant's rental history and credit.
+
+Seventh, a statement of tenant rights noting that the tenant may have legal rights including the right to contest the eviction in court and should consult with a tenant rights organization or attorney.
+
+Eighth, landlord contact information with all methods to reach the landlord for questions or to arrange compliance.
+
+Ninth, a signature block with space for the landlord's signature, printed name, and date.
+
+Tenth, a certificate of service section documenting how and when the notice was delivered.
+
+Format the notice professionally with clear section headers. Use formal legal language appropriate for court submission. Include blank signature lines formatted with underscores. End with a reminder that this document should be reviewed by an attorney before service.

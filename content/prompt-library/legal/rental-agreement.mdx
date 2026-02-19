@@ -1,0 +1,74 @@
+---
+title: "Rental Agreement Generator"
+description: "Create clear month-to-month rental agreements with essential terms for landlords and tenants including rent, security deposit, notice periods, and termination clauses"
+slug: "legal/rental-agreement"
+tags: ["rental agreement", "month-to-month", "landlord", "tenant", "property rental"]
+author: "AgentDock"
+agentdockUrl: "https://agentdock.ai/prompt-library/legal/rental-agreement"
+chatgptDemoUrl: "https://chatgpt.com/share/699249f5-20c4-8004-b017-e4a622f167a0"
+claudeDemoUrl: "https://claude.ai/public/artifacts/616afbdd-a0da-484b-802b-4c436237a95c"
+perplexityDemoUrl: "https://www.perplexity.ai/search/title-rental-agreement-generat-EHjVYD4RR6iW1JK1OnT0yQ#0"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_f1762c58-5f72-49af-8748-54765e945326?fev=0.2.0"
+---
+
+# Rental Agreement Generator
+
+You are an experienced property management professional who has drafted hundreds of rental agreements for residential properties. You understand the essential terms needed to protect both landlords and tenants while keeping agreements straightforward and easy to understand.
+
+I need you to draft a [RENTAL_TYPE:select:month-to-month residential,short-term furnished,vacation rental,room rental] rental agreement.
+
+The landlord is [LANDLORD_NAME] with contact address at [LANDLORD_ADDRESS] and phone number [LANDLORD_PHONE]. The tenant is [TENANT_NAME] with phone number [TENANT_PHONE].
+
+The rental property is located at [PROPERTY_ADDRESS]. The space being rented is a [PROPERTY_TYPE:select:single-family home,apartment,condominium,townhouse,room in shared housing,studio,duplex unit] that is [FURNISHING:select:unfurnished,partially furnished,fully furnished]. The property includes [BEDROOMS:select:studio,1,2,3,4,5+] bedroom(s) and [BATHROOMS:select:1,1.5,2,2.5,3+] bathroom(s).
+
+The monthly rent amount is [RENT_AMOUNT] due on the [DUE_DATE:select:1st,15th,last day] of each month. Acceptable payment methods are [PAYMENT_METHODS:select:check only,check or electronic transfer,any method including cash,electronic transfer only]. The security deposit required is [SECURITY_DEPOSIT] which equals approximately [DEPOSIT_MONTHS:select:one month,one and a half months,two months] of rent.
+
+The tenancy will begin on [START_DATE]. This rental agreement should comply with applicable laws in [STATE_JURISDICTION]. The property was built [PROPERTY_ERA:select:before 1978 (lead paint disclosure required),in 1978 or later] which determines lead-based paint disclosure requirements.
+
+For termination, either party must provide [NOTICE_DAYS:select:30,60,90] days written notice before the end of any rental period. If rent is not received within [GRACE_PERIOD:select:3,5,7,10] days after the due date, a late fee of [LATE_FEE] will apply.
+
+The following utilities and services will be paid by the landlord: [LANDLORD_UTILITIES]. The following utilities and services will be paid by the tenant: [TENANT_UTILITIES].
+
+Parking arrangements for this property: [PARKING:select:no parking included,one designated parking space included,two parking spaces included,street parking only,garage parking included].
+
+The pet policy is [PET_POLICY:select:no pets allowed,cats only with approval,dogs only with approval,cats and dogs allowed with approval,all pets considered with approval,pets allowed with additional deposit,pets allowed with monthly pet rent]. If pets are permitted, the pet deposit or monthly pet rent is [PET_FEE?].
+
+The maximum number of occupants permitted is [OCCUPANCY_LIMIT:select:tenant only,2 persons,3 persons,4 persons,as listed on application].
+
+Smoking policy: [SMOKING:select:no smoking anywhere on property,smoking permitted outdoors only,smoking permitted in designated areas].
+
+Additional terms, house rules, or special provisions to include: [ADDITIONAL_TERMS?]
+
+Create a complete rental agreement document that includes all of the following sections:
+
+1. Parties section listing full legal names and contact information for both landlord and tenant, clearly identifying each party's role
+
+2. Property section with the complete address and description of the rental unit including any included appliances, fixtures, or furnishings
+
+3. Term section specifying this is a periodic tenancy that automatically renews each month unless terminated with proper notice
+
+4. Rent section stating the monthly amount, due date, accepted payment methods, where payment should be sent or deposited, and consequences of late payment including specific late fees and any grace period
+
+5. Security deposit section with the exact amount, what the deposit covers, conditions under which deductions may be made, and timeline for return after move-out as required by state law
+
+6. Utilities section clearly listing which utilities and services are the responsibility of each party
+
+7. Maintenance and repairs section establishing landlord responsibility for maintaining habitable conditions and major repairs, and tenant responsibility for keeping the premises clean, reporting issues promptly, and handling minor maintenance
+
+8. Right of entry section specifying that the landlord may enter with reasonable notice (typically 24-48 hours) for repairs, inspections, or showings, and immediately in case of emergency
+
+9. Use and occupancy section stating the property will be used only as a private residence, listing authorized occupants, and prohibiting subletting without written consent
+
+10. Rules and restrictions section covering noise policies, parking rules, pet policy, smoking policy, and any property-specific rules
+
+11. Termination section explaining how either party may end the agreement with proper written notice, acceptable methods of delivering notice, and move-out procedures including inspection and key return
+
+12. Required disclosures section including lead-based paint disclosure if the property was built before 1978, and any other disclosures required by state or local law
+
+13. General provisions section covering governing law, severability, modification requirements, and that this agreement constitutes the entire understanding between parties
+
+14. Signature section with spaces for both parties to sign and date, acknowledging they have read and agree to all terms
+
+Write the agreement in clear, straightforward language that anyone can understand without legal training. Use plain English while ensuring all necessary legal protections are included. Format with clear headings and numbered paragraphs for easy reference.
+
+Conclude the document with a prominent notice stating that this rental agreement template is provided for informational and educational purposes. It does not constitute legal advice. Both parties are strongly encouraged to have the agreement reviewed by a licensed attorney familiar with landlord-tenant laws in their jurisdiction before signing.

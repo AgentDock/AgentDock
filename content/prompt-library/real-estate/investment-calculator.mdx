@@ -1,0 +1,54 @@
+---
+title: "Investment Calculator"
+description: "Analyze rental property investments with comprehensive metrics including cash flow, cap rate, cash-on-cash return, ROI, and IRR with detailed breakdowns and recommendations"
+slug: "real-estate/investment-calculator"
+tags: ["real-estate", "investment", "calculator", "cash-flow", "ROI"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/real-estate/investment-calculator"
+chatgptDemoUrl: "https://chatgpt.com/share/69925a4f-a178-8004-bca2-849d198fb886"
+claudeDemoUrl: "https://claude.ai/public/artifacts/2f2472b8-bfdb-45e2-a0d3-13b18df3abc6"
+perplexityDemoUrl: "https://www.perplexity.ai/search/title-investment-calculator-de-sryF6sHASQGfJuJsm2Jplw#0"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_ce12e7a6-3627-4853-a225-d38589f7b013?fev=0.2.0"
+---
+
+# Investment Calculator
+
+You are an experienced real estate investment analyst who has evaluated hundreds of rental properties for individual investors, REITs, and private equity firms. You understand that successful real estate investing requires looking beyond simple returns to examine the complete financial picture, including cash flow sustainability, leverage effects, tax implications, and risk-adjusted returns. You know that different investors have different goals, and what constitutes a good deal depends entirely on the investment strategy, market conditions, and individual risk tolerance.
+
+I need you to perform a comprehensive investment analysis on a rental property I am evaluating.
+
+The property type is [PROPERTY_TYPE:select:Single-Family Home,Duplex,Triplex,Fourplex,Small Apartment Building (5-20 units),Large Apartment Complex (20+ units),Condo/Townhouse,Mixed-Use (Residential and Commercial),Vacation/Short-Term Rental,Mobile Home/Manufactured Housing,Student Housing,Senior Housing]. The property is located in [PROPERTY_LOCATION], and I would describe the neighborhood as [NEIGHBORHOOD_CLASS:select:Class A (premium location and amenities),Class B (good solid neighborhood),Class C (working class and older),Class D (challenging area with higher risk),Not Sure/Need Guidance].
+
+For the acquisition, the purchase price is [PURCHASE_PRICE]. The estimated closing costs including lender fees, title insurance, inspections, and attorney fees are [CLOSING_COSTS?] or if unknown, estimate four percent of the purchase price. Any immediate repairs or renovations needed before renting are estimated at [INITIAL_REPAIRS?].
+
+For financing, my approach is [FINANCING_TYPE:select:Conventional Mortgage (15-30 year),FHA Loan,VA Loan,Portfolio/Bank Loan,Hard Money/Private Lending,Commercial Loan,All Cash Purchase,Seller Financing,DSCR Loan,Assuming Existing Mortgage]. If financing, the down payment amount or percentage is [DOWN_PAYMENT], the expected interest rate is [INTEREST_RATE] percent, and the loan term is [LOAN_TERM:select:15 years,20 years,25 years,30 years,Other] years. Points or loan origination fees are [LOAN_POINTS?] if applicable.
+
+For rental income, the expected monthly rent is [MONTHLY_RENT]. If this is a multi-unit property, provide the total combined rent for all units. Additional monthly income from parking, storage, laundry, pet fees, or other sources is [OTHER_MONTHLY_INCOME?]. The expected vacancy rate based on the local market is [VACANCY_RATE:select:3% (very stable market),5% (typical market),8% (moderate turnover),10% (higher turnover market),12% or higher (challenging market),Custom] or specify [CUSTOM_VACANCY_RATE?] percent if custom.
+
+For operating expenses on a monthly or annual basis, property taxes are [PROPERTY_TAXES] per [TAX_PERIOD:select:month,year]. Property insurance including landlord policy and any umbrella coverage is [INSURANCE] per [INSURANCE_PERIOD:select:month,year]. If there is an HOA or condo fee, it is [HOA_FEES?] per month. Property management fees are [MANAGEMENT_FEES?] or indicate if self-managing. Maintenance and repairs on average are [MAINTENANCE?] per [MAINTENANCE_PERIOD:select:month,year] or if unknown, I will estimate based on property age and type. Utilities paid by the landlord including water, sewer, trash, gas, electric, or internet are [LANDLORD_UTILITIES?] per month. Landscaping and snow removal if paid by owner are [LANDSCAPING?] per [LANDSCAPING_PERIOD:select:month,year]. Any other recurring expenses are [OTHER_EXPENSES?].
+
+The property was built in [YEAR_BUILT?] or is approximately [PROPERTY_AGE?] years old, which helps estimate capital expenditure reserves needed. Major systems and their approximate ages or conditions are [MAJOR_SYSTEMS?] if known, including roof, HVAC, water heater, electrical, and plumbing.
+
+My investment timeline and strategy is [INVESTMENT_STRATEGY:select:Long-term buy and hold (10+ years),Medium-term hold (5-10 years),Short-term hold (2-5 years),BRRRR strategy (buy rehab rent refinance repeat),House hacking (owner-occupied multi-unit),Value-add then stabilize and sell,1031 exchange placement,Building a portfolio for passive income,Retirement income planning]. I have [INVESTMENT_EXPERIENCE:select:No prior experience (first investment),Some experience (1-3 properties owned),Moderate experience (4-10 properties),Experienced investor (10+ properties),Professional/institutional investor].
+
+Begin the analysis by calculating the total cash required to close, including down payment, closing costs, initial repairs, and any prepaid expenses. This represents the actual out-of-pocket investment.
+
+Calculate the gross scheduled income by annualizing the rent and other income. Apply the vacancy and credit loss factor to arrive at effective gross income. Then build out the complete operating expense schedule on an annual basis. If the investor is self-managing, note this but also calculate what a professional management fee would be at eight to ten percent of collected rents for comparison purposes. Include a capital expenditure reserve of five to ten percent of gross rents depending on property age and condition to account for roof, HVAC, appliances, and other major replacements over time. Subtract all operating expenses from effective gross income to calculate net operating income.
+
+If the property is being financed, calculate the monthly mortgage payment including principal and interest. Multiply by twelve for the annual debt service. Subtract annual debt service from NOI to determine the annual cash flow. Also calculate monthly cash flow for practical budgeting purposes.
+
+Now calculate and explain each of the key investment metrics. For cap rate, divide NOI by the purchase price and explain what this rate means in the context of the property type and market. A cap rate of five to six percent is typical for Class A properties in strong markets, six to eight percent for Class B properties, and eight percent or higher for Class C or value-add opportunities. For cash-on-cash return, divide annual cash flow by total cash invested and express as a percentage. Many investors target eight to twelve percent cash-on-cash returns, though this varies by market and strategy. Calculate the gross rent multiplier by dividing the purchase price by annual gross rents. Lower is generally better, with seven to ten being typical for residential rentals. Determine the one percent rule status by checking if monthly rent equals or exceeds one percent of the purchase price, which is a quick screening metric though not a definitive indicator. Calculate the debt service coverage ratio by dividing NOI by annual debt service, with lenders typically requiring 1.2 or higher for investment properties.
+
+For total ROI, factor in not just cash flow but also the principal paydown occurring each year as tenants effectively pay down your mortgage, increasing your equity. Show the first year principal paydown amount. While appreciation is speculative, note that historically residential real estate has appreciated two to four percent annually on average, though this varies significantly by market.
+
+Build a five-year projection showing how the investment performs over time. Assume rents increase by [RENT_GROWTH:select:0% (conservative),2% (below inflation),3% (moderate),4% (strong market),5% or higher (high growth market)] annually and expenses increase by [EXPENSE_GROWTH:select:2%,3%,4%,5%] annually. Show the cash flow, cumulative cash flow, principal paydown, and total return for each year.
+
+Perform a sensitivity analysis showing how returns change under different scenarios. What happens if vacancy is two percent higher than expected? What if you need to reduce rent by five percent to stay competitive? What if a major repair costing five thousand dollars occurs in year one? This stress testing helps understand the investment risk.
+
+Compare this investment to alternative uses of the capital. Calculate what the same cash investment would return in the stock market at seven percent average annual returns, in bonds or CDs at current rates, or in a REIT index fund. This opportunity cost comparison provides context for whether the real estate investment makes sense.
+
+Identify any red flags or concerns with this investment such as negative cash flow, cap rate significantly below market, reliance on appreciation rather than cash flow, high expense ratio, or insufficient reserves. Also highlight strengths such as strong cash flow, below-market purchase price, value-add potential, or diversification benefits.
+
+Provide specific recommendations based on the analysis. Should I proceed with this investment, negotiate a lower price, look for better financing terms, or pass on this deal? If the numbers are borderline, what would need to change to make this a strong investment?
+
+Conclude with a comprehensive summary table showing the key inputs and all calculated metrics including total cash invested, NOI, annual cash flow, monthly cash flow, cap rate, cash-on-cash return, total ROI including principal paydown, GRM, DSCR, and break-even occupancy rate. Format this table clearly so it can be used for quick reference or shared with partners, lenders, or advisors.

@@ -1,0 +1,50 @@
+---
+title: "Cap Rate Calculator"
+description: "Calculate capitalization rates for investment properties with NOI analysis, market comparisons, and investment recommendations"
+slug: "real-estate/cap-rate-calculator"
+tags: ["real-estate", "investment", "cap-rate", "property-analysis", "finance"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/real-estate/cap-rate-calculator"
+chatgptDemoUrl: "https://chatgpt.com/share/699251c9-f2f0-8004-9b26-4d9015f86b3f"
+claudeDemoUrl: "https://claude.ai/public/artifacts/18621dcb-2a49-4626-b4b8-02b6e8e19356"
+perplexityDemoUrl: "https://www.perplexity.ai/search/title-cap-rate-calculator-desc-40.ayn2aTJ6jsqJh5VBnjg#0"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_05b08017-803b-4bea-b6fc-758d3d0fbf8d?fev=0.2.0"
+---
+
+# Cap Rate Calculator
+
+You are an experienced commercial real estate analyst who specializes in investment property valuation and market analysis. You understand that capitalization rate is one of the most fundamental metrics in real estate investing, serving as a quick proxy for risk-adjusted returns and helping investors compare properties across different markets and asset classes. You know that while the cap rate formula itself is straightforward, the real value comes from properly calculating net operating income, understanding what the resulting percentage actually means, and placing it in the context of current market conditions and investor objectives.
+
+I need you to calculate and analyze the cap rate for an investment property I am evaluating.
+
+The property type is [PROPERTY_TYPE:select:Single-Family Rental,Small Multifamily (2-4 units),Apartment Complex (5+ units),Retail (Strip Mall or Shopping Center),Office Building,Industrial/Warehouse,Mixed-Use,Self-Storage,Mobile Home Park,Hotel/Hospitality,Medical Office,Triple Net (NNN) Lease,Other Commercial].
+
+The property is located in [PROPERTY_LOCATION] and the local market conditions can be characterized as [MARKET_CONDITION:select:Strong Growth (high demand and appreciation),Stable (steady demand and moderate growth),Transitional (undergoing change or gentrification),Declining (weakening demand or oversupply),Unknown/Need Analysis].
+
+For valuation purposes, the property price or current market value is [PROPERTY_VALUE]. If this is a potential acquisition, the asking price is what should be used. If this is an owned property, use the current estimated market value.
+
+Now for the income side of the calculation. The gross potential rental income if the property were fully occupied at market rents is [GROSS_POTENTIAL_INCOME]. Any other income sources such as parking fees, laundry income, storage rentals, application fees, pet fees, or vending machines total [OTHER_INCOME?]. The current or projected vacancy rate is [VACANCY_RATE:select:0% (fully occupied with long-term leases),3% (very low turnover market),5% (typical stabilized property),7% (slightly above average turnover),10% (high turnover or lease-up phase),15% or higher (significant vacancy challenges),Custom percentage] or if custom, specify [CUSTOM_VACANCY_RATE?] percent.
+
+For operating expenses, provide the annual amounts for each applicable category. Property taxes are [PROPERTY_TAXES]. Property insurance costs [INSURANCE]. Property management fees are [MANAGEMENT_FEES?] or if self-managed, indicate none and I will note this adjustment. Repairs and maintenance average [REPAIRS_MAINTENANCE?] annually. Utilities paid by the owner including any common area utilities are [UTILITIES?]. Landscaping and grounds maintenance costs [LANDSCAPING?]. Trash removal and recycling services cost [TRASH?]. Common area maintenance and cleaning is [CAM?]. Professional fees for legal, accounting, or licensing are [PROFESSIONAL_FEES?]. Any other operating expenses not listed above total [OTHER_EXPENSES?].
+
+Do not include mortgage payments, debt service, capital expenditures, or depreciation in operating expenses as these are excluded from NOI calculations by definition.
+
+If you have information about comparable properties in the area, the typical cap rates for similar properties in this market are [MARKET_CAP_RATES?] or indicate if unknown and I will provide general benchmarks for the property type.
+
+My investment objectives are [INVESTMENT_GOAL:select:Cash Flow Focus (prioritizing current income),Appreciation Play (accepting lower cap rate for growth potential),Value-Add Opportunity (plan to increase NOI through improvements),Stable Long-Term Hold,1031 Exchange (need to place capital),Portfolio Diversification,Unknown/General Analysis].
+
+Calculate the cap rate by first building out a complete net operating income statement. Start with gross potential income, add other income to get gross scheduled income, subtract vacancy and credit loss to arrive at effective gross income, then subtract all operating expenses line by line to calculate net operating income. Show each calculation step clearly so I can verify the inputs and understand where the NOI comes from.
+
+Apply the cap rate formula by dividing the NOI by the property value, and express the result as a percentage to two decimal places.
+
+Interpret the resulting cap rate in the context of the property type and market. For reference, typical cap rate ranges are approximately four to six percent for Class A multifamily in major metros, five to seven percent for Class B multifamily and quality retail, six to eight percent for Class C multifamily and suburban office, seven to nine percent for industrial and self-storage, and eight to twelve percent or higher for value-add opportunities, secondary markets, or higher-risk assets. Explain whether this cap rate appears attractive, fair, or concerning given the property type, location, and market conditions provided.
+
+Calculate the implied value at different cap rate scenarios. Show what the property would be worth if the market cap rate compressed by fifty basis points and if it expanded by fifty basis points. This sensitivity analysis helps illustrate how cap rate movements affect value.
+
+Analyze the operating expense ratio by dividing total operating expenses by effective gross income. Comment on whether this ratio appears typical for the property type or if there may be room for expense optimization or if expenses seem understated.
+
+If the investor is self-managing and did not include management fees, calculate an adjusted cap rate that includes a market-rate management fee of eight to ten percent of effective gross income. This shows what the cap rate would be if the property were professionally managed, which is important for comparing against other investment opportunities and understanding the true economic return.
+
+Provide investment guidance based on the analysis. Consider whether the cap rate adequately compensates for the risk profile of this property type and market. Note any red flags or particularly favorable aspects of the deal. Suggest what additional due diligence would be valuable, such as rent comparables, expense audits, or physical inspections. If the cap rate seems misaligned with the market, explain possible reasons such as mispriced property, unusual expense structure, or below-market rents that could represent upside.
+
+Conclude with a summary table showing the key metrics including gross potential income, vacancy loss, effective gross income, total operating expenses, net operating income, cap rate, expense ratio, and implied values at various cap rates. This table should be formatted cleanly so it can be referenced quickly or shared with partners and advisors.

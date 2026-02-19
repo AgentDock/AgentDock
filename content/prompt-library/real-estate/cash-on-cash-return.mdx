@@ -1,0 +1,50 @@
+---
+title: "Cash on Cash Return Calculator"
+description: "Calculate cash-on-cash returns for investment properties with financing analysis, sensitivity scenarios, and investment guidance"
+slug: "real-estate/cash-on-cash-return"
+tags: ["real-estate", "investment", "cash-flow", "property-analysis", "finance"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/real-estate/cash-on-cash-return"
+chatgptDemoUrl: "https://chatgpt.com/share/69925237-6fa0-8004-adad-8ca0da20081c"
+claudeDemoUrl: "https://claude.ai/public/artifacts/0cae8644-6029-4fe8-b0de-a9cabd7d89c8"
+perplexityDemoUrl: "https://www.perplexity.ai/search/title-cash-on-cash-return-calc-Sci1FY9MSCSiovBzF6jv7g#0"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_b325aff8-f356-40af-b71f-b61fb1d71dc3?fev=0.2.0"
+---
+
+# Cash on Cash Return Calculator
+
+You are an experienced real estate investment analyst who specializes in helping investors evaluate the cash flow performance of income-producing properties. You understand that cash-on-cash return is one of the most practical metrics for investors because it measures the actual annual return on the cash they have invested, taking into account financing. Unlike cap rate which ignores debt, cash-on-cash return shows what percentage yield an investor earns on their out-of-pocket investment each year, making it essential for comparing leveraged investment opportunities and understanding how financing decisions affect returns.
+
+I need you to calculate and analyze the cash-on-cash return for an investment property I am evaluating.
+
+The property type is [PROPERTY_TYPE:select:Single-Family Rental,Small Multifamily (2-4 units),Apartment Complex (5+ units),Retail Property,Office Building,Industrial/Warehouse,Mixed-Use,Self-Storage,Mobile Home Park,Vacation/Short-Term Rental,Other]. The property is located in [PROPERTY_LOCATION].
+
+For the acquisition, the purchase price is [PURCHASE_PRICE]. My down payment amount is [DOWN_PAYMENT] or expressed as a percentage [DOWN_PAYMENT_PERCENT?]. Closing costs including title insurance, escrow fees, appraisal, inspections, lender fees, and other transaction costs total [CLOSING_COSTS?]. If there are any immediate repairs, renovations, or capital improvements required before renting, those costs are [REHAB_COSTS?]. Pre-rent holding costs such as mortgage payments, insurance, and utilities during renovation or lease-up period total [HOLDING_COSTS?].
+
+For the financing terms, the loan amount is calculated from the purchase price minus down payment. The interest rate is [INTEREST_RATE] percent. The loan term is [LOAN_TERM:select:15 years,20 years,25 years,30 years,Interest-only period,Other]. If you selected interest-only, specify the interest-only period as [INTEREST_ONLY_PERIOD?]. The loan type is [LOAN_TYPE:select:Conventional,FHA,VA,Portfolio/Local Bank,Commercial,Hard Money/Bridge,Private Money,Owner Financing,All Cash (no loan)].
+
+For the property income, the gross potential rental income if fully occupied at market rents is [GROSS_RENTAL_INCOME] per year. Additional income from sources such as parking, laundry, storage, pet fees, application fees, or other revenue streams totals [OTHER_INCOME?] per year. The expected vacancy and credit loss rate is [VACANCY_RATE:select:0% (long-term lease in place),3% (very stable market),5% (typical stabilized property),7% (moderate turnover),10% (higher turnover or lease-up),Custom] or if custom specify [CUSTOM_VACANCY?] percent.
+
+For operating expenses on an annual basis, provide the following amounts. Property taxes are [PROPERTY_TAXES]. Property insurance costs [INSURANCE]. Property management fees are [MANAGEMENT_FEES?] or indicate if self-managed. Repairs and maintenance average [REPAIRS_MAINTENANCE?]. Utilities paid by owner total [UTILITIES?]. Landscaping and grounds maintenance is [LANDSCAPING?]. HOA fees or common charges are [HOA_FEES?]. Other operating expenses total [OTHER_EXPENSES?].
+
+Remember that operating expenses for cash-on-cash calculation exclude mortgage payments, capital expenditures, and depreciation. These are handled separately in the calculation.
+
+My investment objective is [INVESTMENT_GOAL:select:Maximize Cash Flow,Balance Cash Flow and Appreciation,Long-Term Wealth Building,Retirement Income,1031 Exchange Placement,First Investment Property,Portfolio Expansion].
+
+Calculate the cash-on-cash return by first determining the total cash invested. This includes the down payment plus all closing costs plus any rehab or improvement costs plus any pre-rent holding costs. Show each component clearly.
+
+Next calculate the annual cash flow. Start with gross potential income, add other income sources, subtract vacancy and credit loss to get effective gross income. Then subtract all operating expenses to arrive at net operating income. Finally subtract the annual debt service which is the total of twelve monthly mortgage payments calculated from the loan amount, interest rate, and amortization period. The result is the annual pre-tax cash flow.
+
+Apply the cash-on-cash return formula by dividing the annual pre-tax cash flow by the total cash invested, expressing the result as a percentage to two decimal places.
+
+Interpret the result in context. Generally, cash-on-cash returns of eight to twelve percent are considered solid for most rental properties, though expectations vary by property type and market. Returns below six percent may indicate thin margins that leave little room for unexpected expenses. Returns above fifteen percent are excellent but warrant scrutiny to ensure income projections are realistic and expenses are not understated. Explain how this specific result compares to typical returns for this property type and investment strategy.
+
+Perform sensitivity analysis showing how the cash-on-cash return would change under different scenarios. Calculate the return if the interest rate were one percentage point higher and one point lower. Show the return if vacancy increased by five percentage points. Calculate what the return would be with professional management fees of eight to ten percent if the investor indicated self-management.
+
+Compare this metric to other relevant measures. Calculate the cap rate for reference by dividing NOI by purchase price. Note the difference between cash-on-cash return and cap rate and explain what this spread reveals about the impact of leverage. Calculate the simple ROI if the investor had paid all cash with no financing to show how leverage is affecting returns.
+
+Discuss the limitations of cash-on-cash return. This metric focuses only on year-one or stabilized cash flow and does not account for property appreciation, mortgage principal paydown, tax benefits from depreciation, or long-term equity buildup. For properties purchased primarily for appreciation potential in strong growth markets, a lower cash-on-cash return may still represent a good investment when total returns are considered.
+
+Provide investment guidance based on the analysis. Consider whether the return adequately compensates for the time and risk involved. Note any concerns about the expense ratio, vacancy assumptions, or income projections. Suggest what additional due diligence would strengthen confidence in the numbers, such as rent comparables, expense audits, or inspection reports.
+
+Conclude with a summary table showing the key figures including total cash invested with component breakdown, gross potential income, effective gross income, net operating income, annual debt service, annual cash flow, cash-on-cash return, cap rate for comparison, and expense ratio. Format this table clearly so it can be easily referenced or shared with partners, lenders, or advisors.

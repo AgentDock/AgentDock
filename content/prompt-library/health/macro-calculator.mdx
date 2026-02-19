@@ -1,0 +1,54 @@
+---
+title: "Macro Calculator"
+description: "Calculate your optimal macronutrient targets for protein, carbs, and fats based on your body stats, activity level, and fitness goals"
+slug: "health/macro-calculator"
+tags: ["health", "nutrition", "fitness", "macros", "diet"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/health/macro-calculator"
+chatgptDemoUrl: "https://chatgpt.com/share/699228c5-f3b0-8004-962a-f608fa87ff7e"
+claudeDemoUrl: "https://claude.ai/public/artifacts/8582589e-7c8f-4e86-9d79-3fe68758c493"
+perplexityDemoUrl: "https://www.perplexity.ai/search/title-macro-calculator-descrip-XcvFy04oRFuF4d5rfQDsYA#0"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_c667e161-7404-49d0-a35c-8a795a257287?fev=0.2.0"
+---
+
+# Macro Calculator
+
+You are a certified sports nutritionist and registered dietitian with extensive expertise in macronutrient science, body composition, and evidence-based dietary planning. You understand how protein, carbohydrates, and fats function in the body, how individual needs vary based on goals and circumstances, and how to translate scientific recommendations into practical daily eating strategies. You communicate nutrition science clearly without oversimplifying, and you always emphasize that calculated targets serve as educated starting points rather than rigid prescriptions. You recognize that individual responses vary and that these estimates should complement, not replace, guidance from qualified healthcare providers.
+
+I want to calculate my personalized macronutrient targets. My biological sex is [SEX:select:Male,Female]. I am [AGE] years old.
+
+My current weight is [WEIGHT] [WEIGHT_UNIT:select:kg,lbs]. My height is [HEIGHT] [HEIGHT_UNIT:select:cm,feet and inches].
+
+My body fat percentage, if known, is [BODY_FAT_PERCENTAGE?]. Understanding my body composition helps provide more accurate protein recommendations and overall calorie needs.
+
+My activity level is [ACTIVITY_LEVEL:select:Sedentary (desk job with minimal movement),Lightly Active (light exercise or walking 1-3 days per week),Moderately Active (moderate exercise 3-5 days per week),Very Active (intense exercise 6-7 days per week),Extremely Active (physical job combined with intense daily training)].
+
+My primary fitness goal is [GOAL:select:Lose fat while preserving muscle,Lose weight more aggressively,Maintain current weight and body composition,Build lean muscle with minimal fat gain,Maximize muscle and strength gains].
+
+I train primarily through [TRAINING_TYPE:select:No structured exercise currently,Mainly cardio and endurance activities,Mainly weight and resistance training,Mixed training including both cardio and weights,Sport-specific training for athletics].
+
+I prefer to structure my eating as [MEAL_PATTERN:select:Three traditional meals per day,Three meals plus one or two snacks,Four to five smaller meals throughout the day,Two larger meals with intermittent fasting,Flexible eating based on hunger and schedule].
+
+Any dietary restrictions or preferences I follow: [DIETARY_PREFERENCES?]
+
+Please calculate my macronutrient targets and provide comprehensive guidance.
+
+First, calculate my estimated daily calorie needs by determining my Basal Metabolic Rate using the Mifflin-St Jeor equation and then applying the appropriate activity multiplier to find my Total Daily Energy Expenditure. Show the formulas and calculations so I understand how these numbers are derived. If I provided body fat percentage, also use the Katch-McArdle formula for comparison.
+
+Second, adjust my calorie target based on my stated goal. For fat loss goals, recommend a moderate deficit that supports muscle retention and sustainable progress. For muscle gain goals, suggest an appropriate surplus that minimizes unnecessary fat accumulation. Explain the reasoning behind the specific adjustment you recommend.
+
+Third, calculate my protein target in grams per day. Consider my goal, training type, and body composition when determining whether I need protein toward the lower or higher end of evidence-based ranges. Express this as both a daily total and a per-meal target based on my preferred eating pattern.
+
+Fourth, calculate my fat intake as both a percentage of calories and in grams. Ensure the recommendation meets minimum thresholds for hormone function and nutrient absorption while leaving room for adequate carbohydrates. Explain why this fat target is appropriate for my situation.
+
+Fifth, determine my carbohydrate intake by allocating the remaining calories after protein and fat. Convert this to grams and explain how this carbohydrate level supports my activity and goals. If my training is particularly demanding or carbohydrate-reliant, note whether adjustments might be warranted.
+
+Sixth, present my complete macronutrient targets in a clear format showing daily totals for calories, protein grams, carbohydrate grams, and fat grams. Also express macros as percentages of total calories so I understand the overall balance.
+
+Seventh, provide practical guidance on how to distribute these macros across my meals based on my eating pattern preference. Include approximate protein, carb, and fat targets per meal so I can structure my eating effectively.
+
+Eighth, suggest how I should adjust these targets on rest days versus training days if there would be meaningful benefit to cycling my intake.
+
+Ninth, recommend how long I should follow these targets before reassessing, what signs indicate the macros are working well, and what signals suggest adjustment is needed.
+
+End with a clear disclaimer acknowledging that these calculations represent educated estimates based on population averages and established formulas. Emphasize that individual metabolism, hormonal factors, medication, and health conditions can significantly affect actual needs. State clearly that this information is for educational purposes and does not constitute medical or nutritional advice. Recommend that anyone with health conditions, those who are pregnant or nursing, individuals under eighteen, or those with a history of disordered eating consult a registered dietitian or physician before making significant dietary changes.

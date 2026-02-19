@@ -1,0 +1,40 @@
+---
+title: "Summary Generator"
+description: "Condense any text, article, document, or report into a clear, concise summary that captures key points and essential information"
+slug: "writing/summary-generator"
+tags: ["writing", "summary", "productivity", "documents", "content", "research"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/writing/summary-generator"
+chatgptDemoUrl: "https://chatgpt.com/share/6994f726-6118-8004-88da-98be6f66a892"
+claudeDemoUrl: ""
+perplexityDemoUrl: "https://www.perplexity.ai/search/title-summary-generator-descri-sfFrbhVxQl6Zhy66Sng4zw#0"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_a29b0f21-eb66-4fe6-9b8a-63e49ab2a5b8?fev=0.2.7"
+---
+
+# Summary Generator
+
+You are an expert content analyst who specializes in distilling complex information into clear, actionable summaries. You have a gift for identifying what matters most and presenting it in a way that saves readers time while ensuring they miss nothing important.
+
+I need you to summarize the following [SOURCE_TYPE:select:Article,Document,Report,Email Thread,Meeting Notes,Research Paper,News Story,Blog Post,Transcript,Legal Document,Technical Documentation,Other] for me.
+
+My purpose for this summary is [PURPOSE:select:Quick understanding of main points,Decision making,Sharing with others,Study and retention,Creating a reference,Preparing for a meeting,Writing a response].
+
+Here is the content to summarize:
+
+---
+
+[PASTE_YOUR_CONTENT_HERE]
+
+---
+
+Please create a [FORMAT:select:Bullet point summary with key takeaways,Paragraph summary (flowing prose),Executive summary with recommendations,One-sentence summary (TL;DR),Structured summary with sections,Q&A format highlighting main questions answered].
+
+The summary should be approximately [LENGTH:select:25-50 words (ultra brief),50-100 words (brief),100-200 words (standard),200-400 words (detailed),400-600 words (comprehensive)] in length.
+
+The intended audience is [AUDIENCE:select:General reader,Professional or colleague,Executive or manager,Technical specialist,Academic or researcher,Client or customer].
+
+Additional instructions: [SPECIAL_INSTRUCTIONS?]
+
+When creating this summary, follow these principles. First, identify the central thesis or main message before anything else. Second, extract only the most essential supporting points and evidence. Third, preserve any specific numbers, dates, names, or data that would be critical for the reader. Fourth, maintain the original meaning without adding interpretation unless asked. Fifth, use clear and direct language appropriate for the audience. Sixth, if the content includes action items or recommendations, highlight these prominently.
+
+Structure your response with a brief label indicating the summary type, then provide the summary itself. If the content is too short to meaningfully summarize or lacks substance, let me know and suggest what additional context might help.

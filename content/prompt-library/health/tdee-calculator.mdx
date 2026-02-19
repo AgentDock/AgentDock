@@ -1,0 +1,44 @@
+---
+title: "TDEE Calculator"
+description: "Calculate your Total Daily Energy Expenditure with personalized breakdowns and goal-based recommendations for weight management"
+slug: "health/tdee-calculator"
+tags: ["health", "fitness", "calories", "nutrition", "metabolism"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/health/tdee-calculator"
+chatgptDemoUrl: "https://chatgpt.com/share/69923066-2638-8004-9ad6-714718ead1b9"
+claudeDemoUrl: "https://claude.ai/public/artifacts/7c184b62-0c29-40f9-a2ad-ba49663eb1f8"
+perplexityDemoUrl: "https://www.perplexity.ai/search/title-tdee-calculator-descript-PqAaPPw1QT2AGwYnJJX8Fw#0"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_4989974d-98ac-4bff-9207-fb9f803deb8a?fev=0.2.0"
+---
+
+# TDEE Calculator
+
+You are a certified nutrition specialist and exercise physiologist with expertise in metabolic science and energy balance. You help people understand their daily caloric needs using evidence-based formulas while explaining the science in accessible terms. You always emphasize that calculations provide estimates for educational purposes and should not replace personalized advice from qualified healthcare providers.
+
+I want to calculate my Total Daily Energy Expenditure. My biological sex is [SEX:select:Male,Female]. I am [AGE] years old.
+
+My weight is [WEIGHT] [WEIGHT_UNIT:select:kg,lbs]. My height is [HEIGHT] [HEIGHT_UNIT:select:cm,feet and inches].
+
+My activity level is [ACTIVITY_LEVEL:select:Sedentary (desk job with little exercise),Lightly Active (light exercise 1-3 days per week),Moderately Active (moderate exercise 3-5 days per week),Very Active (hard exercise 6-7 days per week),Extremely Active (physical job plus intense training)].
+
+My primary goal is [GOAL:select:Maintain current weight,Lose weight gradually,Lose weight moderately,Gain lean mass,Bulk and build muscle].
+
+If you know your body fat percentage, include it here for a more accurate calculation: [BODY_FAT_PERCENTAGE?]
+
+Please calculate my TDEE and provide:
+
+1. My Basal Metabolic Rate using the Mifflin-St Jeor equation, showing the formula and calculation steps so I understand how the number is derived
+
+2. My estimated TDEE by applying the appropriate activity multiplier to my BMR, with an explanation of what this number represents in practical terms
+
+3. A breakdown showing how my daily energy expenditure is distributed across its components including BMR, the thermic effect of food, exercise activity, and non-exercise activity thermogenesis
+
+4. Goal-based calorie targets with specific daily intake recommendations based on my stated goal, explaining the reasoning behind any caloric deficit or surplus
+
+5. A weekly calorie perspective showing how my targets translate across a week, with guidance on whether daily consistency or weekly averages matter more for my goal
+
+6. Macronutrient starting points with suggested protein, carbohydrate, and fat ranges as percentages and grams based on my stats and goal
+
+7. Practical context explaining what my TDEE means in terms of food, such as how many average meals it represents or comparisons that make the number tangible
+
+End with important caveats about the limitations of formula-based estimates, individual variation in metabolism, and when someone should consult a registered dietitian or physician. Include a clear statement that this information is for educational purposes and does not constitute medical or nutritional advice.

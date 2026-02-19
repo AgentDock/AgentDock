@@ -1,0 +1,44 @@
+---
+title: "Purchase Agreement Generator"
+description: "Generate professional purchase agreements for buying or selling goods, assets, or equipment with customizable terms, warranties, and payment conditions"
+slug: "sales/purchase-agreement"
+tags: ["sales", "contract", "purchase", "agreement", "legal"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/sales/purchase-agreement"
+chatgptDemoUrl: "https://chatgpt.com/share/6993aa05-4148-8004-8a6a-d71559ef79bc"
+claudeDemoUrl: "https://claude.ai/public/artifacts/4bb7abf4-88d4-47bc-8bfc-5f6291e6ad7d"
+perplexityDemoUrl: "https://www.perplexity.ai/search/title-purchase-agreement-gener-37Ph3gVcSZ2i2c2KpnW9sQ#0"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_ec288a41-9441-4000-bce1-0105cce8a0d1?fev=0.2.7"
+---
+
+# Purchase Agreement Generator
+
+You are an experienced commercial attorney who specializes in drafting purchase agreements for business transactions. You understand that a well-crafted purchase agreement protects both buyer and seller by clearly defining the terms of the sale, establishing expectations for delivery and payment, and providing remedies if problems arise. Your agreements are comprehensive yet accessible, using clear language that parties can understand while maintaining legal enforceability.
+
+I need you to draft a purchase agreement for a [TRANSACTION_TYPE:select:Sale of Goods,Sale of Equipment,Asset Purchase,Inventory Purchase,Vehicle Sale,Business Asset Sale,Wholesale Purchase,Custom Manufacturing Order] transaction.
+
+The seller is [SELLER_NAME], a [SELLER_ENTITY_TYPE:select:Individual,Sole Proprietorship,LLC,Corporation,Partnership] located at [SELLER_ADDRESS]. The buyer is [BUYER_NAME], a [BUYER_ENTITY_TYPE:select:Individual,Sole Proprietorship,LLC,Corporation,Partnership] located at [BUYER_ADDRESS].
+
+The items being purchased are described as follows: [ITEM_DESCRIPTION]
+
+The quantity is [QUANTITY] and the condition of the items is [CONDITION:select:New,Like New,Refurbished,Used in Good Condition,Used in Fair Condition,As-Is Where-Is].
+
+The total purchase price is $[PURCHASE_PRICE:number:100-50000000]. The payment terms are [PAYMENT_TERMS:select:Full payment at signing,Full payment at delivery,50% deposit with balance at delivery,Net 15 from delivery,Net 30 from delivery,Payment installments over time,Letter of Credit,Escrow arrangement]. If a deposit is required, the deposit amount is $[DEPOSIT_AMOUNT?] due within [DEPOSIT_DUE_DAYS:number:1-30]? days of signing.
+
+Delivery arrangements are [DELIVERY_TERMS:select:Buyer pickup at seller location,Seller delivery to buyer location,Shipping via common carrier,FOB Origin (buyer assumes risk at shipment),FOB Destination (seller assumes risk until delivery),Drop shipment to third party]. The expected delivery or pickup date is [DELIVERY_DATE]. Shipping and handling costs are the responsibility of the [SHIPPING_RESPONSIBILITY:select:Buyer,Seller,Split equally between parties].
+
+For warranties, the seller will provide [WARRANTY_TYPE:select:No warranty - sold as-is,Limited warranty for specified period,Full manufacturer warranty,Seller warranty on condition and title only,Extended warranty with specified coverage]. If a warranty period applies, the warranty duration is [WARRANTY_PERIOD?] and covers [WARRANTY_COVERAGE?].
+
+The inspection and acceptance terms are [INSPECTION_TERMS:select:Buyer accepts upon signing with no inspection,Buyer inspection at pickup or delivery with immediate acceptance,Buyer has specified days to inspect and reject,Third party inspection before closing,Inspection waived by buyer]. If an inspection period applies, the buyer has [INSPECTION_DAYS:number:1-30]? days to complete inspection and provide notice of any defects.
+
+Risk of loss transfers from seller to buyer [RISK_TRANSFER:select:Upon signing this agreement,Upon delivery to buyer,Upon buyer inspection and acceptance,When items leave seller premises,According to shipping terms specified above].
+
+The governing law for this agreement is the state of [GOVERNING_LAW_STATE]. Disputes will be resolved through [DISPUTE_RESOLUTION:select:Negotiation then litigation in state courts,Binding arbitration,Mediation then binding arbitration,Small claims court if under threshold otherwise litigation].
+
+Additional terms, conditions, or special provisions to include are: [ADDITIONAL_TERMS?]
+
+Draft a complete purchase agreement with these sections organized in logical order. Begin with a heading identifying the agreement and effective date, followed by the recitals establishing the purpose of the transaction. Include a detailed description of the items being sold with any serial numbers, model numbers, or identifying information the buyer should provide. Set forth the purchase price and all payment terms including deposit requirements, payment schedule, and accepted payment methods. Address delivery terms including location, timing, packaging requirements, and responsibility for shipping costs and insurance. Include the warranty provisions with clear language about what is covered, the duration, and the process for making warranty claims. Specify when risk of loss transfers and who bears responsibility for insurance during the transaction period. Address inspection and acceptance procedures including the timeline and process for rejecting non-conforming goods. Include representations and warranties from both parties regarding their authority to enter the agreement and the condition of the items. Add default and remedies provisions explaining what happens if either party fails to perform. Include standard boilerplate provisions such as entire agreement, amendments, notices, severability, and assignment restrictions. End with signature blocks for both parties including spaces for printed names, signatures, titles if applicable, and dates.
+
+Use clear section numbering and define key terms where helpful. Write in plain language that business people can understand while maintaining the precision needed for enforceability. Format the document professionally with appropriate headings and spacing.
+
+Important: This AI-generated agreement is provided as a starting point and educational tool only. It does not constitute legal advice. Laws governing sales of goods vary by jurisdiction and may be affected by the Uniform Commercial Code, state consumer protection laws, or industry-specific regulations. Before signing or relying on any purchase agreement, have it reviewed by a qualified attorney licensed in your jurisdiction who can evaluate your specific transaction and ensure the document complies with applicable laws and adequately protects your interests. Complex or high-value transactions may require additional provisions, disclosures, or documentation not addressed in this template.

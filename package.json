@@ -90,7 +90,7 @@
     "fuse.js": "^7.1.0",
     "geist": "^1.4.2",
     "input-otp": "^1.4.2",
-    "lodash-es": "^4.17.21",
+    "lodash-es": "^4.17.23",
     "lucide-react": "^0.344.0",
     "mermaid": "^11.6.0",
     "nanoid": "^5.1.5",

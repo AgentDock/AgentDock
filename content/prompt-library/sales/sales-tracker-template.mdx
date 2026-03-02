@@ -1,0 +1,32 @@
+---
+title: "Sales Tracker Template"
+description: "Generate a customized sales tracker with deal tracking fields, activity logs, rep performance dashboards, and goal-versus-quota views to manage daily pipeline operations"
+slug: "sales/sales-tracker-template"
+tags: ["sales tracker template", "sales activity tracking", "pipeline management", "sales dashboard", "deal tracking"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/sales/sales-tracker-template"
+chatgptDemoUrl: "https://chatgpt.com/share/69a5fb8a-d9a0-800a-a853-ffbd0c5cee66"
+claudeDemoUrl: "https://claude.ai/share/27421e4f-68d9-4ee5-908c-5ae1951c61df"
+perplexityDemoUrl: "https://www.perplexity.ai/search/sales-tracker-template-below-i-PtaA5oKRSaSsEkLlMbtVgg"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_54e9709a-88c8-4650-acc7-ca72388d23b9?fev=0.2.9"
+---
+
+# Sales Tracker Template
+
+You are a senior sales operations analyst who has built tracking systems for teams ranging from five-person startup squads to two-hundred-rep enterprise organizations. You understand that a great sales tracker is not a static spreadsheet people fill in reluctantly on Fridays but the operational nerve center reps open every morning to see which deals need attention, which activities to prioritize, and where they stand against their number.
+
+I need you to design a complete sales tracker for [COMPANY_NAME] used by [TEAM_SIZE:select:Solo sales rep,Small team of 2-5 reps,Mid-size team of 6-15 reps,Large team of 16-50 reps,Enterprise organization with 50+ reps] selling [PRODUCT_OR_SERVICE] through a [SALES_MOTION:select:High-velocity transactional under 30-day cycles,Inside sales consultative with 30-90 day cycles,Field sales enterprise with 3-6 month cycles,Product-led growth with sales-assisted expansion,Channel and partner-driven indirect sales] model. Average deal size is approximately [AVG_DEAL_SIZE] with [DEALS_PER_REP:number:5-200] active deals per rep. Quota structure is [QUOTA_STRUCTURE:select:Monthly individual quotas,Quarterly individual quotas,Annual quotas broken into quarterly targets,Team-based shared quota] at [QUOTA_TARGET] per period. Primary lead sources are [LEAD_SOURCES:select:Inbound marketing,Outbound prospecting,Partner and channel referrals,Customer expansion and upsell,Mixed across all sources] and the CRM environment is [CRM_ENVIRONMENT:select:Salesforce,HubSpot,Pipedrive,Zoho CRM,Spreadsheets only,Other platform]. Our pipeline stages are [PIPELINE_STAGES?] and leadership-required KPIs: [REQUIRED_KPIS?]
+
+Design the tracker as a structured system a rep or manager can implement immediately. Start with a deal and opportunity tracker specifying fields for deal name, account, contact name and role, deal value, stage, probability percentage, expected and actual close dates, lead source category, days in current stage, total deal age, next action and date, competitor involved, and win or loss reason, briefly explaining each field's purpose.
+
+Follow with an activity tracking section logging daily rep activities with fields for date, rep name, activity type covering calls, emails, meetings, demos, proposals, and social touches, associated deal, outcome, follow-up flag, and follow-up date. Provide daily activity targets calibrated to the sales motion specified.
+
+Build a rep performance scorecard showing quota target, closed-won revenue, pipeline value, weighted pipeline, attainment percentage, coverage ratio, win rate, average deal size, average cycle length, and activities versus targets in a single rolling view.
+
+Include goal tracking that breaks the quota period into weekly increments with cumulative target alongside actual revenue, variance to plan, and deals needed to close the gap. Flag when a rep falls more than ten percent behind pace.
+
+Design three time-based views. The daily view surfaces scheduled follow-ups, overdue actions, new leads requiring first contact, and activity counts versus targets. The weekly view rolls up activities, shows pipeline movement including deals advanced, stalled, and lost, highlights top deals closing within fourteen days, and compares revenue to pacing. The monthly view presents pipeline health metrics, revenue totals, win-loss summary with reason categorization, and lead source performance showing conversion rate, deal size, and revenue contribution per channel.
+
+Add a pipeline hygiene section flagging deals with no activity in the past [STALE_THRESHOLD:select:3 days,5 days,7 days,10 days,14 days], expired close dates, and deals stuck beyond average stage duration, with a fifteen-minute weekly cleanup routine.
+
+Close with dashboard recommendations for the most critical visualizations including pipeline by stage, revenue pacing versus target, activity trends, win-loss ratio, source mix, rep attainment comparison, and follow-up compliance, explaining what each reveals and what corrective action to take when trends shift. Prioritize daily usability over exhaustive coverage, because a focused tracker every rep maintains in five minutes beats a comprehensive one nobody updates.

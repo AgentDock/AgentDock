@@ -1,0 +1,34 @@
+---
+title: "Sales Pipeline Template"
+description: "Generate a structured sales pipeline template with stage definitions, deal scoring, velocity benchmarks, coverage calculations, and CRM field mapping for active deal management"
+slug: "sales/sales-pipeline-template"
+tags: ["sales pipeline template", "deal management", "pipeline metrics", "sales operations", "CRM pipeline"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/sales/sales-pipeline-template"
+chatgptDemoUrl: "https://chatgpt.com/share/69a5f94b-33a8-800a-a2a2-80761e6ab08e"
+claudeDemoUrl: "https://claude.ai/share/ee566453-ca23-4190-8c20-bd44bf0c207e"
+perplexityDemoUrl: "https://www.perplexity.ai/search/below-is-a-prompt-template-fil-iZAkIgNkRhKxma14nkAsJA"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_5447635f-d5d2-4d9c-9c6e-2f3a74a225cb?fev=0.2.9"
+---
+
+# Sales Pipeline Template
+
+You are a senior sales operations architect who has designed and optimized pipelines for organizations ranging from seed-stage startups to enterprises managing thousands of concurrent opportunities. You understand that a pipeline is not merely a list of CRM stages but an operational system that defines what must happen at each phase to advance a deal, scores opportunities so reps focus on winnable revenue, and gives leadership visibility into health, velocity, and coverage. You know the best pipeline architectures balance enough granularity to diagnose problems with enough simplicity that reps actually follow the process.
+
+I need a complete sales pipeline template for [COMPANY_NAME] in the [INDUSTRY:select:Technology/SaaS,Healthcare/Life Sciences,Financial Services,Manufacturing,Retail/E-commerce,Professional Services,Telecommunications,Real Estate,Education/EdTech,Other] sector. Our sales motion is [SALES_MOTION:select:Inbound-led with SDR qualification,Outbound prospecting,Product-led growth with sales assist,Enterprise field sales with extended cycles,Channel and partner-driven,Transactional high-volume inside sales,Hybrid combining multiple motions] with an average deal size of [AVERAGE_DEAL_SIZE:select:Under $1K,$1K-$10K,$10K-$50K,$50K-$150K,$150K-$500K,Over $500K] and a typical sales cycle of [CYCLE_LENGTH:select:Under 14 days,14-30 days,31-60 days,61-90 days,91-180 days,Over 180 days]. We manage approximately [ACTIVE_OPPORTUNITIES:number:1-9999] active opportunities at any time. Our CRM is [CRM_PLATFORM:select:Salesforce,HubSpot,Pipedrive,Zoho CRM,Microsoft Dynamics,Close,Freshsales,Custom or other CRM] and the team consists of [TEAM_SIZE:number:1-500] reps organized as [TEAM_STRUCTURE:select:Individual contributors under one manager,Multiple pods with team leads,Regional territory assignments,Specialized SDR and AE split,Full-cycle reps,Tiered by deal size across SMB mid-market and enterprise]. Our quota target for the period is [QUOTA_TARGET?] and any specific pipeline challenges we face: [PIPELINE_CHALLENGES?].
+
+Generate a complete pipeline template as an operational playbook. Begin with a pipeline stage architecture defining each stage from initial qualification through closed-won and closed-lost. For every stage, specify the name, a definition grounded in buyer commitment rather than seller activity, mandatory entry criteria, exit criteria required before advancing, key rep activities, and a duration benchmark calibrated to the cycle length provided.
+
+Follow with a deal scoring methodology that assigns each opportunity a health score using weighted factors including buyer authority, confirmed pain and business impact, timeline urgency, budget status, competitive positioning, and champion engagement strength. Define the scoring scale, factor weights, and threshold tiers for strong, moderate, and at-risk deals.
+
+Move into pipeline health metrics covering pipeline coverage ratio with target multiples, stage-by-stage conversion rates, deal velocity measured as days per stage against the benchmarks above, win rate by entry point, pipeline creation rate, and aging analysis for deals exceeding duration thresholds. For each metric, explain what healthy looks like and what action to take when it falls outside range.
+
+Build a velocity analysis framework decomposing pipeline velocity into its four components of opportunity count, average deal value, win rate, and cycle length. Show how to calculate dollar-per-day throughput and define triggers that fire when a deal exceeds its stage duration benchmark.
+
+Include pipeline coverage calculations segmented by stage, by rep, and by close-date cohort, explaining how to compute weighted coverage using stage probabilities and distinguish gaps requiring pipeline generation from those signaling a conversion problem.
+
+Provide a deal prioritization framework combining deal score, value, stage position, and close date proximity into a composite ranking with recommended touch frequency per tier, escalation protocols for high-value at-risk deals, and clear disqualification criteria for deals that should exit the pipeline.
+
+Add CRM field mapping specifying custom fields, picklist values, required entries, and automation rules needed to operationalize the pipeline in the identified CRM, mapping each stage to its record type and defining which fields become mandatory at each transition.
+
+Close with a pipeline review cadence defining a weekly deal review for active opportunities, a monthly health review for metrics trends and coverage gaps, and a quarterly strategy review for process adjustments, specifying attendees, preparation, agenda, and expected decisions for each.

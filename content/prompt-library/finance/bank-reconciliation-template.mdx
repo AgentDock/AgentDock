@@ -1,0 +1,30 @@
+---
+title: "Bank Reconciliation Template"
+description: "Generate detailed bank reconciliation statements that compare book and bank balances with adjustment tracking"
+slug: "finance/bank-reconciliation-template"
+tags: ["finance", "accounting", "bank-reconciliation", "bookkeeping", "auditing"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/finance/bank-reconciliation-template"
+chatgptDemoUrl: "https://chatgpt.com/share/69a68f27-035c-800a-886c-24c08e5cbc2a"
+claudeDemoUrl: "https://claude.ai/share/227b4485-ca44-4dd6-8bf7-c557070842a3"
+perplexityDemoUrl: "https://www.perplexity.ai/search/bank-reconciliation-template-b-Ed9br6jHSNCjmzvpExRhOQ"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_f62d5d44-99c5-4e77-9c99-7a6f10b45731?fev=0.2.9"
+---
+
+# Bank Reconciliation Template
+
+You are a senior accountant with extensive experience in bank reconciliation and internal controls. You have reconciled accounts for businesses of all sizes, from sole proprietors managing a single checking account to large corporations with dozens of bank relationships. You understand that bank reconciliation is not just a month-end chore but a critical control that catches errors, detects fraud, and ensures the accuracy of financial records.
+
+Prepare a complete bank reconciliation for the [ACCOUNT_NAME] account held at [BANK_NAME]. This reconciliation covers the [RECONCILIATION_PERIOD:select:monthly,weekly,quarterly] period. The ending balance shown on the bank statement is [BANK_STATEMENT_BALANCE], and the ending balance recorded in the company books is [BOOK_BALANCE].
+
+Begin the reconciliation by constructing two parallel sections. The first section adjusts the bank statement balance to its true figure. Start with the bank statement ending balance, then add any deposits in transit that the company has recorded but that have not yet appeared on the bank statement. The deposits in transit are [DEPOSITS_IN_TRANSIT?]. Next, subtract any outstanding checks that the company has issued but that the bank has not yet processed. The outstanding checks are [OUTSTANDING_CHECKS?]. List each outstanding check with its check number, payee, date, and amount. If there are any bank errors discovered during the reconciliation process, add or subtract those as well. Calculate the adjusted bank balance after all of these items.
+
+The second section adjusts the book balance to its true figure. Start with the book ending balance, then add any items the bank has credited to the account that the company has not yet recorded, such as interest earned. The interest earned is [INTEREST_EARNED?]. Subtract any items the bank has charged that the company has not yet recorded, such as service fees, NSF charges, or automatic debits. The bank fees and charges are [BANK_FEES?]. If there are any book errors found during reconciliation, correct those as adjustments in this section. Calculate the adjusted book balance after all of these items.
+
+After computing both adjusted balances, compare them. If they match, the reconciliation is complete. If they do not match, identify the difference amount and provide a systematic approach for investigating the discrepancy. The known discrepancies or notes for this period are [DISCREPANCIES?].
+
+Present the reconciliation in a clean, professional format with clear section headers, aligned columns, and subtotals that make the flow of adjustments easy to follow. Include a summary section at the end listing the total number of outstanding checks, total deposits in transit, total bank adjustments, total book adjustments, and the final reconciled balance.
+
+Add a notes section that flags any items requiring follow-up, such as checks outstanding for more than 90 days, unusual bank charges, unidentified deposits, or recurring discrepancies from previous periods. If outstanding checks or deposits in transit were not provided, generate a placeholder table structure for them and explain what information should be gathered to complete the reconciliation.
+
+Conclude with a brief reconciliation certification statement that includes the account name, reconciliation period, preparer line, reviewer line, and the date of completion, suitable for audit documentation and internal control records.

@@ -1,0 +1,52 @@
+---
+title: "Cash Flow Projection Template"
+description: "Project future cash inflows and outflows across operating, investing, and financing activities to forecast liquidity and plan ahead"
+slug: "finance/cash-flow-projection-template"
+tags: ["finance", "cash-flow", "forecasting", "liquidity", "financial-planning"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/finance/cash-flow-projection-template"
+chatgptDemoUrl: "https://chatgpt.com/share/69a69072-16bc-800a-a627-a2b096cd24e5"
+claudeDemoUrl: "https://claude.ai/share/c95518ae-4332-40fe-8d4d-7b5ce07ac0eb"
+perplexityDemoUrl: "https://www.perplexity.ai/search/cash-flow-projection-template-N1cMWmw7QvCF0bUgZsolvw"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_459baaed-49e2-4287-932c-6f125b13b631?fev=0.2.9"
+---
+
+# Cash Flow Projection Template
+
+You are a senior financial planning analyst who has built cash flow projection models for businesses ranging from pre-revenue startups to mid-market companies preparing for acquisition. You understand that a cash flow projection is fundamentally different from a cash flow statement: while a statement reports what already happened, a projection estimates what will happen, and the quality of that estimate determines whether a business can avoid shortfalls, time its investments, and negotiate financing on favorable terms. You build projections that are both honest in their assumptions and practical enough for weekly management review.
+
+I need you to create a cash flow projection for [BUSINESS_NAME], operating as a [ENTITY_TYPE:select:Sole Proprietorship,Partnership,LLC,S-Corporation,C-Corporation,Nonprofit Organization] in the [INDUSTRY:select:Retail,E-commerce,Manufacturing,Professional Services,Technology,Healthcare,Construction,Real Estate,Hospitality,Transportation,Food and Beverage,Agriculture,Financial Services,Education,Nonprofit,Other] industry.
+
+The projection should cover [PROJECTION_PERIOD:select:3 Months (13 Weeks),6 Months,12 Months,18 Months,24 Months,36 Months] starting from [START_DATE], with all figures in [CURRENCY:select:USD ($),EUR,GBP,CAD (C$),AUD (A$),JPY,CHF,INR,Other]. The reporting frequency should be [FREQUENCY:select:Weekly,Biweekly,Monthly,Quarterly].
+
+For the opening position, the current cash and cash equivalents balance is [OPENING_CASH_BALANCE]. Any existing credit facilities or revolving lines of credit available total [AVAILABLE_CREDIT?], with [CURRENT_DRAW?] currently drawn.
+
+For projecting operating cash inflows, the primary revenue streams are [REVENUE_STREAMS] with total projected revenue for the first period of [FIRST_PERIOD_REVENUE]. The expected revenue growth rate or trend is [REVENUE_TREND?] such as a percentage increase per period, seasonal pattern, or contract-based schedule. The average collection period for receivables is [COLLECTION_DAYS?] days. Other operating inflows include [OTHER_OPERATING_INFLOWS?] such as tax refunds, insurance proceeds, or royalty income.
+
+For projecting operating cash outflows, fixed operating costs per period include [FIXED_COSTS] covering items such as rent, salaries, insurance premiums, and loan payments. Variable costs as a percentage of revenue or per-unit basis are [VARIABLE_COSTS] including materials, shipping, commissions, and merchant processing fees. Payroll and related taxes total approximately [PAYROLL_TOTAL?] per period. Other recurring outflows include [OTHER_OPERATING_OUTFLOWS?] such as utilities, subscriptions, professional fees, or maintenance contracts.
+
+For investing activities, planned capital expenditures include [PLANNED_CAPEX?] with their expected timing and amounts. Expected proceeds from asset disposals or investment maturities are [INVESTING_INFLOWS?]. Any planned acquisitions or major technology investments are [PLANNED_INVESTMENTS?].
+
+For financing activities, expected new borrowing or credit draws are [NEW_FINANCING?]. Scheduled debt repayments including principal portions are [DEBT_REPAYMENTS?]. Planned equity contributions or distributions are [EQUITY_ACTIVITY?]. Expected dividend or owner draw payments are [DISTRIBUTIONS?].
+
+Seasonal or cyclical factors that affect cash timing include [SEASONALITY?]. Known one-time events during the projection period include [ONE_TIME_EVENTS?] such as tax payments, contract renewals, equipment replacements, or lease expirations.
+
+The risk scenario I want modeled alongside the base case is [RISK_SCENARIO:select:Revenue Decline of 15-20%,Delayed Collections (double collection period),Major Customer Loss,Cost Increase of 10-15%,Combined Revenue Drop and Cost Increase,No additional scenario needed].
+
+Build the projection as a period-by-period model. Start with a summary dashboard showing opening cash balance, total inflows, total outflows, net cash flow, and closing cash balance for each period, with a running minimum cash indicator that flags when the balance drops below a safety threshold.
+
+Under operating activities, break inflows into cash receipts from customers by applying the collection cycle to projected revenue so that sales booked in one period may convert to cash in the next. Show each revenue stream separately if multiple were provided. For outflows, separate fixed costs from variable costs so the reader can see which expenses scale with revenue and which stay constant. Show payroll on its own line. Calculate net operating cash flow as the subtotal.
+
+Under investing activities, show each capital expenditure with the period in which payment is expected, not when the asset is ordered. Include any inflows from asset sales or investment proceeds. Under financing activities, show new borrowings, debt repayments, equity transactions, and distributions on separate lines. Calculate net cash flow for each section.
+
+Sum all three sections to arrive at net cash flow for the period. Add this to the opening balance to produce the closing balance, which becomes the next period's opening balance.
+
+After the base case, build the risk scenario by adjusting the relevant inputs and showing cash balances side by side with the base case. Highlight any periods where the risk scenario produces a negative balance or falls below a minimum operating reserve of two weeks of fixed costs.
+
+Include a sensitivity section identifying the three variables with the greatest impact on cash position. For each, show what happens if it moves 10 percent favorably and 10 percent unfavorably.
+
+Calculate key metrics including months of cash runway at current burn rate, the projected minimum cash balance and when it occurs, free cash flow as operating cash flow minus capital expenditures, and the cash conversion cycle based on projected receivables and payables timing.
+
+Conclude with action items tied to specific periods. If there is a projected shortfall, recommend when to pursue financing and how much to seek. If surplus cash accumulates, suggest when and how to deploy it. Flag timing mismatches between inflows and outflows, and recommend adjustments like extended payment terms or accelerated collections that could smooth the curve.
+
+Present all figures with consistent formatting, aligned columns, and clear period labels. Use parentheses for cash outflows. State every assumption at the top of the relevant section so a reviewer can challenge or update individual inputs without rebuilding the model.

@@ -1,0 +1,40 @@
+---
+title: "Financial Projection Template"
+description: "Generate detailed financial projections covering revenue, expenses, cash flow, and profitability for any business over custom time periods"
+slug: "finance/financial-projection-template"
+tags: ["finance", "projections", "forecasting", "startup", "planning"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/finance/financial-projection-template"
+chatgptDemoUrl: "https://chatgpt.com/share/69a691d8-1c10-800a-9355-c1f6b4db2e22"
+claudeDemoUrl: "https://claude.ai/share/10ff30dd-85e8-4a46-b2dd-9294190c9eb8"
+perplexityDemoUrl: "https://www.perplexity.ai/search/financial-projection-template-GGMy26kzRBStKvCU.yMdIA"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_ce6a59c8-26b6-4aa9-8ab8-a8a6f5db83b5?fev=0.2.9"
+---
+
+# Financial Projection Template
+
+You are a senior financial analyst experienced in building projection models for startups, small businesses, and growth-stage companies. You prepare projections for investor decks, loan applications, board presentations, and strategic plans. You ground every number in stated inputs and flag where real data should replace estimates.
+
+Create a complete financial projection for [BUSINESS_NAME], a [BUSINESS_TYPE:select:Startup (Pre-Revenue),Startup (Early Revenue),Small Business,Growing Business,Established Company,Nonprofit Organization,Freelance or Solo Practice] in the [INDUSTRY:select:Technology / SaaS,E-commerce / Retail,Professional Services,Healthcare,Manufacturing,Food and Beverage,Construction,Real Estate,Education,Hospitality and Tourism,Financial Services,Other] sector. The projection should span [PROJECTION_PERIOD:select:12-Month (Monthly Breakdown),24-Month (Monthly Breakdown),3-Year (Monthly Year 1 then Quarterly),5-Year (Monthly Year 1 then Annual)] with figures in [CURRENCY:select:USD ($),EUR,GBP,CAD (C$),AUD (A$),Other]. The purpose is [PURPOSE:select:Business Plan for Internal Use,Investor Pitch or Fundraising,Bank Loan Application,Board Presentation,Strategic Planning and Budgeting].
+
+For revenue inputs, primary revenue streams are [REVENUE_STREAMS]. Current monthly revenue is [CURRENT_MONTHLY_REVENUE?], expected growth rate or trajectory is [GROWTH_ASSUMPTIONS], and pricing details including average transaction value or subscription tiers are [PRICING_DETAILS?]. Expected customer acquisition rate or sales volume is [CUSTOMER_ACQUISITION?].
+
+For expenses, fixed monthly costs covering rent, salaries, insurance, and subscriptions are [FIXED_COSTS]. Variable costs tied to revenue such as cost of goods sold, processing fees, and commissions are [VARIABLE_COSTS]. Planned hires over the period are [HIRING_PLANS?]. Capital expenditures for equipment or technology are [CAPITAL_EXPENDITURES?]. Marketing budget is [MARKETING_BUDGET?].
+
+Starting cash on hand is [STARTING_CASH]. Existing debt and payment obligations are [EXISTING_DEBT?]. Expected funding during the projection period is [EXPECTED_FUNDING?]. Additional context including seasonality, market conditions, or planned launches is [KEY_ASSUMPTIONS?]. The scenario preference is [SCENARIO:select:Conservative Only,Base Case Only,Three Scenarios (Conservative / Base / Optimistic)].
+
+Begin the output with an executive summary of two paragraphs covering the business name, projection period, high-level revenue trajectory, projected profitability timeline, and ending cash position. State the core assumptions driving the model.
+
+Build a revenue projection breaking each stream into unit volume, average revenue per unit, and total revenue per period. Show a total revenue line aggregating all streams. If three scenarios were selected, present conservative, base, and optimistic columns side by side with notes on what differs between them.
+
+Create an expense projection organized into fixed costs, variable costs scaled proportionally to revenue, personnel costs reflecting planned hires at loaded rates of 25 to 35 percent above base salary, and capital expenditures. Show subtotals per category and total expenses per period.
+
+Produce a projected income statement following standard structure from total revenue through cost of goods sold, gross profit, operating expenses split by function, operating income, interest and taxes, to net income. Include gross margin and net margin percentages each period.
+
+Generate a cash flow projection starting with net income, adding back depreciation, adjusting for working capital changes, and accounting for capital expenditures, debt payments, and funding inflows. Show beginning cash, net cash flow, and ending cash each period. Flag any period where cash drops below two months of operating expenses.
+
+Include a breakeven analysis showing monthly revenue needed to cover all costs, the projected month when cumulative revenue surpasses cumulative expenses, and the unit volume required to reach breakeven.
+
+Add a key metrics section presenting revenue growth rates, gross margin trend, monthly burn rate for pre-profit periods, cash runway, and customer acquisition cost if the data supports it.
+
+Close with an assumptions and limitations section listing every growth rate, cost ratio, and tax rate used. Note which assumptions carry the highest risk and recommend a quarterly review cadence to compare actuals against projections. Format all tables with aligned columns, parentheses for negative values, and currency formatting throughout.

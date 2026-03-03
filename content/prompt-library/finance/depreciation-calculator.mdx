@@ -1,0 +1,30 @@
+---
+title: "Depreciation Calculator"
+description: "Calculate asset depreciation using multiple methods with year-by-year schedules and tax insights"
+slug: "finance/depreciation-calculator"
+tags: ["finance", "depreciation", "accounting", "tax-planning", "asset-management"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/finance/depreciation-calculator"
+chatgptDemoUrl: "https://chatgpt.com/share/69a690cc-a494-800a-ae26-73525635db0d"
+claudeDemoUrl: "https://claude.ai/share/0fa85ebb-45f0-42c1-ba1f-2f1d5ad1cd4b"
+perplexityDemoUrl: "https://www.perplexity.ai/search/depreciation-calculator-below-8we0cwH1Qee95KieVRcaTQ"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_3960c085-9fd5-49b9-b8a1-dff972b5f96e?fev=0.2.9"
+---
+
+# Depreciation Calculator
+
+You are a financial analyst and accounting specialist with deep experience in asset depreciation. Your role is to take raw asset data, compute depreciation under the requested method, and expand the analysis with a year-by-year schedule, book value tracking, tax considerations, and a comparison of alternative methods.
+
+I need a complete depreciation analysis for [ASSET_NAME], classified as [ASSET_TYPE:select:vehicle,equipment,machinery,building,furniture,computer hardware,software,other]. The asset was purchased on [PURCHASE_DATE] at a cost of [PURCHASE_PRICE] in [CURRENCY:select:USD,EUR,GBP,CAD,AUD]. The estimated useful life is [USEFUL_LIFE:number:1-40] years with an expected salvage value of [SALVAGE_VALUE]. The primary depreciation method is [DEPRECIATION_METHOD:select:straight-line,double declining balance,sum of years digits,units of production,MACRS].
+
+Start by computing the depreciable base (purchase price minus salvage value). State this figure clearly before building the schedule.
+
+Build a year-by-year depreciation schedule showing four columns for each year: the year number, annual depreciation expense, accumulated depreciation, and remaining book value. If the purchase date falls partway through a fiscal year, prorate the first and final year amounts and note the convention used.
+
+For straight-line, divide the depreciable base evenly across all years. For double declining balance, apply twice the straight-line rate to the beginning book value each year, switching to straight-line when it produces a larger deduction, ensuring book value never drops below salvage. For sum of years digits, multiply the depreciable base by a fraction where the numerator is remaining useful life and the denominator is the sum of all year numbers. For units of production, request total lifetime units and actual units per year, then allocate proportionally. For MACRS, identify the correct property class, apply the appropriate IRS percentage table with the half-year convention unless mid-quarter is required, and note that MACRS ignores salvage value.
+
+Provide a method comparison section. Calculate first-year depreciation, total depreciation over the first three years, and midpoint book value under at least three relevant methods. Present these in a table and explain how accelerated methods produce higher early deductions while straight-line creates predictable equal entries.
+
+Include a tax implications section covering how the chosen method affects taxable income each period. Discuss Section 179 expensing and bonus depreciation rules for qualifying property. Note that tax rules change frequently and the user should verify current limits with a tax professional. Calculate the approximate first-year tax shield using a 25% marginal rate.
+
+Close with a summary stating the annual depreciation amount, the year of full depreciation, final book value, and a recommendation on whether the selected method fits this asset type. If a different method would produce better results for cash flow or tax purposes, flag this and explain why.

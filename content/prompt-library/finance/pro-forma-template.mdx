@@ -1,0 +1,40 @@
+---
+title: "Pro Forma Template"
+description: "Generate pro forma financial statements with revenue projections, expense forecasts, and multi-scenario analysis"
+slug: "finance/pro-forma-template"
+tags: ["pro forma", "financial projections", "business forecasting", "financial planning", "startup finance"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/finance/pro-forma-template"
+chatgptDemoUrl: "https://chatgpt.com/share/69a69348-d368-800a-aed9-640681651b4f"
+claudeDemoUrl: "https://claude.ai/share/490eaf94-db43-4c0e-81db-325efc82d78e"
+perplexityDemoUrl: "https://www.perplexity.ai/search/pro-forma-template-below-is-a-w3FYs76jR5uiqihG2Prdlg"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_0cf451a1-85a5-40d9-8845-7afa0ef916a3?fev=0.2.9"
+---
+
+# Pro Forma Template
+
+You are a financial planning specialist helping me build a comprehensive pro forma financial statement. I need forward-looking projections that are grounded in realistic assumptions and formatted for professional use with investors, lenders, or internal planning teams.
+
+The business I am projecting for is [COMPANY_NAME], which operates in the [INDUSTRY] industry. The company is currently at the [BUSINESS_STAGE:select:Pre-revenue startup,Early-stage (under 2 years),Growth stage (2-5 years),Established business (5+ years),Turnaround or restructuring] stage. A brief description of what the company does and its primary revenue sources: [BUSINESS_DESCRIPTION].
+
+I need a pro forma [STATEMENT_TYPE:select:Income Statement,Balance Sheet,Cash Flow Statement,All Three Statements Combined] covering a projection period of [PROJECTION_PERIOD:select:12 months (monthly breakdown),3 years (quarterly for year 1 then annual),5 years (annual breakdown),Custom period]. The primary purpose of this pro forma is [PURPOSE:select:Securing investor funding,Bank loan application,Internal strategic planning,New product or service launch,Market expansion,Merger or acquisition analysis,Board presentation].
+
+Here are the key financial assumptions and data to work from:
+
+Current or expected annual revenue: [REVENUE_AMOUNT]. Revenue growth assumptions or drivers: [REVENUE_DRIVERS]. Key expense categories and estimated amounts: [EXPENSE_DETAILS]. Any planned capital expenditures: [CAPEX_PLANS?]. Existing debt obligations or planned financing: [DEBT_INFO?]. Headcount plans and payroll estimates: [HEADCOUNT_PLANS?].
+
+For scenario modeling, generate [SCENARIO_COUNT:select:Single best-estimate scenario,Two scenarios (base and optimistic),Three scenarios (conservative base and optimistic)] so I can see how changes in key assumptions affect the financial outlook. Vary revenue growth rates, cost structures, and timing assumptions across scenarios to show a realistic range of outcomes.
+
+Build the pro forma using the following structure. Start with a clear statement of all assumptions listed in one place so the reader can see exactly what drives each number. Group assumptions into revenue assumptions, cost assumptions, capital assumptions, and financing assumptions. Every line item in the projections should trace back to a stated assumption.
+
+For the income statement projection, begin with gross revenue and show any deductions to reach net revenue. Break out cost of goods sold or cost of services to calculate gross margin. List operating expenses in meaningful categories rather than lumping them together. Show EBITDA, depreciation and amortization, interest expense, taxes, and net income as separate line items. Include gross margin percentage, operating margin percentage, and net margin percentage alongside the dollar figures.
+
+For the balance sheet projection, separate current and non-current assets, list current and long-term liabilities with enough detail to understand the debt structure, and include retained earnings that tie back to the income statement. Verify that assets equal liabilities plus equity for each period.
+
+For the cash flow projection, organize it into operating, investing, and financing activities. Start from net income and adjust for non-cash items and working capital changes. Show free cash flow and ending cash balance for each period. Highlight any periods where cash drops below a minimum threshold.
+
+After the projections, include a sensitivity analysis showing how net income and cash flow change if revenue comes in 10 percent above or below the base case and if cost of goods sold increases by 5 percentage points. Present this as a table with the variable changed, the assumption shift, and the resulting impact.
+
+End with a narrative summary identifying key inflection points such as when the company reaches profitability, achieves positive cash flow, or may need additional funding. Flag assumptions that carry outsized risk and suggest what data I should gather to validate them.
+
+Format all figures with proper accounting conventions, using parentheses for negative numbers. Round to the nearest dollar for projections under one million and to the nearest thousand for larger figures. Label every table and section clearly.

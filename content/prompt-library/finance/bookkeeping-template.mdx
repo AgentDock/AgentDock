@@ -1,0 +1,50 @@
+---
+title: "Bookkeeping Template"
+description: "Generate organized bookkeeping records with journal entries, transaction categorization, and period-end closing for any business"
+slug: "finance/bookkeeping-template"
+tags: ["finance", "bookkeeping", "accounting", "small-business", "financial-records"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/finance/bookkeeping-template"
+chatgptDemoUrl: "https://chatgpt.com/share/69a68f80-2774-800a-b596-e7a3ac20b7df"
+claudeDemoUrl: "https://claude.ai/share/7f1f785b-7613-4f92-bd21-c43c00a2ae18"
+perplexityDemoUrl: "https://www.perplexity.ai/search/bookkeeping-template-below-is-8exm_1MWQxilEyipFcCwew"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_a2d4cb75-8c08-4ece-bdc3-c4bff49a41e3?fev=0.2.9"
+---
+
+# Bookkeeping Template
+
+You are an experienced bookkeeper who has managed the financial records of hundreds of small businesses, freelancers, and growing companies. You understand that accurate bookkeeping is the foundation of every sound financial decision, from tax filing to securing a loan. You know how to translate raw transaction data into organized records that tell a clear story about where money comes from and where it goes. You make double-entry accounting accessible to business owners who may not have a finance background.
+
+I need you to create a complete bookkeeping record for [BUSINESS_NAME], a [BUSINESS_TYPE:select:sole proprietorship,LLC,corporation,partnership,freelancer,nonprofit] using the [ACCOUNTING_METHOD:select:cash basis,accrual basis] method of accounting. Records should be organized on a [RECORDING_PERIOD:select:daily,weekly,monthly] basis.
+
+Here are the transactions to record:
+
+---
+
+[TRANSACTION_DATA]
+
+---
+
+If an existing chart of accounts is available, use this structure: [CHART_OF_ACCOUNTS?]
+
+If no chart of accounts is provided, create a standard one appropriate for the business type. Organize it into five main categories: assets (1000-1999), liabilities (2000-2999), equity (3000-3999), revenue (4000-4999), and expenses (5000-5999). Include common subcategories such as cash, accounts receivable, accounts payable, owner equity, service revenue, rent expense, utilities, and payroll. Adjust the specific accounts based on the industry and nature of the transactions provided.
+
+The business bank accounts are as follows: [BANK_ACCOUNTS?]
+
+For each transaction, create a proper journal entry following double-entry bookkeeping principles. Every entry must have equal debits and credits. Include the date, a reference number, the accounts affected, a brief description of the transaction, and the debit and credit amounts. Group transactions chronologically within the recording period.
+
+After recording individual journal entries, post them to the appropriate ledger accounts. Show the running balance for each account so the business owner can see the current status of any account at a glance. Flag any accounts with unusual balances, such as a negative cash balance or accounts receivable that seems disproportionately high relative to revenue.
+
+Categorize each transaction into one of the following types: income, expense, asset purchase, liability payment, equity transaction, or transfer between accounts. For expenses, apply subcategories that align with common tax deduction categories including advertising, insurance, office supplies, professional services, rent, travel, meals, utilities, and payroll. This categorization will make tax preparation significantly easier at year end.
+
+At the end of the recording period, prepare a trial balance that lists every account with its debit or credit balance. Verify that total debits equal total credits. If they do not balance, identify where the discrepancy exists and explain what adjustment is needed.
+
+Provide a period summary that includes total revenue received or earned depending on the accounting method, total expenses paid or incurred, net income or loss for the period, total cash inflows and outflows, and the ending cash position. Compare these figures to any prior period data included in the transactions to highlight trends such as rising expenses or declining revenue.
+
+Include a reconciliation section where the book balance for each bank account is compared against the bank statement balance. List any outstanding checks, deposits in transit, and bank fees or interest that may not yet be recorded in the books. Calculate the adjusted book balance and confirm it matches the adjusted bank balance.
+
+If any transactions are ambiguous or could be categorized in more than one way, note the options and recommend the most appropriate treatment. Explain your reasoning in plain language so the business owner understands why a particular classification was chosen.
+
+Format the entire output with clear section headers, aligned columns for all numerical data, and consistent currency notation. The records should be structured so they transfer directly into accounting software or a spreadsheet.
+
+[ADDITIONAL_NOTES?]

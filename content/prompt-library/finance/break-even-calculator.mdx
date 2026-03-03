@@ -1,0 +1,34 @@
+---
+title: "Break Even Calculator"
+description: "Calculate your break-even point in units and revenue with contribution margin and sensitivity analysis"
+slug: "finance/break-even-calculator"
+tags: ["finance", "break-even", "profitability", "cost-analysis", "business-planning"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/finance/break-even-calculator"
+chatgptDemoUrl: "https://chatgpt.com/share/69a68fea-c9c4-800a-8797-a39e3914a23c"
+claudeDemoUrl: "https://claude.ai/share/964dc267-e623-45c0-b5de-cca55060045a"
+perplexityDemoUrl: "https://www.perplexity.ai/search/break-even-calculator-below-is-aKIr0jdTTWec1VoxrCiSng"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_1f988e2e-7bc4-46d6-b17f-1927c52f2f2a?fev=0.2.9"
+---
+
+# Break Even Calculator
+
+You are a financial analyst specializing in cost-volume-profit analysis for businesses across industries. You understand that break-even analysis is the foundation of sound pricing, investment, and operational decisions. Your role is to take raw cost and pricing data, compute the exact break-even point, and then push the analysis further with contribution margin ratios, margin of safety calculations, and sensitivity modeling that most simple calculators ignore.
+
+I need a complete break-even analysis for [PRODUCT_NAME] sold by [BUSINESS_NAME], which operates in the [INDUSTRY:select:Retail,E-commerce,Manufacturing,Food and Beverage,Professional Services,Healthcare,Technology,SaaS,Construction,Hospitality,Education,Other] sector. All figures should be presented in [CURRENCY:select:USD,EUR,GBP,CAD,AUD].
+
+The total fixed costs for the [TIME_PERIOD:select:Monthly,Quarterly,Annual] period are [FIXED_COSTS]. These include rent, salaries, insurance, loan payments, depreciation, and any other costs that do not change with production volume. If specific fixed cost categories are available, itemize them for transparency.
+
+The variable cost to produce or deliver one unit is [VARIABLE_COST_PER_UNIT]. This covers raw materials, direct labor per unit, packaging, shipping per unit, and transaction or payment processing fees. The selling price per unit is [SELLING_PRICE_PER_UNIT].
+
+Begin the analysis by calculating the contribution margin per unit, which is the selling price minus the variable cost. Then compute the contribution margin ratio by dividing the contribution margin per unit by the selling price. Use these to derive two core metrics: the break-even point in units (fixed costs divided by contribution margin per unit) and the break-even point in revenue (fixed costs divided by the contribution margin ratio). Present both figures clearly and explain what each number means in practical terms for the business.
+
+Next, if the business has a target profit goal of [TARGET_PROFIT?], calculate the number of units required to reach that profit. The formula is fixed costs plus target profit, divided by the contribution margin per unit. Show the corresponding revenue figure as well, so the business owner can see both the unit target and the dollar target needed.
+
+Perform a sensitivity analysis that tests how the break-even point shifts under different conditions. Model three pricing scenarios: current price, a 10% price increase, and a 10% price decrease. For each scenario, recalculate the break-even units and break-even revenue. Then model three cost scenarios: current variable cost, a 15% increase in variable costs, and a 10% reduction in variable costs. Present these in a clear table format so comparisons are immediate.
+
+If the business currently sells or expects to sell [EXPECTED_UNIT_SALES?] units in this period, calculate the margin of safety. Express it in three ways: the margin of safety in units (expected sales minus break-even units), the margin of safety in revenue (expected revenue minus break-even revenue), and the margin of safety percentage (margin of safety in units divided by expected sales, multiplied by 100). Explain what this percentage means for risk exposure. A margin of safety below 20% signals vulnerability to cost increases or demand drops, while a figure above 40% suggests a comfortable buffer.
+
+Include an operating power assessment. Calculate the degree of operating power at the expected sales volume using the formula: contribution margin divided by net operating income. Explain that a higher figure means profits grow faster when sales increase, but also decline faster when sales fall.
+
+Close with a plain-language summary translating the numbers into a clear action plan. State how many units must be sold each [TIME_PERIOD] to cover all costs and what revenue figure that translates to. If the break-even point is close to or above expected sales, flag this and suggest investigating supplier contracts, pricing adjustments, or fixed cost restructuring.

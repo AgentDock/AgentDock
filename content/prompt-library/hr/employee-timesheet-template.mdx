@@ -1,0 +1,36 @@
+---
+title: "Employee Timesheet Template"
+description: "Generate customized employee timesheets with clock-in and clock-out tracking, overtime calculations, break deductions, project codes, and manager approval workflows"
+slug: "hr/employee-timesheet-template"
+tags: ["employee-timesheet", "time-tracking", "payroll-timesheet", "work-hours", "HR"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/hr/employee-timesheet-template"
+chatgptDemoUrl: "https://chatgpt.com/share/69a6c4b0-e3fc-800a-9f7e-c6dbba94a155"
+claudeDemoUrl: "https://claude.ai/share/f595b1ff-309b-42ac-a9e4-4dcf44c4cd82"
+perplexityDemoUrl: "https://www.perplexity.ai/search/employee-timesheet-template-be-V_l_2KPgQU.mgD9rr1c64w"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_7f4445fc-d579-4b85-bbf5-a17e8bfe3c1e?fev=0.2.9"
+---
+
+# Employee Timesheet Template
+
+You are a payroll and workforce management specialist with 15 years of experience designing time tracking systems for companies across construction, healthcare, retail, professional services, and manufacturing. You have built timesheets for organizations with 10 to 3,000 employees, handled union and non-union time reporting requirements, ensured FLSA compliance for overtime calculations, and reduced payroll errors by 35 percent through better timesheet design. You know that a well-structured timesheet captures every hour accurately, makes payroll processing straightforward, and protects the company during Department of Labor audits.
+
+Create a complete employee timesheet for [COMPANY_NAME] that tracks work hours for payroll processing and record-keeping.
+
+This timesheet covers a [PAY_PERIOD_TYPE:select:Weekly (7 days),Biweekly (14 days),Semimonthly (1st-15th and 16th-end),Monthly (full calendar month)] pay period. The period start date is [PERIOD_START_DATE] and the end date is [PERIOD_END_DATE].
+
+The employee is [EMPLOYEE_NAME], Employee ID [EMPLOYEE_ID], working in the [DEPARTMENT] department under supervisor [SUPERVISOR_NAME]. The employee's job title is [JOB_TITLE].
+
+The compensation basis is [COMPENSATION_TYPE:select:Hourly,Salaried non-exempt,Salaried exempt]. If hourly or salaried non-exempt, the regular hourly rate is [HOURLY_RATE?] and the overtime rate is [OVERTIME_RATE?]. Overtime rules follow [OVERTIME_POLICY:select:Federal FLSA only (over 40 hours per week),State daily overtime (over 8 hours per day),State daily double-time (over 12 hours per day),No overtime applies (exempt employee),Custom overtime policy]. If custom, describe the rule: [CUSTOM_OVERTIME_RULE?]
+
+Break tracking preference: [BREAK_TRACKING:select:Track paid and unpaid breaks separately,Deduct a fixed unpaid break per shift automatically,No break tracking needed,Track breaks with start and end times]. If a fixed deduction applies, the automatic deduction per shift is [BREAK_DEDUCTION?].
+
+The timesheet should include project or task code tracking: [PROJECT_TRACKING:select:Yes - single project code per day,Yes - multiple project codes per day with hours split,Yes - project code plus task code combination,No project tracking needed]. If project codes are used, the list of active project codes is [PROJECT_CODES?].
+
+Additional time categories to track beyond regular hours: [ADDITIONAL_CATEGORIES:select:Overtime only,Overtime and PTO/sick/holiday,Overtime and PTO/sick/holiday and travel time,All categories including training and on-call hours,Custom categories]. If custom: [CUSTOM_CATEGORIES?]
+
+The approval workflow for this timesheet is [APPROVAL_WORKFLOW:select:Employee signature only,Employee and supervisor signatures,Employee then supervisor then payroll review,Digital submission with supervisor electronic approval,Custom workflow]. If custom: [CUSTOM_APPROVAL_WORKFLOW?]
+
+Generate the following sections. (1) Timesheet Header with company name, pay period dates, employee name, employee ID, department, job title, supervisor name, and the compensation type. (2) Daily Time Entry Table as a row-per-day grid with columns for date, day of week, clock-in time, clock-out time for first shift segment, clock-in and clock-out for second segment if applicable, break start and end times or automatic deduction notation, total regular hours, total overtime hours, and project or task code if project tracking is enabled. Include a row for each day in the pay period. (3) Hours Summary Section totaling regular hours, overtime hours, PTO hours, sick hours, holiday hours, and any other tracked categories for the full pay period. Show gross regular pay calculated from regular hours multiplied by the hourly rate, gross overtime pay from overtime hours multiplied by the overtime rate, and total gross pay for the period. (4) Project or Task Hours Breakdown if project tracking is enabled, listing each project code with its total hours across the period. (5) Employee Certification Statement with a declaration that the recorded hours are accurate and complete, a signature line, and a date field. (6) Supervisor Approval Section with checkboxes for Approved, Returned for Correction, and Adjusted, a comments field, a supervisor signature line, and a date field. If the approval workflow includes payroll review, add a third signature block for the payroll administrator. (7) Policy Reference Footer with a brief note on the overtime rule in effect, the break policy applied, the deadline for timesheet submission, and a reminder to retain the timesheet per company record-keeping policy.
+
+Format the timesheet with clean table borders, bold column headers, and enough spacing for handwritten entries if the form will be printed. Use a monospaced layout for time entry columns to keep digits aligned. Keep the language professional and direct.

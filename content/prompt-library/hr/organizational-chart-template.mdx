@@ -1,0 +1,44 @@
+---
+title: "Organizational Chart Template"
+description: "Generate a complete organizational chart with reporting lines, department structure, and role hierarchy tailored to your company size and org model"
+slug: "hr/organizational-chart-template"
+tags: ["organizational-chart", "org-structure", "company-hierarchy", "team-structure", "HR"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/hr/organizational-chart-template"
+chatgptDemoUrl: "https://chatgpt.com/share/69a6c6cc-d9d4-800a-a4be-b76c67fdc91b"
+claudeDemoUrl: "https://claude.ai/share/2dc5eee3-25dd-45af-b9ec-cf787982a582"
+perplexityDemoUrl: "https://www.perplexity.ai/search/organizational-chart-template-LwwObFm0SC2kRWQdQ78sgA"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_33475c85-a9b0-4d14-86c0-99717512c428?fev=0.2.9"
+---
+
+# Organizational Chart Template
+
+You are a senior organizational design consultant with over 15 years of experience helping companies of all sizes build clear, functional org charts. You have guided startups through their first formal structure, helped mid-market companies redesign after mergers, and supported enterprise organizations in mapping thousands of roles across global divisions. You understand that an org chart is more than boxes and lines. It is a communication tool that shapes how people understand authority, collaboration paths, and career growth within a company.
+
+I need you to generate a complete organizational chart structure for the following company.
+
+The company name is [COMPANY_NAME] and it operates in the [INDUSTRY:select:Technology,Healthcare,Financial Services,Manufacturing,Retail,Energy,Real Estate,Professional Services,Government,Education,Nonprofit,Hospitality,Transportation,Telecommunications] industry. The company size is [COMPANY_SIZE:select:Startup (1-20 employees),Small Business (21-100),Mid-Market (101-500),Large Company (501-2000),Enterprise (2001-10000),Large Enterprise (10000+)] and the organizational model we want to follow is [ORG_MODEL:select:Hierarchical (Traditional Top-Down),Flat (Minimal Management Layers),Matrix (Dual Reporting Lines),Divisional (By Product or Region),Functional (By Department Specialty),Hybrid (Mixed Structure)].
+
+The top executive title is [TOP_ROLE:select:CEO,President,Managing Director,Executive Director,Founder,General Manager] and the departments or divisions to include are [DEPARTMENTS]. For each department, include [LEVELS:number:2-8] levels of hierarchy from the department head down to individual contributors. The total number of named roles to map across the entire chart is approximately [ROLE_COUNT:number:5-200].
+
+Any specific leadership names and titles to place in the chart include [KEY_PERSONNEL?]. Special reporting relationships such as dotted-line reports, shared services, or cross-functional teams include [SPECIAL_RELATIONSHIPS?]. Notes about planned changes like upcoming reorganizations, new departments, or roles being added include [PLANNED_CHANGES?].
+
+The primary purpose of this org chart is [PURPOSE:select:New Employee Onboarding,Board or Investor Presentation,Internal Communication,Workforce Planning,Merger or Acquisition Due Diligence,Compliance Documentation,Team Directory].
+
+Generate a complete organizational chart document with the following sections.
+
+Start with a Chart Overview that states the company name, organizational model, total headcount range, and the date this chart represents. Summarize the rationale for the chosen structure in two to three sentences, explaining why this model fits the company size and industry.
+
+Next create the Executive Leadership section. List the top-level roles reporting directly to the [TOP_ROLE], including each person's title, name if provided, span of control (how many direct reports they manage), and a one-sentence description of their area of responsibility.
+
+Then build out each department as its own section. For every department listed in [DEPARTMENTS], create a layered breakdown starting with the department head and working down through each level. For every role, include the title, which position it reports to, the number of direct reports that role manages, and whether the role is filled or planned. Where [SPECIAL_RELATIONSHIPS?] exist, mark dotted-line reporting with a clear notation showing both the solid-line and dotted-line managers.
+
+After the department sections, include a Span of Control Summary table listing each manager-level role, the number of their direct reports, and a flag for any span wider than eight or narrower than two.
+
+Add a Cross-Functional Relationships section that maps shared services or committees operating across department boundaries. For each group, note the lead, participating departments, and reporting cadence.
+
+If [PLANNED_CHANGES?] were provided, include a Future State Notes section describing how the chart will evolve and a suggested timeline for revisiting it.
+
+Close with an Org Chart Best Practices section providing three to five recommendations specific to the chosen [ORG_MODEL] and [COMPANY_SIZE], covering ideal span of control ratios, when to add management layers, update frequency, and common structural pitfalls.
+
+Format the output using indented lists and clear heading levels so the hierarchy is visually obvious in plain text. Use consistent indentation where each deeper level gets one additional indent. Mark dotted-line relationships with a bracketed note.

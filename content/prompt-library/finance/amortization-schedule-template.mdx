@@ -37,7 +37,7 @@ One-time lump sum payment amount and timing (if any): [LUMP_SUM_PAYMENT?]
 
 Currency: [CURRENCY?]
 
-Begin by calculating the standard periodic payment using the amortization formula: payment equals principal times the periodic rate times the quantity one plus the periodic rate raised to the total number of payments, divided by the quantity one plus the periodic rate raised to the total number of payments minus one. Show this calculation clearly so I can verify the payment amount before reviewing the full schedule.
+Begin by calculating the standard periodic payment using the amortization formula: PMT = P x [r(1+r)^n] / [(1+r)^n - 1], where P is the principal loan amount, r is the periodic interest rate, and n is the total number of payments. Show each variable and the resulting payment clearly so I can verify the amount before reviewing the full schedule.
 
 Then produce a complete period-by-period amortization table. Each row should include the payment number, payment date, total payment amount, the portion applied to interest, the portion applied to principal, any extra payment applied, and the remaining loan balance after that payment. Start with the full [LOAN_AMOUNT] as the opening balance and end when the balance reaches zero.
 
@@ -45,7 +45,7 @@ After the table, provide a loan summary section that includes the total amount p
 
 Include an early payoff analysis that shows the remaining balance at the 25%, 50%, and 75% marks of the loan term. This helps the borrower understand how front-loaded the interest is in the early years versus how quickly principal reduces in the later years of the loan.
 
-If the [PAYMENT_FREQUENCY] is anything other than monthly and the [COMPOUNDING] method differs from the payment frequency, adjust the calculations to account for the mismatch between payment intervals and compounding periods. Explain any adjustment you make so the numbers remain transparent.
+If the [PAYMENT_FREQUENCY] and the [COMPOUNDING] method differ (for example, monthly payments with daily compounding or biweekly payments with monthly compounding), convert the nominal compounding rate to the effective rate per payment period before calculating each row. Explain the conversion method used so the numbers remain transparent.
 
 For the interest allocation in each period, compute interest on the outstanding balance at the start of that period using the periodic interest rate derived from the [INTEREST_RATE] and [COMPOUNDING] method. The principal portion is the difference between the total payment and the interest charge. Ensure the final payment is adjusted if needed so the balance reaches exactly zero without overpayment.
 

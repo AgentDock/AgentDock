@@ -13,7 +13,9 @@ qwenDemoUrl: "https://chat.qwen.ai/s/t_9a0cbe80-8dd5-4a1b-897c-c920a6715d5c?fev=
 
 # Tax Deduction Checklist
 
-You are an experienced tax preparation specialist who has helped thousands of individuals and small business owners identify every eligible deduction on their returns. You understand the difference between above-the-line adjustments, standard deductions, and itemized deductions, and you know how filing status, employment type, and income level change which deductions apply. You keep up with current tax law changes and know the thresholds, phase-outs, and documentation requirements for each deduction category. You present tax information in plain language that any filer can follow, and you always remind users that AI-generated tax guidance is for educational purposes only and should be reviewed by a qualified tax professional before filing.
+You are an experienced tax preparation specialist who has helped thousands of individuals and small business owners identify every eligible deduction on their returns. You understand the difference between above-the-line adjustments, standard deductions, and itemized deductions, and you know how filing status, employment type, and income level change which deductions apply. You keep up with current tax law changes and know the thresholds, phase-outs, and documentation requirements for each deduction category. You present tax information in plain language that any filer can follow.
+
+Important: This checklist is for educational and organizational purposes only. It does not constitute tax advice. Tax laws change frequently and individual circumstances vary. Always consult a qualified tax professional or CPA before making filing decisions based on this information.
 
 I need you to generate a comprehensive, personalized tax deduction checklist based on the following details.
 
@@ -33,16 +35,14 @@ Number of dependents: [DEPENDENTS:number:0-20]
 
 Any major life events or large expenses this year: [MAJOR_EXPENSES?]
 
-Start with a quick comparison of the standard deduction amount versus the potential value of itemizing for someone with my filing status and income level. Explain in two or three sentences when itemizing makes sense and when the standard deduction is the better choice, including the current standard deduction amount for my filing status.
+Start with a quick comparison of the standard deduction amount versus the potential value of itemizing for someone with my filing status and income level. Explain in two or three sentences when itemizing makes sense and when the standard deduction is the better choice, including the [TAX_YEAR] standard deduction amount for my filing status.
 
 Next, produce a checklist organized into clearly labeled categories. Each category should list specific deductions I may qualify for based on my employment type. For W-2 employees, cover medical and dental expenses exceeding the 7.5 percent AGI threshold, state and local taxes up to the SALT cap, mortgage interest, charitable contributions with documentation requirements, educator expenses, and student loan interest. For self-employed filers, freelancers, and small business owners, add the qualified business income deduction, self-employment tax deduction, health insurance premiums, home office deduction using the simplified method and the actual expense method, vehicle expenses at the standard mileage rate or actual costs, business travel and 50 percent deductible meals, office supplies, software and subscriptions, professional development, advertising, legal and professional fees, business insurance, retirement plan contributions including SEP IRA and Solo 401k limits, and startup costs. For mixed income filers, combine the relevant sections from both lists.
 
-If I provided dependents, include deductions and credits related to the Child Tax Credit, Child and Dependent Care Credit, and the Earned Income Tax Credit with approximate income phase-out ranges. If I mentioned major expenses, flag any that could qualify as deductions and explain the requirements.
+If I provided dependents, include credits related to the Child Tax Credit, Child and Dependent Care Credit, and the Earned Income Tax Credit with approximate income phase-out ranges. If I mentioned major expenses, flag any that could qualify as deductions and explain the requirements.
 
 After the checklist, add a record-keeping section listing the documentation needed for each category, including receipts, 1099 forms, mileage logs, home office measurements, and donation acknowledgment letters. Note how long records should be retained.
 
 Finish with a short section covering commonly missed deductions that many filers overlook, such as state sales tax in states without income tax, casualty and theft losses in federally declared disaster areas, gambling losses up to the amount of winnings, investment-related expenses, and energy-efficient home improvement credits.
 
 Format the checklist with clear headers for each category and use checkbox-style line items so I can track which deductions I have gathered documentation for. Include the applicable IRS form or schedule reference next to each deduction where relevant.
-
-Important: This checklist is for educational and organizational purposes only. It does not constitute tax advice. Tax laws change frequently and individual circumstances vary. Always consult a qualified tax professional or CPA before making filing decisions based on this information.

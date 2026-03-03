@@ -8,14 +8,14 @@ agentdockUrl: "https://agentdock.ai/prompt-library/finance/savings-calculator"
 chatgptDemoUrl: "https://chatgpt.com/share/69a694e8-5150-800a-9414-ea63d930c726"
 claudeDemoUrl: "https://claude.ai/share/9309fc40-c27f-4000-a699-989a49a35024"
 perplexityDemoUrl: "https://www.perplexity.ai/search/savings-calculator-below-is-a-EpTK6UX7T3Of1xMsn_XwNA"
-qwenDemoUrl: ""
+qwenDemoUrl: "https://chat.qwen.ai/s/t_1ca911ad-2715-43a2-8604-f8ee0580ab0c?fev=0.2.9"
 ---
 
 # Savings Calculator
 
 You are a financial analyst who specializes in savings projections and compound interest modeling. You understand the mathematics behind time value of money, and you know how to present growth numbers in a way that motivates people to start saving or adjust their current strategy. Your role is to take savings inputs and produce a complete projection showing exactly how money grows, what each component contributes, and how different choices change the outcome.
 
-I need a detailed savings projection for [SAVINGS_GOAL_NAME]. The starting balance is [INITIAL_DEPOSIT] and I plan to contribute [MONTHLY_CONTRIBUTION:number:0-100000] each month. The expected annual interest rate is [ANNUAL_INTEREST_RATE:number:0-30] percent, compounded [COMPOUNDING_FREQUENCY:select:daily,monthly,quarterly,annually]. I want to see results over a [TIME_HORIZON:select:6 months,1 year,2 years,5 years,10 years,20 years,30 years,custom] period. Present all figures in [CURRENCY:select:USD,EUR,GBP,CAD,AUD]. Inflation adjustment: [INFLATION_ADJUSTMENT:select:yes,no]. If a specific target amount exists, it is [TARGET_AMOUNT?].
+I need a detailed savings projection for [SAVINGS_GOAL_NAME]. The starting balance is [INITIAL_DEPOSIT] and I plan to contribute [MONTHLY_CONTRIBUTION:number:0-100000] each month. The expected annual interest rate is [ANNUAL_INTEREST_RATE:number:0-30] percent, compounded [COMPOUNDING_FREQUENCY:select:daily,monthly,quarterly,annually]. I want to see results over a [TIME_HORIZON:select:6 months,1 year,2 years,5 years,10 years,20 years,30 years,custom] period. If custom is selected, the specific duration is [TIME_HORIZON_CUSTOM?] (provide as a number followed by months or years, for example "18 months" or "7 years"). Present all figures in [CURRENCY:select:USD,EUR,GBP,CAD,AUD]. Inflation adjustment: [INFLATION_ADJUSTMENT:select:yes,no]. If a specific target amount exists, it is [TARGET_AMOUNT?].
 
 Begin by calculating the total future value using compound interest formulas for both the initial lump sum and the stream of periodic contributions. For the deposit component, apply A = P(1 + r/n)^(nt). For contributions, use the future value of an annuity formula adjusted to the selected compounding period. Present a summary table showing the initial deposit, total contributions, total interest earned, final projected balance, and the effective annual yield for comparison against advertised APY figures.
 
@@ -27,6 +27,6 @@ If inflation adjustment is yes, run a parallel calculation using a 3% assumed an
 
 Build a comparison section with three side-by-side scenarios. Scenario A uses inputs as provided. Scenario B increases the monthly contribution by 25%. Scenario C keeps the original contribution but adds 1.5 percentage points to the interest rate. For each, show final balance, total interest earned, and the difference from Scenario A.
 
-Include a milestone timeline marking when the balance crosses meaningful thresholds, using $1,000 increments for smaller goals or $10,000 increments and 25/50/75/100% markers for projections above $50,000. List each milestone with its projected date.
+Include a milestone timeline marking when the balance crosses meaningful thresholds in the selected [CURRENCY]. For projected final balances under 50,000, use 1,000-unit increments. For balances above 50,000, use 10,000-unit increments along with 25%, 50%, 75%, and 100% markers of the final projected balance. Format all milestone labels using the currency symbol for the selected [CURRENCY], not a hardcoded dollar sign. List each milestone with its projected date.
 
 Close with a plain-language summary stating how much of the final balance comes from the deposit, from contributions, and from interest alone. Express the interest portion as a percentage to make the impact of compounding tangible. If interest growth is minimal relative to contributions, note that a longer horizon or higher rate would shift the balance significantly. If compounding is doing most of the work, highlight that as confirmation the strategy is effective.

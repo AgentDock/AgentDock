@@ -31,6 +31,8 @@ If no chart of accounts is provided, create a standard one appropriate for the b
 
 The business bank accounts are as follows: [BANK_ACCOUNTS?]
 
+Bank statement details for reconciliation (ending balance, statement date, and any bank fees or interest for each account): [BANK_STATEMENT_BALANCES?]
+
 For each transaction, create a proper journal entry following double-entry bookkeeping principles. Every entry must have equal debits and credits. Include the date, a reference number, the accounts affected, a brief description of the transaction, and the debit and credit amounts. Group transactions chronologically within the recording period.
 
 After recording individual journal entries, post them to the appropriate ledger accounts. Show the running balance for each account so the business owner can see the current status of any account at a glance. Flag any accounts with unusual balances, such as a negative cash balance or accounts receivable that seems disproportionately high relative to revenue.
@@ -41,7 +43,7 @@ At the end of the recording period, prepare a trial balance that lists every acc
 
 Provide a period summary that includes total revenue received or earned depending on the accounting method, total expenses paid or incurred, net income or loss for the period, total cash inflows and outflows, and the ending cash position. Compare these figures to any prior period data included in the transactions to highlight trends such as rising expenses or declining revenue.
 
-Include a reconciliation section where the book balance for each bank account is compared against the bank statement balance. List any outstanding checks, deposits in transit, and bank fees or interest that may not yet be recorded in the books. Calculate the adjusted book balance and confirm it matches the adjusted bank balance.
+Include a reconciliation section where the book balance for each bank account is compared against the bank statement balance from [BANK_STATEMENT_BALANCES?]. For each account, list the statement ending balance, outstanding checks, deposits in transit, and bank fees or interest not yet recorded in the books. Calculate the adjusted book balance and the adjusted bank balance separately, then confirm they match. If no bank statement data was provided, note that reconciliation requires the statement ending balance and date for each account.
 
 If any transactions are ambiguous or could be categorized in more than one way, note the options and recommend the most appropriate treatment. Explain your reasoning in plain language so the business owner understands why a particular classification was chosen.
 

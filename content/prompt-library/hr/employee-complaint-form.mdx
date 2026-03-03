@@ -1,0 +1,76 @@
+---
+title: "Employee Complaint Form"
+description: "Employee complaint form generator that creates structured workplace complaint documentation with incident details, witness information, and resolution tracking"
+slug: "hr/employee-complaint-form"
+tags: ["employee-complaint", "workplace-complaint", "HR-documentation", "grievance-form", "complaint-resolution"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/hr/employee-complaint-form"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Employee Complaint Form
+
+You are a senior employee relations specialist with 14 years of experience managing workplace complaints, conducting internal investigations, and resolving grievances across corporate, healthcare, retail, manufacturing, and government organizations. You have processed over two thousand formal employee complaints, trained HR teams on intake procedures, and served as the company representative in EEOC mediations, state labor board hearings, and arbitration proceedings. You understand that a properly structured complaint form is the foundation of a fair investigation because it captures the complainant's account in their own words, establishes a documented timeline before memories change, identifies witnesses and evidence while they are still available, and creates a legal record that demonstrates the organization took the complaint seriously and responded with a consistent, impartial process.
+
+I need you to create an employee complaint form for the following situation.
+
+The company name is [COMPANY_NAME] and the complaint is being filed by [COMPLAINANT_NAME], who holds the position of [JOB_TITLE] in the [DEPARTMENT] department. The employee's direct supervisor is [SUPERVISOR_NAME].
+
+The complaint is being filed on [FILING_DATE].
+
+The category of the complaint is [COMPLAINT_CATEGORY:select:Harassment or Hostile Work Environment,Discrimination Based on Protected Class,Workplace Bullying or Intimidation,Retaliation for Protected Activity,Unsafe Working Conditions,Wage or Hour Violation,Policy Violation by Management,Unfair Treatment or Favoritism,Workplace Violence or Threats,Ethics or Compliance Violation].
+
+The severity of the complaint is [SEVERITY:select:Critical - immediate safety risk or ongoing harm,High - serious policy violation affecting employment conditions,Medium - recurring issue impacting work environment or morale,Low - isolated incident or minor policy concern].
+
+The person or persons the complaint is directed against: [RESPONDENT_NAMES_AND_ROLES]
+
+Describe the specific incident or pattern of behavior being reported, including dates, times, locations, and what was said or done: [COMPLAINT_DESCRIPTION]
+
+How long has this issue been occurring: [DURATION:select:Single isolated incident,Less than one month,One to three months,Three to six months,Six months to one year,More than one year]
+
+Has the complainant previously reported this issue to a supervisor or HR: [PRIOR_REPORTING:select:No this is the first report,Yes reported verbally to supervisor,Yes reported verbally to HR,Yes filed a previous written complaint,Yes reported through anonymous hotline]
+
+If previously reported, provide details including dates and who was contacted: [PRIOR_REPORT_DETAILS?]
+
+Witnesses who observed or have knowledge of the reported behavior: [WITNESS_NAMES_AND_ROLES?]
+
+Any supporting evidence the complainant has or can provide, such as emails, text messages, photos, or documents: [SUPPORTING_EVIDENCE?]
+
+The impact this issue has had on the complainant, including effects on job performance, mental health, work relationships, or career opportunities: [IMPACT_DESCRIPTION]
+
+The resolution the complainant is seeking: [DESIRED_RESOLUTION:select:Formal investigation and appropriate disciplinary action,Transfer or reassignment of the respondent,Policy change or training for the department,Mediation between the parties,Written apology and commitment to change,Other - described below]
+
+If the complainant selected other or wants to add specifics to the desired resolution: [RESOLUTION_DETAILS?]
+
+The complainant's preferred method for receiving updates on the investigation: [CONTACT_PREFERENCE:select:Work email,Personal email,Phone call to personal number,In-person meetings with HR,Combination of methods]
+
+The HR representative receiving this complaint is [HR_REPRESENTATIVE_NAME] with the title [HR_REPRESENTATIVE_TITLE].
+
+Generate a complete employee complaint form with these sections.
+
+Form Header. Company name, document title, a reference number formatted as EC-YYYYMMDD-NNN, the filing date, complaint category, severity level, and the name and title of the HR representative receiving the complaint.
+
+Complainant Information. Full name, job title, department, supervisor name, hire date placeholder, work location placeholder, and preferred contact method for investigation updates.
+
+Respondent Information. Names and roles of the person or persons the complaint is directed against, their department, and their relationship to the complainant such as direct supervisor, coworker, or other.
+
+Complaint Details. A structured narrative section restating the complaint description in chronological order. Organize the account by specific incidents with dates, times, and locations. Use the complainant's own language and facts without editorial commentary. If a pattern of behavior is reported, present each occurrence separately and then summarize the pattern.
+
+Duration and Prior Reporting. How long the issue has been occurring and whether it was previously reported. If prior reports exist, document dates, who was contacted, and what response was received. If no prior report was made, note that and include a statement that late reporting does not diminish the validity of the complaint.
+
+Witness and Evidence Inventory. A list of each witness with their name, role, and what they are expected to have observed. A separate list of physical or documentary evidence the complainant has identified, with notes on format and current location of each item.
+
+Impact Statement. A description of how the reported behavior has affected the complainant's job performance, emotional wellbeing, work relationships, and career trajectory. Frame this section as the complainant's self-reported experience.
+
+Requested Resolution. The outcome the complainant is seeking and any additional details provided. Note whether the requested resolution falls within the scope of the company's complaint resolution policy.
+
+Confidentiality and Non-Retaliation Notice. A statement that the complaint will be handled with the highest possible degree of confidentiality, that information will be shared only with those who have a legitimate need to know for investigation purposes, and that retaliation against the complainant or any witness is strictly prohibited and will result in separate disciplinary action up to and including termination.
+
+Investigation Next Steps. An outline of the investigation process including estimated timeline for initial response, interview procedures for the complainant, respondent, and witnesses, the standard of review that will be applied, and how the complainant will be notified of the outcome. Include a note that interim protective measures may be implemented if necessary to prevent ongoing harm during the investigation.
+
+Acknowledgment and Signatures. Signature blocks for the complainant and the HR representative receiving the complaint. Include a statement that the complainant affirms the information provided is truthful and accurate to the best of their knowledge. Include fields for printed name, signature line, title, and date. Add a statement that the complainant has the right to supplement this complaint with additional information at any time during the investigation.
+
+Format the form with clear Markdown headings, bold text for the severity level and non-retaliation notice, and a professional tone that communicates both seriousness and impartiality. Write in language that is respectful to the complainant while maintaining the neutrality required for a fair investigation.

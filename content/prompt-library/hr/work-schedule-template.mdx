@@ -1,0 +1,34 @@
+---
+title: "Work Schedule Template"
+description: "Generate structured employee work schedules with shift assignments, break policies, overtime tracking, and coverage planning for any team size"
+slug: "hr/work-schedule-template"
+tags: ["work-schedule", "employee-scheduling", "shift-planning", "workforce-management", "HR"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/hr/work-schedule-template"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Work Schedule Template
+
+You are a workforce scheduling specialist with 12 years of experience managing employee schedules across retail, healthcare, hospitality, and manufacturing. You have built scheduling systems for teams of 5 to 500 employees, handled union and non-union workforces, and cut overtime costs by 30 percent through smarter rotation design. You know a good schedule balances coverage, compliance, employee preferences, and cost control in one document.
+
+Create a complete work schedule for [COMPANY_NAME], specifically for the [DEPARTMENT_NAME] team.
+
+This schedule covers [SCHEDULE_PERIOD:select:1 week,2 weeks (biweekly),1 month,4-week rolling cycle]. Operating hours are [OPERATING_HOURS] on [OPERATING_DAYS:select:Monday through Friday,Monday through Saturday,Monday through Sunday (7 days),Custom days]. If custom, specify here: [CUSTOM_DAYS?]
+
+Total employees: [EMPLOYEE_COUNT:number:2-200]. Employee names and roles: [EMPLOYEE_LIST]
+
+Shift structure: [SHIFT_TYPE:select:Fixed shifts (same times each day),Rotating shifts (cycle through different times),Split shifts (two blocks per day),Flexible shifts (core hours with flex windows),Compressed workweek (longer days fewer days per week)]. Shift times and names: [SHIFT_DETAILS]
+
+Break policy: [BREAK_POLICY:select:One 30-minute unpaid break,One 60-minute unpaid break,Two 15-minute paid plus one 30-minute unpaid,Two 15-minute paid plus one 60-minute unpaid,Flexible breaks totaling 60 minutes,No formal break policy]. Stagger breaks to maintain minimum coverage at all times.
+
+Overtime rules: [OVERTIME_RULES:select:No overtime allowed,Max 5 overtime hours per week per employee,Max 10 overtime hours per week per employee,Overtime with manager approval only,Overtime distributed evenly across eligible staff,Custom overtime policy]. If custom: [CUSTOM_OVERTIME?]
+
+Scheduling constraints such as minimum staffing levels, availability restrictions, seniority preferences, or blackout dates: [SCHEDULING_CONSTRAINTS?]
+
+Output format: [OUTPUT_FORMAT:select:Daily grid with all employees and shift times,Weekly table with days as columns and employees as rows,Shift-based view grouping employees by assigned shift,Department view with sub-sections per role].
+
+Generate these sections: (1) Schedule Header with company name, department, period dates, total employees, total shifts, and total hours. (2) Employee Shift Assignment Table as a grid showing each person's shift per day, marking days off as "OFF" and leave as "PTO," with weekly hour totals. (3) Daily Coverage Summary showing headcount per shift block and flagging understaffed or overstaffed periods. (4) Break Schedule as a table with staggered break windows per employee per shift. (5) Overtime Tracking listing regular and overtime hours per employee, flagging anyone near or over the limit. (6) Rotation Fairness Check analyzing the distribution of weekend, holiday, and undesirable shifts across staff, suggesting swaps for imbalances. (7) Notes and Exceptions listing accommodations, restrictions, and a blank section for manager updates. Use tables throughout. Bold shift times and names for quick scanning.

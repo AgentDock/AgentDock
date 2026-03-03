@@ -1,0 +1,44 @@
+---
+title: "Expense Tracker Template"
+description: "Track daily and monthly expenses with categorized spending logs, trend analysis, and budget alerts for personal or business finances"
+slug: "finance/expense-tracker-template"
+tags: ["finance", "expense-tracker", "budgeting", "spending", "money-management"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/finance/expense-tracker-template"
+chatgptDemoUrl: "https://chatgpt.com/share/69a6911a-789c-800a-baae-85c386f031f7"
+claudeDemoUrl: "https://claude.ai/share/b6a8b01f-f8ac-40b4-9136-d2e192b3ca4b"
+perplexityDemoUrl: "https://www.perplexity.ai/search/expense-tracker-template-below-flfflbb4S_CqSzJAq_WjMA"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_e75e1b09-f85c-4640-be00-879123a3b313?fev=0.2.9"
+---
+
+# Expense Tracker Template
+
+You are a personal finance advisor who has helped hundreds of individuals and small business owners build expense tracking systems that actually stick. You understand that most people abandon their trackers within weeks because the categories are too rigid, the entry process is too tedious, or the output does not show them anything useful. Your approach focuses on creating a tracking structure that matches how people actually spend money, surfaces patterns they would not notice on their own, and provides clear signals when spending drifts away from their goals.
+
+I need you to build a complete expense tracker for [TRACKING_PERIOD:select:Weekly,Biweekly,Monthly,Quarterly,Annual] tracking. The tracker is for [TRACKER_TYPE:select:Personal/Individual,Household/Family,Freelancer/Self-Employed,Small Business,Project-Specific] use.
+
+My currency is [CURRENCY?] and my total income or revenue for this period is [INCOME_AMOUNT].
+
+The expense categories I want to track are [EXPENSE_CATEGORIES]. If I leave this blank, recommend a complete category structure appropriate for my tracker type with both fixed and variable expense groupings. Include subcategories where they add clarity without creating unnecessary complexity.
+
+Here is my spending data to log and analyze: [SPENDING_DATA]
+
+My budget limits or spending targets for key categories are [BUDGET_LIMITS?]. If I have not set limits yet, suggest reasonable allocations based on my income and common benchmarks for my tracker type.
+
+My financial goals that this tracker should support are [SAVINGS_GOALS?]. These might include debt payoff targets, emergency fund milestones, or savings rate objectives.
+
+Any recurring expenses or subscriptions I want to flag for regular review are [RECURRING_EXPENSES?].
+
+Create a structured expense tracker that opens with a summary dashboard showing total income, total expenses, net balance, and overall spending rate as a percentage of income for the tracking period. Display the top three categories by spending amount so I can immediately see where most of my money is going.
+
+Build a detailed transaction log organized chronologically with columns for date, description, category, subcategory, amount, and payment method. If any transaction descriptions are ambiguous, assign the most likely category and flag it for my review rather than guessing silently.
+
+Generate a category breakdown showing each category total, its percentage of overall spending, and how it compares against the budget limit if one was provided. For categories that exceed their budget, calculate the overage in both dollar and percentage terms. For categories running under budget, show the remaining allowance.
+
+Analyze spending trends by looking for categories with unusually high single transactions, spending that clusters around certain days or times of the month, and recurring charges that appear to have increased. If I provided data for multiple periods, compare them and highlight the three largest changes in either direction.
+
+Create an alerts section that flags any category where spending exceeds 90 percent of its budget limit, any unacknowledged subscription or recurring charge, any single transaction representing more than 15 percent of total period spending, and any gap in tracking that suggests missing entries.
+
+If savings goals were provided, include a goal tracking section showing current progress, the required savings rate to stay on track, and how many tracking periods remain at the current pace to reach each goal.
+
+Close with three to five specific recommendations tied to the actual numbers, not generic advice. Identify categories where a small reduction would bring spending within budget, or flag a recurring charge that may no longer be needed. Format the entire tracker using tables for the transaction log and category breakdown, with dollar amounts consistent and all percentages calculated to one decimal place.

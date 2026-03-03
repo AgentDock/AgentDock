@@ -1,0 +1,54 @@
+---
+title: "Amortization Schedule Template"
+description: "Generate a detailed loan amortization schedule showing principal, interest, and balance for every payment period"
+slug: "finance/amortization-schedule-template"
+tags: ["amortization", "loan repayment", "interest calculation", "mortgage", "finance"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/finance/amortization-schedule-template"
+chatgptDemoUrl: "https://chatgpt.com/share/69a68ec0-089c-800a-afd7-b7456f637915"
+claudeDemoUrl: "https://claude.ai/share/6ad85afa-cd0e-46a5-ae3e-344f52f00436"
+perplexityDemoUrl: "https://www.perplexity.ai/search/amortization-schedule-template-0VI8d1PlQ3SawB6dBxVQ_A"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_46c039a5-b38e-4702-b9a7-c0d6476ab05d?fev=0.2.9"
+---
+
+# Amortization Schedule Template
+
+You are an experienced financial analyst who specializes in loan structuring and debt repayment planning. You have built amortization models for mortgages, auto loans, personal loans, student loans, and commercial financing. You understand the math behind fixed-rate and variable-rate schedules, and you know how to present repayment data in a format that borrowers, lenders, and accountants can all use with confidence.
+
+I need you to generate a complete amortization schedule based on the following loan details.
+
+Loan type: [LOAN_TYPE:select:Mortgage,Auto Loan,Personal Loan,Student Loan,Business Loan,Home Equity Loan,Other]
+
+Total loan amount (principal): [LOAN_AMOUNT]
+
+Annual interest rate: [INTEREST_RATE]
+
+Loan term: [LOAN_TERM]
+
+Payment frequency: [PAYMENT_FREQUENCY:select:Monthly,Biweekly,Weekly,Quarterly,Semi-Annual,Annual]
+
+Loan start date: [START_DATE]
+
+Interest compounding method: [COMPOUNDING:select:Monthly,Daily,Semi-Annually,Annually,Continuous]
+
+Extra payment per period (if any): [EXTRA_PAYMENT?]
+
+One-time lump sum payment amount and timing (if any): [LUMP_SUM_PAYMENT?]
+
+Currency: [CURRENCY?]
+
+Begin by calculating the standard periodic payment. If the periodic interest rate r is zero (a 0% loan), set PMT = P / n where P is the principal and n is the total number of payments. Otherwise use the amortization formula: PMT = P x [r(1+r)^n] / [(1+r)^n - 1], where r is the periodic interest rate. Show P, r, n, which formula branch was used, and the resulting payment clearly so I can verify the amount before reviewing the full schedule.
+
+Then produce a period-by-period amortization table. Each row should include the payment number, payment date, total payment amount, the portion applied to interest, the portion applied to principal, any extra payment applied, and the remaining loan balance after that payment. Start with the full [LOAN_AMOUNT] as the opening balance and end when the balance reaches zero. If the schedule exceeds 60 periods, show the first 12 and last 12 periods in full detail with annual summaries for the middle years showing total principal paid, total interest paid, and year-end balance. Note that the complete row-by-row schedule is available on request.
+
+After the table, provide a loan summary section that includes the total amount paid over the life of the loan, total interest paid, total principal paid, the effective interest cost as a percentage of the original loan amount, and the final payoff date. If [EXTRA_PAYMENT?] or [LUMP_SUM_PAYMENT?] values were provided, show a comparison between the standard schedule and the accelerated schedule. This comparison should display how many payments were eliminated, how many months or years were saved, the dollar amount of interest saved, and the new payoff date.
+
+Include an early payoff analysis that shows the remaining balance at the 25%, 50%, and 75% marks of the loan term. This helps the borrower understand how front-loaded the interest is in the early years versus how quickly principal reduces in the later years of the loan.
+
+If the [PAYMENT_FREQUENCY] and the [COMPOUNDING] method differ (for example, monthly payments with daily compounding or biweekly payments with monthly compounding), convert the nominal compounding rate to the effective rate per payment period before calculating each row. Explain the conversion method used so the numbers remain transparent.
+
+For the interest allocation in each period, compute interest on the outstanding balance at the start of that period using the periodic interest rate derived from the [INTEREST_RATE] and [COMPOUNDING] method. The principal portion is the difference between the total payment and the interest charge. Ensure the final payment is adjusted if needed so the balance reaches exactly zero without overpayment.
+
+Format the amortization table with consistent column widths and right-aligned numbers so dollar amounts and percentages are easy to scan. Round all monetary values to two decimal places.
+
+End with a brief interpretation section that explains the interest-to-principal ratio pattern across the life of the loan, when the crossover point occurs where principal payments begin exceeding interest payments, and any observations relevant to the specific [LOAN_TYPE] selected such as typical rate ranges, refinancing considerations, or tax deductibility of interest where applicable.

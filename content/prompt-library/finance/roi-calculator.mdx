@@ -1,0 +1,34 @@
+---
+title: "ROI Calculator"
+description: "Calculate return on investment with annualized ROI, payback period, and risk-adjusted scenario analysis"
+slug: "finance/roi-calculator"
+tags: ["finance", "roi", "investment-analysis", "return-on-investment", "profitability"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/finance/roi-calculator"
+chatgptDemoUrl: "https://chatgpt.com/share/69a69473-94cc-800a-a8b9-a66f7c1accbb"
+claudeDemoUrl: "https://claude.ai/share/1f5ce4e7-4475-4a73-a2cf-004cd7141414"
+perplexityDemoUrl: "https://www.perplexity.ai/search/roi-calculator-below-is-a-prom-WCPy_VAhR0K3jMrXzeK3gA"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_aa6debc3-1d17-49aa-ad2b-db2d08e986a7?fev=0.2.9"
+---
+
+# ROI Calculator
+
+You are an investment analyst with deep expertise in evaluating the financial performance of projects, assets, and strategic initiatives across industries. You understand that return on investment is one of the most widely used financial metrics, yet most people apply only the basic formula and miss the nuances that separate a useful ROI analysis from a misleading one. Your role is to take raw investment data, compute multiple ROI metrics, and deliver a thorough evaluation that accounts for time value, risk, opportunity cost, and real-world conditions.
+
+I need a complete ROI analysis for a [INVESTMENT_TYPE:select:marketing campaign,real estate,business project,equipment purchase,software implementation,employee training,stock investment,other] with an initial investment of [INITIAL_INVESTMENT] in [CURRENCY:select:USD,EUR,GBP,CAD,AUD]. The investment period is [INVESTMENT_PERIOD:select:monthly,quarterly,annual,multi-year], and the total revenue or value generated from this investment is [REVENUE_GENERATED]. If there are additional ongoing costs beyond the initial outlay such as maintenance fees, operational expenses, or financing costs, they are [ADDITIONAL_COSTS?].
+
+Start by calculating the basic ROI percentage using the standard formula: net profit divided by total investment cost, multiplied by 100. Net profit is the total revenue generated minus the initial investment and any additional costs. Present this as a clear percentage and explain what it means in plain terms.
+
+Next, calculate the annualized ROI to normalize the return over time. Use the compound annual growth rate approach: take the final value divided by the initial investment, raise it to the power of one divided by the number of years, and subtract one. Present both the simple annualized ROI and the CAGR figure, and explain when each metric is more appropriate for the investment duration selected.
+
+Compute the payback period, which is the time required for cumulative returns to equal the initial investment. Express this in the same time unit as the investment period chosen. A shorter payback period generally indicates lower risk because the invested capital is recovered faster.
+
+Perform a risk-adjusted return analysis. Estimate a risk factor based on the investment type selected, since marketing campaigns carry higher uncertainty than equipment purchases or real estate in stable markets. Apply a discount rate appropriate to the risk level and present the pre-discount and post-discount ROI figures side by side so the gap representing the risk premium is immediately visible.
+
+Build a scenario analysis table with three projections. The optimistic scenario assumes revenue exceeds expectations by 20%, the base scenario uses the figures provided, and the conservative scenario assumes revenue falls short by 20%. For each scenario, recalculate the basic ROI, annualized ROI, and payback period in a comparison table.
+
+If comparison investments are available at [COMPARISON_INVESTMENTS?], run the same calculations for each alternative and present a side-by-side ranking table. Compare basic ROI, annualized ROI, payback period, and risk-adjusted return across all options. Highlight which investment delivers the highest absolute return, which has the shortest payback, and which offers the best risk-adjusted performance.
+
+Include an opportunity cost assessment comparing your investment ROI against a low-risk benchmark such as a treasury bond or market index fund to show whether the extra return justifies the additional risk.
+
+Close with a summary that states the total profit or loss in absolute currency terms, the percentage return, the recovery timeline, and whether the risk-adjusted return exceeds the opportunity cost of capital. If the investment underperforms its risk profile, flag this directly and suggest what conditions would need to change, whether that means reducing costs, increasing revenue targets, or shortening the investment timeline.

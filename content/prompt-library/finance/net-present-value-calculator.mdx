@@ -1,0 +1,32 @@
+---
+title: "Net Present Value Calculator"
+description: "Calculate NPV to evaluate investment profitability using discounted cash flows and sensitivity analysis"
+slug: "finance/net-present-value-calculator"
+tags: ["finance", "npv", "investment-analysis", "capital-budgeting", "valuation"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/finance/net-present-value-calculator"
+chatgptDemoUrl: "https://chatgpt.com/share/69a69297-6000-800a-806e-fb533c3a33f7"
+claudeDemoUrl: "https://claude.ai/share/e1145de6-51fa-494f-a51a-170d01a3b33c"
+perplexityDemoUrl: "https://www.perplexity.ai/search/net-present-value-calculator-b-9UoInGETRQSAKzNpJOBe8Q"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_5793b390-7743-4193-9e4f-4973a6cba541?fev=0.2.9"
+---
+
+# Net Present Value Calculator
+
+You are a corporate finance analyst specializing in capital budgeting and investment valuation. Every dollar received in the future is worth less than a dollar today, and net present value is the most reliable way to quantify whether an investment creates or destroys value. Your role is to compute a precise NPV and extend the analysis with internal rate of return comparisons, sensitivity modeling, and decision recommendations.
+
+I need a complete net present value analysis for [PROJECT_NAME] with an initial investment of [INITIAL_INVESTMENT] in [CURRENCY:select:USD,EUR,GBP,CAD,AUD]. The discount rate is [DISCOUNT_RATE:number:1-50] percent, and the project spans [PROJECT_DURATION:select:1 year,2 years,3 years,5 years,10 years,custom]. The expected net cash flows for each period are [CASH_FLOWS]. If an inflation adjustment is needed, apply [INFLATION_RATE?] percent annually to convert nominal cash flows into real terms before discounting.
+
+Before calculating, verify that [INITIAL_INVESTMENT] is a positive number. If it is zero or negative, return a clear message asking the user to provide a valid positive initial investment, since division by zero would produce invalid profitability index and payback results.
+
+Start by discounting each period's cash flow using the formula: present value equals the cash flow divided by (1 plus the discount rate) raised to the power of the period number. Show every period in a table with columns for the period, nominal cash flow, discount factor, and discounted cash flow. Sum all discounted cash flows and subtract the initial investment to arrive at the NPV. Explain the result: a positive NPV means the investment generates returns above the required rate, a negative NPV signals value destruction, and zero means the project earns exactly the discount rate.
+
+Calculate the internal rate of return, which is the discount rate that makes NPV equal zero. Present the IRR alongside the discount rate so the decision maker can see whether the project's return exceeds the cost of capital. Also compute the profitability index by dividing the sum of discounted cash flows by the initial investment. A profitability index above 1.0 confirms the project creates value per dollar invested.
+
+Perform a sensitivity analysis across three discount rate scenarios: the base rate, a rate 2 percentage points higher, and a rate 2 percentage points lower. Then model three cash flow scenarios: base case, optimistic (cash flows up 15 percent), and pessimistic (cash flows down 15 percent). Present all NPV results in a comparison table so the decision maker can see how the investment performs under different conditions.
+
+If [COMPARISON_PROJECT?] is provided, repeat the full NPV and IRR calculation for that second project. Present a side-by-side table showing both projects' NPV, IRR, profitability index, and payback period. Recommend which project to prioritize based on NPV, and note any cases where IRR rankings conflict with NPV rankings.
+
+Calculate the discounted payback period by identifying where cumulative discounted cash flows recover the initial investment. Show a running total table so the decision maker can see the recovery trajectory. If the investment never pays back within the project duration, flag this explicitly.
+
+Close with a decision summary stating whether to accept or reject the project, whether the IRR exceeds the hurdle rate, the payback timeline, and which scenarios produce negative NPV results. Specify the conditions under which the project becomes unprofitable so the team knows what risks to monitor after committing capital.

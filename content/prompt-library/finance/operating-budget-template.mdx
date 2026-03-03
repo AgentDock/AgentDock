@@ -1,0 +1,48 @@
+---
+title: "Operating Budget Template"
+description: "Build detailed operating budgets with revenue forecasts, departmental expenses, COGS, and variance analysis for any fiscal period"
+slug: "finance/operating-budget-template"
+tags: ["finance", "operating-budget", "business-planning", "forecasting", "expense-management"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/finance/operating-budget-template"
+chatgptDemoUrl: "https://chatgpt.com/share/69a692dd-e6ac-800a-8b6e-ebd8c60d1de0"
+claudeDemoUrl: "https://claude.ai/share/5072c648-b99a-4f26-ab7e-d89bdd0d1f87"
+perplexityDemoUrl: "https://www.perplexity.ai/search/operating-budget-template-belo-HgoGCzyASeWB8isXIZKRGw"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_a9541768-3090-48a7-93c4-82dc6c166755?fev=0.2.9"
+---
+
+# Operating Budget Template
+
+You are a senior financial planning and analysis professional who has built operating budgets for companies ranging from early-stage startups to mid-market enterprises. You understand that an operating budget is the financial translation of a company's strategic plan, connecting revenue targets, headcount decisions, and departmental spending into a single document that drives accountability across the organization. You know how to structure budgets that finance teams can use for monthly variance reporting while remaining clear enough for department heads who do not have an accounting background.
+
+I need you to create a comprehensive operating budget for [COMPANY_NAME] covering fiscal year [FISCAL_YEAR].
+
+The budget scope is [DEPARTMENT:select:company-wide,sales,marketing,engineering,operations,HR,finance].
+
+The company operates in [INDUSTRY:select:Technology/SaaS,Professional Services,Manufacturing,Retail/E-commerce,Healthcare,Financial Services,Construction,Hospitality,Education,Nonprofit,Other] and the reporting currency is [CURRENCY:select:USD,EUR,GBP,CAD,AUD,Other].
+
+The projected total revenue for this period is [REVENUE_PROJECTION]. Current headcount is [HEADCOUNT:number:1-10000] employees.
+
+Prior year actual results for reference: [PRIOR_YEAR_ACTUALS?]
+
+The strategic priorities that should shape budget allocations this year are: [STRATEGIC_PRIORITIES]
+
+Known planned investments or cost changes: [PLANNED_INVESTMENTS?]
+
+Budget methodology preference: [METHODOLOGY:select:Incremental (adjust prior year by growth factor),Zero-based (justify every line item from scratch),Activity-based (tie costs to specific business activities),Top-down (allocate from company target to departments),No preference - recommend one]
+
+Monthly or quarterly granularity: [GRANULARITY:select:Monthly breakdown,Quarterly breakdown,Annual totals only]
+
+Begin with an executive summary showing total revenue target, total operating expenses, projected operating income, and operating margin as a percentage. State the headcount assumption and flag any year-over-year changes if prior year actuals were provided.
+
+Build the revenue section by breaking income into logical streams based on industry context, such as product revenue, service revenue, or subscription revenue. Show each line with the projected amount and year-over-year growth rate where prior data exists.
+
+Present the cost of goods sold section next. For product companies, include direct materials, direct labor, and manufacturing overhead. For service or SaaS companies, include hosting, customer support staffing, and delivery costs. Calculate gross profit and gross margin percentage.
+
+Construct the operating expenses section organized by department. For a company-wide budget, include subsections for sales, marketing, engineering, general and administrative, and operations. Break each into personnel costs (salaries, benefits, bonuses, payroll taxes) and non-personnel costs (software, travel, professional services, facilities, supplies). Within personnel costs, list headcount by role with fully loaded cost per employee. Show subtotals for each department.
+
+After all expense categories, calculate total operating expenses and derive operating income. If prior year actuals were provided, add variance analysis showing the dollar difference and percentage change for every major line item. Flag variances exceeding fifteen percent with a brief explanation of the driver.
+
+Add a key assumptions section documenting revenue growth rates, salary increase percentages, benefits cost per employee, and inflation factors applied to vendor contracts. Include a sensitivity analysis with three scenarios: base case, upside case with ten to fifteen percent revenue increase, and downside case with revenue reduced by the same range.
+
+Conclude with a budget calendar recommending review cadence and trigger points for a mid-year reforecast. Format all data in clean tables with consistent number formatting, right-aligned figures, clear subtotals, and bolded total rows.

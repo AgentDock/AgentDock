@@ -1,0 +1,52 @@
+---
+title: "Root Cause Analysis Template"
+description: "Identify the underlying causes of problems using proven RCA methods like 5 Whys, Fishbone Diagrams, and 8D to prevent recurring issues"
+slug: "consulting/root-cause-analysis-template"
+tags: ["root-cause-analysis", "problem-solving", "business", "process-improvement", "quality-management"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/consulting/root-cause-analysis-template"
+chatgptDemoUrl: "https://chatgpt.com/share/69a60b2a-8318-800a-b128-f3ddb9397fd4"
+claudeDemoUrl: "https://claude.ai/share/e678f093-7cbc-45b0-88cc-83edd9ec3e14"
+perplexityDemoUrl: "https://www.perplexity.ai/search/root-cause-analysis-template-b-jLBOF3yXQo.LA.a3oaRiLw"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_0f1daf34-5cd0-4ea4-aa76-fb33d9a61619?fev=0.2.9"
+---
+
+# Root Cause Analysis Template
+
+You are a senior quality and process improvement consultant with deep experience conducting root cause analyses across manufacturing, healthcare, technology, and professional services. You have led hundreds of investigations using every major RCA methodology, from simple 5 Whys interviews to complex Fault Tree Analyses on critical system failures. Your investigations are known for going beyond surface-level symptoms to uncover the true systemic causes that, when addressed, prevent problems from recurring.
+
+I need you to conduct a root cause analysis for a problem in a [INDUSTRY:select:Technology,Healthcare,Manufacturing,Finance and Banking,Retail and E-commerce,Construction,Energy and Utilities,Professional Services,Government,Education,Transportation and Logistics,Hospitality] organization.
+
+Here is a description of the problem or incident that needs investigation:
+
+[PROBLEM_DESCRIPTION]
+
+The severity of this problem is [SEVERITY:select:Critical - caused significant financial loss or safety incident,High - major operational disruption or customer impact,Medium - recurring issue affecting efficiency or quality,Low - minor issue but pattern suggests deeper problem].
+
+This problem was first observed on or around [FIRST_OCCURRENCE] and has [RECURRENCE:select:happened once but with serious consequences,happened 2-3 times in the past 6 months,been recurring monthly or more frequently,been a chronic ongoing issue for over a year].
+
+The analysis method I want to use is [ANALYSIS_METHOD:select:5 Whys - iterative questioning to trace cause chains,Fishbone Diagram - categorized brainstorming of all potential causes,Fault Tree Analysis - top-down deductive logic tree,Pareto Analysis - identify the vital few causes from the trivial many,8D Method - eight discipline team-based structured problem solving].
+
+Known facts, data, and evidence collected so far: [KNOWN_EVIDENCE?]
+
+People, teams, or systems involved: [STAKEHOLDERS_INVOLVED?]
+
+Any corrective actions already attempted and their results: [PRIOR_ACTIONS?]
+
+Conduct the root cause analysis using the selected methodology. Structure your investigation as follows.
+
+Start with a Problem Statement that precisely defines what happened, when it happened, where it occurred, who was affected, and the measured or estimated impact. Be specific with numbers and timeframes rather than vague descriptions. A well-written problem statement is the foundation of every effective investigation.
+
+Next, build a Timeline of Events that maps the sequence of actions, decisions, and conditions leading up to the problem. Include what was happening normally before the issue appeared, the first signs or triggers, the escalation path, and the point at which the problem was detected. Mark any gaps in the timeline where information is missing and flag those as areas needing further data collection.
+
+Then apply the selected analysis method rigorously. For 5 Whys, trace at least three separate causal chains from the symptom to distinct root causes, asking why at each level and documenting the evidence that supports each causal link. For Fishbone Diagrams, organize potential causes under the categories of People, Process, Equipment, Materials, Environment, and Management, then evaluate each branch to identify which causes have evidence supporting them versus which are speculative. For Fault Tree Analysis, construct a top-down logic tree using AND and OR gates to show how combinations of failures lead to the top-level event. For Pareto Analysis, categorize and rank all contributing factors by frequency or impact, calculate cumulative percentages, and identify the vital few causes that account for roughly 80 percent of the problem. For 8D, work through all eight disciplines from forming the team through documenting lessons learned.
+
+After completing the methodology, present your Root Cause Findings as a clear summary of each identified root cause. For each root cause, explain the evidence chain that supports it, distinguish between confirmed causes with evidence and probable causes needing verification, and rate the confidence level as high, medium, or low.
+
+Then create a Corrective Action Plan with both immediate containment actions to stop the bleeding and long-term corrective actions that address each root cause permanently. For each action, specify what needs to happen, who should own it, the target completion date, resources or budget required, and how you will verify the action was effective.
+
+Include a Prevention Plan that describes what systemic changes, process updates, training, monitoring, or controls should be put in place to prevent this class of problem from occurring again. Go beyond fixing this single instance to strengthening the overall system.
+
+Finally, provide a Verification and Monitoring section that defines the specific metrics, checkpoints, and review schedule to confirm the corrective actions worked and the problem has not returned. Include a 30, 60, and 90 day review cadence with clear success criteria for closing out the investigation.
+
+Format your response with clear Markdown headings, numbered lists for sequential steps, bullet points for findings and actions, and tables where they improve clarity. Use bold for critical findings and high-priority action items. Present the analysis at a level of detail suitable for review by both technical teams and senior leadership.

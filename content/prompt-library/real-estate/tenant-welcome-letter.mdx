@@ -1,0 +1,26 @@
+---
+title: "Tenant Welcome Letter"
+description: "Generate a professional tenant welcome letter that provides new renters with move-in details, rent payment instructions, property rules, and emergency contacts."
+slug: "real-estate/tenant-welcome-letter"
+tags: ["tenant welcome letter", "landlord letter", "property management", "new tenant onboarding", "move-in letter"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/real-estate/tenant-welcome-letter"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Tenant Welcome Letter
+
+You are a property correspondence writer helping draft a welcome letter for a new tenant. The sender is a [SENDER_ROLE:select:private landlord,property manager,property management company,building owner] named [SENDER_NAME] with phone [SENDER_PHONE] and email [SENDER_EMAIL]. The sender is available during [OFFICE_HOURS:select:Monday through Friday 9am to 5pm,Monday through Saturday 9am to 6pm,seven days a week 8am to 8pm,by appointment only].
+
+The tenant's name is [TENANT_NAME] and they are moving into [PROPERTY_ADDRESS] in unit [UNIT_NUMBER?]. The move-in date is [MOVE_IN_DATE] and keys can be picked up [KEY_PICKUP:select:at the management office on move-in day,from a lockbox with code provided separately,during a scheduled walkthrough before move-in,at the property on move-in day from the landlord].
+
+Monthly rent is [MONTHLY_RENT:number:500-10000] and it is due on the [RENT_DUE_DAY:select:1st,5th,15th] of each month. The accepted payment methods are [PAYMENT_METHOD:select:online portal,bank transfer,check mailed to management office,multiple methods including online portal and check]. A late fee of [LATE_FEE?] applies if rent is not received within [GRACE_PERIOD:select:3 days,5 days,7 days,10 days] of the due date. The security deposit on file is [SECURITY_DEPOSIT?].
+
+The property rules are as follows. The pet policy is [PET_POLICY:select:no pets allowed,pets allowed with prior approval and deposit,cats only with deposit,dogs and cats allowed with breed restrictions and deposit]. Quiet hours are [QUIET_HOURS:select:10pm to 8am,11pm to 7am,10pm to 7am on weekdays and 11pm to 9am on weekends,not formally enforced but courtesy is expected]. The parking arrangement is [PARKING:select:assigned spot included,street parking only,garage parking available for an additional fee,first come first served in the shared lot]. Smoking policy is [SMOKING:select:no smoking anywhere on the property,smoking permitted in designated outdoor areas only,no smoking inside the unit]. Trash and recycling pickup is on [TRASH_DAY:select:Monday,Tuesday,Wednesday,Thursday,Friday,varies by week] and bins should be [TRASH_INSTRUCTIONS:select:placed at the curb by 7am on pickup day,taken to the shared dumpster area,placed in the designated bin room].
+
+For routine maintenance requests the tenant should [MAINTENANCE_METHOD:select:submit a request through the online tenant portal,call the management office during business hours,send an email describing the issue with photos,text or call the property manager directly]. For after-hours emergencies such as flooding or gas leaks or electrical hazards, the tenant should call [EMERGENCY_PHONE]. The utility setup responsibility is [UTILITIES:select:tenant must set up electric and gas and internet before move-in,all utilities are included in rent,water and trash are included but tenant handles electric and internet,tenant is responsible for all utilities].
+
+The tone should be [TONE:select:warm and welcoming,professional and informative,friendly and casual,formal and thorough]. Generate a tenant welcome letter that opens with a greeting and congratulations on the new home. Include the move-in date and key pickup process, rent amount and payment procedures, the most important property rules, maintenance request instructions, emergency contact details, and the sender's full contact information. Close by inviting the tenant to reach out with any questions. Format the letter so it is easy to scan and keep it to one page.

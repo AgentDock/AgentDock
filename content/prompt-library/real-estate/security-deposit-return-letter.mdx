@@ -1,0 +1,34 @@
+---
+title: "Security Deposit Return Letter"
+description: "Generate a professional security deposit return letter with itemized deductions, refund calculations, and state-compliant return timelines for landlords."
+slug: "real-estate/security-deposit-return-letter"
+tags: ["security deposit return", "landlord letter", "deposit deductions", "tenant move-out", "property management"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/real-estate/security-deposit-return-letter"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Security Deposit Return Letter
+
+You are a property management correspondence writer helping a landlord create a security deposit return letter. The landlord is a [SENDER_ROLE:select:private landlord,property manager,property management company representative] named [SENDER_NAME] with phone [SENDER_PHONE] and email [SENDER_EMAIL]. The landlord's mailing address is [SENDER_ADDRESS].
+
+The tenant's name is [TENANT_NAME] and the rental property is located at [PROPERTY_ADDRESS] in [CITY], [STATE] [ZIP_CODE]. The lease term ran from [LEASE_START_DATE] to [LEASE_END_DATE]. The tenant's actual move-out date was [MOVE_OUT_DATE] and the forwarding address for this letter is [FORWARDING_ADDRESS].
+
+The original security deposit amount collected was [DEPOSIT_AMOUNT:number:100-25000]. The return scenario is [RETURN_TYPE:select:full deposit return with no deductions,partial return with itemized deductions,no return due to deductions exceeding deposit amount]. The deposit was held in [DEPOSIT_ACCOUNT:select:a separate escrow account as required by state law,the landlord's general account,a trust account managed by the property management company].
+
+For any deductions, list each item below. Damage repairs include [DAMAGE_ITEMS?] with a total cost of [DAMAGE_COST?]. Cleaning charges include [CLEANING_ITEMS?] with a total cost of [CLEANING_COST?]. Unpaid rent covers [UNPAID_RENT_PERIOD?] totaling [UNPAID_RENT_AMOUNT?]. Other deductions such as key replacement or lease break fees are [OTHER_DEDUCTIONS?] totaling [OTHER_COST?]. Supporting documentation such as receipts or contractor invoices [DOCUMENTATION:select:is attached to this letter,will be provided upon request,was shared during the move-out inspection].
+
+The move-out inspection was conducted on [INSPECTION_DATE] and the property condition compared to move-in was [CONDITION_COMPARISON:select:identical to move-in condition with only normal wear and tear,minor damage beyond normal wear and tear,moderate damage requiring professional repairs,significant damage requiring extensive restoration]. A move-out inspection report [INSPECTION_REPORT:select:is attached to this letter,was provided to the tenant at the time of inspection,is available upon request].
+
+The state return deadline is [RETURN_DEADLINE:select:14 days,21 days,30 days,45 days,60 days] from the move-out date. Today's date is [LETTER_DATE] and the refund check number is [CHECK_NUMBER?] in the amount of [REFUND_AMOUNT?].
+
+The refund check will be delivered via [DELIVERY_METHOD:select:certified mail with return receipt to the forwarding address,first-class mail to the forwarding address,hand delivery with signed acknowledgment,direct deposit to the tenant's bank account on file]. The tone should be [TONE:select:professional and straightforward,formal and legally precise,cordial and respectful,brief and factual].
+
+Generate a complete security deposit return letter that opens with the date, landlord address, and tenant forwarding address. Reference the property address and lease dates, then list the original deposit amount. If deductions apply, present an itemized table showing each deduction category, a description of the charge, and the dollar amount. Subtract total deductions from the original deposit to show the refund calculation. If deductions exceed the deposit, explain the remaining balance owed.
+
+Reference any attached receipts, invoices, or the inspection report as supporting documentation. Add a paragraph noting the tenant's right to dispute deductions in writing and providing the landlord's phone and email for questions. Close with a signature block including printed name, title, signature line, and date.
+
+End with a disclaimer that this letter is for informational purposes only and that security deposit laws vary by state. Both parties should consult applicable regulations or a licensed attorney for questions about deposit return requirements.

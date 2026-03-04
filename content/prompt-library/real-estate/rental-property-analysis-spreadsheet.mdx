@@ -1,0 +1,32 @@
+---
+title: "Rental Property Analysis Spreadsheet"
+description: "Generate a comprehensive rental property analysis spreadsheet with income projections, expense breakdowns, mortgage calculations, and key investment metrics like NOI, cap rate, and cash-on-cash return."
+slug: "real-estate/rental-property-analysis-spreadsheet"
+tags: ["rental property analysis", "investment spreadsheet", "cash flow analysis", "real estate investing", "property evaluation"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/real-estate/rental-property-analysis-spreadsheet"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Rental Property Analysis Spreadsheet
+
+I am evaluating a rental property and need a comprehensive analysis spreadsheet that covers every financial dimension of the deal. The property is located at [PROPERTY_ADDRESS] and the property type is [PROPERTY_TYPE:select:single-family home,duplex,triplex,fourplex,small apartment building (5-20 units),condo or townhouse,mixed-use]. The purchase price is [PURCHASE_PRICE:number:10000-10000000] dollars with a down payment of [DOWN_PAYMENT_PERCENT:select:3.5%,5%,10%,15%,20%,25%,30%,100% (all cash)] of the purchase price. Estimated closing costs are [CLOSING_COSTS?] dollars or estimate at 3 to 4 percent if unknown.
+
+For the income section, the expected monthly rent is [MONTHLY_RENT:number:200-50000] dollars across all units. Additional monthly income from sources like parking, laundry, storage, or pet fees totals [OTHER_MONTHLY_INCOME?] dollars. Apply a vacancy rate of [VACANCY_RATE:select:3%,5%,7%,10%,12%] and a credit loss allowance of [CREDIT_LOSS:select:1%,2%,3%] to calculate effective gross income on both a monthly and annual basis.
+
+For operating expenses, list each item on its own line with monthly and annual columns. Property taxes are [ANNUAL_PROPERTY_TAX:number:500-50000] dollars per year. Insurance costs [ANNUAL_INSURANCE:number:300-15000] dollars per year. Budget [MAINTENANCE_PERCENT:select:5%,8%,10%,12%,15%] of gross rent for repairs and maintenance. Property management fees are [MANAGEMENT_FEE:select:0% (self-managed),6%,8%,10%,12%] of collected rent. HOA or condo fees are [HOA_MONTHLY?] dollars per month. Utilities paid by the landlord total [LANDLORD_UTILITIES?] dollars per month. Other recurring expenses like landscaping, pest control, or legal fees total [OTHER_EXPENSES?] dollars per month. Set aside [CAPEX_RESERVE:select:5%,7%,10%] of gross rent as a capital expenditure reserve for future roof, HVAC, and appliance replacements.
+
+For the mortgage section, calculate the loan amount from the purchase price minus down payment. The interest rate is [INTEREST_RATE:number:2-12] percent on a [LOAN_TERM:select:15-year,20-year,25-year,30-year] fixed-rate mortgage. Show the monthly principal and interest payment, and break out annual debt service.
+
+Now build the analysis spreadsheet with these sections. First, create an acquisition summary showing total cash needed to close including down payment, closing costs, and any immediate repairs estimated at [IMMEDIATE_REPAIRS?] dollars. Second, produce a monthly and annual income statement that flows from gross scheduled income through effective gross income, total operating expenses, net operating income, debt service, and finally net cash flow.
+
+Third, calculate and display these investment metrics in a summary table: net operating income, cap rate (NOI divided by purchase price), cash-on-cash return (annual cash flow divided by total cash invested), monthly cash flow, gross rent multiplier, debt service coverage ratio, one percent rule test, break-even occupancy rate, total ROI including principal paydown, and operating expense ratio.
+
+Fourth, create a [PROJECTION_YEARS:select:3-year,5-year,10-year] projection assuming annual rent growth of [RENT_GROWTH:select:0%,2%,3%,4%,5%] and expense growth of [EXPENSE_GROWTH:select:2%,3%,4%,5%]. Show projected cash flow, cumulative cash flow, equity buildup from principal paydown, and estimated property value using the initial cap rate for each year.
+
+Fifth, include a deal evaluation section that scores the property against investment benchmarks: positive or negative cash flow, cap rate versus [TARGET_CAP_RATE:select:4%,5%,6%,7%,8%,10%], cash-on-cash return versus [TARGET_COC:select:6%,8%,10%,12%,15%], and DSCR above 1.2. Provide a clear buy, negotiate, or pass recommendation.
+
+Format the entire output as a structured spreadsheet with clearly labeled rows, columns, and section headers that can be copied directly into Excel or Google Sheets.

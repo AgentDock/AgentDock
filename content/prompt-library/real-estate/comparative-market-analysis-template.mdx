@@ -1,0 +1,26 @@
+---
+title: "Comparative Market Analysis Template"
+description: "Generate a detailed comparative market analysis report by evaluating subject property details, comparable sales, market conditions, and value adjustments."
+slug: "real-estate/comparative-market-analysis-template"
+tags: ["comparative market analysis", "CMA template", "real estate comps", "property pricing", "market valuation"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/real-estate/comparative-market-analysis-template"
+chatgptDemoUrl: "https://chatgpt.com/share/69a7da53-da70-800a-97b5-0bcdfc6a6410"
+claudeDemoUrl: "https://claude.ai/share/c2c6f542-09f3-4e62-8dab-531fde863466"
+perplexityDemoUrl: "https://www.perplexity.ai/search/comparative-market-analysis-te-HLFkyNUISayLfPfUXWx93g"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_8ee8a68e-bf2e-4675-8932-74d3fbf22cc6?fev=0.2.9"
+---
+
+# Comparative Market Analysis Template
+
+You are an experienced real estate analyst preparing a comparative market analysis report. I need this CMA for a property located at [PROPERTY_ADDRESS] in [CITY_STATE_ZIP]. The property is a [PROPERTY_TYPE:select:single-family home,condominium,townhouse,multi-family (2-4 units),manufactured home,vacant land] with [BEDROOMS:number:1-10] bedrooms and [BATHROOMS:number:1-8] bathrooms, totaling approximately [SQUARE_FEET:number:400-15000] square feet on a [LOT_SIZE] lot. It was built in [YEAR_BUILT:number:1900-2099] and I would describe the overall condition as [CONDITION:select:excellent,good,fair,needs work,major renovation needed]. Notable features or upgrades include [NOTABLE_FEATURES?].
+
+The purpose of this analysis is [PURPOSE:select:pricing a new listing,making a purchase offer,refinancing,estate settlement,investment evaluation,property tax appeal]. The local market is currently trending [MARKET_TREND:select:strong seller's market,slight seller's market,balanced market,slight buyer's market,strong buyer's market] and the average days on market for similar homes in the area is approximately [DAYS_ON_MARKET?].
+
+Please identify [COMP_COUNT:number:3-10] comparable properties that have sold within the past [TIMEFRAME:select:3 months,6 months,9 months,12 months] and are located within [RADIUS:select:0.25 miles,0.5 miles,1 mile,2 miles,5 miles] of the subject property. For each comparable, provide the sale price, sale date, square footage, bedroom and bathroom count, lot size, year built, condition at sale, and any relevant features that differ from the subject property.
+
+After listing the comparables, create an adjustment grid where you account for differences between each comp and the subject property. Adjust for square footage variance, bedroom and bathroom count, lot size, property age and condition, garage or parking differences, location quality within the neighborhood, and any unique features such as pools, views, or recent renovations. Show each adjustment as a dollar amount with a brief explanation of the reasoning behind it. Calculate the adjusted sale price for each comparable after all adjustments are applied.
+
+Synthesize the adjusted values into a recommended price range and a single most probable value for the subject property. Explain how you weighted each comparable and why certain comps received more influence in the final estimate. Summarize the key market conditions that support your conclusion, including absorption rate, inventory levels, and any pricing trends you observe.
+
+Present the full report in a structured format with a property summary at the top, followed by the comparable sales grid, the adjustment table, your value conclusion, and a brief section with recommended next steps based on my stated [PURPOSE]. Include any caveats about data limitations or factors that could shift the value estimate.

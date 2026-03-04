@@ -1,0 +1,54 @@
+---
+title: "Decision Matrix Template"
+description: "Evaluate options against weighted criteria using a structured decision matrix with scoring, ranking, and clear recommendations"
+slug: "consulting/decision-matrix-template"
+tags: ["decision-matrix", "decision-making", "business", "evaluation", "prioritization"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/consulting/decision-matrix-template"
+chatgptDemoUrl: "https://chatgpt.com/share/69a775d7-4d00-800a-aebc-95ea2546580f"
+claudeDemoUrl: "https://claude.ai/share/de1a9d9e-6eb4-4832-9256-d178254b20d4"
+perplexityDemoUrl: "https://www.perplexity.ai/search/decision-matrix-template-below-CLmV9BSNSH2GCgFINoNndA"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_9632d743-b9ce-4b6f-9d35-f78d1791c330?fev=0.2.9"
+---
+
+# Decision Matrix Template
+
+You are a decision analysis expert with extensive experience helping organizations and individuals make high-stakes choices using structured evaluation frameworks. You have built decision matrices for vendor selections, product launches, technology investments, hiring decisions, market entry strategies, and personal life choices. Your approach combines quantitative scoring rigor with practical judgment, producing matrices that turn complex multi-criteria decisions into clear, defensible recommendations. You understand that the value of a decision matrix is not just the final score but the discipline of forcing stakeholders to articulate what matters and how much it matters before evaluating any option.
+
+I need you to build a complete decision matrix for the following situation.
+
+The decision I am trying to make involves: [DECISION_CONTEXT]
+
+The options I am evaluating are: [OPTIONS]
+
+The criteria I want to evaluate these options against are: [CRITERIA]
+
+The method for assigning weights to criteria should be [WEIGHTING_METHOD:select:Percentage allocation where all weights sum to 100%,Relative ranking from 1 to N where N is the number of criteria,Pairwise comparison where each criterion is compared against every other,Equal weighting where all criteria carry the same importance].
+
+The scoring scale for rating each option against each criterion should be [SCORING_SCALE:select:1 to 3 where 1 is poor and 3 is excellent,1 to 5 where 1 is poor and 5 is excellent,1 to 10 where 1 is poor and 10 is excellent,Binary pass or fail using 0 and 1,Custom scale defined in the criteria descriptions].
+
+This decision is being made in the context of a [INDUSTRY:select:Technology,Healthcare,Finance and Banking,Manufacturing,Retail and E-commerce,Professional Services,Energy,Government,Education,Nonprofit,Real Estate,Construction] organization.
+
+The timeline for making this decision is [DECISION_TIMELINE:select:Urgent within 1 week,Short-term within 1 month,Medium-term within 1 quarter,Long-term within 6 months or more].
+
+Additional context about constraints, stakeholders, or priorities that should influence the evaluation: [ADDITIONAL_CONTEXT?]
+
+Build the decision matrix following this structure.
+
+Start with a Decision Framing section. Restate the decision as a one-sentence problem statement. Identify the decision type: selection among alternatives, prioritization and ranking, or go versus no-go. Note any hard constraints that disqualify options before scoring, such as budget caps or regulatory requirements. Flag disqualified options with explanations but keep them in the matrix for transparency.
+
+Next, create the Criteria Definition section. For each criterion, write a clear definition of what it measures so different evaluators score consistently. Note whether higher scores are better or worse and whether the criterion is quantitative or qualitative. If obvious criteria are missing based on the context, suggest additions.
+
+Then build the Weighting section using the selected method. Show your work and explain the rationale behind each weight. If using percentage allocation, verify weights sum to 100 percent. If using pairwise comparison, show the full comparison matrix. Present final weights in a table sorted from highest to lowest importance.
+
+Now construct the Scoring Matrix as a table with options as rows and criteria as columns. Score each option using the selected scale. For each score, provide a brief justification referencing concrete evidence or data. Where information is incomplete, state the assumption and assign a conservative score.
+
+Calculate the Weighted Results by multiplying each raw score by its criterion weight. Sum weighted scores for each option, rank them from highest to lowest, and calculate the gap between the top two options as both an absolute number and a percentage.
+
+Provide a Sensitivity Analysis. Test what happens if the top criterion weight shifts by 20 percent and if the lowest-weighted criterion becomes the highest. Report whether the ranking holds or breaks under these variations.
+
+Write a Trade-off and Risk section. For each option, identify its strongest and weakest criteria compared to alternatives. List assumptions made during scoring, rate confidence in each score, and identify risks for the top two options.
+
+Conclude with a Recommendation. State the winning option with its total score. Give the three strongest reasons for this choice and acknowledge one or two significant weaknesses. If the margin is narrow, explain what would tip the decision. Suggest next steps such as validation, pilot testing, or stakeholder review.
+
+Format with Markdown headings, tables for all matrices, bullet points for findings, and bold text for key results. Include a one-page executive summary at the top.

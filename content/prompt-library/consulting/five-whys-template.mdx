@@ -1,0 +1,52 @@
+---
+title: "5 Whys Template"
+description: "Use the 5 Whys method to drill from symptoms to root causes with structured iterative questioning, causal chain mapping, and corrective action plans"
+slug: "consulting/five-whys-template"
+tags: ["five-whys", "root-cause-analysis", "problem-solving", "process-improvement", "quality-management"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/consulting/five-whys-template"
+chatgptDemoUrl: "https://chatgpt.com/share/69a7773e-c1f4-800a-8456-c8e6e01ab72a"
+claudeDemoUrl: "https://claude.ai/share/3d69e30f-01c3-41e1-8602-a3f9f271b6eb"
+perplexityDemoUrl: "https://www.perplexity.ai/search/5-whys-template-below-is-a-pro-zeFmui1QSISDSiE2g8tswg"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_7ccdd661-4737-406f-aa1f-a247c377f735?fev=0.2.9"
+---
+
+# 5 Whys Template
+
+You are a continuous improvement specialist trained in the Toyota Production System and Lean methodology. You have conducted hundreds of 5 Whys analyses across manufacturing floors, software teams, healthcare facilities, and service operations. You understand that asking "Why?" is deceptively simple but requires discipline to avoid jumping to conclusions, chasing symptoms, or stopping too early. Your analyses are known for uncovering true systemic root causes that, once addressed, prevent problems from recurring.
+
+I need you to conduct a 5 Whys analysis for a problem in a [INDUSTRY:select:Manufacturing,Healthcare,Technology,Financial Services,Retail and E-commerce,Construction,Education,Government,Energy and Utilities,Transportation and Logistics,Professional Services,Hospitality,Food and Beverage] organization.
+
+The problem statement is:
+
+[PROBLEM_STATEMENT]
+
+This problem falls within [PROBLEM_CATEGORY:select:Product or Service Quality Defect,Operational Process Failure,Customer Complaint or Dissatisfaction,Safety Incident or Near Miss,Delivery or Timeline Delay,Cost Overrun or Budget Variance,Equipment or System Breakdown,Employee Turnover or Performance Issue,Compliance or Regulatory Gap,Communication Breakdown] and its severity level is [SEVERITY:select:Critical - major financial loss or safety risk,High - significant operational disruption,Medium - recurring issue affecting efficiency,Low - minor issue with a concerning pattern].
+
+The problem was first noticed on or around [FIRST_NOTICED] and has [FREQUENCY:select:occurred once with serious consequences,happened 2 to 3 times recently,been recurring on a weekly or monthly basis,been a chronic ongoing issue]. The people, teams, or departments affected include: [AFFECTED_PARTIES]
+
+Any data, observations, or evidence already collected: [EXISTING_EVIDENCE?]
+
+Any fixes or workarounds already attempted: [PRIOR_FIXES?]
+
+Conduct the 5 Whys analysis following this structured approach.
+
+Start with a clear Problem Definition. Restate the problem in specific, measurable terms. Define what should be happening versus what is actually happening. Quantify the gap with numbers, percentages, timeframes, or dollar amounts wherever possible. A vague problem statement produces vague root causes, so push for precision. Include who is affected, where the problem occurs, and how frequently.
+
+Next, build a brief Problem Context section. Summarize the environment, conditions, and recent changes surrounding the problem. Note any process changes, staffing shifts, new equipment, or policy updates that coincided with the problem's appearance. This context prevents the Why chain from going down blind alleys.
+
+Then conduct the 5 Whys Iterative Analysis. Begin with the problem statement as Why 0, the starting symptom. For each Why level from Why 1 through Why 5, ask "Why did this happen?" and provide a clear, evidence-based answer. After each answer, note the type of cause it represents: human error, process gap, training deficiency, equipment failure, design flaw, resource constraint, or management system issue. Note whether each answer is confirmed by evidence or is a hypothesis needing verification.
+
+Do not stop at exactly five. If the chain reaches a true root cause before the fifth Why, explain why going deeper would not be productive. If five levels are not enough, continue to Why 6 or Why 7 until you reach a cause that is systemic, actionable, and within the organization's control to fix.
+
+Where the problem has multiple contributing factors, branch the analysis. Identify the point where two or more independent causes contribute, and trace separate Why chains for each branch. Label each branch clearly so the reader can follow the diverging causal paths. Not every problem has a single linear cause. Acknowledging branches produces a more honest and useful analysis.
+
+After completing all Why chains, present a Root Cause Summary. List each root cause identified, whether from the main chain or a branch. Classify each into one of these categories: Process or Procedure, People or Training, Equipment or Technology, Materials or Inputs, Management or Policy, or Environmental or External. Rate your confidence as high, medium, or low based on the evidence available.
+
+Then build a Corrective Action Plan. For each root cause, recommend three levels of action. First, an immediate containment action that stops the bleeding within one to two days. Second, a corrective action that addresses and eliminates the root cause within two to four weeks. Third, a preventive action that changes the system so this class of problem cannot recur. For every action, specify the responsible owner, target date, resources needed, and a measurable success criterion.
+
+Include a Verification and Monitoring Plan. Define the metrics you will track to confirm the corrective actions worked. Set review checkpoints at 30, 60, and 90 days. Describe what "success" looks like at each checkpoint and what triggers a deeper investigation if metrics do not improve.
+
+Close with a Lessons Learned section. Identify what this analysis revealed about the organization's broader systems or processes. Suggest where similar root causes might exist in adjacent workflows and whether a wider review is warranted.
+
+Format the entire analysis using Markdown with clear headings for each section. Use numbered lists within the Why chain to show the progression. Use tables for the corrective action plan with columns for root cause, action type, description, owner, deadline, and success metric. Bold confirmed root causes and high-priority actions.

@@ -1,0 +1,58 @@
+---
+title: "Corrective Action Plan Template"
+description: "Document non-conformities and build structured corrective action plans with root cause identification, CAPA steps, responsible owners, deadlines, and effectiveness verification"
+slug: "consulting/corrective-action-plan-template"
+tags: ["corrective-action", "CAPA", "quality-management", "compliance", "process-improvement"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/consulting/corrective-action-plan-template"
+chatgptDemoUrl: "https://chatgpt.com/share/69a77577-7440-800a-ad22-cd4d58b08485"
+claudeDemoUrl: "https://claude.ai/share/ed2055b4-b1a6-45d7-9def-63d223cc6ac2"
+perplexityDemoUrl: "https://www.perplexity.ai/search/corrective-action-plan-templat-Hzh1hVsdSKyVCFlCDH1C5Q"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_016c5906-c4af-4870-afb6-7478e911af18?fev=0.2.9"
+---
+
+# Corrective Action Plan Template
+
+You are a quality management expert with extensive experience in corrective and preventive action (CAPA) systems across manufacturing, healthcare, professional services, and regulated industries. You have led corrective action programs for organizations pursuing ISO 9001, FDA, and other regulatory compliance. Your corrective action plans are known for being thorough, traceable, and effective because you insist on verified root causes before prescribing solutions, and you build verification steps into every plan to confirm the fix actually worked.
+
+I need you to create a corrective action plan for an issue in a [DEPARTMENT] department.
+
+The type of issue is [ISSUE_TYPE:select:Quality,Performance,Compliance,Safety,Process,Customer Complaint] and here is a detailed description of what happened:
+
+[ISSUE_DESCRIPTION]
+
+The severity of this issue is [SEVERITY:select:Critical - immediate risk to safety or regulatory standing,High - significant operational or financial impact,Medium - recurring problem affecting efficiency or output quality,Low - minor deviation with potential to escalate if unaddressed].
+
+The root cause or suspected root cause of this issue is:
+
+[ROOT_CAUSE]
+
+The person responsible for owning and driving this corrective action plan to completion is [RESPONSIBLE_PERSON] and the target deadline for full implementation is [DEADLINE].
+
+Any relevant standards, regulations, or internal policies this plan must satisfy: [APPLICABLE_STANDARDS?]
+
+Any immediate containment actions already taken to limit the impact: [CONTAINMENT_ACTIONS?]
+
+Additional context such as prior occurrences, affected products or services, or customer impact: [ADDITIONAL_CONTEXT?]
+
+Create a complete corrective action plan document structured as follows.
+
+Start with a CAP Summary Header that includes the CAP reference number in the format CAP-YYYY-NNN, the date of issue, the originating department, the issue type and severity classification, and the responsible owner. This header serves as the identification block for tracking and audit purposes.
+
+Next, write a Non-Conformity Description that provides a precise, factual account of the issue. State what happened, when and where it was discovered, who reported it, and the measured or estimated impact. Quantify with numbers wherever possible: units affected, hours lost, cost incurred, or customers impacted. Distinguish between confirmed facts and preliminary observations still under investigation.
+
+Then document the Root Cause Analysis section. Classify the root cause into one of these categories: process or procedure gap, training or competency deficiency, equipment or system failure, material or supplier issue, management system weakness, or communication breakdown. Explain the causal chain from the root cause to the observed non-conformity. If the root cause is preliminary, note the investigation steps needed to confirm it. Rate the confidence level as confirmed, probable, or suspected.
+
+Build the Corrective Action Plan organized into three tiers. The first tier covers immediate containment actions to be completed within 24 to 48 hours. The second tier covers corrective actions that eliminate the confirmed root cause, typically within 2 to 4 weeks. The third tier covers preventive actions that change the underlying system so this category of issue cannot recur, typically within 1 to 3 months. For every action, specify a description, the responsible owner, the target completion date, resources needed, and a measurable completion criterion.
+
+Present the actions in a table with columns for Action ID in format CA-01 through CA-99, Tier, Description, Owner, Target Date, Resources, Completion Criteria, and Status.
+
+Include an Impact Assessment that evaluates broader consequences. Address whether products or services need recall or rework, whether external parties need notification, the estimated financial impact, and whether related processes share the same vulnerability.
+
+Create an Effectiveness Verification Plan with the metrics to be monitored, baseline and target measurements, verification methods such as audit or inspection or data review, and checkpoints at 30, 60, and 90 days after implementation. Define the criteria for closing out the CAP versus escalating if the fix did not hold.
+
+Add a Documentation and Records section listing evidence and supporting documents to attach to this CAP, including investigation reports, test results, customer complaints, and audit findings. Specify retention requirements based on applicable standards.
+
+Close with an Approval and Sign-Off section listing the review chain: CAP owner, department manager, quality manager, and any additional reviewers required. Each entry should have fields for name, role, signature, and date.
+
+Format the document using Markdown with clear headings, numbered lists for sequential steps, the corrective action table in proper Markdown table syntax, and bold text for critical deadlines and high-severity items.

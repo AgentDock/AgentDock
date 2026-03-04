@@ -1,0 +1,52 @@
+---
+title: "Fishbone Diagram Template"
+description: "Build structured fishbone diagrams to identify root causes of problems using the 6M framework with prioritized causes and corrective actions"
+slug: "consulting/fishbone-diagram-template"
+tags: ["fishbone-diagram", "root-cause-analysis", "quality-management", "problem-solving", "ishikawa"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/consulting/fishbone-diagram-template"
+chatgptDemoUrl: "https://chatgpt.com/share/69a776e8-20e0-800a-9ef2-98e723f52ff3"
+claudeDemoUrl: "https://claude.ai/share/5c2678ed-a755-49db-bdd6-795a6f2ca6e1"
+perplexityDemoUrl: "https://www.perplexity.ai/search/fishbone-diagram-template-belo-SFqODIopQta6ZjR._i6aWg"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_c19ed94a-cfd8-45ba-b94e-7b03e17c97aa?fev=0.2.9"
+---
+
+# Fishbone Diagram Template
+
+You are a senior quality management consultant and Six Sigma Black Belt with over 15 years of experience leading root cause analysis sessions across manufacturing, healthcare, technology, and service industries. You have led hundreds of fishbone diagram workshops and know how to extract meaningful causal factors from cross-functional teams. Your analyses go beyond surface-level symptoms to uncover the systemic issues that drive recurring problems.
+
+I need you to create a detailed fishbone diagram analysis for a problem occurring in a [INDUSTRY:select:Manufacturing,Healthcare,Technology,Financial Services,Retail,Construction,Education,Logistics,Food and Beverage,Professional Services,Government,Energy] organization.
+
+The problem statement is:
+
+[PROBLEM_STATEMENT]
+
+This problem is affecting our [IMPACT_AREA:select:Product Quality,Customer Satisfaction,Operational Efficiency,Employee Safety,Cost Control,Delivery Timelines,Regulatory Compliance,Revenue Growth,Service Reliability,Team Productivity] and has been occurring for approximately [DURATION:select:Less than 1 week,1 to 4 weeks,1 to 3 months,3 to 6 months,6 to 12 months,Over 1 year].
+
+The scope of analysis should cover [SCOPE:select:A single process or workstation,A department or team,A product line or service,An entire facility or location,Multiple locations or the whole organization].
+
+The primary categories I want to investigate are [CATEGORIES:select:Standard 6M (People - Machine - Method - Material - Measurement - Mother Nature),4S for Service (Surroundings - Suppliers - Systems - Skills),5P for Marketing (Product - Price - Place - Promotion - People),Custom categories listed below]. If you selected custom categories, list them here: [CUSTOM_CATEGORIES?]
+
+Here is additional context about the problem, including any data, observations, or previous attempts to fix it:
+
+[ADDITIONAL_CONTEXT?]
+
+The team members or roles involved in this process include: [TEAM_ROLES?]
+
+Using the selected category framework, conduct a thorough fishbone analysis following this structure.
+
+Start with a problem definition section. Restate the problem in clear, measurable terms. Define what "normal" or "expected" performance looks like versus what is actually happening. Quantify the gap between expected and actual where possible. Identify when the problem first appeared and any patterns in timing, frequency, or conditions.
+
+Next, build the fishbone diagram as a structured text layout. Place the problem statement as the "head" of the fish on the right side. Create a main horizontal spine. Branch out each category as a major bone angling off the spine. For each category, identify three to six potential causes. For each potential cause, dig deeper with one to three sub-causes that explain why that cause exists. Use the "5 Whys" technique on the most significant causes to reach true root level.
+
+For the standard 6M framework, investigate these categories thoroughly. Under People, examine training gaps, skill levels, staffing adequacy, fatigue, communication breakdowns, supervision quality, and human error patterns. Under Machine or Equipment, look at maintenance schedules, equipment age, calibration status, capacity limitations, technology gaps, and tool availability. Under Method or Process, evaluate standard operating procedures, process documentation, workflow design, handoff points, approval bottlenecks, and variation between shifts or teams. Under Material, consider raw material quality, supplier consistency, storage conditions, specification clarity, incoming inspection practices, and material substitutions. Under Measurement, assess instrument accuracy, data collection methods, inspection criteria, sampling plans, metric definitions, and reporting frequency. Under Mother Nature or Environment, examine temperature, humidity, lighting, noise, workspace layout, seasonal factors, and external regulatory changes.
+
+After completing the diagram, provide a cause prioritization matrix. Rate each identified cause on two dimensions using a one to five scale: likelihood that this cause contributes to the problem and magnitude of its impact if confirmed. Multiply these to get a priority score. Present the top ten causes in a table sorted by priority score from highest to lowest. Include columns for the cause description, its category, the likelihood rating, the impact rating, the priority score, and the evidence or indicators supporting this rating.
+
+Then create a verification plan for the top five prioritized causes. For each one, describe what data to collect to confirm or rule out this cause, who should collect it, the collection method, the timeline for verification, and the decision criteria for confirming the cause.
+
+Finally, develop a corrective action plan. For each verified or highly likely root cause, recommend a short-term containment action that can be implemented within one to two weeks, a long-term corrective action that addresses the root cause permanently, and a preventive action that stops similar problems from emerging elsewhere. Include an owner role, a target completion date, resources needed, and a success metric for each action.
+
+Close with a summary section that lists the three most critical root causes, the estimated combined impact of addressing them, the recommended priority sequence for corrective actions, and a suggested timeline for a follow-up review to verify effectiveness.
+
+Format the entire analysis using Markdown with clear headings, tables for the prioritization matrix and action plans, and indented bullet points to show the hierarchical cause-and-effect relationships of the fishbone structure.

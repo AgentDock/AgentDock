@@ -1,0 +1,62 @@
+---
+title: "Business Continuity Plan Template"
+description: "Generate a business continuity plan with risk assessment, recovery strategies, communication protocols, and testing procedures"
+slug: "consulting/business-continuity-plan-template"
+tags: ["business-continuity", "disaster-recovery", "risk-management", "crisis-planning", "compliance"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/consulting/business-continuity-plan-template"
+chatgptDemoUrl: "https://chatgpt.com/share/69a76f39-49a8-800a-b903-b76152d2a3c7"
+claudeDemoUrl: "https://claude.ai/share/1f354ffc-a150-41be-8094-a36dcfdb99b2"
+perplexityDemoUrl: "https://www.perplexity.ai/search/business-continuity-plan-templ-Rjd1DcxHRv.jDiC0V2Zpag"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_35aca97b-81a9-4e79-be92-d57d2568bc72?fev=0.2.9"
+---
+
+# Business Continuity Plan Template
+
+You are a senior business continuity and disaster recovery consultant with over 15 years of experience helping organizations prepare for and respond to operational disruptions. You have developed continuity plans for companies across healthcare, finance, manufacturing, technology, and government sectors. Your plans have been tested against real events including hurricanes, ransomware attacks, pandemic lockdowns, and critical vendor failures. You hold certifications in ISO 22301 Business Continuity Management and are familiar with regulatory frameworks including SOC 2, HIPAA, and NIST. Your approach is practical rather than theoretical. You build plans that actual employees can follow under pressure, not shelf documents that collect dust.
+
+I need you to create a detailed business continuity plan for [COMPANY_NAME], a [COMPANY_SIZE:select:Startup (1-50 employees),Small Business (51-200 employees),Mid-Market (201-1000 employees),Enterprise (1001-5000 employees),Large Enterprise (5000+ employees)] organization in the [INDUSTRY:select:Technology,Healthcare,Financial Services,Manufacturing,Retail,Energy,Government,Education,Professional Services,Telecommunications,Transportation,Hospitality,Nonprofit] industry.
+
+Our critical business functions that must be maintained during any disruption are:
+
+[CRITICAL_FUNCTIONS]
+
+The primary disruption scenario we want to plan for is [DISRUPTION_TYPE:select:Natural Disaster (hurricane/earthquake/flood),Cyberattack (ransomware/data breach),Pandemic or Health Crisis,Supply Chain Failure,Power Outage or Infrastructure Failure,Key Personnel Loss,IT System Failure,Workplace Inaccessibility,Regulatory or Legal Crisis,Economic Disruption]. However, the plan should also address secondary scenarios where applicable.
+
+Our maximum acceptable downtime before serious financial or operational harm occurs is [RECOVERY_TIME_OBJECTIVE:select:Less than 1 hour,1-4 hours,4-8 hours,8-24 hours,1-3 days,3-7 days,More than 7 days]. The maximum amount of data we can afford to lose is [RECOVERY_POINT_OBJECTIVE:select:Zero data loss,Up to 1 hour of data,Up to 4 hours of data,Up to 24 hours of data,Up to 1 week of data].
+
+Key personnel responsible for continuity operations include:
+
+[KEY_PERSONNEL]
+
+Our current recovery resources and capabilities include: [EXISTING_RESOURCES?]
+
+Known dependencies on third-party vendors, cloud services, or external partners: [VENDOR_DEPENDENCIES?]
+
+Any compliance or regulatory requirements that affect our continuity planning: [COMPLIANCE_REQUIREMENTS?]
+
+Our annual budget allocated for business continuity and disaster recovery: [BC_BUDGET?]
+
+Generate a complete business continuity plan document with the following sections.
+
+Start with a Plan Overview and Purpose section. State the plan's objective, its scope, the types of disruptions it covers, and the authority under which it is activated. Include version control information and specify the plan owner and approval chain. Define the activation criteria that determine when this plan gets triggered versus when normal incident response procedures are sufficient.
+
+Next create a Business Impact Analysis. For each critical function provided, assess the financial impact of downtime per hour and per day, identify upstream and downstream dependencies, determine the minimum staffing needed to operate that function at a reduced level, and flag any regulatory deadlines or contractual obligations tied to that function. Rank functions by recovery priority based on impact severity.
+
+Then develop a Risk Assessment and Threat Analysis section. For the primary disruption scenario and any related secondary scenarios, evaluate the likelihood of occurrence, the potential severity of impact, the current state of preparedness, and the residual risk after existing controls. Present this as a risk matrix with clear scoring.
+
+Build a detailed Recovery Strategy section for each critical function. Specify the recovery time objective and recovery point objective for each function. Define the step-by-step recovery procedures including who does what, in what order, and with what resources. Include alternate operating procedures for when primary systems or locations are unavailable. Address technology recovery, workspace recovery, and workforce recovery separately.
+
+Create an Emergency Response and Communication Plan. Define the incident command structure with clear roles and a chain of command. Build a communication matrix that specifies who gets notified, by whom, through what channel, and within what timeframe for each stakeholder group including employees, customers, vendors, regulators, media, and executive leadership. Include template messages for initial notification, status updates, and all-clear announcements. Specify primary and backup communication channels in case the usual tools are unavailable.
+
+Develop a Supply Chain and Vendor Continuity section. For each critical vendor dependency, identify backup vendors or alternative sources. Define minimum inventory or buffer requirements. Specify contractual continuity provisions that should exist in vendor agreements. Include procedures for activating backup supply chains.
+
+Include a Technology and Data Recovery section. Document the IT disaster recovery procedures aligned with the stated recovery point and recovery time objectives. Cover backup systems, failover processes, data restoration procedures, and cybersecurity incident response specific to the disruption type. Specify which systems are Tier 1 requiring immediate recovery versus Tier 2 and Tier 3 systems that can wait.
+
+Create a Testing and Exercise Schedule. Define a twelve-month testing calendar with different exercise types including tabletop exercises, functional drills, and full-scale simulations. Specify what each test validates, who participates, and how results are documented. Include criteria for pass or fail and procedures for incorporating lessons learned into plan updates.
+
+Add a Plan Maintenance and Governance section. Specify the review cycle for the entire plan and each subsection. Define triggers for out-of-cycle reviews such as organizational changes, new threats, or test failures. Assign ownership for keeping each section current. Include a training schedule for all personnel with continuity responsibilities.
+
+Finish with Appendices including an emergency contact directory template, a critical asset inventory checklist, an insurance coverage summary outline, and a regulatory compliance crosswalk mapping plan sections to applicable standards.
+
+Write in a clear, direct style that works under pressure. Use numbered steps for procedures so responders can follow them sequentially. Bold critical decision points and time-sensitive actions. Format with clear Markdown headings, tables for the business impact analysis and risk matrix, and checklists for activation procedures. Every section should be specific to the company's industry, size, and stated disruption scenarios rather than generic boilerplate.

@@ -1,0 +1,30 @@
+---
+title: "Down Payment Calculator"
+description: "Calculate your ideal home down payment amount, estimate PMI costs at different percentage levels, and build a savings timeline to reach your target"
+slug: "lifestyle/finance/down-payment-calculator"
+tags: ["down payment calculator", "home buying", "mortgage planning", "PMI calculator", "first time home buyer"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/lifestyle/finance/down-payment-calculator"
+chatgptDemoUrl: "https://chatgpt.com/share/69b401cb-ced8-800a-b8be-8826f248d853"
+claudeDemoUrl: "https://claude.ai/share/584fd7fa-d415-4ac1-9864-132fe6b51284"
+perplexityDemoUrl: "https://www.perplexity.ai/search/title-down-payment-calculator-9KYXF4ZpRrW9CklwT8xVVg"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_e7673a14-7464-4b77-9f11-2db6a2cbadbf?fev=0.2.12"
+---
+
+# Down Payment Calculator
+
+You are a mortgage planning specialist who helps prospective home buyers understand exactly how much they need to save, how different down payment levels change their monthly costs, and which loan programs fit their situation. You explain financial trade-offs clearly without pushing any particular product or lender.
+
+I am planning to buy a home with a target purchase price of [TARGET_HOME_PRICE:number:50000-5000000] dollars. My desired down payment percentage is [DOWN_PAYMENT_PERCENT:select:3% conventional minimum,3.5% FHA minimum,5% conventional low down,10% moderate down,15% reduced PMI,20% no PMI required,other amount]. I currently have [CURRENT_SAVINGS:number:0-5000000] dollars saved toward this purchase and I can set aside [MONTHLY_SAVING_CAPACITY:number:0-20000] dollars per month going forward. My target timeline to purchase is [PURCHASE_TIMELINE:select:6 months,1 year,18 months,2 years,3 years,as soon as possible,flexible depending on savings]. I am a [BUYER_STATUS:select:first-time home buyer,repeat buyer,veteran or active military,rural area buyer] and my credit score range is [CREDIT_SCORE:select:below 580,580-619,620-679,680-719,720-759,760 or above]. My location for the purchase is [LOCATION] (city and state, or just state).
+
+Start by calculating the exact down payment dollar amount at my selected percentage and then run a comparison table showing the down payment amount, loan amount, estimated monthly mortgage payment, estimated monthly PMI cost, and total monthly housing cost at each of the following levels: 3%, 3.5%, 5%, 10%, 15%, and 20%. Use a reasonable current mortgage rate for the comparison and state the rate you are using.
+
+Next, calculate my savings gap. Subtract my current savings from the target down payment to find the remaining amount needed. Then divide that gap by my monthly saving capacity to determine how many months it will take to reach my goal. Compare this timeline against my target purchase date and flag whether I am on track, ahead of schedule, or behind. If I am behind, show what monthly contribution would be needed to hit the target date, or suggest a lower down payment percentage that my current savings trajectory can support.
+
+Estimate closing costs separately at 2% to 5% of the purchase price and add them to the total cash needed at closing so I can see the full picture beyond just the down payment.
+
+Based on my buyer status, credit score, and down payment level, identify which loan programs I may qualify for, including conventional, FHA, VA, and USDA options. For each eligible program, note the minimum down payment requirement, whether PMI or mortgage insurance is required and the approximate cost, any upfront funding fees or mortgage insurance premiums, and income or geographic eligibility limits if applicable. If I am a first-time buyer, mention common down payment assistance programs and grants that could reduce my out-of-pocket requirement.
+
+Explain the PMI breakpoint clearly. Show how much I would pay in total PMI from closing until I reach 20% equity through a combination of payments and appreciation, and compare the cost of PMI against the opportunity cost of waiting longer to save a larger down payment while home prices and rents continue to move.
+
+Finish with a recommended action plan that includes a monthly savings target, a realistic purchase date, the suggested down payment percentage for my situation, the estimated total cash needed at closing, and two or three specific next steps I should take. Present all dollar figures in a clear table format for easy comparison.

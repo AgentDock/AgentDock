@@ -1,0 +1,26 @@
+---
+title: "401k Calculator"
+description: "Estimate your 401k balance at retirement based on your salary, contribution rate, employer match, and expected investment returns"
+slug: "lifestyle/finance/401k-calculator"
+tags: ["401k", "retirement", "finance", "savings", "investing"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/lifestyle/finance/401k-calculator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# 401k Calculator
+
+I want to estimate how much my 401k will be worth when I retire so I can plan ahead and make smarter contribution decisions.
+
+I am currently [CURRENT_AGE:number:18-70] years old and my annual gross salary is [ANNUAL_SALARY]. My current 401k balance is [CURRENT_BALANCE].
+
+I contribute [CONTRIBUTION_RATE:number:1-100] percent of my salary to my 401k each pay period. My employer match is [EMPLOYER_MATCH:select:no employer match,25% up to 6% of salary,50% up to 6% of salary,100% up to 3% of salary,100% up to 4% of salary,100% up to 6% of salary,dollar-for-dollar up to a fixed amount,other custom match]. My account type is [ACCOUNT_TYPE:select:traditional pre-tax 401k,Roth 401k after-tax,both traditional and Roth].
+
+I plan to retire at age [RETIREMENT_AGE:select:55,59.5,60,62,65,67,70]. I expect my salary to grow by roughly [SALARY_GROWTH:select:1% per year,2% per year,3% per year,4% per year,not sure use 3%] on average. For investment returns I expect [EXPECTED_RETURN:select:conservative 5%,moderate 7%,aggressive 9%,not sure use 7%].
+
+I am [CATCH_UP_ELIGIBLE?] regarding catch-up contributions (mention if you are 50 or older or will be during the projection period).
+
+Calculate my projected 401k balance at retirement year by year, showing total contributions, employer match contributions, and investment growth separately. Include the annual contribution limit for the current year and flag whether my contribution rate exceeds it. Show how much of my final balance comes from my own contributions versus employer match versus compound growth. Provide three scenarios: one with my current inputs, one where I increase my contribution by 2 percentage points, and one where I max out the annual limit. If I selected both traditional and Roth, compare the after-tax value of each assuming a reasonable tax bracket. Finish with specific recommendations on whether I should adjust my contribution rate, and explain any catch-up contribution options if I am approaching 50 or older.

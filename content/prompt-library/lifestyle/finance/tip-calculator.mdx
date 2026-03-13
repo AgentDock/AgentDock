@@ -1,0 +1,28 @@
+---
+title: "Tip Calculator"
+description: "Calculate the right tip for any service, split the bill among your group, and learn tipping customs for different situations and countries"
+slug: "lifestyle/finance/tip-calculator"
+tags: ["tip calculator", "tipping", "split bill", "restaurant", "gratuity"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/lifestyle/finance/tip-calculator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Tip Calculator
+
+I need help calculating the tip and figuring out what to pay for a [SERVICE_TYPE:select:sit-down restaurant,fast casual or counter service,food delivery,rideshare or taxi,hotel service,hair salon or barber,spa or massage,bar or lounge,valet parking,moving service,other service] experience.
+
+The total bill before tip is [BILL_AMOUNT] in [CURRENCY:select:USD,EUR,GBP,CAD,AUD,JPY,other].
+
+I would like to tip [TIP_PREFERENCE:select:10%,15%,18%,20%,25%,custom amount,not sure - recommend based on service type] for the service I received.
+
+There are [PARTY_SIZE:number:1-50] people in our group, and we want to [SPLIT_METHOD:select:split evenly,split by individual orders,one person pays,no split needed].
+
+This service is in [SERVICE_COUNTRY:select:United States,Canada,United Kingdom,Australia,Japan,France,Germany,Mexico,other country] where local tipping norms may apply.
+
+Any special circumstances to consider: [SPECIAL_CIRCUMSTANCES?] (such as large party automatic gratuity, exceptional or poor service, takeout versus dine-in, or a special occasion).
+
+Please calculate the exact tip amount based on my preferences, the total bill including tip, the per-person amount if splitting, and whether my chosen tip percentage is appropriate for this type of service in this location. If I selected "not sure," recommend a tip percentage based on the service type and local customs. Also mention any etiquette tips that are relevant to my situation, such as whether tipping on pre-tax or post-tax amounts is standard, or if automatic gratuity might already be included.

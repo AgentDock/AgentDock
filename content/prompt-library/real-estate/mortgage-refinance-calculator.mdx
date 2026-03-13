@@ -1,0 +1,30 @@
+---
+title: "Mortgage Refinance Calculator"
+description: "Calculate whether refinancing your mortgage saves money by comparing current and new loan terms, closing costs, monthly payments, break-even timeline, and lifetime interest savings"
+slug: "real-estate/mortgage-refinance-calculator"
+tags: ["mortgage refinance calculator", "refinance savings", "mortgage comparison", "break-even analysis", "interest rate reduction"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/real-estate/mortgage-refinance-calculator"
+chatgptDemoUrl: "https://chatgpt.com/share/69b3eea7-3178-800a-94a2-6a6ea755e19f"
+claudeDemoUrl: "https://claude.ai/share/b9a3f5bd-0521-4e78-8e8a-a3ff2c9c6919"
+perplexityDemoUrl: "https://www.perplexity.ai/search/title-mortgage-refinance-calcu-SJXTOM5ARF6ASoWfAsdJAw"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_eb0d6115-9542-44a7-bbd0-387bb00a7be3?fev=0.2.12"
+---
+
+# Mortgage Refinance Calculator
+
+You are an experienced mortgage analyst who helps homeowners evaluate refinancing decisions with clear, numbers-driven analysis. You understand that the true cost of refinancing depends on closing fees, time in the home, remaining loan term, and whether the new loan resets the amortization clock.
+
+I need you to analyze whether refinancing my mortgage makes financial sense. My current mortgage has a remaining balance of [CURRENT_BALANCE:number:20000-2000000] dollars at [CURRENT_RATE:number:1-15] percent interest with [YEARS_REMAINING:number:1-30] years left on the loan. My current home value is approximately [HOME_VALUE:number:50000-5000000] dollars.
+
+The new loan I am considering offers [NEW_RATE:number:1-15] percent interest on a [NEW_TERM:select:10-year,15-year,20-year,25-year,30-year] term. The estimated closing costs are [CLOSING_COSTS:number:1000-30000] dollars, or estimate 2 to 5 percent of the loan amount if I am unsure. My primary refinancing goal is [REFI_GOAL:select:lowering my monthly payment,reducing total interest paid,shortening my loan term,switching from adjustable to fixed rate,cash-out refinance to access equity]. I plan to stay in this home for approximately [YEARS_STAYING:number:1-30] more years. [CASH_OUT_AMOUNT?] If I am doing a cash-out refinance, this is the additional amount I want to borrow.
+
+Calculate the monthly principal and interest payment on both my current loan for its remaining term and the proposed new loan. Show the exact dollar difference. Then calculate the break-even point by dividing total closing costs by monthly savings. If the break-even exceeds my planned stay, flag this clearly.
+
+Build a year-by-year comparison table for the next 5 years showing monthly payment, cumulative payments, cumulative interest paid, remaining balance, and equity from principal paydown for both loans. Include closing costs in year zero for the new loan.
+
+Calculate total interest paid over each loan's full remaining life. If the new term is longer than my remaining years, highlight that resetting to a fresh term can increase total interest even at a lower rate. If this is a cash-out refinance, show the effective cost of the additional borrowed amount separately and compare it against typical HELOC rates.
+
+Estimate whether I currently pay PMI based on my loan-to-value ratio and show potential PMI savings if the new loan brings my LTV below 80 percent. Run a sensitivity analysis showing results if rates drop another 0.5 percent, if I stay 3 years longer or shorter than planned, or if closing costs come in 20 percent higher.
+
+Provide a clear recommendation stating whether refinancing saves money in my timeframe, the total expected savings, and any risks. Conclude with a summary table showing current versus new loan side by side with monthly payment, rate, term, lifetime interest, break-even months, and net savings.

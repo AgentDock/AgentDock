@@ -1,0 +1,32 @@
+---
+title: "Real Estate Commission Calculator"
+description: "Calculate and compare real estate commission costs across traditional, discount, and flat-fee structures with agent splits, broker fees, and net seller proceeds."
+slug: "real-estate/real-estate-commission-calculator"
+tags: ["real estate commission calculator", "realtor commission", "agent commission split", "seller closing costs", "real estate fees"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/real-estate/real-estate-commission-calculator"
+chatgptDemoUrl: "https://chatgpt.com/share/69b3f02a-bca0-800a-bbfd-2c14a286aa08"
+claudeDemoUrl: "https://claude.ai/share/f857e87d-4ff8-4b2f-b649-bc0ae9fd79bd"
+perplexityDemoUrl: "https://www.perplexity.ai/search/title-real-estate-commission-c-b_VKbAlPQ_eBmHUTPfYOiQ"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_5ec6442f-291e-4935-b549-e024f071392d?fev=0.2.12"
+---
+
+# Real Estate Commission Calculator
+
+You are an experienced real estate financial analyst who helps buyers and sellers understand the true cost of agent commissions. You know that commission structures have changed significantly following the NAR settlement practice changes, and you stay current on how these changes affect both sides of a transaction.
+
+I need a complete real estate commission analysis for a property with a sale price of [SALE_PRICE]. The property is located in [STATE:select:Alabama,Alaska,Arizona,Arkansas,California,Colorado,Connecticut,Delaware,Florida,Georgia,Hawaii,Idaho,Illinois,Indiana,Iowa,Kansas,Kentucky,Louisiana,Maine,Maryland,Massachusetts,Michigan,Minnesota,Mississippi,Missouri,Montana,Nebraska,Nevada,New Hampshire,New Jersey,New Mexico,New York,North Carolina,North Dakota,Ohio,Oklahoma,Oregon,Pennsylvania,Rhode Island,South Carolina,South Dakota,Tennessee,Texas,Utah,Vermont,Virginia,Washington,West Virginia,Wisconsin,Wyoming]. The listing agent commission rate is [LISTING_AGENT_RATE] percent, and the buyer's agent commission rate is [BUYER_AGENT_RATE] percent. The listing agent's broker split arrangement is [LISTING_BROKER_SPLIT:select:50/50 agent-broker,60/40 agent-broker,70/30 agent-broker,80/20 agent-broker,90/10 agent-broker,100% to agent (capped model),not sure - use 70/30 as default]. The buyer's agent broker split is [BUYER_BROKER_SPLIT:select:50/50 agent-broker,60/40 agent-broker,70/30 agent-broker,80/20 agent-broker,90/10 agent-broker,100% to agent (capped model),not sure - use 70/30 as default]. My role in the transaction is [MY_ROLE:select:seller paying both commissions,seller paying listing agent only,buyer paying own agent,buyer and seller each paying their own agent,real estate agent calculating my own earnings].
+
+Start by calculating the total commission in dollars for both the listing agent side and the buyer's agent side. Show the dollar amount each agent earns before and after their broker split. Then calculate the total commission as a combined dollar amount and as a percentage of the sale price.
+
+Next, calculate the seller's estimated net proceeds. Start with the sale price and subtract the total commission the seller is responsible for based on my selected role. Note any additional common closing costs the seller typically pays in [STATE], such as transfer taxes, title insurance, and escrow fees, and provide a rough estimate of total seller closing costs so I can see the full picture.
+
+Now compare three commission structures side by side for this same sale price. First, show the traditional full-service model using the rates I entered above. Second, calculate what a discount brokerage would cost at 1 percent for the listing side and whatever the buyer's agent rate is. Third, calculate a flat-fee MLS listing at $500 for the listing service plus whatever the buyer's agent rate is. For each structure, show the total commission cost, the difference in dollars compared to the traditional model, and the seller's approximate net proceeds.
+
+After the comparison, explain how the August 2024 NAR settlement changed commission practices. Cover these specific changes: sellers are no longer required to offer compensation to the buyer's agent through the MLS, buyers must now sign written agreements with their agents before touring homes, and commission rates for both sides are fully negotiable. Explain what these changes mean practically for the person in my selected role.
+
+If I selected that I am a real estate agent calculating my own earnings, provide an additional section showing my annual commission projection. Assume I close [ANNUAL_TRANSACTIONS:number:1-100] transactions per year at an average sale price equal to the price entered above. Calculate my gross commission income, the amount retained after the broker split, and a rough estimate of net income after typical agent business expenses of 20 to 30 percent for marketing, licensing, insurance, MLS fees, and taxes.
+
+Finish with three specific recommendations for someone in my role to reduce commission costs or maximize the value received from commission paid. Base these recommendations on the property price range, the state I selected, and current market practices.
+
+Format the entire analysis with clear section headers, tables where helpful for side-by-side comparisons, and dollar amounts rounded to the nearest whole number.

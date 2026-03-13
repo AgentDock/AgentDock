@@ -1,0 +1,40 @@
+---
+title: "Closing Cost Calculator"
+description: "Estimate buyer or seller closing costs with a detailed breakdown of lender fees, title insurance, escrow, taxes, recording fees, and location-specific charges."
+slug: "real-estate/closing-cost-calculator"
+tags: ["closing cost calculator", "closing costs estimate", "home buying costs", "real estate fees", "settlement costs"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/real-estate/closing-cost-calculator"
+chatgptDemoUrl: "https://chatgpt.com/share/69b3dc12-d74c-800a-8d19-7c558953c3ba"
+claudeDemoUrl: "https://claude.ai/share/def23d2c-f7c9-49c7-b72b-6e4caadfdfd9"
+perplexityDemoUrl: "https://www.perplexity.ai/search/title-closing-cost-calculator-XNyoJkeaR3.5Q.O_aPtTAw"
+qwenDemoUrl: "https://chat.qwen.ai/s/t_fa7c26bd-2910-48a7-96fb-358cb9448d14?fev=0.2.12"
+---
+
+# Closing Cost Calculator
+
+You are a real estate settlement specialist who has prepared hundreds of closing cost estimates. You understand that costs vary by state, loan type, and negotiation terms, and you always note which fees are negotiable.
+
+I need a detailed closing cost estimate for a [TRANSACTION_ROLE:select:buyer,seller,both buyer and seller comparing side by side] in a residential real estate transaction. The property is located in [STATE_OR_COUNTY] with a purchase price of [PURCHASE_PRICE:number:50000-10000000] dollars. The property type is [PROPERTY_TYPE:select:single-family home,townhouse,condominium,duplex,multi-family,new construction]. The transaction involves a [LOAN_TYPE:select:conventional mortgage,FHA loan,VA loan,USDA loan,jumbo loan,cash purchase]. My down payment is [DOWN_PAYMENT_PERCENT:number:0-100] percent and the interest rate is [INTEREST_RATE:number:1-15] percent on a [LOAN_TERM:select:15-year,20-year,25-year,30-year] term. [CLOSING_DATE?] This is the expected closing date if known.
+
+Produce a complete closing cost breakdown organized into the following categories.
+
+For lender fees, include the loan origination fee, application fee, underwriting fee, credit report fee, flood certification fee, and any discount points. Note which fees are set by the lender and which might be negotiable or waived through lender credits.
+
+For third-party service fees, include the appraisal fee, home inspection fee, survey fee, and pest inspection fee. Provide typical cost ranges for the location where specific quotes are not available.
+
+For title and escrow costs, include the title search fee, lender and owner title insurance premiums, escrow or settlement agent fee, and attorney fee if required in this state. Note whether this is an attorney-closing or title-company-closing state.
+
+For government fees and taxes, include recording fees, state or local transfer taxes, and intangible taxes if applicable. Calculate the exact transfer tax based on the purchase price and current rates for the location.
+
+For prepaid items and escrow deposits, calculate prepaid daily interest from closing to month end, initial escrow deposits for property taxes and insurance, and the first year insurance premium if due at closing. If this is an FHA loan, include the upfront mortgage insurance premium. If VA, include the VA funding fee.
+
+For additional costs, account for HOA transfer fees if the property is in an HOA, home warranty if common locally, and courier and wire transfer fees.
+
+After listing every line item, provide a summary showing total closing costs as a dollar amount and percentage of purchase price. Show total cash needed at closing by combining down payment with closing costs. Break out which costs are fixed, variable, and negotiable.
+
+Include cost-saving strategies: which fees are shoppable, whether a no-closing-cost mortgage makes sense at this rate, and how closing date choice affects prepaid interest.
+
+If I selected the seller perspective or side-by-side comparison, calculate seller costs including agent commissions at the typical local rate, transfer taxes, title insurance if customary for sellers in this state, prorated property taxes, and the seller share of closing fees. Show estimated net proceeds.
+
+Format the output as a clear organized table for budgeting. Include a disclaimer that these are estimates and actual fees will be confirmed in the official Loan Estimate and Closing Disclosure documents.

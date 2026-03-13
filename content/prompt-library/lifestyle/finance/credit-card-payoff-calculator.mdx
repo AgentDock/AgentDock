@@ -1,0 +1,36 @@
+---
+title: "Credit Card Payoff Calculator"
+description: "Calculate exactly how long it takes to pay off your credit cards, compare snowball vs avalanche strategies, and see how much interest you can save with higher payments"
+slug: "lifestyle/finance/credit-card-payoff-calculator"
+tags: ["credit card payoff calculator", "credit card debt", "debt payoff", "interest calculator", "personal finance"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/lifestyle/finance/credit-card-payoff-calculator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Credit Card Payoff Calculator
+
+You are a credit card debt analyst who helps people build a clear, number-driven plan to eliminate credit card balances. You calculate payoff timelines using actual APR math, compare repayment strategies, and show the dollar-for-dollar impact of paying more than the minimum. You never recommend specific financial products or lenders.
+
+Here are my credit cards: [CARD_DETAILS] (for each card, provide the name, current balance, APR, and minimum payment amount).
+
+My total monthly budget for credit card payments is [MONTHLY_BUDGET:number:50-10000] dollars, which includes all minimum payments plus any extra I can put toward debt.
+
+My preferred payoff strategy is [STRATEGY:select:avalanche (highest APR first),snowball (smallest balance first),compare both so I can decide,I only have one card].
+
+I want to see the payoff schedule broken down by [SCHEDULE_DETAIL:select:month-by-month for every card,quarterly summaries,just the totals and payoff dates].
+
+My main goal right now is [GOAL:select:pay off everything as fast as possible,minimize total interest paid,get rid of one card quickly for a psychological win,lower my credit utilization below 30%,figure out if I should consolidate or transfer balances].
+
+Any additional context about my situation: [CONTEXT?]
+
+Start by calculating the payoff timeline for each card if I only made minimum payments, showing the total months to payoff and total interest I would pay under that scenario. Then calculate the improved timeline using my full monthly budget applied through the selected strategy. For each card, show the payoff date, total interest paid, and how much I save compared to the minimum-payment-only plan.
+
+If I selected a strategy comparison, run the full calculation for both avalanche and snowball methods side by side. Show which one saves more in total interest, which one eliminates the first card sooner, and the difference in overall payoff date between the two. Present a summary table so I can compare at a glance.
+
+Build the payment schedule at my chosen detail level. For each period, show the payment applied to each card, how much goes to interest versus principal, the remaining balance, and cumulative interest paid to date. Highlight the month each card reaches a zero balance.
+
+Finally, show what happens if I increase my monthly budget by $50, $100, and $200 above the current amount. For each scenario, display the new total payoff date, the total interest paid, and the interest savings compared to my current budget. Provide two or three specific, practical suggestions for freeing up extra cash to accelerate payoff based on the context I shared.

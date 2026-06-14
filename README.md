@@ -324,6 +324,7 @@ Some tools also require their own API keys:
 # Tool-specific API Keys
 SERPER_API_KEY=                  # Required for search functionality
 FIRECRAWL_API_KEY=               # Required for deeper web search
+CRW_API_KEY=                     # Required for fastCRW web scraping (Firecrawl-compatible)
 ```
 
 For more details about environment configuration, see the implementation in [`src/types/env.ts`](src/types/env.ts).

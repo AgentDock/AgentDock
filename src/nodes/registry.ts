@@ -8,6 +8,7 @@
 import { LogCategory, logger } from 'agentdock-core';
 
 import { tools as cognitiveTools } from './cognitive-tools';
+import { tools as crwTools } from './crw';
 import { cryptoPriceTool, trendingCryptosTool } from './crypto-price';
 import { tools as deepResearchTools } from './deep-research';
 import { tools as firecrawlTools } from './firecrawl';
@@ -26,6 +27,7 @@ export const allTools: ToolCollection = {
   ...searchTools,
   ...deepResearchTools,
   ...firecrawlTools,
+  ...crwTools,
   ...snowtracerTools,
   ...imageGenerationTools,
   ...cognitiveTools,

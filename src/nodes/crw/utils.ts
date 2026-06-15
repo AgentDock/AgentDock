@@ -375,8 +375,9 @@ export async function crawlCrw(
         results: response.data.map((item: any) => ({
           url: item.metadata?.sourceURL || '#',
           title: item.metadata?.title || 'No title',
-          content:
-            item.markdown?.substring(0, 200) + '...' || 'No content available.'
+          content: item.markdown
+            ? `${item.markdown.substring(0, 200)}...`
+            : 'No content available.'
         }))
       };
     }
@@ -421,8 +422,9 @@ export async function checkCrawlStatus(
       results: (response.data || []).map((item: any) => ({
         url: item.metadata?.sourceURL || '#',
         title: item.metadata?.title || 'No title',
-        content:
-          item.markdown?.substring(0, 200) + '...' || 'No content available.'
+        content: item.markdown
+          ? `${item.markdown.substring(0, 200)}...`
+          : 'No content available.'
       }))
     };
   } catch (error) {

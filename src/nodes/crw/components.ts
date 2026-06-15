@@ -186,11 +186,12 @@ export function CrwScrapeResults(props: CrwScrapeResultsProps) {
  * Renders crawl results in a consistent format
  */
 export function CrwCrawlResults(props: CrwCrawlResultsProps) {
-  // Format the header with the URL
-  const header = formatHeader(
-    `CRW Crawl Results for ${formatLink(props.url, props.url)}`,
-    2
-  );
+  // Format the header with the URL, falling back to the crawl ID when the URL
+  // is missing (e.g. crw_crawl_status passes an empty URL).
+  const crawlTargetLabel = props.url
+    ? formatLink(props.url, props.url)
+    : `crawl ID ${props.result.crawlId}`;
+  const header = formatHeader(`CRW Crawl Results for ${crawlTargetLabel}`, 2);
 
   // Format status information
   const statusInfo = joinSections(

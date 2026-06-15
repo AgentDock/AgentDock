@@ -37,6 +37,8 @@ const crwSearchSchema = z.object({
   query: z.string().describe('Search query to look up'),
   limit: z
     .number()
+    .int()
+    .min(1)
     .optional()
     .default(5)
     .describe('Maximum number of results to return')
@@ -61,10 +63,18 @@ const crwCrawlSchema = z.object({
   url: z.string().url().describe('URL to crawl'),
   limit: z
     .number()
+    .int()
+    .min(1)
     .optional()
     .default(10)
     .describe('Maximum number of pages to crawl'),
-  maxDepth: z.number().optional().default(2).describe('Maximum crawl depth')
+  maxDepth: z
+    .number()
+    .int()
+    .min(1)
+    .optional()
+    .default(2)
+    .describe('Maximum crawl depth')
 });
 
 /**
@@ -79,7 +89,13 @@ const crwCrawlStatusSchema = z.object({
  */
 const crwMapSchema = z.object({
   url: z.string().url().describe('URL to map'),
-  maxDepth: z.number().optional().default(2).describe('Maximum crawl depth')
+  maxDepth: z
+    .number()
+    .int()
+    .min(1)
+    .optional()
+    .default(2)
+    .describe('Maximum crawl depth')
 });
 
 /**

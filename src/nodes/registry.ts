@@ -18,6 +18,7 @@ import { tools as snowtracerTools } from './snowtracer/index';
 import { tools as stockTools } from './stock-price';
 import type { ToolCollection } from './types';
 import { tools as weatherTools } from './weather';
+import { tools as xquikTools } from './xquik';
 
 // Combined tools registry
 export const allTools: ToolCollection = {
@@ -30,6 +31,7 @@ export const allTools: ToolCollection = {
   ...imageGenerationTools,
   ...cognitiveTools,
   ...scienceTools,
+  ...xquikTools,
   crypto_price: cryptoPriceTool,
   trending_cryptos: trendingCryptosTool
 };

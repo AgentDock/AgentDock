@@ -51,8 +51,6 @@ export interface XquikSearchResult {
 }
 
 export interface XquikSearchOptions {
-  apiKey?: string;
-  baseUrl?: string;
   cursor?: string;
   limit: number;
   query: string;
@@ -60,16 +58,10 @@ export interface XquikSearchOptions {
 }
 
 const DEFAULT_BASE_URL = 'https://xquik.com/api/v1';
+const REQUEST_TIMEOUT_MS = 15_000;
 
-function resolveBaseUrl(baseUrl?: string): string {
-  return (baseUrl || process.env.XQUIK_BASE_URL || DEFAULT_BASE_URL).replace(
-    /\/+$/,
-    ''
-  );
-}
-
-function resolveApiKey(apiKey?: string): string {
-  const key = apiKey || process.env.XQUIK_API_KEY;
+function resolveApiKey(): string {
+  const key = process.env.XQUIK_API_KEY;
   if (!key) {
     throw new Error('XQUIK_API_KEY is not configured.');
   }
@@ -99,16 +91,32 @@ function normalizeErrorMessage(message: string, status: number): string {
   return message;
 }
 
+async function readJsonResponse(
+  response: Response
+): Promise<XquikSearchResponse | XquikErrorBody> {
+  try {
+    return (await response.json()) as XquikSearchResponse | XquikErrorBody;
+  } catch {
+    if (!response.ok) {
+      throw new Error(
+        normalizeErrorMessage(
+          `Xquik API returned HTTP ${response.status}`,
+          response.status
+        )
+      );
+    }
+    throw new Error('Xquik returned an invalid JSON response.');
+  }
+}
+
 export async function searchXquikPosts({
-  apiKey,
-  baseUrl,
   cursor,
   limit,
   query,
   queryType
 }: XquikSearchOptions): Promise<XquikSearchResult> {
-  const key = resolveApiKey(apiKey);
-  const url = new URL(`${resolveBaseUrl(baseUrl)}/x/tweets/search`);
+  const key = resolveApiKey();
+  const url = new URL(`${DEFAULT_BASE_URL}/x/tweets/search`);
   url.searchParams.set('q', query);
   url.searchParams.set('queryType', queryType);
   url.searchParams.set('limit', String(limit));
@@ -116,29 +124,42 @@ export async function searchXquikPosts({
     url.searchParams.set('cursor', cursor);
   }
 
-  const response = await fetch(url, {
-    headers: {
-      'X-Api-Key': key,
-      Accept: 'application/json'
-    },
-    cache: 'no-store'
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
-  const data = (await response.json()) as XquikSearchResponse | XquikErrorBody;
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'X-Api-Key': key,
+        Accept: 'application/json'
+      },
+      cache: 'no-store',
+      signal: controller.signal
+    });
 
-  if (!response.ok) {
-    throw new Error(
-      normalizeErrorMessage(
-        getErrorMessage(data as XquikErrorBody, response.status),
-        response.status
-      )
-    );
+    const data = await readJsonResponse(response);
+
+    if (!response.ok) {
+      throw new Error(
+        normalizeErrorMessage(
+          getErrorMessage(data as XquikErrorBody, response.status),
+          response.status
+        )
+      );
+    }
+
+    const body = data as XquikSearchResponse;
+    return {
+      posts: Array.isArray(body.tweets) ? body.tweets : [],
+      hasMore: Boolean(body.has_more ?? body.has_next_page),
+      nextCursor: body.next_cursor ?? body.nextCursor
+    };
+  } catch (error: unknown) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw new Error('Xquik request timed out. Try again later.');
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
   }
-
-  const body = data as XquikSearchResponse;
-  return {
-    posts: Array.isArray(body.tweets) ? body.tweets : [],
-    hasMore: Boolean(body.has_more ?? body.has_next_page),
-    nextCursor: body.next_cursor ?? body.nextCursor
-  };
 }

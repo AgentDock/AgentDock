@@ -26,14 +26,20 @@ function numberValue(value: number | undefined): number {
 function getPostUrl(post: XquikPost): string | undefined {
   if (post.url) return post.url;
   if (post.id && post.author?.username) {
-    return `https://x.com/${post.author.username}/status/${post.id}`;
+    return `https://x.com/${encodeURIComponent(post.author.username)}/status/${
+      post.id
+    }`;
   }
   return undefined;
 }
 
 function getCreatedLabel(post: XquikPost): string | undefined {
   if (typeof post.created === 'number') {
-    return new Date(post.created * 1000).toISOString();
+    const timestamp = post.created * 1000;
+    const date = new Date(timestamp);
+    if (Number.isFinite(timestamp) && Number.isFinite(date.getTime())) {
+      return date.toISOString();
+    }
   }
   return post.created_at ?? post.createdAt;
 }

@@ -30,10 +30,10 @@ const xquikSearchPostsSchema = z.object({
     .describe('Maximum number of posts to return'),
   cursor: z.string().optional().describe('Pagination cursor from Xquik'),
   apiKey: z
-    .string()
+    .never()
     .optional()
-    .describe('Optional Xquik API key, otherwise uses XQUIK_API_KEY'),
-  baseUrl: z.string().url().optional().describe('Optional Xquik API base URL')
+    .describe('Configure XQUIK_API_KEY on the server'),
+  baseUrl: z.never().optional().describe('Endpoint overrides are not supported')
 });
 
 type XquikSearchPostsParams = z.infer<typeof xquikSearchPostsSchema>;
@@ -43,8 +43,6 @@ export const xquikSearchPostsTool: Tool = {
   description: 'Search public X posts with Xquik',
   parameters: xquikSearchPostsSchema,
   async execute({
-    apiKey,
-    baseUrl,
     cursor,
     limit = 10,
     query,
@@ -65,8 +63,6 @@ export const xquikSearchPostsTool: Tool = {
       }
 
       const results = await searchXquikPosts({
-        apiKey,
-        baseUrl,
         cursor,
         limit,
         query: trimmedQuery,

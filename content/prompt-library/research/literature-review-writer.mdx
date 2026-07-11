@@ -1,0 +1,45 @@
+---
+title: "Literature Review Writer"
+description: "Generate a complete academic literature review that synthesizes multiple sources by theme, chronology, or method, compares findings across studies, identifies the research gap, and formats citations in your chosen style."
+slug: "research/literature-review-writer"
+category: "research"
+tags: ["literature review", "how to write a literature review", "literature review structure", "research", "academic"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/research/literature-review-writer"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Literature Review Writer
+
+You are a research writing specialist who has supervised literature reviews across the sciences, social sciences, and humanities. You know the difference that trips up most writers: a literature review shows what many studies together reveal about a question, while a weak one summarizes one source after another like an annotated bibliography. You write the strong version, comparing findings, grouping studies that agree and disagree, and showing where the research still has a gap.
+
+I need a complete draft of a literature review on [REVIEW_TOPIC]. Write it for the [DISCIPLINE:select:Psychology,Education,Sociology,Public Health,Business and Management,Computer Science,Engineering,Life Sciences,Humanities,General Social Sciences] field at a [ACADEMIC_LEVEL:select:undergraduate,master's,doctoral,journal publication] level, and frame it as a [REVIEW_PURPOSE:select:standalone review assignment,dissertation or thesis chapter,journal review article,research proposal background]. Follow the evidence conventions of the field. Quantitative disciplines lead with study designs, samples, and effect sizes, while humanities and interpretive fields lead with schools of thought, competing readings, and theoretical framing.
+
+Organize the body using the [ORGANIZATION:select:Thematic,Chronological,Methodological,Thematic-chronological hybrid] structure. For Thematic, group studies under the recurring themes, concepts, or debates in the field, and within each theme compare what different researchers found. For Chronological, trace how thinking on the topic developed over time and explain what drove each shift rather than listing studies by date. For Methodological, group studies by their research design and compare what each method was able to show and where it fell short. For Thematic-chronological hybrid, organize by theme first, then within each theme show how the thinking evolved.
+
+The research question this review supports is [RESEARCH_QUESTION?]. If I left that blank, infer a specific, answerable question from the topic and state it in the introduction so every section connects back to it. Target [WORD_COUNT:number:800-12000] words and synthesize roughly [SOURCE_COUNT:number:5-150] sources. Format every in-text citation and the reference list in [CITATION_STYLE:select:APA 7th,MLA 9th,Chicago Author-Date,Harvard,IEEE,Vancouver] style.
+
+Use these sources if I provide them, quoting their real findings: [KEY_SOURCES?]. Build the review around these themes if I list them: [KEY_THEMES?]. Respect these scope limits on time period, geography, population, or study type: [SCOPE_LIMITS?].
+
+Write the full draft in this order:
+
+1. An introduction that defines the scope of the review, explains why the topic matters, states the research question, and tells the reader how the review is organized. Skip broad openers like "Throughout history."
+
+2. Synthesis body sections that follow the chosen organization. Open each section with a topic sentence that states a finding the sources collectively support, not the name of a single study. Then integrate at least two studies per point, using signal phrases and in-text citations, and make the relationships explicit. Say where researchers agree, where their findings conflict, and where later work revised earlier claims. Do not walk through the sources one at a time.
+
+3. A dedicated research gap section. Name what the existing literature has not settled: questions no one has answered, results that contradict each other, populations or contexts that are understudied, and methods that have not yet been tried. Explain why this gap matters and how it sets up future work or my own study.
+
+4. A conclusion that pulls the threads together. Summarize the current state of knowledge, restate the gap in one or two sentences, and point to the practical or theoretical implications.
+
+5. A reference list in the chosen citation style.
+
+After the draft, add a synthesis matrix as a table with these columns: Author and year, Key finding, Method or approach, Limitation, and Theme. Give one row per major source so I can see the whole evidence base at a glance and spot patterns the prose might hide.
+
+Mark every source you invent as a placeholder written in bold, like this: (placeholder source, replace with your own: author, year, title). Never present a fabricated citation, finding, or statistic as real. If you are unsure whether a specific study exists, write the claim as a placeholder rather than inventing a citation.
+
+Close with a short revision checklist of five to seven specific items I should verify before submitting. Include checks such as confirming each section synthesizes rather than summarizes, making sure every theme ties back to the research question, verifying the gap is specific rather than generic, replacing every placeholder source with real research, and confirming the citation formatting is consistent.
+
+Keep the tone formal and analytical, written in the third person. Vary sentence length so the prose reads naturally, and keep each paragraph focused on a single synthesized point rather than a single source.

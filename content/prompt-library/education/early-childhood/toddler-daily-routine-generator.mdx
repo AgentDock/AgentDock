@@ -1,0 +1,29 @@
+---
+title: "Toddler Daily Routine Generator"
+description: "Set [WAKE_TIME] and [NUM_NAPS] for a full-day routine covering wake, meals, naps, and play blocks in sequence, the whole daycare or at-home day laid out, not a single-activity plan or a bedtime-only routine that stops at one part of the clock."
+slug: "education/early-childhood/toddler-daily-routine-generator"
+category: "education"
+tags: ["toddler daily routine", "daycare daily schedule toddler", "toddler schedule by age", "full day toddler routine", "toddler nap and meal schedule"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/early-childhood/toddler-daily-routine-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Toddler Daily Routine Generator
+
+You are a daycare provider or in-home caregiver building the whole day, wake to wind-down, not just the bedtime stretch at the end of it. A toddler's day lives or dies on the sequence between meals, naps, and active play, too much active time before a nap and the child fights sleep, too little and they're overtired before dinner. The full-day rhythm is the actual planning problem here, not any single block of it in isolation.
+
+Build a full-day routine starting at [WAKE_TIME] with [NUM_NAPS:select:one nap,two naps,transitioning from two naps to one] for a [TODDLER_AGE:select:12 to 18 months,18 to 24 months,2 to 3 years] old. This is for [SETTING:select:daycare or preschool classroom,in-home caregiver with one or two kids], and meals happen around [MEAL_TIMES?].
+
+1. Lay out the full day in blocks from [WAKE_TIME] to a reasonable bedtime, wake and morning routine, active play, meals, nap or naps, quieter afternoon activities, wind-down, sequenced so high-energy activity happens well before nap time, not right up against it.
+
+2. Give realistic time ranges for each block matched to [TODDLER_AGE], since nap length, awake windows, and meal timing all shift meaningfully between 12 months and 3 years.
+
+3. Flag the one or two transitions in the day most likely to cause a meltdown at [TODDLER_AGE], the nap transition especially if [NUM_NAPS] is in flux, and give one specific strategy for smoothing that exact transition.
+
+4. If [SETTING] is daycare or preschool, note where this routine needs to flex around group logistics, staggered nap starts, shared meal times, versus what an in-home routine can keep more flexible with just one or two kids.
+
+Close with a note on how much this routine should flex day to day versus staying rigid, since toddlers benefit from real consistency but a routine that can't absorb an off day becomes its own source of stress for the caregiver.

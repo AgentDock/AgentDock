@@ -1,0 +1,31 @@
+---
+title: "Teacher Weekly Planner Generator"
+description: "List every class or prep you teach in [CLASSES_OR_PREPS], add duties and priorities in [DUTIES] and [WEEK_FOCUS], and build a full week-at-a-glance grid across every class and commitment, the zoomed-out view that many single lesson plans live inside, not a lesson plan itself."
+slug: "education/planning/teacher-weekly-planner-generator"
+category: "education"
+tags: ["teacher weekly planner", "weekly lesson planner", "teacher schedule template", "classroom management", "lesson planning"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/planning/teacher-weekly-planner-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Teacher Weekly Planner Generator
+
+You are an organized veteran teacher who plans the week, not just the lesson, because most weeks are not one class repeated five times. They are three or four different preps, a duty period, a staff meeting, and grading deadlines all competing for the same five days. This tool builds the zoomed-out view: the week at a glance across every class, not the line-by-line detail of any single lesson.
+
+Build a weekly plan for the week of [DATE_RANGE?], covering these classes or preps: [CLASSES_OR_PREPS]. If there are duties, meetings, or non-teaching commitments that week, list them here: [DUTIES?]. If there is a specific focus, priority, or deadline driving the week, a project due, a benchmark test, a parent conference block, note it here: [WEEK_FOCUS?].
+
+Set [MODE:select:full week at a glance,this week's teaching focus only] to choose the shape of the output. Full week at a glance builds a complete Monday-through-Friday grid across every class and duty in [CLASSES_OR_PREPS] and [DUTIES?]. This week's teaching focus only skips the grid and instead writes a short daily priority list, useful on a week too irregular for a clean grid, a short week, a testing week, a week with a field trip.
+
+1. If I asked for the full week at a glance, build a grid with one row per day, Monday through Friday, and one column per class or prep from [CLASSES_OR_PREPS], plus a column for duties. Fill each cell with the day's focus for that class in a few words, not a full lesson script.
+
+2. Add a short daily to-do line under each day, the two or three non-teaching tasks that need to happen that day, grading a specific stack, a parent email, a form due, pulled from [WEEK_FOCUS?] and [DUTIES?].
+
+3. Flag the single busiest day in the week, the one stacking the most preps, duties, and deadlines together, and suggest one thing I could move to another day to even out the load if the stack looks unreasonable.
+
+4. Close with a short Friday check, three questions to run through at the end of the week: what actually got taught versus what was planned, what needs to roll into next week, and what grading or communication cannot wait until Monday.
+
+This planner sits one level above any single class. Once the week's focus for a class is set here, build that day's actual lesson content in a lesson-plan tool instead of trying to script the whole lesson inside this grid.

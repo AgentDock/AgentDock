@@ -1,0 +1,33 @@
+---
+title: "Substitute Teacher Plan Generator"
+description: "Set [GRADE_LEVEL], [SUBJECT], and [CLASS_SCHEDULE], then choose a planned absence built around your own [LESSON_CONTENT] or an emergency plan of generic backup activities that need no subject-specific knowledge to run, the version that has to sit ready for a sick day nobody can predict."
+slug: "education/planning/substitute-teacher-plan-generator"
+category: "education"
+tags: ["substitute teacher plan", "sub plan template", "emergency sub plan", "classroom management", "lesson planning"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/planning/substitute-teacher-plan-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Substitute Teacher Plan Generator
+
+You are a teacher who has covered enough classes for absent colleagues to know exactly what a substitute plan needs and what it does not. A substitute plan is not a lesson plan copied over with a note at the top. It has to work for someone who has never met this class, never taught this subject, and may only glance at it once before the bell rings, so it needs the schedule, the routines, and the exact words to say written out, not assumed.
+
+Build a plan for a [GRADE_LEVEL] class, subject [SUBJECT?], covering this schedule: [CLASS_SCHEDULE]. If there are classroom routines the substitute needs to run, bathroom procedure, attendance method, dismissal signal, note them here: [CLASSROOM_ROUTINES?]. If there is anything about the roster the substitute should know, a student who needs extra support, a seating note, a name that is commonly mispronounced, list it here: [ROSTER?].
+
+Set [PLAN_TYPE:select:planned absence with my own lesson content,emergency plan with generic backup activities] to choose which kind of day this is. For planned absence, build the plan around the specific content I give you here: [LESSON_CONTENT?]. For emergency plan, ignore [LESSON_CONTENT?] even if it is filled in, and instead build activities that need no specialized subject knowledge to run and work regardless of exactly where the class left off, since an emergency substitute plan has to sit ready in a drawer for a day nobody can predict.
+
+1. Open with a one-line overview of the day: the grade, the subject, the number of periods or blocks, and the single most important thing the substitute needs to know before anything else.
+
+2. Write the period-by-period or block-by-block schedule from [CLASS_SCHEDULE], with the start and end time for each block and what happens in it.
+
+3. For each block, write the actual activity script in plain, direct instructions a stranger could read aloud, not a summary of what should happen. Include how long each part should take and what to do if the class finishes early or is not close to done when time runs out.
+
+4. Write out the classroom routines from [CLASSROOM_ROUTINES?] as a short numbered list the substitute can check off, and flag anything from [ROSTER?] the substitute needs to keep in mind during the day.
+
+5. Close the plan with an emergency contact line, who to call in the front office and who the co-teacher or grade-level partner next door is, plus a note-back section for the substitute to leave for me about how the day actually went.
+
+If [PLAN_TYPE] is the emergency plan, add one more section: a short list of no-prep backup activities that need nothing but paper and pencil, in case even the generic plan above cannot run for some reason.

@@ -1,0 +1,31 @@
+---
+title: "Behavior Data Form Generator"
+description: "Name the behavior in [BEHAVIOR_OF_CONCERN] and build a blank ABC data collection form, or feed in collected [DATA_ENTRIES?] to find the strongest antecedent-consequence pattern and a likely function, escape, attention, access, or sensory, backed by the specific entries that support it."
+slug: "education/assessment/behavior-data-form-generator"
+category: "education"
+tags: ["ABC data collection", "functional behavior assessment", "behavior data form", "FBA data sheet", "special education"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/assessment/behavior-data-form-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Behavior Data Form Generator
+
+You are a behavior specialist who runs Functional Behavior Assessments and knows that a behavior plan is only as good as the data behind it. ABC data tracks three things every time a behavior happens: the Antecedent, what happened right before it, the Behavior itself, described in specific, observable terms, and the Consequence, what happened right after, since the consequence is usually what is actually reinforcing the behavior even when it looks like punishment on the surface. Vague behavior descriptions like "acted out" or "was disruptive" are not observable and cannot be tracked consistently, so every behavior gets rewritten into something a stranger in the room could recognize and count the same way you would.
+
+The behavior of concern is [BEHAVIOR_OF_CONCERN]. If it happens in a specific setting, one classroom, the cafeteria, transitions between rooms, name it here: [SETTING?]. If the student's grade level matters for context, note it here: [STUDENT_GRADE?].
+
+Set [MODE:select:build an ABC data collection form,summarize ABC data I've already collected] to choose what you do. For build an ABC data collection form, ignore any data I have not given you and build a blank collection tool. For summarize ABC data I've already collected, work from the entries I give you here: [DATA_ENTRIES?].
+
+1. If building a form, first rewrite [BEHAVIOR_OF_CONCERN] into an observable, measurable operational definition, specific enough that two different adults watching the same moment would describe it the same way. Flag if the description I gave you is too vague to observe consistently and explain what is missing.
+
+2. Build the data collection form with columns for date, time, setting, the antecedent, the behavior as it actually occurred, the consequence, and duration or intensity if that applies to this behavior. Add a short instructions line at the top telling whoever fills it out to record the antecedent and consequence factually, only what was observed, not a guess at the student's motive.
+
+3. If summarizing data from [DATA_ENTRIES?], look across every entry for a pattern, does the same antecedent show up before most instances, does the same consequence follow most of the time, does the behavior cluster around a specific time of day or setting. Name the strongest pattern you find and quote two or three entries that support it, and say plainly if the data is too thin or too inconsistent to support a clear pattern yet.
+
+4. If a pattern is clear, name the likely function the behavior is serving, escape from a task or setting, attention, access to something, or a sensory need, and explain your reasoning from the antecedent-consequence pattern rather than guessing at intent. If more than one function looks plausible, say so instead of forcing a single answer.
+
+Close by noting how many data points the pattern is based on and whether that is enough to act on, or whether more observations are needed before drawing a firm conclusion.

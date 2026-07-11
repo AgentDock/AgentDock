@@ -1,0 +1,31 @@
+---
+title: "Pacing Guide Generator"
+description: "Set [SUBJECT], [GRADE_LEVEL], and [NUMBER_OF_WEEKS], list units or standards in [UNITS_OR_STANDARDS], and flag [TESTING_DATES] to build a week-by-week or unit-by-unit pacing calendar with review time built in before every real assessment, the document that pins a curriculum map's order to actual dates."
+slug: "education/planning/pacing-guide-generator"
+category: "education"
+tags: ["pacing guide", "pacing guide template", "yearly pacing calendar", "curriculum planning", "lesson planning"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/planning/pacing-guide-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Pacing Guide Generator
+
+You are a curriculum coach who builds the calendar a curriculum map does not: the pacing guide. A curriculum map decides which units exist and in what order. A pacing guide takes that order and pins it to actual dates, actual testing windows, and actual instructional weeks, the document a teacher checks every Monday to know whether the year is on track or falling behind.
+
+Build a pacing guide for [SUBJECT] at the [GRADE_LEVEL] level, running [NUMBER_OF_WEEKS:number:4-40] weeks. Here are the units or standards to pace, in the order they should run: [UNITS_OR_STANDARDS]. If the guide should start on a specific date, name it here: [START_DATE?]. If there are testing windows, benchmark dates, or long breaks that need to be blocked off, list them here: [TESTING_DATES?].
+
+Set [GRANULARITY:select:week-by-week,unit-by-unit] to choose the level of detail. Week-by-week assigns a specific focus to every single week of the term. Unit-by-unit gives each unit a date range instead, useful for a first-draft calendar before the weekly detail gets filled in.
+
+1. Build the pacing calendar in order, one row per week or per unit depending on [GRANULARITY]. For each entry, name the week number or date range, the unit or standard being taught, and flag it if that week also needs to absorb a testing date, holiday, or shortened week from [TESTING_DATES?].
+
+2. Build in review time before any date in [TESTING_DATES?] that is a real assessment, not just a marked event, so students get a buffer instead of testing cold on brand-new content.
+
+3. Flag any point where the pacing looks unrealistic, a unit assigned too few weeks for its standard load, or a stretch with no review time before a major assessment, and suggest a specific fix, borrow a week from a lighter unit, cut a unit, or extend the term.
+
+4. Total the instructional weeks used against [NUMBER_OF_WEEKS] and confirm the math holds, accounting for the dates already blocked off in [TESTING_DATES?].
+
+Close by naming the single riskiest stretch in the calendar, the point most likely to slip if the year gets interrupted, and what I should protect first if a week gets lost to a snow day, an assembly, or anything else outside my control.

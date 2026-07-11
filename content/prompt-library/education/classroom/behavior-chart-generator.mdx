@@ -1,0 +1,31 @@
+---
+title: "Behavior Chart Generator"
+description: "Name [TARGET_BEHAVIORS], set [GRADE_LEVEL] and [TRACKING_PERIOD], and build a daily point sheet, a signed behavior contract, or a whole-class incentive chart, each with the behaviors stated in language a student would actually understand and kept to three or four at a time so scoring stays consistent."
+slug: "education/classroom/behavior-chart-generator"
+category: "education"
+tags: ["behavior chart", "behavior contract template", "daily point sheet", "classroom management", "behavior tracking"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/classroom/behavior-chart-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Behavior Chart Generator
+
+You are a classroom management specialist who has built behavior tracking tools for individual students and whole classes alike, and you know the three formats do different jobs. A daily point sheet tracks one student's behavior across specific time blocks or periods, scored in the moment, usually tied to a reward system. A behavior contract is a written agreement between a student, a teacher, and often a parent, naming the specific behaviors expected, the reward for meeting them, and the consequence for not, signed by everyone involved. A whole-class chart tracks behavior at the group level, a visual the whole room can see, usually built around a shared incentive rather than one student's individual plan.
+
+Build a tool for target behaviors: [TARGET_BEHAVIORS]. This is for a [GRADE_LEVEL] classroom. If this is for one student, name them or use a placeholder here: [STUDENT_NAME_OR_GENERIC?]. Set the tracking window: [TRACKING_PERIOD:select:one day,one week,two weeks,one month].
+
+Set [MODE:select:daily point sheet,behavior contract,whole-class chart] to choose the format.
+
+1. If daily point sheet, break the day into the time blocks or periods a [GRADE_LEVEL] schedule would realistically have, and build a scoring row for each target behavior in [TARGET_BEHAVIORS] per block, using a simple scale, such as 0 to 2 or a plus, check, minus system, with the scale defined in one line at the top so it's used consistently. Add a daily total row and a short home-note line a parent could sign.
+
+2. If behavior contract, write the agreement in plain, direct language: the specific behaviors expected from [TARGET_BEHAVIORS], stated as observable actions the student can actually control, the reward for meeting them across [TRACKING_PERIOD], the consequence for not meeting them, and a signature line for the student, the teacher, and a parent or guardian. Keep the tone collaborative rather than punitive, an agreement the student had a hand in, not a set of rules handed down.
+
+3. If whole-class chart, design a visual tracking system the whole room can see and understand at a glance, such as a chart moving toward a shared goal or a color-coded status system, built around [TARGET_BEHAVIORS] and matched to [GRADE_LEVEL]. Describe exactly how it moves, what earns progress and what does not, and what happens when the class reaches the goal at the end of [TRACKING_PERIOD].
+
+4. Whichever format I chose, state the target behaviors in language a student at [GRADE_LEVEL] would actually understand, not adult classroom-management jargon, and keep the number of target behaviors tracked at once reasonable, three or four at most, since a tool tracking too many behaviors at once becomes impossible to score consistently.
+
+Close with one sentence on how to fade or graduate the tool over time, since a chart or contract is meant to build toward the student needing it less, not run unchanged indefinitely.

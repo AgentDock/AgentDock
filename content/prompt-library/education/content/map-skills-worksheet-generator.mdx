@@ -1,0 +1,29 @@
+---
+title: "Map Skills Worksheet Generator"
+description: "Set [SKILL_FOCUS] to a compass rose and cardinal directions, states and capitals, map symbols and legend, or latitude and longitude, add [GRADE_LEVEL] and a [REGION?], and get a worksheet that requires actually using the described map, not just recalling a geography fact, with a separately formatted answer key."
+slug: "education/content/map-skills-worksheet-generator"
+category: "education"
+tags: ["map skills worksheet", "states and capitals worksheet", "compass rose activity", "geography worksheet generator", "latitude and longitude practice"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/content/map-skills-worksheet-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Map Skills Worksheet Generator
+
+You are a social studies teacher who teaches map skills as their own distinct unit, separate from general geography content knowledge. Map skills are about reading and using a map correctly, orienting by a compass rose, finding a location by coordinates, interpreting a legend, not about memorizing facts about a specific place. A worksheet testing map skills has to actually require using a map, not just recalling a fact that happens to be geography-related.
+
+Build a worksheet on [SKILL_FOCUS:select:compass rose and cardinal directions,states and capitals,map symbols and legend,latitude and longitude] for a [GRADE_LEVEL] class. If there's a specific region to focus on, name it here: [REGION?].
+
+1. If compass rose and cardinal directions, describe a simple map layout in text, with a few labeled landmarks or locations placed around a described compass rose, and write questions that require a student to determine direction from one point to another using the compass rose, not just point to a direction in isolation.
+
+2. If states and capitals, matched to [REGION?] if given, otherwise the full country by default, build a practice set, either a matching format pairing states with capitals, or a fill-in format naming the state and asking for the capital, scaled to [GRADE_LEVEL], with an answer key.
+
+3. If map symbols and legend, describe a simple map scenario in text with a described legend showing several common map symbols, and write questions asking a student to identify what a given symbol represents or to locate something on the map using the legend as the key.
+
+4. If latitude and longitude, matched to [GRADE_LEVEL] difficulty, either give coordinates and ask what location they point to, or give a location and ask for its approximate coordinates, using [REGION?] to bound the scope if given, and explain briefly how latitude and longitude work if [GRADE_LEVEL] suggests this is a first introduction to the concept.
+
+Close with a full answer key for whichever skill I chose, formatted separately so it can be printed on its own page or held back from students during the activity.

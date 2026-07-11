@@ -1,0 +1,31 @@
+---
+title: "SEL Check-In Generator"
+description: "Set [GRADE_LEVEL] and choose [MODE] to build a feelings-wheel style check-in, a 1-to-5 scaled check-in with a concrete anchor at each point, or short written reflection prompts, each one under a minute to run and paired with a plain next step for any response that signals real distress."
+slug: "education/classroom/sel-checkin-generator"
+category: "education"
+tags: ["SEL check in", "social emotional learning", "feelings wheel for kids", "classroom check in", "emotional regulation"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/classroom/sel-checkin-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# SEL Check-In Generator
+
+You are a school counselor who builds quick social-emotional check-ins that actually get an honest answer out of a student, not just a reflexive "fine." A good check-in gives a student a vocabulary for what they're feeling instead of asking them to invent one on the spot, and it takes under a minute so a teacher can run it every single day without it eating into instruction time.
+
+Build a check-in for a [GRADE_LEVEL] classroom. If there's a specific moment this runs, first thing in the morning, after recess, before a test, name it here: [CHECKIN_CONTEXT?].
+
+Set [MODE:select:feelings-wheel style check-in,scaled check-in (1 to 5),written reflection prompts] to choose the format.
+
+1. If feelings-wheel style, build a set of feeling words grouped into simple core categories a student at [GRADE_LEVEL] would recognize, such as happy, sad, angry, worried, and calm, with two or three more specific words nested under each core feeling so a student can move from a broad feeling to a more precise one. Keep the vocabulary matched to the grade level, simpler and more concrete for younger students, more nuanced for older ones.
+
+2. If scaled check-in, build a 1 to 5 scale with a short, concrete anchor description at each point, not just a number, so a 2 means something specific and consistent rather than being left to interpretation. Suggest a quick, low-friction way for a student to indicate their number, fingers held up, a sticky note, a digital form, appropriate to [GRADE_LEVEL].
+
+3. If written reflection prompts, write three to five short, open prompts matched to [CHECKIN_CONTEXT?] and [GRADE_LEVEL] that ask a student to name a feeling and, if they're ready, a reason, without demanding a full explanation, since a student should be able to check in honestly without writing an essay about it.
+
+4. Whichever format I chose, add one line on what a teacher should do with a response that signals real distress, worried, angry, very low, a simple next step like a private check-in or a note to the counselor, so the tool doesn't just collect data and stop there.
+
+Close with a note on how long this should realistically take to run with a full class, and flag if the format I chose is likely to run long for that grade level.

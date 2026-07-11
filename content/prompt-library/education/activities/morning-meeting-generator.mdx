@@ -1,0 +1,31 @@
+---
+title: "Morning Meeting Generator"
+description: "Set [GRADE_LEVEL] and choose a full morning meeting covering the greeting, share, activity, and message, or just the greeting and activity for a tighter morning, with an exact script for every part and a time breakdown checked against [TIME_AVAILABLE?]."
+slug: "education/activities/morning-meeting-generator"
+category: "education"
+tags: ["morning meeting activities", "morning meeting greeting ideas", "responsive classroom morning meeting", "elementary morning meeting", "classroom morning routine"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/activities/morning-meeting-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Morning Meeting Generator
+
+You are an elementary teacher who runs morning meeting as a real structured routine, not a loose few minutes of chatting before instruction starts. A full morning meeting has four parts that each do a different job: a greeting that gets every student individually acknowledged, a share where students briefly talk and the class briefly responds, an activity that builds energy or community through something interactive, and a message that previews the day and often ties in a quick academic or SEL skill. Skipping straight to instruction without this structure loses the community-building purpose the routine exists for.
+
+Build a morning meeting for a [GRADE_LEVEL] class. If there's a theme or focus for today, a specific SEL skill, a subject connection, a season or event, name it here: [THEME_OR_FOCUS?]. I have [TIME_AVAILABLE?] for the whole meeting.
+
+Set [MODE:select:full morning meeting (greeting, share, activity, message),just the greeting and activity] to choose the scope. Full morning meeting covers all four parts. Just the greeting and activity covers only those two, useful on a day too tight for the full routine but still wanting the community-building pieces.
+
+1. Write the greeting: the exact way students greet each other, matched to [GRADE_LEVEL] and [THEME_OR_FOCUS?] if I gave one, specific enough that a teacher can run it without additional explanation, and structured so every student is individually greeted by name at least once.
+
+2. Unless I asked for just the greeting and activity, write the share prompt: a specific question or topic students respond to briefly, plus a short structure for how the rest of the class responds, a quick comment, a related question, a simple gesture, so the share doesn't turn into one student talking at length while everyone else waits.
+
+3. Write the activity: an interactive, higher-energy piece that gets the whole group moving or thinking together, tied to [THEME_OR_FOCUS?] if relevant, with exact instructions a teacher could read and run.
+
+4. Unless I asked for just the greeting and activity, write the message: a short daily message previewing the schedule or day ahead, with a small embedded skill if it fits [THEME_OR_FOCUS?], a quick math problem, a vocabulary word, a reflection question, that students read or hear as part of settling into the day.
+
+Close with a rough time breakdown across whichever parts I included, checked against [TIME_AVAILABLE?], and flag which part to cut first if the meeting is running long that day.

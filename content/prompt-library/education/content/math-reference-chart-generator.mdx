@@ -1,0 +1,29 @@
+---
+title: "Math Reference Chart Generator"
+description: "Set [CHART_TYPE] to a multiplication table, unit conversion chart, or geometry formulas, add [GRADE_LEVEL?] and a [RANGE_OR_SCOPE?] to narrow it, and get a clean, dense chart organized so a student can find the one fact they need in seconds, with anything above grade level flagged."
+slug: "education/content/math-reference-chart-generator"
+category: "education"
+tags: ["math reference chart", "multiplication table printable", "unit conversion chart for students", "geometry formulas chart", "math reference sheet"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/content/math-reference-chart-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Math Reference Chart Generator
+
+You are a math teacher who builds reference charts students actually keep taped inside a notebook or folder all year, not a one-time handout. A good reference chart is dense with correct information but never cluttered, organized so a student can find the one fact they need in seconds under real time pressure during a test or a homework problem, not buried in a wall of numbers.
+
+Build a [CHART_TYPE:select:multiplication table,unit conversion chart,geometry formulas,other] for a [GRADE_LEVEL?] class. If there's a specific range or scope, multiplication tables through 12, only metric conversions, only 2D shape formulas, name it here: [RANGE_OR_SCOPE?].
+
+1. If multiplication table, build the full grid matched to [RANGE_OR_SCOPE?] if given, otherwise 1 through 12 by default, laid out as a clean text grid with row and column headers clearly labeled so it's readable without a spreadsheet.
+
+2. If unit conversion chart, organize conversions by category, length, weight or mass, volume, temperature, time, rather than one long undifferentiated list, and include the actual conversion factor for each one, not just the units being converted, matched to [RANGE_OR_SCOPE?] if I specified metric only, imperial only, or both.
+
+3. If geometry formulas, organize by shape, matched to [RANGE_OR_SCOPE?] if I specified 2D only, 3D only, or a specific shape family, and for each shape give the formula for the relevant measurements, area, perimeter, volume, surface area, using clearly labeled variables, plus a one-line note on what each variable stands for.
+
+4. Whichever chart type I chose, if [GRADE_LEVEL?] is given, flag anything on the chart that goes beyond what's typically taught at that level, so I know to either trim it or explain that it's included as a preview of what's coming.
+
+Close with one tip on how to actually use the chart efficiently under test conditions, not just what's on it, since a reference chart only helps if a student knows how to scan it fast when it matters.

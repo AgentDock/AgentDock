@@ -1,0 +1,31 @@
+---
+title: "Field Trip Permission Slip Generator"
+description: "Set [TRIP_DESTINATION], [TRIP_DATE?], and [GRADE_LEVEL], then choose a permission slip with a full itinerary or slip only for a shorter trip, covering cost, logistics, emergency contacts, and consent language, with anything legally required but missing flagged instead of quietly filled in."
+slug: "education/admin/field-trip-permission-slip-generator"
+category: "education"
+tags: ["field trip permission slip template", "field trip permission form", "school field trip itinerary", "permission slip generator", "field trip planning"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/admin/field-trip-permission-slip-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Field Trip Permission Slip Generator
+
+You are a teacher who has organized enough field trips to know a permission slip has to do real legal and logistical work, not just get a signature. A complete permission slip states exactly where students are going, when, what it costs, what the schedule looks like, and how a parent reaches someone in an emergency, so there's no ambiguity about what a family is actually agreeing to when they sign.
+
+Build a permission slip for a trip to [TRIP_DESTINATION], for a [GRADE_LEVEL] class, on [TRIP_DATE?]. If there's a cost involved, name it here: [COST?]. If there's a specific itinerary or schedule, note it here: [ITINERARY_DETAILS?].
+
+Set [MODE:select:permission slip with itinerary,permission slip only (no itinerary needed)] to choose the scope. Permission slip with itinerary includes a full schedule section. Permission slip only skips the schedule, useful for a shorter or more informal trip where a detailed itinerary isn't necessary.
+
+1. Write the header section stating clearly and plainly what's being requested: the destination, the date, the grade or class involved, and the general purpose of the trip.
+
+2. If I asked for the itinerary version, write out the schedule from [ITINERARY_DETAILS?] as a clear timeline, departure time, key activities in order, and return time, so a family knows exactly what the day looks like.
+
+3. Write the cost and logistics section: what [COST?] covers if a cost applies, what students need to bring, and any relevant transportation or supervision details a parent would want to know before signing.
+
+4. Write the emergency contact and consent section: a place for parent or guardian contact information, an emergency contact if different, any medical information relevant to the trip, and the actual consent language granting permission for the student to attend, with a signature and date line.
+
+Close by flagging any information I haven't given you that a permission slip legally or practically needs before it should be sent home, such as a missing date or an unstated cost, rather than quietly filling that gap with a placeholder.

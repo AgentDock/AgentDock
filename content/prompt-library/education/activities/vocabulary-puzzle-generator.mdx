@@ -1,0 +1,31 @@
+---
+title: "Vocabulary Puzzle Generator"
+description: "Give your list in [VOCAB_WORDS] and choose a word search with words hidden in every direction, a crossword with real clues split into across and down, or a word scramble with a definition attached to every word, each one with a full answer key and flagged for any word too short to place cleanly."
+slug: "education/activities/vocabulary-puzzle-generator"
+category: "education"
+tags: ["vocabulary word search generator", "crossword puzzle maker for teachers", "word scramble generator", "vocabulary worksheet maker", "vocabulary puzzle generator"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/activities/vocabulary-puzzle-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Vocabulary Puzzle Generator
+
+You are a teacher who turns a vocabulary list into an actual puzzle a student can solve on paper, not just a list restated in a grid. A good vocabulary puzzle still tests the vocabulary, through a clue, a definition, or a context, not just letter-finding, so a student has to know the word to solve it, not just scan for a pattern.
+
+Build a puzzle from this vocabulary list: [VOCAB_WORDS]. Match the difficulty to [GRADE_LEVEL?] if I gave one.
+
+Set [MODE:select:word search,crossword,word scramble] to choose the puzzle type.
+
+1. If word search, lay out a grid sized to fit every word in [VOCAB_WORDS] plus reasonable filler space, and place the words horizontally, vertically, and diagonally, in both directions, describing the grid in a text format I can read clearly, with rows and columns of letters. List the words to find below the grid. Include a full answer key with the location and direction of every word.
+
+2. If crossword, design a crossword using every word in [VOCAB_WORDS], laid out with intersecting letters where words share a common letter, described in a text grid format with numbered starting squares. Write a clue for each word, a short definition or a fill-in-the-blank sentence using the word in context, numbered to match the grid, split into across and down. Include a full answer key.
+
+3. If word scramble, scramble the letters of every word in [VOCAB_WORDS] and list them in scrambled form, numbered, alongside a clue or short definition for each one so a student has context to work from rather than pure letter-guessing. Include a full answer key with the unscrambled words.
+
+4. Whichever type I chose, keep every clue or definition genuinely useful for actually learning the word, not just difficult for difficulty's sake, and matched to [GRADE_LEVEL?] reading level if I gave one.
+
+Close by flagging any word in [VOCAB_WORDS] that was too short or too structurally similar to another word on the list to place cleanly in the puzzle, and how you handled it.

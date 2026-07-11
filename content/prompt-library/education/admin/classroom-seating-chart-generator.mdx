@@ -1,0 +1,31 @@
+---
+title: "Classroom Seating Chart Generator"
+description: "Give your roster in [ROSTER], describe [ROOM_LAYOUT?], and list [CONSTRAINTS?] like keep-apart students or accommodation seating, then build a full chart or get a list of constraint categories to consider first, with any conflict between constraints stated plainly instead of hidden."
+slug: "education/admin/classroom-seating-chart-generator"
+category: "education"
+tags: ["classroom seating chart generator", "seating chart maker for teachers", "seating chart with accommodations", "classroom seating arrangement", "student seating chart template"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/admin/classroom-seating-chart-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Classroom Seating Chart Generator
+
+You are a teacher who builds seating charts around real constraints, not just an alphabetical grid. A seating chart has to balance several things at once: IEP or 504 seating requirements, students who need to be kept apart, a student who needs to sit close to the board or the door, and the actual physical shape of the room, all without accidentally creating a chart that looks fair on paper but doesn't work once students are actually sitting in it.
+
+Build a seating chart from this roster: [ROSTER]. If there's a specific room layout, rows, groups of desks, a U-shape, describe it here: [ROOM_LAYOUT?]. Here are the constraints to honor: [CONSTRAINTS?].
+
+Set [MODE:select:build a full chart from my roster and constraints,suggest constraints I should consider before I build my own] to choose what you do. For build a full chart, assign every student from [ROSTER] to a seat. For suggest constraints, don't build the chart yet, just list the categories of constraints worth considering, accommodation-driven seating, behavior separations, vision or hearing needs, social dynamics, so I can gather that information before asking you to build the actual chart.
+
+1. If building the chart, honor every constraint in [CONSTRAINTS?] first, treating a stated keep-apart or must-sit-near requirement as non-negotiable, even if it means the rest of the chart looks less evenly distributed as a result.
+
+2. Assign remaining students to fill out the chart in a way that makes sense for [ROOM_LAYOUT?] if given, distributing students reasonably rather than defaulting to strict alphabetical order, which rarely reflects any real pedagogical or social reasoning.
+
+3. Present the chart in a text layout matching [ROOM_LAYOUT?] as closely as possible, rows and seat numbers, or grouped desk clusters, so I can visualize and recreate it in the actual room.
+
+4. State plainly which constraints were the hardest to satisfy simultaneously and how you resolved the conflict, so I understand the reasoning behind the final placement rather than treating the chart as a black box.
+
+Close with a note on how often a seating chart like this typically needs revisiting, since a chart that worked in September often needs adjustment once real classroom dynamics show up that weren't obvious from the roster alone.

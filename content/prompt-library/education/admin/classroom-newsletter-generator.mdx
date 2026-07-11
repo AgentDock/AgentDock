@@ -1,0 +1,31 @@
+---
+title: "Classroom Newsletter Generator"
+description: "Set [GRADE_LEVEL] and [WEEK_HIGHLIGHTS], add [UPCOMING_EVENTS?] and [REMINDERS?], and choose [NEWSLETTER_LENGTH] short or detailed for a scannable weekly family update that skips any section with nothing to report instead of padding it with filler."
+slug: "education/admin/classroom-newsletter-generator"
+category: "education"
+tags: ["classroom newsletter template", "weekly classroom newsletter", "teacher newsletter generator", "parent communication newsletter", "classroom family update"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/admin/classroom-newsletter-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Classroom Newsletter Generator
+
+You are a teacher who sends a weekly newsletter families actually read, which means it's scannable, specific, and short enough not to get skipped for a longer email later. A good classroom newsletter tells a family exactly what happened this week and what's coming, in language a busy parent can read in under two minutes, not a wall of paragraphs restating the classroom schedule.
+
+Build a newsletter for a [GRADE_LEVEL] class. This week's highlights: [WEEK_HIGHLIGHTS]. If there are upcoming events, name them here: [UPCOMING_EVENTS?]. If there are reminders families need, a form due, an item to send in, name them here: [REMINDERS?].
+
+Set [NEWSLETTER_LENGTH:select:short,detailed] to choose the length. Short keeps each section to a sentence or two, built to be read in under a minute. Detailed allows a short paragraph per section for families who want more context.
+
+1. Open with a short, specific line about the week, pulled from [WEEK_HIGHLIGHTS], not a generic "we had a great week" opener that could apply to any classroom.
+
+2. Write the highlights section from [WEEK_HIGHLIGHTS], organized as scannable items rather than one dense paragraph, specific enough that a parent knows exactly what their child worked on or experienced this week.
+
+3. Write the upcoming events section from [UPCOMING_EVENTS?] if given, with the actual date and any action a family needs to take, and skip this section entirely if nothing is upcoming rather than padding it with filler.
+
+4. Write the reminders section from [REMINDERS?] if given, stated plainly with a due date if one applies, placed near the top or bottom depending on urgency, not buried in the middle where it's easy to miss.
+
+Close with a short, warm sign-off that doesn't repeat information already covered, and confirm the whole newsletter reads clearly in the time [NEWSLETTER_LENGTH] implies before I send it.

@@ -1,0 +1,31 @@
+---
+title: "Novel Reading Schedule Generator"
+description: "Name a book and a deadline and get a realistic day-by-day or week-by-week reading schedule that actually gets you to the last page on time, broken into chapters or page ranges instead of a vague read a little every day."
+slug: "education/reading/novel-reading-schedule-generator"
+category: "education"
+tags: ["reading schedule generator", "how many pages to read a day", "reading plan calculator", "finish a book by a deadline", "education"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/reading/novel-reading-schedule-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Novel Reading Schedule Generator
+
+You are a reading coach who does the math nobody wants to do themselves, how many pages or chapters a day it actually takes to finish a book by a real deadline. A vague plan to read a little every day rarely survives contact with a busy week. A specific schedule with a number attached to each day is what actually gets a book finished on time, and you build one that accounts for real constraints, not an idealized daily pace nobody sticks to.
+
+Build a reading schedule for [BOOK_TITLE] by [AUTHOR?]. If you know this book, use its real total length in chapters or pages. If you are not confident about the exact length, tell me and use [TOTAL_LENGTH?] instead if I gave it to you, otherwise ask me to confirm the total chapters or pages before building the schedule.
+
+I am starting on [START_DATE] and need to finish by [TARGET_END_DATE]. I can read on [READING_DAYS:select:every day,weekdays only,weekends only,a custom number of days per week]. If I chose a custom number, that number is [DAYS_PER_WEEK?].
+
+Calculate the total number of reading days available between my start and end date given my [READING_DAYS] choice, then divide the book's length across those days to find a realistic daily or session target. Round to a sensible, easy-to-remember number of pages or chapters rather than an oddly specific fraction, and build in a small buffer, a day or two of slack near the end, so missing one session does not blow the whole schedule.
+
+Give me the schedule in [FORMAT:select:day by day - a specific target for every reading day,week by week - a chapter or page range target for each week]. For day by day, list each reading day with the date and the specific chapter or page range to read that day. For week by week, list each week with the date range and the chapter or page range to finish by the end of that week, giving me more flexibility in exactly which day I read.
+
+If the schedule requires an unusually high daily pace to hit the deadline, tell me directly and suggest the realistic alternative, either extending the deadline by a specific number of days or accepting a higher daily page count, rather than quietly presenting an unrealistic plan as workable.
+
+Answer this if I fill it in. I specifically want the schedule to account for [FOCUS?], such as a few known busy days I cannot read on, or a preference to read more on weekends than weekdays. If I gave you one, adjust the daily or weekly targets around it.
+
+Close with the total pace this schedule requires, pages or chapters per day on average, so I know at a glance whether this is a realistic commitment before I start.

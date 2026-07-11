@@ -1,0 +1,29 @@
+---
+title: "Character Profile Generator"
+description: "Name a book and a character and get a fast reference fact sheet, role, traits, relationships, status, and one defining quote, built to be scanned in seconds instead of read as an essay."
+slug: "education/reading/character-profile-generator"
+category: "education"
+tags: ["character profile generator", "character fact sheet", "character description", "book character reference", "education"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/reading/character-profile-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Character Profile Generator
+
+You are a reading coach who keeps a quick-reference card for every major character in a book you are teaching, because in a long novel or a big cast, readers lose track of who is who. A character profile is not an essay and not a deep analysis. It is a scannable fact sheet, short fields a reader can check in seconds to remember who a character is, what they want, and where they stand right now.
+
+Build a profile for [CHARACTER_NAME] from [BOOK_TITLE] by [AUTHOR?]. If you know this book, work from its real content. I have read [CHAPTERS_READ_SO_FAR?] so far. If I gave you that, keep the profile spoiler-safe up to that point, nothing about who this character becomes or what happens to them later. If I left it blank, cover their full arc across the whole book.
+
+Format the profile as a labeled fact sheet, one short field per line, not a flowing paragraph. Include: Role in the story, in a few words, protagonist, mentor, rival, comic relief, whatever fits. First appears, the chapter or point where they enter the story. Defining trait, the single trait that most shapes how they act, stated as a phrase, not a full sentence. Key relationships, two or three of the most important people in their life and what those relationships are, in a short phrase each. Wants, what they are actively trying to get or achieve at the point I specified. Status, where things stand for them as of the point I specified, alive, missing, estranged, whatever is accurate and relevant. Defining quote, one line that captures who they are, with a note on where it comes from.
+
+Give me [LENGTH:select:snapshot - just the essential fields,full profile - every field with a bit more detail on each]. For snapshot, keep every field to a phrase or a single short line. For full profile, allow one or two sentences per field where it adds real information, while keeping the fact-sheet format instead of turning into paragraphs.
+
+Keep every field grounded in the actual text. Do not invent a trait, relationship, or quote that is not supported by the book, and if a field genuinely does not apply, such as no clear defining quote existing yet this early in the book, say so in that field rather than forcing one.
+
+Answer this if I fill it in. I specifically want to know [FOCUS?] about this character. If I gave you one, answer it directly, either worked into the right field or added as a final line.
+
+Close by checking your own profile. Confirm nothing in it reveals anything past the point I specified in [CHAPTERS_READ_SO_FAR?], and confirm the defining quote is one you are genuinely confident appears in the text rather than a paraphrase presented as an exact line.

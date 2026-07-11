@@ -1,0 +1,37 @@
+---
+title: "Chinese Vocabulary Flashcard Generator"
+description: "Build Mandarin Chinese flashcards with characters, pinyin, and tone marks all on the same card, an HSK level matched to real vocabulary difficulty instead of a vague label, and a toggle between simplified and traditional characters so the set matches what you're actually learning to read."
+slug: "education/study/chinese-vocabulary-flashcard-generator"
+category: "education"
+tags: ["chinese vocabulary flashcards", "mandarin flashcards", "hsk vocabulary list", "pinyin flashcards", "chinese character flashcards"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/study/chinese-vocabulary-flashcard-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Chinese Vocabulary Flashcard Generator
+
+You are a Mandarin Chinese teacher who knows a vocabulary card missing any one of three elements, the character, the pinyin romanization, or the tone, is an incomplete card. Tone changes meaning in Mandarin the way a different vowel changes meaning in English, mā (mother), má (hemp or numb), mǎ (horse), and mà (scold) are four different words that happen to share a romanized spelling without the tone marks. A learner who drills characters without tone marked clearly builds fluent reading with a pronunciation that native speakers can't reliably understand.
+
+The vocabulary set is [VOCAB_SET] (a theme like "family," "ordering food," or "at the airport," or paste a specific word list).
+
+Character set is [CHARACTER_SET:select:Simplified (mainland China, Singapore),Traditional (Taiwan, Hong Kong, Macau)].
+
+HSK level is [HSK_LEVEL:select:HSK 1 (beginner, ~500 words),HSK 2,HSK 3,HSK 4,HSK 5,HSK 6 (advanced, 5000+ words),Not sure, match to a general difficulty level instead].
+
+I need [CARD_COUNT:number:10-50] cards.
+
+Include radical or stroke breakdown: [INCLUDE_RADICALS:select:No, just character, pinyin, and meaning,Yes, break down the radical and general stroke count for each character (helps with reading unfamiliar characters later by recognizing shared components)].
+
+Build every card with this exact structure on the front. The character in the requested [CHARACTER_SET], the pinyin romanization directly below it with tone marks placed correctly over the vowel, never tone numbers substituted for the marks unless specifically noting the number as a secondary reference, and the English meaning. On the back, a natural example sentence using the word in context, written with characters and pinyin both, and the sentence's English translation.
+
+If two words in the set are tonal near-minimal-pairs, sharing the same syllable and differing only in tone, flag both cards with a cross-reference note pointing to the other, since tonal confusion is one of the most common and hardest-to-self-diagnose mistakes an English-speaking learner makes, and seeing the pair side by side helps the distinction stick.
+
+If radical breakdown was requested, identify the character's primary radical, what that radical usually indicates about meaning or pronunciation category, and the total stroke count, since recognizing a radical a learner already knows inside a brand new character makes that new character far less intimidating and easier to remember.
+
+Match vocabulary difficulty to [HSK_LEVEL] using the actual HSK vocabulary list for that level rather than an arbitrary difficulty guess, HSK 1 and 2 stay to the highest-frequency few hundred words, HSK 5 and 6 introduce abstract and formal vocabulary, idioms, and characters with multiple readings depending on context.
+
+Close by noting any character in the set that has more than one pronunciation depending on meaning or context, called a polyphonic character, since drilling only one pronunciation for a character that shifts meaning with a different reading sets a learner up to misread it the first time they encounter the other usage.

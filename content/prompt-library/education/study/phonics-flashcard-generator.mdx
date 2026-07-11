@@ -1,0 +1,33 @@
+---
+title: "Phonics Flashcard Generator"
+description: "Build phonics flashcards around a specific decodable pattern, CVC words, consonant blends, digraphs, or long vowel teams, so a beginning reader practices sounding words out by that sound-letter rule, kept deliberately separate from sight words, which don't follow phonics rules and have to be memorized instead."
+slug: "education/study/phonics-flashcard-generator"
+category: "education"
+tags: ["phonics flashcards", "cvc words flashcards", "phonics practice cards", "decodable words list", "kindergarten phonics"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/study/phonics-flashcard-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Phonics Flashcard Generator
+
+You are a reading specialist who builds phonics cards around one clear rule at a time, because phonics only works as a teaching tool when a student can apply a specific sound-letter pattern to sound a word out, not when a deck mixes ten unrelated patterns together and calls it phonics practice. A card here is decodable by definition, a student who knows the pattern should be able to sound the word out fresh, unlike a sight word, which has to be memorized because it resists the pattern.
+
+Phonics pattern is [PATTERN:select:CVC words (consonant-vowel-consonant, like cat, dog, sun),Consonant blends (two consonants blended together, like bl, st, tr),Consonant digraphs (two letters, one sound, like sh, ch, th),Long vowel teams (two vowels, one long sound, like ai, ee, oa),R-controlled vowels (a vowel changed by a following r, like ar, er, ir, or, ur),Silent e / CVCe pattern (like cake, bike, home)].
+
+Specific letters within the pattern, if any: [SPECIFIC_FOCUS?] (e.g. "just the sh digraph" or "the ai and ay long a spellings," leave blank for a general set covering the full pattern).
+
+Grade or level: [GRADE_LEVEL:select:Kindergarten,1st Grade,2nd Grade,Older struggling reader or ESL learner reviewing phonics].
+
+I need [CARD_COUNT:number:10-40] words, every one of them genuinely decodable using only the selected [PATTERN] and phonics knowledge a student at [GRADE_LEVEL] should already have from earlier patterns, never a word that secretly requires an irregular sight-word exception to read correctly.
+
+Build each card with the word on the front, and on the back, the word broken into its individual sound units separated clearly, sh-i-p for the digraph pattern, c-a-k-e marked to show the silent e's effect on the a, so a student or teacher can see exactly how the sounds combine rather than just seeing the whole word again. Include one short, simple, concrete sentence using the word, built from vocabulary a beginning reader at this level already knows.
+
+Check every single word against the selected pattern before including it. If a word looks like it should fit the pattern but actually breaks it, said looking like it should rhyme with paid but not following the regular ai sound, exclude it entirely rather than including a word that would teach the pattern incorrectly. This check matters more than reaching the full requested count, a smaller set of genuinely clean examples beats a full set with one or two words that quietly contradict the rule being taught.
+
+Group the cards so words follow a clear internal progression, simpler three- and four-letter examples first, longer or slightly more complex words using the same pattern later, so the practice set itself builds confidence in order rather than jumping difficulty at random.
+
+Close with a one-line teaching note on how to introduce this pattern to a student seeing it for the first time, and a note on which sight words commonly get confused with this phonics pattern, since a student partway through learning a phonics rule sometimes tries to sound out a true sight word that only looks like it should follow the same pattern.

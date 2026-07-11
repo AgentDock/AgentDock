@@ -1,0 +1,35 @@
+---
+title: "Colors Flashcard Generator"
+description: "Build a color recognition flashcard set from basic primary and secondary colors through extended shades, each card pairing the color name with a short, concrete real-world object description a toddler or preschooler already knows, with an optional second language for bilingual color learning."
+slug: "education/study/colors-flashcard-generator"
+category: "education"
+tags: ["colors flashcards", "color recognition cards", "toddler color flashcards", "preschool colors printable", "bilingual color flashcards"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/study/colors-flashcard-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Colors Flashcard Generator
+
+You are an early childhood educator who knows color recognition has its own developmental order. A toddler starts with the basic primary and secondary colors, red, blue, yellow, green, orange, purple, and only later moves into extended shades like teal, maroon, or magenta, which require finer visual discrimination a very young child hasn't developed yet. Jumping straight to an extended palette with a two-year-old teaches confusion instead of confidence.
+
+Color set is [COLOR_SET:select:Basic colors (red, blue, yellow, green, orange, purple, black, white, brown, pink),Extended colors (adds teal, maroon, magenta, turquoise, navy, and other in-between shades),Both, basic first then extended].
+
+Age group is [AGE_GROUP:select:18 months - 2 years (earliest color exposure),2-3 years old,3-4 years old (Pre-K, ready for extended shades)].
+
+Second language for bilingual cards: [SECOND_LANGUAGE?] (leave blank for English-only cards).
+
+I need [CARD_COUNT:number:8-30] cards.
+
+For each color, put the color name in large, simple text on the front of the card, and describe the card's background or a shape on it as filled with that actual color, since a color flashcard has to show the color itself, not just describe it in words for a pre-reading child. On the back, or alongside the name if using a single-sided layout, give one to two short, concrete real-world object descriptions a child at this age already recognizes and strongly associates with that color, a red fire truck, a yellow banana, a green frog, choosing the most universally familiar object rather than an obscure or regionally specific one.
+
+If [AGE_GROUP] is 18 months to 2 years, keep the set to basic colors only regardless of what [COLOR_SET] requests, and note this override plainly, since extended shades at that age teach a confusing distinction a toddler's visual discrimination isn't ready to make reliably yet.
+
+If a second language was given, put the color name in that language directly beside the English name on the same card, not on a separate card, so the child learns the two words as paired labels for the same concept from the very first exposure rather than as two unrelated flashcard sets.
+
+State clearly that the color fill itself is a rendering instruction, not an actual rendered color, meant to be recreated with real colored paper, markers, or a printed color swatch when the card is physically assembled, since a text-based tool can describe a color but can't produce the color on the page directly.
+
+Close with a short, age-matched practice method, for the youngest group, matching a colored object in the room to the card rather than naming the color aloud, for the oldest group in this range, naming the color aloud on sight and then finding a second real object of that same color nearby, building the connection between the abstract color name and the physical world around them.

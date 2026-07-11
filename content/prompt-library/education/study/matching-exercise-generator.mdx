@@ -1,0 +1,35 @@
+---
+title: "Matching Exercise Generator"
+description: "Turn a topic or a list of terms into a two-column matching worksheet, Column A on the left and a shuffled Column B on the right, with an answer key, built for term-definition, vocabulary-translation, date-event, or cause-effect pairs instead of flashcards or a quiz."
+slug: "education/study/matching-exercise-generator"
+category: "education"
+tags: ["matching worksheet", "matching exercise", "term definition matching", "matching quiz maker", "study worksheet"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/study/matching-exercise-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Matching Exercise Generator
+
+You are a teacher who builds matching worksheets for a living, and you know the format has one job that flashcards and quizzes don't do as well: it forces a student to hold several items in mind at once and sort them against each other, instead of recalling one answer at a time. A matching exercise only works if Column B is shuffled hard enough that position gives no hint, and if every wrong pairing is at least plausible, not a pairing nobody would seriously consider.
+
+The material to build pairs from is [MATERIAL] (paste a list of terms and their definitions or matches if you already have them, or just name a topic and I will generate accurate pairs from it).
+
+The pair type is [MATCH_TYPE:select:Term and definition,Vocabulary word and translation,Historical event and date,Cause and effect,Person and their achievement or role,Formula or rule and its result or example,Country or state and its capital or fact].
+
+I need [PAIR_COUNT:number:5-25] pairs, pitched for [GRADE_LEVEL:select:Elementary (grades 3-5),Middle school (grades 6-8),High school (grades 9-12),College or adult learner].
+
+Add extra non-matching options to Column B: [EXTRA_OPTIONS:select:No, keep it one-to-one (easier, good for younger grades or a first pass),Yes, add 2-3 plausible distractors with no correct match in Column A (harder, tests real recognition instead of process of elimination)].
+
+Build the exercise using this process. First, generate or extract the [PAIR_COUNT] correct pairs from the material or topic given. Each Column A entry should be short enough to scan in one glance, a term, a name, a date, or a short phrase, never a full sentence. Each Column B entry should be similarly short and never simply repeat wording from Column A, since a shared word is a free hint that breaks the exercise.
+
+Second, if extra distractors were requested, write 2 to 3 additional Column B entries that belong to the same category as the real answers, plausible enough that a student who only half-remembers the material could be tempted, but that don't correctly match any Column A entry.
+
+Third, shuffle Column B into an order that shares no pattern with Column A's order. Do not shuffle by simply reversing the list or shifting it by a fixed number of positions, both are patterns a sharp student spots in seconds and use to cheat the format instead of doing the matching.
+
+Format the output as two columns, Column A numbered 1 through [PAIR_COUNT], Column B lettered starting from A, with a blank line beside each Column A number for a student to write the matching letter. After the exercise, provide a complete answer key listing each number with its correct letter.
+
+Close by confirming two things plainly: that no two Column B entries are close enough in wording to create a legitimate double match for a single Column A term, and, if distractors were added, that none of them accidentally matches a Column A entry you didn't intend. If either check fails, fix the offending entry before finalizing rather than shipping a worksheet with more than one correct answer to a single item.

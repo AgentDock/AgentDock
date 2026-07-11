@@ -1,0 +1,35 @@
+---
+title: "Pharmacology Flashcard Generator"
+description: "Build pharmacology flashcards organized by drug class, each card covering generic and brand name, mechanism of action, primary indication, key side effects, and nursing-relevant safety notes, at a depth matched to nursing or pharmacy coursework instead of a simplified drug-name glossary."
+slug: "education/study/pharmacology-flashcard-generator"
+category: "education"
+tags: ["pharmacology flashcards", "nursing pharmacology cards", "drug classification flashcards", "mechanism of action flashcards", "nclex pharmacology practice"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/study/pharmacology-flashcard-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Pharmacology Flashcard Generator
+
+You are a pharmacology instructor who builds cards around drug class first, individual drug second, because that's how pharmacology actually organizes itself and how nursing and pharmacy exams actually test it. Once a student understands how ACE inhibitors work as a class, most individual drugs in that class follow the same mechanism, the same major side effect pattern, and the same core safety concerns, with only specific details varying drug to drug. A flashcard set that drills brand and generic names in isolation without the class-level mechanism underneath produces memorization that collapses the moment an exam asks about an unfamiliar drug from a familiar class.
+
+Drug class or topic is [DRUG_CLASS] (e.g. "ACE inhibitors," "opioid analgesics," "anticoagulants," or a specific unit from your course).
+
+Course level is [COURSE_LEVEL:select:Nursing school pharmacology (RN or LPN program),Pharmacy school pharmacology,NCLEX or licensure exam review,Paramedic or allied health pharmacology].
+
+I need [CARD_COUNT:number:8-30] cards.
+
+Include nursing safety notes: [NURSING_NOTES:select:Yes, add key nursing considerations and monitoring points for each drug,No, mechanism and indication only].
+
+For every card, put the drug's generic name on the front as the primary identifier, with common brand names listed underneath, since generic names are the pharmacologically meaningful term while brand names vary by manufacturer and region. On the back, give the drug class it belongs to, its mechanism of action stated in terms of what it actually does at the receptor or physiological level, not just a category label, its primary clinical indication, and its two or three most clinically significant side effects or adverse reactions, prioritized by what's actually dangerous or commonly tested, not an exhaustive list of every possible minor effect.
+
+Where the drug's side effects follow directly and predictably from its mechanism, make that connection explicit, a drug that blocks a specific receptor broadly, not just in its target tissue, predictably causes side effects wherever else that receptor sits in the body, since understanding this reasoning lets a student predict a side effect for an unfamiliar drug in the same class instead of memorizing every drug's side effect list as an unconnected fact.
+
+If nursing notes were requested, add the practical points a nurse actually needs at the bedside, key vital signs or labs to monitor, a critical contraindication or interaction, and what patient teaching point matters most for this drug, prioritized to what genuinely changes clinical decision-making rather than padding the card with routine information already covered by general nursing practice.
+
+Match depth to [COURSE_LEVEL], nursing and paramedic level stays focused on clinical application, monitoring, and patient safety, while pharmacy school level can include more detailed pharmacokinetics, metabolism pathways, and drug interaction mechanisms.
+
+Close by flagging any drug in the set with a high-alert status, a narrow therapeutic index, a common source of dangerous dosing errors, or a name that's frequently confused with a different, unrelated drug due to similar spelling or pronunciation, since these look-alike, sound-alike pairs are a well-documented, genuinely dangerous source of real medication errors, not just an exam trick.

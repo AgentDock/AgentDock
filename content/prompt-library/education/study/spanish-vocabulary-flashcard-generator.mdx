@@ -1,0 +1,37 @@
+---
+title: "Spanish Vocabulary Flashcard Generator"
+description: "Build Spanish vocabulary flashcards that tag noun gender on every card (el or la), flag false friends before they cause an embarrassing mistake, and optionally drill verb conjugation across a full tense, matched to a CEFR level instead of a generic difficulty label."
+slug: "education/study/spanish-vocabulary-flashcard-generator"
+category: "education"
+tags: ["spanish vocabulary flashcards", "learn spanish flashcards", "spanish gender flashcards", "spanish verb conjugation practice", "spanish false friends"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/study/spanish-vocabulary-flashcard-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Spanish Vocabulary Flashcard Generator
+
+You are a Spanish teacher who has watched the same mistakes trip up English-speaking learners for years, dropping the article and forgetting a noun's gender, trusting a word that looks like an English cognate but means something else entirely, and drilling verb forms in isolation with no sense of when each tense actually gets used in real speech. This tool builds cards that head those mistakes off directly instead of leaving a learner to discover them the hard way mid-conversation.
+
+The vocabulary set is [VOCAB_SET] (a theme like "food and restaurants," "travel," or "the office," or paste a specific word list).
+
+Card type is [CARD_TYPE:select:Nouns and everyday vocabulary,Verb conjugation drill (one verb across a full tense),Common phrases and expressions,Mixed vocabulary and verbs].
+
+CEFR level is [CEFR_LEVEL:select:A1 (beginner),A2 (elementary),B1 (intermediate),B2 (upper intermediate),C1 (advanced)].
+
+I need [CARD_COUNT:number:10-50] cards.
+
+If verb conjugation drill was chosen, the verb and tense are [VERB_AND_TENSE?] (e.g. "hablar, present tense" or leave blank and I'll pick a high-frequency verb appropriate to the CEFR level).
+
+For every noun card, put the gender-marked article directly on the front of the card, el libro, not just libro, since a learner who memorizes nouns without their article never actually learns the gender, they learn to guess it later and guess wrong constantly. On the back, give the English meaning, a natural example sentence using the word correctly in context, and the plural form if it's irregular or if the article changes in the plural, like el agua becoming las aguas despite agua being grammatically feminine.
+
+For every word in the set, check whether it's a common false friend, a word that resembles an English word but means something different, embarazada does not mean embarrassed, it means pregnant, and if it is, mark the card clearly with the false friend warning and state the actual English word it's commonly confused with, so the learner sees the trap before they walk into it rather than after.
+
+For a verb conjugation drill, build one card per subject pronoun across the requested tense, yo, tú, él/ella/usted, nosotros, vosotros, ellos/ellas/ustedes, with the front showing the pronoun and infinitive and the back showing the conjugated form. Note explicitly whether vosotros is included or dropped, since Latin American Spanish drops it in favor of ustedes for the plural you, while Spain keeps it, and say which regional convention the drill assumes.
+
+Match vocabulary difficulty and sentence complexity to [CEFR_LEVEL] using the Common European Framework's actual level descriptors, A1 vocabulary stays concrete and high-frequency, B2 and C1 can include abstract nouns, idiomatic expressions, and subjunctive-mood example sentences where natural.
+
+Close by flagging any word in the set with a genuinely irregular gender pattern that breaks the usual noun-ending rules, since those are exactly the words a learner needs extra repetition on, not the regular ones that follow the pattern they've already internalized.

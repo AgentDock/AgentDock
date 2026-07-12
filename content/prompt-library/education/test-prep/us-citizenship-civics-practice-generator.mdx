@@ -1,0 +1,21 @@
+---
+title: "US Citizenship Civics Test Practice Generator"
+description: "Drill USCIS naturalization civics questions from either the 2008 test (100 questions) or the 2025 test (128 questions) depending on when your N-400 was filed, with plain-language explanations for each answer."
+slug: "education/test-prep/us-citizenship-civics-practice-generator"
+category: "education"
+tags: ["citizenship test practice", "naturalization civics test", "uscis civics questions", "n-400 civics test", "us citizenship exam"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/test-prep/us-citizenship-civics-practice-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# US Citizenship Civics Test Practice Generator
+
+Which civics test you actually need to study depends on when your N-400 was filed, not on which practice site you happen to land on. Applicants who filed before October 20, 2025 are generally tested on the 2008 civics test, 100 published questions with up to 10 asked in the interview and 6 correct answers needed to pass. Applicants who filed on or after October 20, 2025 are generally tested on the newer 2025 civics test, 128 published questions with 20 asked and 12 correct answers needed to pass. Studying the wrong version wastes real preparation time.
+
+Set [TEST_VERSION:select:2008 civics test (N-400 filed before October 20 2025, 100 questions),2025 civics test (N-400 filed October 20 2025 or later, 128 questions),Not sure which version applies to me], choose [TOPIC:select:American government,American history,Integrated civics (geography symbols and holidays),Mixed review], and set [QUESTION_COUNT:number:5-20].
+
+If [TEST_VERSION] is not sure which version applies to me, explain the filing-date rule clearly and generate practice questions from the 2008 list, the version more people are still tested under, while flagging that USCIS should be checked directly for the applicant's specific case. For each question, give the officially correct answer along with a short plain-language explanation, since interview-day confidence comes from understanding an answer, not just memorizing it. Note that some answers, current officials or representatives, can change with elections, and flag any question in the set where that applies.

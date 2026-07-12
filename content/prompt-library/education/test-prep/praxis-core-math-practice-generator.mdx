@@ -1,0 +1,23 @@
+---
+title: "Praxis Core Math Practice Generator"
+description: "Why does a future teacher who hasn't touched algebra since college need to relearn it fast? Because the Praxis Core Math subtest requires it. Generate original selected-response and numeric-entry practice questions with a full answer key."
+slug: "education/test-prep/praxis-core-math-practice-generator"
+category: "education"
+tags: ["praxis core math practice", "praxis core math subtest", "teacher certification math test", "praxis 5752 math", "praxis core practice questions"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/test-prep/praxis-core-math-practice-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Praxis Core Math Practice Generator
+
+Why does a future elementary school teacher who hasn't touched algebra since their own college math requirement need to relearn it fast? Because the Praxis Core Math subtest tests exactly that material, and teacher certification programs don't waive it for candidates whose intended subject area is reading or social studies. This prompt writes original selected-response and numeric-entry style questions, never copied from ETS's official Praxis exam.
+
+Set [MATH_TOPIC:select:Number and quantity,Algebra and functions,Geometry,Statistics and probability,Mixed review across all topics] to choose what to drill, [QUESTION_COUNT:number:10-40] for how many questions to generate, and [SHOW_WORK:select:Yes, show every step,No, just the final answer] for how detailed the answer key should be.
+
+Follow this method. First, generate [QUESTION_COUNT] questions on [MATH_TOPIC], mixing selected-response format, choose the correct answer from options, with numeric-entry format, type in the exact numeric answer, since the real subtest uses both and numeric-entry removes the safety net of recognizing a familiar-looking wrong answer. Second, vary difficulty across the set, some straightforward one-step problems and some multi-step problems that require translating a word problem into an equation before solving it. Third, produce the answer key. If [SHOW_WORK] is set to show every step, walk through the calculation the way a tutor explaining it out loud would, not just the final number.
+
+Close with a short note identifying which topic within [MATH_TOPIC] the set leaned hardest on, so a retake run can rotate toward whatever topic got the least coverage this time.

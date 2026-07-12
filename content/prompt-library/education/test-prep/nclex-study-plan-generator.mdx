@@ -1,0 +1,23 @@
+---
+title: "NCLEX Study Plan Generator"
+description: "Build a week-by-week NCLEX-RN study plan from graduation to your scheduled test date, organized around the four Client Needs categories and weighted toward your weakest content areas, whether you're a first-time or repeat test taker."
+slug: "education/test-prep/nclex-study-plan-generator"
+category: "education"
+tags: ["nclex study plan", "nclex rn study schedule", "new grad nclex prep", "nclex client needs categories", "nclex repeat candidate plan"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/test-prep/nclex-study-plan-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# NCLEX Study Plan Generator
+
+The gap between nursing program graduation and NCLEX test day is exactly when most of the content review naturally starts fading, which is why a new grad's study plan needs to be structured around a real calendar, not a generic list of topics to get through eventually.
+
+Give me [TEST_DATE] for your scheduled or target exam date and [WEEKLY_HOURS:number:5-40] for how many hours a week you can realistically study. Set [PRIOR_ATTEMPT:select:First-time test taker,Repeat candidate reviewing a prior score report] and optionally list [WEAK_AREAS?], specific content areas or Client Needs categories you already know need extra time.
+
+Build the plan in three phases across the time between now and [TEST_DATE]. Phase one, the first third of the timeline, broad content review across all four Client Needs categories, safe and effective care environment, health promotion and maintenance, psychosocial integrity, and physiological integrity, weighted more heavily toward whatever is listed in [WEAK_AREAS] if provided. Phase two, the middle third, shift from content review into practice questions and Next Generation NCLEX item type drilling, extended multiple response, bowtie, matrix, cloze, hot spot, and trend, at increasing volume. Phase three, the final stretch before [TEST_DATE], full-length practice runs under timed conditions plus light review only, no new content introduction this late.
+
+If [PRIOR_ATTEMPT] is repeat candidate, restructure phase one around whatever content areas a prior score report flagged rather than starting from a blanket review, and note explicitly that this plan assumes access to that score report's category breakdown. Close with a simple weekly rhythm, roughly how [WEEKLY_HOURS] should split between content review, practice questions, and rest, since burnout this close to a licensure exam costs more than it saves.

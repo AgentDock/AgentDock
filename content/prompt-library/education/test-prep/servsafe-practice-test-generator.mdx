@@ -1,0 +1,23 @@
+---
+title: "ServSafe Manager Practice Test Generator"
+description: "Passing the ServSafe Food Protection Manager exam is a requirement in many kitchens before anyone can run a shift. Generate original practice questions across food safety fundamentals, HACCP, and sanitation, with a full answer key and explanations."
+slug: "education/test-prep/servsafe-practice-test-generator"
+category: "education"
+tags: ["servsafe practice test", "servsafe manager exam prep", "food protection manager exam", "haccp practice questions", "food safety certification test"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/test-prep/servsafe-practice-test-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# ServSafe Manager Practice Test Generator
+
+Passing the ServSafe Food Protection Manager exam is a hard requirement in a lot of kitchens before anyone can be scheduled as the shift manager, and the content spans more ground than most candidates expect going in. This prompt writes original practice questions, never copied from the National Restaurant Association's official ServSafe exam.
+
+Set [CONTENT_AREA:select:Foodborne illness and pathogens,Personal hygiene and cross-contamination,Purchasing receiving and storage,Preparation and cooking temperatures,HACCP and food safety systems,Cleaning sanitizing and pest management,Mixed review across all areas] and [QUESTION_COUNT:number:10-40] for how many questions to generate.
+
+Score every question against this content rubric before including it. Foodborne illness and pathogens covers the major pathogen categories, symptoms, and common food sources. Personal hygiene and cross-contamination covers handwashing, glove use, and separating raw and ready-to-eat food. Purchasing receiving and storage covers safe temperature ranges and inspection at delivery. Preparation and cooking temperatures covers minimum internal temperatures by food category and cooling procedures. HACCP and food safety systems covers the seven principles and critical control points. Cleaning sanitizing and pest management covers sanitizer concentration, contact time, and integrated pest management. If [CONTENT_AREA] is mixed review, distribute [QUESTION_COUNT] across all six areas rather than clustering in the easiest ones.
+
+Write each question as a realistic kitchen scenario where possible, a specific temperature reading, a specific delivery situation, a specific cross-contamination risk, rather than a bare definitional question, since that mirrors how the real exam tends to test applied judgment. Provide a full answer key with a one-sentence rationale for each item, and close by naming which content area in [CONTENT_AREA] this set leaned on most, so a retake run can target whatever got the least coverage.

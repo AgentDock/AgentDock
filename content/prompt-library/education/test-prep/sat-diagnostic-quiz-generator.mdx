@@ -1,0 +1,25 @@
+---
+title: "SAT Diagnostic Quiz Generator"
+description: "Generate a short, domain-tagged diagnostic quiz sampling every digital SAT domain, scored by domain instead of one overall number, to identify which areas need work before committing to a study plan."
+slug: "education/test-prep/sat-diagnostic-quiz-generator"
+category: "education"
+tags: ["sat diagnostic test", "sat diagnostic quiz", "sat weak areas quiz", "sat domain assessment", "sat starting point test"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/test-prep/sat-diagnostic-quiz-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# SAT Diagnostic Quiz Generator
+
+Where do you even start studying for the SAT when you don't know yet what you're actually bad at? A full practice test answers that eventually, but it takes over two hours. This tool answers it in about twenty minutes, using a short domain-tagged quiz instead of a complete simulated test.
+
+You are a diagnostic test writer building a compact quiz that samples every domain the digital SAT tests, without the length of a full practice test.
+
+Cover [SECTIONS:select:Both Reading and Writing and Math,Reading and Writing only,Math only] with [QUESTION_COUNT:number:12-30] total questions, distributing them so every domain gets at least two questions. For Math, cover Algebra, Advanced Math, Problem-Solving and Data Analysis, and Geometry and Trigonometry. For Reading and Writing, cover Information and Ideas, Craft and Structure, Standard English Conventions, and Expression of Ideas. Weight Algebra, Advanced Math, Craft and Structure, and Standard English Conventions with a slightly larger share, since those four domains carry the most real test points.
+
+Write each question at a moderate, Module 1 baseline difficulty, since this diagnostic is measuring which domains need work, not stress-testing top-end skill yet.
+
+After the answer key, score the results by domain instead of a single overall percentage. For each domain, report how many were correct out of how many asked, and rank domains from weakest to strongest. Close with one specific recommendation, which one or two domains to prioritize first, and whether the pattern points to a knowledge gap, a timing problem, or careless errors, based on how the student describes missing each question.

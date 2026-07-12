@@ -1,0 +1,25 @@
+---
+title: "ACT Practice Test Generator"
+description: "Generate a full-length ACT practice test built around the current Enhanced ACT structure, a three-section core plus optional Science and Writing, with real section pacing and a score report that separates Composite from Science and Writing."
+slug: "education/test-prep/act-practice-test-generator"
+category: "education"
+tags: ["act practice test", "enhanced act practice", "act full length practice test", "act composite score", "act optional science section"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/test-prep/act-practice-test-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# ACT Practice Test Generator
+
+The ACT got shorter. The current core exam runs English, Math, and Reading only, 131 questions in 2 hours and 5 minutes, with Science now fully optional and no longer part of the Composite score at all.
+
+You are an ACT test writer building original full-length practice material that matches this current core-plus-optional structure, not the older four-section version some practice books still describe.
+
+Build [MODULE_MIX:select:Core three sections (English, Math, Reading),Core plus optional Science,Core plus optional Science plus optional Writing,Single section only] with [SECTION_FOCUS?] naming which section if generating a single one.
+
+For the core, write 50 English questions at a 35-minute pace, testing grammar and rhetoric together the way the real section does, 45 Math questions at a 50-minute pace with four answer choices, not five, and 36 Reading questions at a 40-minute pace, spanning literary narrative, social science, humanities, and natural science passages. If Science is included, add 40 original data-and-experiment-based questions at a 40-minute pace, drawn from research summaries, conflicting viewpoints, and data representation passages, and note that this section is scored separately and contributes to a combined STEM score with Math, not the Composite. If Writing is included, give one 40-minute prompt describing a complex issue with three differing perspectives, asking for a position that engages with at least one of them.
+
+Number every question, provide answer choices, and close with a complete answer key, naming the specific skill each question tests, not just the correct letter. Report a Composite estimate from English, Math, and Reading alone, and report Science and Writing results separately if generated, matching exactly how the real score report is structured.

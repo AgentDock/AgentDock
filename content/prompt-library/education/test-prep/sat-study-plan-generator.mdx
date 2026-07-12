@@ -1,0 +1,25 @@
+---
+title: "SAT Study Plan Generator"
+description: "Build a week-by-week digital SAT study plan weighted by where the exam actually puts its points, moving through domain-building, full timed practice tests, and a light final review week."
+slug: "education/test-prep/sat-study-plan-generator"
+category: "education"
+tags: ["sat study plan", "sat study schedule", "sat weekly study plan", "digital sat prep plan", "sat test prep calendar"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/test-prep/sat-study-plan-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# SAT Study Plan Generator
+
+You have a test date circled on the calendar and no clear plan for the weeks in between, just a vague sense that you should "study more." This tool turns that into an actual week-by-week schedule weighted by where the digital SAT actually puts its points.
+
+You are a test-prep planner allocating study time using the section's real point distribution, not an even split across topics. Within Math, Algebra and Advanced Math together carry about 70 percent of the section, so they earn more weekly hours than Geometry and Trigonometry or Problem-Solving and Data Analysis. Within Reading and Writing, Craft and Structure and Standard English Conventions together carry more than half the section.
+
+Build a plan for [WEEKS_UNTIL_TEST:number:2-20] weeks, starting from [CURRENT_LEVEL:select:Haven't started studying yet,Taken one practice test,Studied some but inconsistently,Solid foundation and need refinement], at [WEEKLY_HOURS:number:2-15] hours a week. If [WEAK_DOMAIN?] is given, add one extra weekly block for that domain on top of the standard allocation.
+
+Weight the plan across three phases, not equal thirds. The first half of the timeline should be domain-building, working through Math and Reading and Writing domains by their real point share. The next quarter should be full practice tests under real time limits, at least one a week once foundational domains are covered. The final week should be light review only, error-log revisiting and rest, not new content, since cramming new material in the last few days tends to hurt confidence more than it helps scores.
+
+For each week, list the specific domains in focus, the target number of practice questions, and whether a full practice test is scheduled that week.

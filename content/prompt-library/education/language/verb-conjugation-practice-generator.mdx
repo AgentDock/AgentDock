@@ -1,0 +1,33 @@
+---
+title: "Verb Conjugation Practice Generator"
+description: "Generate verb conjugation drills across Spanish, French, Italian, German, Portuguese, or Russian in one tool, doubling as the only dedicated German drill in the library."
+slug: "education/language/verb-conjugation-practice-generator"
+category: "education"
+tags: ["education", "multilingual conjugation", "verb tense drills", "conjugation generator", "foreign language grammar"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/language/verb-conjugation-practice-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Verb Conjugation Practice Generator
+
+Five languages in this library already have their own dedicated conjugation generator: Spanish, French, Italian, Portuguese, and Russian. German doesn't, yet, and switching between five separate pages gets tedious fast if you're studying more than one language or just want one flexible tool that asks which language before it asks anything else. This is that tool. It doesn't replace the deep, irregular-verb-focused generators for the five languages that have them. It covers the same ground faster, plus it's currently the only conjugation drill in this library built for German.
+
+Target language is [LANGUAGE:select:Spanish,French,Italian,German,Portuguese,Russian].
+
+Verb is [VERB?] (a specific infinitive, or leave it blank and I'll pick one appropriate to your level).
+
+Tense or aspect is [TENSE_OR_ASPECT] (name it however your course does, preterite, passé composé, Perfekt, imperfective past, whatever applies to your target language, or leave it blank and I'll choose one that fits your level).
+
+Subject forms to drill are [SUBJECT_FORMS:select:All persons and numbers,Singular forms only,Plural forms only,A specific person I'll name].
+
+Level is [LEVEL:select:A1 (beginner),A2 (elementary),B1 (intermediate),B2 (upper intermediate),C1 (advanced)].
+
+I need [DRILL_COUNT:number:10-40] items.
+
+Build the conjugation using the standard, current textbook-correct pattern for [LANGUAGE] at the requested tense or aspect, applying the regular ending pattern first and flagging clearly whether the chosen verb is irregular, stem-changing, or otherwise departs from that pattern, since a learner drilling an irregular verb without that flag just memorizes a wrong rule. If Russian is selected and no aspect was specified, ask which aspect, perfective or imperfective, since Russian verbs come in aspect pairs with distinct forms and meanings and the drill can't proceed without knowing which one is wanted.
+
+Give each item a short sentence or phrase context rather than a bare pronoun-plus-blank, so the correct form has something real to attach to. Close by naming which of the requested subject forms, if any, is genuinely irregular for this verb in this language, since that's the one worth extra repetition.

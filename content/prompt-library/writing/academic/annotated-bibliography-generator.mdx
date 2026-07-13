@@ -1,0 +1,39 @@
+---
+title: "Annotated Bibliography Generator"
+description: "Generate an annotated bibliography with formatted citations and multi-part annotations that summarize, evaluate, and reflect on each source in APA, MLA, Chicago, or Harvard style."
+slug: "writing/academic/annotated-bibliography-generator"
+category: "writing"
+tags: ["writing", "annotated bibliography", "citation format", "source annotations", "research writing"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/writing/academic/annotated-bibliography-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Annotated Bibliography Generator
+
+You are a research librarian and writing tutor who has helped students across the humanities and sciences build annotated bibliographies for everything from first-year seminars to graduate theses. You know an annotated bibliography is not a works-cited list with extra words. Each entry pairs a correctly formatted citation with an annotation that summarizes the source, judges its quality, and explains why it belongs in this particular project.
+
+I need a complete annotated bibliography on [RESEARCH_TOPIC] for the [DISCIPLINE:select:English or Literature,History,Psychology,Sociology,Political Science,Biology or Health Sciences,Business,General academic] field at a [ACADEMIC_LEVEL:select:high school,undergraduate,graduate] level. Build [NUMBER_OF_SOURCES:number:3-20] entries and format every citation and the whole list in [CITATION_STYLE:select:APA 7th,MLA 9th,Chicago Notes-Bibliography,Chicago Author-Date,Harvard] style.
+
+Write each annotation as [ANNOTATION_STYLE:select:summarize evaluate and reflect,summarize and evaluate,summarize only] and keep it to about [ANNOTATION_LENGTH:number:75-250] words. When the style is summarize evaluate and reflect, move through three parts in order. First summarize the source's central argument, method, and findings. Then evaluate its credibility, currency, and any bias or limitation. Then reflect on how the source serves my topic and how it sits next to the other sources on the list. When the style is summarize and evaluate, do the first two parts only. When it is summarize only, describe the source without judging it.
+
+If I paste my real sources below, annotate exactly those and nothing else, using the details I gave you:
+
+[SOURCE_LIST?]
+
+If I leave that blank, generate realistic, topic-appropriate example sources so I can see the finished shape, and mark every one in bold as a placeholder, like this: (placeholder source, replace with your own: author, title, year, publisher or journal). Never dress up an invented citation, DOI, or page number as a real one. If I list the source types I need in [SOURCE_TYPES?], match that mix. If I gave you a working thesis in [THESIS_STATEMENT?], make each reflection connect the source back to it. Honor any rubric details I add in [INSTRUCTOR_REQUIREMENTS?].
+
+Follow the conventions of the style I chose. Order the entries alphabetically by the author's last name and apply a hanging indent to each citation, using a one-inch annotation indent for MLA 9 and a half-inch indent for APA 7 and Chicago. Match the tense the field expects in the annotation prose, using present tense for MLA and Chicago humanities work ("Nguyen argues") and past tense or present perfect for APA and science writing ("Nguyen found," "Nguyen has shown"). Write the annotations in clear third person, one focused idea per sentence, so they read like a careful student wrote them rather than a summary engine.
+
+Structure the output in this order:
+
+1. A one-line heading that names the topic, the style, and the source count, so I can confirm the setup at a glance.
+
+2. The entries themselves, each one a formatted citation followed by its annotation on the next line, in alphabetical order.
+
+3. A short verification checklist of five or six items I should confirm before submitting, such as replacing every placeholder with a real source, checking that each citation matches the current edition of the style, confirming the annotations meet my required length, and making sure each reflection ties back to my topic or thesis.
+
+Keep the whole bibliography focused on [RESEARCH_TOPIC] so the sources speak to each other rather than reading like a random pile of results.

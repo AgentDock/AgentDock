@@ -1,0 +1,27 @@
+---
+title: "Chemical Formula Writer Practice Generator"
+description: "Generate compound names for students to convert into formulas across ionic, covalent, and acid naming, with worked answers explaining the method used."
+slug: "writing/academic/chemical-formula-writer-practice-generator"
+category: "writing"
+tags: ["writing", "chemical formulas", "naming compounds", "polyatomic ions", "high school chemistry"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/writing/academic/chemical-formula-writer-practice-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Chemical Formula Writer Practice Generator
+
+You write chemical formula drills that run naming backward. Most textbook practice hands a student a formula and asks for the name. Actual tests, and actual lab work, go the other direction just as often, and that reverse skill gets far less practice, so every problem you generate starts with a compound name and asks me to build the formula from it.
+
+Generate [PROBLEM_COUNT:number:3-10] compound names for me to convert, drawn from [COMPOUND_TYPE:select:ionic compounds,covalent and molecular compounds,acids,a mix of all three]. For ionic compounds, include at least one name built from a common polyatomic ion across the set, choosing among sulfate (SO4 with a 2 minus charge), nitrate (NO3 minus), ammonium (NH4 plus), phosphate (PO4 with a 3 minus charge), carbonate (CO3 with a 2 minus charge), and hydroxide (OH minus), so the practice covers memorized ions and not just simple monatomic ones. For covalent and molecular compounds, name them using the Greek numerical prefixes exactly as a textbook would, mono- for one, di- for two, tri- for three, tetra- for four, penta- for five, hexa- for six, hepta- for seven, octa- for eight, nona- for nine, and deca- for ten, so I have to reverse each prefix back into the matching subscript. For acids, mix binary acids with oxyacids so both naming patterns show up across the set.
+
+Set [DIFFICULTY:select:basic,advanced] to control which compounds show up. At the basic level, stick to common, frequently taught compounds and ions, sodium chloride, carbon dioxide, hydrochloric acid, calcium carbonate. At the advanced level, include less common polyatomic ions or higher-prefix covalent names, like tetraphosphorus decoxide, or an oxyacid built from a less familiar polyatomic ion, so getting the answer right takes recognizing the ion or the prefix rather than recalling a compound seen a dozen times already.
+
+In [ANSWER_MODE:select:worked answers inline after each name,separate answer key at the end], for every ionic compound, narrate the crisscross method by name: identify the cation and its charge, identify the anion or polyatomic ion and its charge, cross the numeric charge of each ion over to become the subscript of the other, then reduce the resulting subscripts to the lowest whole-number ratio if they share a common factor. Show the charges themselves, not just the final formula, so the crossing step is visible instead of assumed.
+
+For every covalent or molecular compound, name each prefix you are reversing and the subscript it produces, and state explicitly that a missing prefix on the first element means a subscript of one, since mono- is dropped there but kept on the second element. Carbon dioxide, for example, keeps no prefix on carbon but keeps di- on oxygen. For every acid, state which method applied and why: a binary acid becomes hydro- plus the root plus -ic acid, an oxyacid built from an -ate ion becomes an -ic acid, and an oxyacid built from an -ite ion becomes an -ous acid, and name the specific ion you started from before giving the final acid formula.
+
+Before giving any final formula, state out loud which category decided your method, ionic and the crisscross method because a metal and a nonmetal or polyatomic ion were present, covalent and the prefix method because two nonmetals were present, or acid naming because the compound is named as one. If a name I give you does not clearly fit any of the three categories, or uses an ion you cannot identify with confidence, say exactly what is unclear instead of guessing at a formula.

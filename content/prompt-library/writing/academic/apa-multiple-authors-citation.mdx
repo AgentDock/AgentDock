@@ -1,0 +1,37 @@
+---
+title: "APA Multiple Authors Citation Generator"
+description: "Build the APA in-text citation and reference entry for one author, two authors, three to twenty with et al., or twenty-one or more with ellipsis."
+slug: "writing/academic/apa-multiple-authors-citation"
+category: "writing"
+tags: ["writing", "multiple authors citation", "et al citation", "apa reference list", "citation rules"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/writing/academic/apa-multiple-authors-citation"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# APA Multiple Authors Citation Generator
+
+You are a citation specialist who reviews reference lists for a living, and you catch the same mistake in almost every draft. Writers spell out every author in text when APA wants only the first name and et al., or they drop authors from the reference list who are supposed to stay there. The in-text rule and the reference-list rule are not the same rule, and confusing them is the single most common APA citation mistake, one that only gets worse as the author count grows.
+
+Build the APA 7th edition citation for this source. Here are the authors, in the order they appear on the source, written however you have them, full names or already-abbreviated initials: [AUTHOR_NAMES]. Convert every name to APA's Last, F. M. format no matter how I typed it in.
+
+Here is everything else about the source, the title, the year, and the publication details: [SOURCE_INFO]. Source type: [SOURCE_TYPE:select:journal article,book,website,report,other].
+
+Count the names in [AUTHOR_NAMES] first, then apply the one rule that matches that count. Never guess the format from habit.
+
+1. One author. In-text citation: (LastName, Year), or "LastName (Year)" when the name sits inside your sentence. Reference list: LastName, F. M. (Year).
+
+2. Two authors. In-text always names both authors, every time you cite the source, never shortened to et al.: (LastName1 & LastName2, Year) in a parenthetical citation, "LastName1 and LastName2 (Year)" in a narrative one. Reference list: LastName1, F. M., & LastName2, F. M. (Year).
+
+3. Three to twenty authors. This is where almost everyone gets it wrong. In-text, starting with the very first citation, name only the first author and shorten the rest to et al.: (LastName1 et al., Year). Older APA 6th edition style spelled out up to five authors before switching to et al. on repeat citations. APA 7 dropped that step, so et al. applies from the first mention onward. The reference list does the opposite of the in-text rule. It lists every author, not only the first, separated by commas, with an ampersand before the final name: LastName1, F. M., LastName2, F. M., & LastName3, F. M. (Year).
+
+4. Twenty-one or more authors. The in-text citation still follows the three-author rule, first author plus et al., with no change. The reference list lists the first 19 authors, then an ellipsis with no ampersand before it, then the final author's name on its own: LastName1, F. M., LastName2, F. M., . . . LastNameFinal, F. M. (Year).
+
+Shape the reference-list entry around the source type I gave you. A journal article needs the article title in sentence case, the journal name and volume number in italics, the issue number in parentheses right after the volume, the page range, and a DOI or URL if I gave you one. A book needs the title in italics in sentence case and the publisher. A website needs the page title, the site name if it differs from the author, and the URL, plus a retrieval date only if the page content is likely to change over time. A report needs the report number in parentheses after the title and the name of the publishing organization. Use only the details I gave you in [SOURCE_INFO], and if something is missing, a page number, a DOI, a volume number, leave it out instead of inventing it.
+
+Give me [CITATION_PART:select:both in-text and reference,in-text only,reference list only]. For both, show the in-text citation first, the full reference-list entry on the next line, then one sentence naming which author-count rule you applied and why, so I can check it against my source before I paste it anywhere. For in-text only, skip the reference-list entry and give me the in-text form plus that same one-sentence rule note. For reference list only, skip the in-text form and give me the reference-list entry plus the rule note.
+
+If [AUTHOR_NAMES] names an organization, a government agency, or another group instead of individual people, treat the full group name as the author and skip the author-count rule entirely, since et al. only applies to counts of individual names. If a name in the list has no first name or initial to abbreviate, tell me you need at least an initial before the reference-list entry can be correct, and give me the in-text citation anyway since it never needs initials.

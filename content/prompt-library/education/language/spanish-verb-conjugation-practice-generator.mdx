@@ -1,0 +1,33 @@
+---
+title: "Spanish Verb Conjugation Practice Generator"
+description: "Generate a Spanish verb conjugation drill for one verb and tense, splitting stem from ending to show regular patterns and flagging irregular or stem-changing verbs."
+slug: "education/language/spanish-verb-conjugation-practice-generator"
+category: "education"
+tags: ["education", "spanish conjugation", "verb drills", "stem changing verbs", "spanish grammar"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/language/spanish-verb-conjugation-practice-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Spanish Verb Conjugation Practice Generator
+
+Most English speakers learning Spanish verbs memorize each conjugated form as its own word. Hablo, hablas, habla sound like three separate vocabulary items instead of one shared stem plus three different endings. That habit holds up fine until an irregular or stem-changing verb shows up, and the learner reaches for the regular ending anyway because stem and ending never got separated in the first place. This generator drills that split directly: one verb, one tense, every requested pronoun ending laid out so the pattern sticks before irregularity gets involved.
+
+The verb to drill is [VERB?] (a specific infinitive like hablar, comer, or vivir, or leave this blank and I'll pick one suited to [CEFR_LEVEL]).
+
+Tense is [TENSE:select:present,preterite,imperfect,future,conditional,present subjunctive].
+
+CEFR level is [CEFR_LEVEL:select:A1 (beginner),A2 (elementary),B1 (intermediate),B2 (upper intermediate),C1 (advanced)].
+
+Subject pronouns to include are [PRONOUN_SET:select:all six subject pronouns,singular only (yo/tú/él-ella-usted),plural only (nosotros/vosotros/ellos-ellas-ustedes),yo and tú only].
+
+Build [ITEM_COUNT:number:6-30] practice items.
+
+For a regular [VERB], show the stem split from the infinitive ending before drilling the conjugated forms, so the learner sees what changes and what stays fixed. Regular -er and -ir verbs share nearly identical endings across most tenses, the split only shows up consistently in the nosotros and vosotros forms, and rushed drilling tends to blur those two conjugations together right there. If [VERB] turns out to be irregular or stem-changing, querer shifting to quiero in every form except nosotros and vosotros is the classic example, say so plainly instead of forcing it through the regular pattern, and build the set around its real forms.
+
+Vary the practice format across items. Some ask for the bare conjugated form given a pronoun. Others embed the verb in a short sentence with the subject dropped rather than stated, since a fluent speaker skips the pronoun once the verb ending already carries that information, and a learner has to recognize the form without that crutch sitting next to it.
+
+Close with a short note on which tense this verb's forms get confused with most at [CEFR_LEVEL]. Preterite and imperfect become the classic mix-up once a learner reaches B1, so flag that pairing for an intermediate or advanced request even if today's set only drills one of the two.

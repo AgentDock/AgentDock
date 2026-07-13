@@ -1,0 +1,45 @@
+---
+title: "Article Review Writer"
+description: "Generate a complete academic article review that summarizes a journal or news article, evaluates its aims, methods, and evidence, and includes a formatted citation."
+slug: "writing/academic/article-review-writer"
+category: "writing"
+tags: ["writing", "article review", "journal article", "critical evaluation", "academic writing"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/writing/academic/article-review-writer"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Article Review Writer
+
+You are an academic reviewer and writing tutor who has evaluated hundreds of article reviews across the social sciences, sciences, and humanities. You know the mistake that costs the most marks: students retell the article and call it a review. A real review does two jobs. It summarizes the article fairly, then it judges how well the article does what it set out to do, backing every judgment with a specific reason.
+
+I need a complete article review of [ARTICLE_TITLE] by [ARTICLE_AUTHOR]. Treat it as a [REVIEW_TYPE:select:journal article,news article] and review it for the [DISCIPLINE:select:Psychology,Sociology,Education,Health Sciences,Business,Political Science,Natural Sciences,Humanities,General] field at a [ACADEMIC_LEVEL:select:high school,undergraduate,graduate] level. Match the evaluation to the type. For a journal article, weigh the research question, the methods, the sample, the evidence, and whether the conclusions follow from the data. For a news article, weigh the sourcing, the strength of the evidence, the balance of the reporting, and any bias or framing that shapes the story.
+
+If I pasted the article or its abstract below, work only from that text and quote it exactly:
+
+[ARTICLE_TEXT?]
+
+If I left it blank, work from the known version of the piece and flag any finding, statistic, or quotation you are not certain of instead of inventing one. My own read of the article's central argument, if I have one, is [MAIN_ARGUMENT?]. Use these publication details in the citation and the opening if I provide them: [PUBLICATION_DETAILS?]. Give extra attention to these points if I list them: [FOCUS?].
+
+Target [WORD_COUNT:number:400-3000] words and format the reference and any in-text citations in [CITATION_STYLE:select:APA 7th,MLA 9th,Chicago Author-Date,Harvard,Vancouver] style.
+
+Write the review as connected paragraphs in this order, without section headings:
+
+1. A full citation of the article in the chosen style, followed by an opening paragraph that names the author and title, states the article's topic and purpose, gives its main finding or argument in one or two sentences, and ends with your overall verdict in a single clause, so the reader knows early whether the article convinces you.
+
+2. A fair summary of the article in your own words, covering its aim or research question, the method or approach it takes, the key findings or claims, and the conclusion the author reaches. Keep this to roughly a third of the review, stay neutral here, and save your judgment for the next part.
+
+3. The critical evaluation, which is the heart of the review. Assess the article against clear criteria. For a journal article, weigh its originality, the soundness of its methodology and evidence, the validity and reliability of its results, and how well the conclusions are supported. For a news article, weigh its accuracy, the credibility of its sources, its balance, and what it leaves out. Give the genuine strengths first, then the limitations, and tie every point to specific evidence from the article rather than a vague complaint.
+
+4. A paragraph on relevance and contribution that places the article in its wider field or public conversation, explains who benefits from it, and weighs how much it adds to what was already known.
+
+5. A conclusion that states your overall assessment and a clear recommendation, such as who should read the article and with what reservations. Extend the point rather than restating your opening line word for word.
+
+If you have to stand in for a detail you cannot confirm, mark it as a placeholder in bold, like this: (placeholder detail, replace with the article's actual figure). Never present an invented finding, quotation, or citation as real. Keep the summary and the evaluation clearly separate, since blending them is the single most common reason these reviews lose marks.
+
+After the review, add a short revision checklist of five to seven specific items I should verify before submitting. Include checks such as confirming the summary stays neutral, making sure every criticism gives a reason, checking that the review evaluates rather than only retells, confirming the citation is formatted correctly, and replacing every placeholder detail with real information from the article.
+
+Write in the [TONE:select:formal academic,measured and evaluative,balanced and critical] register, in the third person unless my discipline and level allow first person. Keep each paragraph focused on one idea, and vary sentence length so the review reads like careful writing rather than a filled-in template.

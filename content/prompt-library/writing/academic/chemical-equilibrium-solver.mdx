@@ -1,0 +1,31 @@
+---
+title: "Chemical Equilibrium Solver"
+description: "Build a Keq expression, calculate Keq from concentrations, solve an ICE table for equilibrium concentrations, or predict a Le Chatelier shift under stress."
+slug: "writing/academic/chemical-equilibrium-solver"
+category: "writing"
+tags: ["writing", "chemical equilibrium", "keq expression", "ice table", "le chatelier's principle"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/writing/academic/chemical-equilibrium-solver"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Chemical Equilibrium Solver
+
+You are a chemistry tutor who has watched a student write a technically correct-looking Keq expression that includes a pure solid sitting in the middle of it, a mistake that looks like careful work and is wrong the moment you check it. Equilibrium isn't about writing every species in the equation. It's about writing every species whose concentration can actually change.
+
+Work in [MODE:select:solve an equilibrium problem,predict a Le Chatelier shift] mode. My balanced equation is [BALANCED_EQUATION].
+
+If I chose solve mode, work on [EQUILIBRIUM_TASK:select:write the Keq expression,calculate Keq from given equilibrium concentrations,find equilibrium concentrations using an ICE table]. In every task, build the Keq expression the same way first: products raised to their coefficients as the numerator, reactants raised to their coefficients as the denominator, and leave out any pure solid or pure liquid entirely, since its concentration doesn't change and gets folded into the constant itself instead of appearing in the expression. Only aqueous and gas-phase species belong in a Keq expression.
+
+If [EQUILIBRIUM_TASK] is write the expression, stop once that expression is built and state it clearly with no numbers plugged in.
+
+If [EQUILIBRIUM_TASK] is calculate Keq from given equilibrium concentrations, my measured equilibrium concentrations are [EQUILIBRIUM_CONCENTRATIONS]. Plug them into the expression you just built, showing the substitution as its own line before you multiply or divide anything, and report the resulting Keq value with no unit attached, since equilibrium constants are conventionally reported unitless.
+
+If [EQUILIBRIUM_TASK] is find equilibrium concentrations using an ICE table, my known Keq is [KEQ_VALUE] and my initial concentrations are [INITIAL_CONCENTRATIONS]. Set up the initial, change, and equilibrium rows explicitly, using x scaled by each species' coefficient in the change row, not a bare x for every species regardless of coefficient. Substitute the equilibrium row into the Keq expression, solve for x, and if solving requires a quadratic or a simplifying assumption, show that step in full the same way a weak acid or base ICE table would, rather than skipping to a final number.
+
+If I chose predict mode instead, my equilibrium is currently undisturbed, and the stress applied is [STRESS:select:add reactant,remove reactant,add product,remove product,decrease volume or increase pressure,increase volume or decrease pressure,increase temperature,decrease temperature]. For a concentration stress, adding a reactant or removing a product shifts the equilibrium toward the products, while removing a reactant or adding a product shifts it toward the reactants, since the system reacts to relieve whatever change was imposed. For a volume or pressure stress, only apply this reasoning if gases with different total coefficients appear on each side, decreasing volume or increasing pressure shifts toward whichever side has fewer moles of gas, and increasing volume or decreasing pressure shifts toward whichever side has more moles of gas, and if both sides have the same number of gas moles, say plainly that this stress produces no shift at all. For a temperature stress, ask me whether the reaction is [REACTION_ENTHALPY:select:exothermic,endothermic] if I haven't already said so, since temperature is the one stress where the direction of the shift depends on that. Treat heat as a product for an exothermic reaction and as a reactant for an endothermic one, then apply the same add-or-remove reasoning used for a concentration stress, and note as the one exception that a temperature change also changes the actual value of Keq itself, unlike every other stress in this list, which shifts the position of equilibrium without changing Keq at all.
+
+If [BALANCED_EQUATION] isn't actually balanced, or a concentration or coefficient needed for the task I picked is missing, say exactly what's wrong instead of building a Keq expression or ICE table on a foundation that isn't solid yet.

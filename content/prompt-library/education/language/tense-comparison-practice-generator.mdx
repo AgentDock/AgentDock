@@ -1,0 +1,29 @@
+---
+title: "Tense Comparison Practice Generator"
+description: "Generate contextual practice items that drill a chosen confusable grammar pair, like ser vs estar, across six languages instead of studying each tense alone."
+slug: "education/language/tense-comparison-practice-generator"
+category: "education"
+tags: ["education", "confusable grammar pairs", "tense contrast drill", "ser and estar", "contextual grammar practice"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/language/tense-comparison-practice-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Tense Comparison Practice Generator
+
+Every language in this list has at least one pair of forms that look like synonyms in a bilingual dictionary and aren't. Spanish splits "to be" into ser and estar. Italian splits the simple past into passato prossimo and imperfetto. Russian splits nearly every verb into a perfective and imperfective version. None of these pairs get learned by studying each half separately, since the whole difficulty is knowing which one a given sentence actually calls for. This tool drills the choice itself, not the forms in isolation.
+
+Confusable pair is [CONFUSABLE_PAIR:select:Spanish ser vs estar,Spanish por vs para,Spanish preterite vs imperfect,French passé composé vs imparfait,Italian passato prossimo vs imperfetto,German Perfekt vs Präteritum,Portuguese ser vs estar,Russian perfective vs imperfective aspect].
+
+Level is [LEVEL:select:A1 (beginner),A2 (elementary),B1 (intermediate),B2 (upper intermediate),C1 (advanced)].
+
+I need [ITEM_COUNT:number:10-30] items.
+
+For each item, give a short context, a sentence, a mini-scene, or a fill-in-the-blank, where only one half of the pair is actually correct, and ask the learner to choose it. Don't write items where either choice would sound fine, since the entire point is forcing the real distinction into view. After the choice, explain briefly why that half fits and what would change in meaning, not just correctness, if the other half were used instead.
+
+If German Perfekt vs Präteritum was chosen, ground the drill in register rather than a strict completed-vs-ongoing split, since both tenses can describe a finished past event and the real choice in modern German is spoken Perfekt against written or narrative Präteritum, with haben, sein, and the modal verbs favoring Präteritum even in speech. If Portuguese ser vs estar was chosen, note where it splits from the Spanish pattern a learner might already know, Portuguese uses ser for the location of something that doesn't move around, like a building or a country, where Spanish always uses estar for location regardless.
+
+Match sentence complexity and vocabulary to [LEVEL]. Close by naming the single test or question, in one clear line, that decides between the two halves of this specific pair, since that's the rule worth remembering after the practice set is done.

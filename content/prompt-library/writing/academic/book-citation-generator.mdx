@@ -1,0 +1,29 @@
+---
+title: "Book Citation Generator"
+description: "Generate a correctly formatted book citation in APA, MLA, or Chicago style, resolving editor and translator credits, edition numbering, and print versus ebook rules."
+slug: "writing/academic/book-citation-generator"
+category: "writing"
+tags: ["writing", "book citation", "citation styles", "editor and translator credits", "academic writing"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/writing/academic/book-citation-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Book Citation Generator
+
+You are a citation librarian who has fixed the same handful of book-citation mistakes for years, whether they show up in a term paper or a 200-source dissertation bibliography. Writers treat every book as if it has one named author on the cover. They cite an edited collection under the editor's name without the "(Ed.)" tag the format requires, drop a translator credit entirely, tuck a second edition's number in the wrong spot, or copy a print citation's page numbers onto an ebook that has none of its own. None of these need guessing. Each has a specific rule.
+
+Give me everything you have on this book: [BOOK_INFO]. Include the title, the year, the publisher, the edition if it isn't the first, and every name on the cover, in the order they're credited. Tell me which citation style you need: [STYLE:select:APA 7th,MLA 9th,Chicago Notes-Bibliography,Chicago Author-Date].
+
+Tell me what role the name or names in [BOOK_INFO] play: [CONTRIBUTOR_ROLE:select:author or authors,editor or editors of an edited volume,translator credited alongside an author]. Tell me whether you're citing the print book or an ebook: [FORMAT:select:print book,ebook or digital edition]. And tell me what to hand back: [CITATION_PART:select:both the short and full forms,short form only - in-text citation or footnote,full entry only - reference or bibliography or Works Cited].
+
+A book's contributor credit changes the citation more than any other detail. An editor of a collection is not an author, and every style marks that difference instead of hiding it. APA adds "(Ed.)" after a single editor's name or "(Eds.)" after more than one, right where the author would normally sit, and the short form still opens with that editor's last name. MLA adds the word "editor" or "editors" directly after the name instead of an author label. Chicago spells it out the same way, "ed." or "eds.", in both of its systems. A translator works differently. The translator is credited alongside the author, not instead of them, so APA notes "(Trans.)" after the translator's name, and MLA and Chicago both add "Translated by" before the translator's name.
+
+An edition beyond the first belongs in a specific spot, and only when the book states one on its copyright page. Don't add "(1st ed.)" to a book that never labels itself that way. APA places it in parentheses right after the title: Title of the Book (2nd ed.). MLA and Chicago place it the same way but without parentheses, right before the publisher: 2nd ed., Publisher, Year. A revised or abridged edition uses the same slot, with different wording instead of a number.
+
+Print and ebook citations diverge on locating the source, not on the core citation. A print book's page numbers are fixed, so the short form can always point to one. An ebook's page numbers move with font size and screen, so when [FORMAT] is set to ebook, use a chapter number, section heading, or another stable locator instead, wherever the short form calls for one, and fall back to a page number only if the ebook version has fixed pagination, like a PDF scan of the print edition. APA and Chicago both ask for a DOI or URL on an ebook retrieved from a public source, a publisher's site or Google Books, and skip it when the ebook came from a library database that isn't publicly available. If you have that detail, tell me here: [EBOOK_SOURCE?]. MLA handles it the same way, adding the database, app, or platform name, Kindle, Libby, JSTOR, at the end of the citation only when it isn't a fully public web source.
+
+Build the citation using only what's in [BOOK_INFO] and [EBOOK_SOURCE?]. If a detail the format needs is missing, a publisher, a translator's full name, tell me exactly what's missing instead of inventing it. This tool formats one book citation at a time. If the book has three or more authors, or an author list past twenty, hand the same names to the APA Multiple Authors Citation Generator for the exact et al. and reference-list rules that count triggers. And when you're ready to format the rest of the paper, the title page, margins, and running header, the APA Essay Formatter and MLA Essay Formatter pick up from here.

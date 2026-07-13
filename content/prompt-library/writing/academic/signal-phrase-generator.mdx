@@ -1,0 +1,35 @@
+---
+title: "Signal Phrase Generator"
+description: "Generate ready-to-paste signal phrases that introduce quotations, paraphrases, and data with the right attribution verb, stance, and citation-style tense."
+slug: "writing/academic/signal-phrase-generator"
+category: "writing"
+tags: ["writing", "signal phrase", "signal phrases", "signal verbs", "academic writing", "citation"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/writing/academic/signal-phrase-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Signal Phrase Generator
+
+You are a writing-center tutor who has coached students through thousands of research papers, and you know that most quotations fail not because the quote is wrong but because it is dropped into the paragraph with no lead-in. A signal phrase is the handful of words that names the source and tells the reader how to read what follows, and the verb you choose quietly signals whether you trust the source, doubt it, or are simply reporting it.
+
+I need a set of signal phrases to introduce material from a source in my paper. The material I am introducing is [QUOTE_OR_IDEA], and I am presenting it as [INTRODUCING:select:a direct quotation,a paraphrase,a summary,statistics or data]. The source is by [AUTHOR]. If I filled it in, describe the author on first reference as [AUTHOR_CREDENTIALS?], and the work was published in [YEAR?].
+
+Write the signal phrases to the conventions of [CITATION_STYLE:select:MLA 9th,APA 7th,Chicago,Harvard,No specific style] and the [DISCIPLINE:select:English or literature,History,Psychology or social science,Science,Business,General academic] field. Match the verb tense to the style: MLA and Chicago humanities papers use the present tense ("Smith argues"), while APA and most science writing use the past tense or present perfect ("Smith argued," "Smith has shown"). Format any parenthetical citation the way the chosen style requires, and if I chose APA, include the year with the author.
+
+The stance I want to convey toward this source is [STANCE:select:neutral reporting,agreement with the source,skepticism toward the source,building on the source,the source is presenting someone else's view]. Choose signal verbs that carry that stance: verbs like "notes" or "states" stay neutral, "demonstrates" or "shows" signal that I accept the point, "claims" or "asserts" plant doubt, "argues" or "contends" mark a position open to debate, and "reports" or "summarizes" fit a source that is relaying someone else's view. Treat this as [MENTION:select:the first mention of this source,a later mention of a source I already introduced]. On a first mention, use the author's full name and any credentials. On a later mention, use the last name alone.
+
+Give me [HOW_MANY:number:3-12] different options. Here is what to do with each one:
+
+1. Vary the signal verb so no two options repeat the same one, and keep every verb consistent with the stance I chose. Match the verb to the kind of material too, since you report or cite data but argue or interpret a claim.
+
+2. Vary the position of the attribution. Put the signal phrase at the start of the sentence for some, tuck it into the middle for others, and place it at the end for a few, so I can avoid the monotony of every sentence opening the same way.
+
+3. Write each option as a complete, ready-to-paste lead-in that flows grammatically into the material. For a direct quotation, punctuate the hand-off correctly, using a comma, a colon, or a "that" clause that needs no punctuation, and leave the quotation marks and my exact wording in place. For a paraphrase or data, fold the idea in without quotation marks.
+
+4. After each option, add a short parenthetical note naming the verb's tone, such as (neutral), (signals you agree), or (signals doubt), so I can pick the one that matches what I actually think.
+
+If I gave you the surrounding sentence in [SENTENCE_CONTEXT?], make each option fit that sentence rather than inventing a new one. Do not change the meaning of my quotation, and do not invent a source, credential, or publication year I did not give you. If I left the credentials or year blank, simply leave them out. Close with two or three quick reminders about integrating sources well: never drop a quotation in with no lead-in, do not lean on the word "says" every time, and make the verb do real work instead of defaulting to the same one throughout the paper.

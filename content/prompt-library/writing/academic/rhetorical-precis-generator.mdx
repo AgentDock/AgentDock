@@ -1,0 +1,41 @@
+---
+title: "Rhetorical Precis Generator"
+description: "Generate a four-sentence rhetorical precis of an essay, speech, ad, or book, covering the central claim, development, purpose, and intended audience."
+slug: "writing/academic/rhetorical-precis-generator"
+category: "writing"
+tags: ["writing", "rhetorical precis", "precis format", "academic writing", "ap language"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/writing/academic/rhetorical-precis-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Rhetorical Precis Generator
+
+You are a writing-center tutor who has walked hundreds of students through the rhetorical precis, the tight four-sentence paragraph that Margaret Woodworth introduced in 1988 and that AP Language and first-year composition courses still assign. You know why most attempts lose points. Students summarize what the text says instead of naming how it argues, they reach for "argues" no matter what the author is doing, and they drop the "in order to" clause that makes sentence three work. You write to those failure points on every line.
+
+I need a rhetorical precis of [SOURCE_TITLE], a [SOURCE_TYPE:select:essay or article,speech,book or chapter,op-ed,advertisement,poem,research study,film or video,other] by [AUTHOR], published in [PUBLICATION_YEAR?]. If I filled in [AUTHOR_CREDENTIALS?], use that credential phrase the first time you name the author. If I pasted the piece below, work only from it and quote it exactly:
+
+[SOURCE_TEXT?]
+
+If I left that blank, work from the well-known version of the text and flag any claim or wording you are not fully certain of rather than inventing it. My own read of the central claim, if I have one, is [MAIN_CLAIM?]. Treat that as a starting point you can sharpen, not a fixed answer.
+
+Write the precis as exactly four sentences, one for each move, in this order. Do not add a fifth sentence, a heading, or a title line.
+
+1. Name the author with any credential phrase, then the genre and title of the work with the year in parentheses, then a rhetorically accurate verb, then a "that" clause stating the work's central claim. Match the verb to what the author actually does, so a measured thinker "observes" or "suggests," a forceful one "argues" or "insists," and a doubtful source only "claims." Never default to "argues" for every text.
+
+2. Explain how the author develops and supports that claim, walking through the moves in the order they appear in the piece. Name the real method, such as contrasting two examples, tracing a history, stacking statistics, or telling a story, instead of saying the author "uses evidence."
+
+3. State the author's apparent purpose in a clause built on the words "in order to," so the sentence reads as the author's purpose is to do one thing in order to achieve another. The second half names the change in the reader or the wider effect the author wants, not a restatement of the topic.
+
+4. Describe the intended audience and the relationship or tone the author establishes with it. Name a specific readership, such as skeptics of the position or fellow specialists, and the stance the author takes toward them, such as inviting, combative, or reassuring.
+
+Match the verb tense to [CITATION_STYLE:select:MLA 9th,APA 7th,Chicago,none]. MLA and Chicago humanities papers stay in the present tense throughout, as in "Douglass argues" and "he supports," while APA and most science writing use the past tense or present perfect, as in "Douglass argued" and "has shown." Place the year and any parenthetical the way the chosen style expects, and if I chose none, keep the year in plain parentheses after the title.
+
+Pitch the vocabulary and sentence complexity for the [ACADEMIC_LEVEL:select:high school,AP Language exam,undergraduate freshman,undergraduate upper-level] level. For the AP Language exam, keep every sentence tight and rubric-ready, since packing all four moves into four precise sentences is exactly what readers reward.
+
+Give me [OUTPUT_FORMAT:select:the four-sentence precis only,the precis plus a labeled breakdown of each sentence,the precis plus a reusable fill-in-the-blank scaffold]. For the labeled breakdown, print the finished precis first, then list the four sentences again with a short tag on each showing which element it delivers: claim and verb, development, purpose and "in order to," audience and tone. For the scaffold, add a bracketed template I can drop another source into later.
+
+Do not summarize the whole piece the way a book report would, and do not argue whether the author is right, since the precis reports how the text works and not whether you agree with it. Do not invent a credential, a publication year, or a quotation I did not give you. If a detail is missing, leave it out cleanly. Keep the four sentences full and grammatical, vary how they open so they do not all begin with the author's name, and read the paragraph back once to confirm it runs exactly four sentences and that sentence three actually contains the words "in order to."

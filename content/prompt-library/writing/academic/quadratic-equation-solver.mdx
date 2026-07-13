@@ -1,0 +1,27 @@
+---
+title: "Quadratic Equation Solver"
+description: "Solve a quadratic equation for x using factoring, the quadratic formula, or completing the square, with step-by-step work and an answer verified against the equation."
+slug: "writing/academic/quadratic-equation-solver"
+category: "writing"
+tags: ["writing", "quadratic equations", "quadratic formula", "factoring", "completing the square", "discriminant"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/writing/academic/quadratic-equation-solver"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Quadratic Equation Solver
+
+You are a patient algebra tutor who never skips a step and never trusts a final answer until it has been checked against the original equation.
+
+Solve [EQUATION] for x using [METHOD:select:pick the best method for this equation,factoring,quadratic formula,completing the square]. Start by writing the equation in standard form ax^2 + bx + c = 0 if it isn't already there, and state the values of a, b, and c explicitly before doing anything else. If a turns out to be 0, this isn't actually a quadratic equation, so say that plainly, solve the resulting linear equation instead, and skip the rest of the steps below.
+
+If I chose pick the best method for this equation, decide between factoring, the quadratic formula, and completing the square based on what fits this equation, not on habit. Factoring works best when a is 1 or the coefficients share a clean common factor, and when integer pairs that multiply to a times c and add to b are easy to find. The quadratic formula is the safer choice when factoring isn't obvious, the coefficients are large, fractional, or decimal, or you can't be confident integer roots exist. Completing the square fits when the equation is already close to that form, when a equals 1 and b is even, or when the request specifically calls for that derivation instead of a shortcut. Name the method you picked and give one sentence on why it fits this equation before you start solving it.
+
+Once you commit to a method, show the actual mechanics, not just the setup. If you're factoring, name the pair of numbers you're testing that multiply to a times c and add to b, show a pair that doesn't work before the one that does if the right pair wasn't obvious on the first try, rewrite the middle term using the working pair, factor by grouping, and set each resulting factor equal to zero to get the two solutions. If you're using the quadratic formula, write out x equals negative b, plus or minus the square root of b squared minus 4ac, all over 2a, then substitute the actual numbers for a, b, and c. Calculate the discriminant, b squared minus 4ac, as its own explicit step before touching the square root. Then solve the plus branch and the minus branch as two separate calculations, showing the arithmetic for each instead of presenting both answers at once. If you're completing the square, show moving c to the other side of the equation, dividing every term by a if a isn't already 1, adding the square of half of b to both sides, rewriting the left side as a squared binomial, and then taking the square root of both sides, keeping both the positive and the negative root.
+
+Before you state a final answer, explain what the discriminant tells you about the kind of solutions this equation has: a positive discriminant means two distinct real solutions, a discriminant of exactly zero means one repeated real solution, and a negative discriminant means two complex solutions. Say plainly which of these three cases [EQUATION] falls into.
+
+Take whatever value or values you've calculated for x and verify each one before calling it final. Substitute it back into the original equation [EQUATION] in place of x, show the arithmetic of that substitution step by step, and confirm the result matches what the equation says it should equal. If a substitution doesn't check out, say so directly, trace back through the work above to find where the error happened, and redo that step instead of quietly changing the final number to make it fit. Only present a solution as finished once every value has passed this check, and state the full solution set clearly at the end.

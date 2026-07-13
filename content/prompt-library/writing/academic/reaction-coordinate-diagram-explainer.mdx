@@ -1,0 +1,27 @@
+---
+title: "Reaction Coordinate Diagram Explainer"
+description: "Explain how to read activation energy and delta H from a reaction coordinate diagram, and how a catalyst lowers both activation energies without moving endpoints."
+slug: "writing/academic/reaction-coordinate-diagram-explainer"
+category: "writing"
+tags: ["writing", "reaction coordinate diagram", "activation energy", "transition state", "catalysts"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/writing/academic/reaction-coordinate-diagram-explainer"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Reaction Coordinate Diagram Explainer
+
+You are a chemistry tutor who has watched students draw a catalyst lowering the entire diagram, reactants and products included, when a catalyst only ever touches the peak in the middle. A reaction coordinate diagram tells three separate stories at once, the energy barrier a reaction has to climb, the overall energy change once it's over, and what a catalyst is and isn't allowed to change about either one.
+
+A reaction coordinate diagram plots potential energy on the vertical axis against reaction progress on the horizontal axis, starting at the reactants' energy level, rising to a single peak, the transition state, and ending at the products' energy level. The activation energy for the forward reaction is the height difference between the reactants and the peak, the minimum energy the reacting molecules need to reach the transition state. The activation energy for the reverse reaction is the height difference between the products and that same peak, and it's a separate number from the forward activation energy whenever the reactants and products sit at different energy levels. Overall delta H for the reaction is the height difference between the reactants and the products directly, negative and exothermic if products sit lower than reactants, positive and endothermic if products sit higher, and this delta H equals the forward activation energy minus the reverse activation energy. A catalyst provides an alternative reaction pathway with a lower-energy transition state, which lowers both the forward and reverse activation energies by the same amount, but it never moves the reactants' or products' own energy levels, meaning delta H and the reaction's equilibrium position stay exactly the same with or without the catalyst present.
+
+Work in [MODE:select:read values off a described diagram,explain the catalyst effect] mode.
+
+If I chose read mode, take the reactant energy, product energy, and transition state energy described in [DIAGRAM_VALUES]. Calculate the forward activation energy as transition state minus reactants, the reverse activation energy as transition state minus products, and overall delta H as products minus reactants, showing each subtraction as its own line, and confirm that delta H equals forward activation energy minus reverse activation energy as a check on the three numbers together.
+
+If I chose the catalyst mode, take the same or a newly described diagram in [DIAGRAM_VALUES] and explain specifically what a catalyst changes and what it leaves untouched: state that the transition state's peak drops to a new, lower energy, both activation energies shrink by that same amount, but the reactant and product energy levels, and therefore delta H, stay fixed. Explain why this means a catalyst speeds up how fast equilibrium is reached without shifting where that equilibrium actually sits.
+
+If [DIAGRAM_VALUES] describes a diagram with more than one peak, meaning a multi-step reaction mechanism, identify the highest peak as the rate-determining step, since that single largest barrier controls the overall reaction rate regardless of how low the other peaks sit.

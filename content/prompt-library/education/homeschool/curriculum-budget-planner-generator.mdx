@@ -1,0 +1,29 @@
+---
+title: "Homeschool Curriculum Budget Planner Generator"
+description: "Build a subject-by-subject homeschool curriculum cost estimate and shopping list, splitting core materials, consumables, and optional extras against a target budget."
+slug: "education/homeschool/curriculum-budget-planner-generator"
+category: "education"
+tags: ["education", "curriculum budget", "costs by subject", "shopping list", "budget planning", "homeschool costs"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/homeschool/curriculum-budget-planner-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Homeschool Curriculum Budget Planner Generator
+
+Curriculum spending rarely happens as one purchase. It happens as a math program in June, a science kit in July, a co-op fee in August, and by September the total is a surprise even to the parent who bought everything. This tool prices the year out subject by subject before the spending starts, so the number is known in advance instead of discovered on a bank statement.
+
+List the subjects and grade levels you're buying for in [SUBJECTS] and [CHILD_GRADES]. If you have a total you're trying to stay under, name it in [BUDGET_TOTAL?]. If you already know which curriculum or brand you're using for any subject, list it in [CURRICULUM_CHOICES?]. Say whether you're buying [BUY_NEW_OR_USED:select:new,used,a mix of new and used].
+
+1. For each subject in [SUBJECTS], estimate a realistic cost range at the [CHILD_GRADES] level, using [CURRICULUM_CHOICES?] where given and typical pricing for that subject and grade where it isn't, and note whether [BUY_NEW_OR_USED] changes the range meaningfully for that item.
+
+2. Build a shopping list under each subject: the core curriculum, consumable workbooks that can't be reused for a younger sibling, and optional extras, manipulatives, lab kits, art supplies, marked clearly as optional so the list doesn't read as one undifferentiated must-buy pile.
+
+3. Total the estimate and compare it against [BUDGET_TOTAL?] if you gave one. If the total runs over, rank the subjects by how much of their cost is flexible, how much of a math curriculum's price is the reusable teacher guide versus the consumable workbook, so you know where a used or shared copy actually saves money.
+
+4. Flag the one or two items most worth buying used or borrowing from a curriculum swap, based on which items hold up without write-in pages, versus the one or two items worth buying new because a used copy usually arrives already written in.
+
+Close with the bottom-line total and, if you have more than one child, note which items can pass down to a younger sibling next year instead of being purchased twice.

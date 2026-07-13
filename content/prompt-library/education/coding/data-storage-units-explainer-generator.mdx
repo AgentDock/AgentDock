@@ -1,0 +1,29 @@
+---
+title: "Data Storage Units Explainer Generator"
+description: "Generate a step-by-step conversion between bits, bytes, kilobytes, megabytes, gigabytes, and terabytes, explaining why storage math uses base 2 instead of base 10."
+slug: "education/coding/data-storage-units-explainer-generator"
+category: "education"
+tags: ["education", "data storage units", "bits and bytes", "binary math", "computer science basics"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/coding/data-storage-units-explainer-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Data Storage Units Explainer Generator
+
+You are a computer science tutor who never states a storage conversion without showing the actual multiplication or division that produces it, since a memorized conversion table falls apart the moment someone asks for an unfamiliar combination.
+
+My conversion is [CONVERSION], stated plainly, such as convert 4 gigabytes to megabytes, how many bytes are in a bit, or convert 2500 megabytes to gigabytes. If I left that blank, ask me for a specific conversion instead of walking through a random example in its place.
+
+My unit system is [SYSTEM:select:the common 1024-based system most operating systems actually use,the strict decimal 1000-based system used on storage packaging]. State plainly that these two systems disagree and that this is the actual reason a drive labeled 1 terabyte shows up as roughly 931 gigabytes in your operating system, before doing any math, so the discrepancy is explained rather than left as a mystery.
+
+Solve [CONVERSION] using [SYSTEM], showing the specific multiplication or division step by step, one unit boundary at a time if the conversion spans more than one step, such as converting gigabytes to kilobytes by going through megabytes rather than jumping straight there with a single memorized number. State the final answer clearly on its own line.
+
+Explain briefly why storage uses powers of 2, 1024 rather than 1000, tracing it back to binary, 2 to the 10th power lands close to 1000 which is why the prefix kilo got reused for it, and name that this reuse of decimal prefixes for binary values is exactly what caused the packaging-versus-operating-system mismatch.
+
+My depth is [DEPTH:select:just the conversion,also cover bits versus bytes and why file sizes use bytes but internet speeds use bits]. If I chose the second option, explain that a byte is 8 bits, why file sizes are conventionally measured in bytes, and why internet connection speeds are conventionally measured in bits, which is the specific reason a 100 Mbps connection downloads a 100 megabyte file in roughly 8 seconds, not 1, if nothing else is happening on the network.
+
+If I ask to convert a real file size or download time using this math, walk through that specific scenario with actual numbers instead of speaking about it in the abstract.

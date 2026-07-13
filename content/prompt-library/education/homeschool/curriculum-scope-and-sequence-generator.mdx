@@ -1,0 +1,29 @@
+---
+title: "Homeschool Scope and Sequence Generator"
+description: "Build a full-year, all-subjects scope and sequence for a homeschool household, sequenced around a chosen teaching philosophy like classical, Charlotte Mason, or unit study."
+slug: "education/homeschool/curriculum-scope-and-sequence-generator"
+category: "education"
+tags: ["education", "scope and sequence", "curriculum planner", "teaching philosophy", "all-subjects plan", "year planning"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/homeschool/curriculum-scope-and-sequence-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Homeschool Scope and Sequence Generator
+
+A school curriculum map plans one subject for one class of twenty-five unrelated students against a mandatory state standards list. Your homeschool has a different problem: every subject your child takes runs through one household, on one calendar, against whichever standards your family and your state actually require, not a district pacing chart. This tool builds the scope and sequence across every subject at once, shaped around how your family actually teaches.
+
+Set [CHILD_GRADES] to the grade or grades you're planning for, one line per child if you're teaching more than one at the same time. List the subjects you're covering in [SUBJECTS]. Choose the philosophy that shapes how your homeschool runs: [TEACHING_PHILOSOPHY:select:classical,Charlotte Mason,unit study,eclectic,unschooling,no set philosophy]. If you know which state or region's homeschool requirements you're working under, name it in [STATE_OR_REGION?].
+
+1. For each subject in [SUBJECTS], write the general scope for the year: what your child should know or be able to do by the end of it, pitched to [CHILD_GRADES]. Keep this at the "what gets covered" level, not a day-by-day plan.
+
+2. Sequence each subject's content across the year into three or four blocks, in the order that makes sense for that subject, so an earlier block sets up the skill a later block needs. Name what changes between blocks.
+
+3. Show how [TEACHING_PHILOSOPHY] actually shapes the sequence instead of just labeling it. A classical sequence puts memorized facts before the argument-building that depends on them. A Charlotte Mason sequence rotates living books and narration instead of textbook chapters. A unit study sequence fuses several subjects around a shared theme at set points in the year. An eclectic sequence names which subjects borrow from which approach and why. An unschooling sequence stays loose and interest-led, with the blocks framed as checkpoints rather than requirements. No set philosophy defaults to a straightforward grade-level scope with no ideological framing.
+
+4. If [STATE_OR_REGION?] is filled in, note the general kind of documentation homeschool families there typically keep, portfolio, standardized testing, notarized intent, logged hours, and say plainly that the actual requirement should be confirmed against your state's current homeschool statute before you rely on it, since these rules vary by state and change without much notice.
+
+Close by checking the year for overload. If [SUBJECTS] and [CHILD_GRADES] together ask for more than a realistic school year can hold, especially across more than one child, flag which subjects are most likely to get compressed or dropped by spring, so you can trim now instead of mid-year.

@@ -1,0 +1,25 @@
+---
+title: "Built-In Math Function Explainer"
+description: "Explain a built-in math function, square root, power, absolute value, or rounding, covering math and syntax, then generate practice calls to predict before revealing results."
+slug: "education/coding/built-in-math-function-explainer-generator"
+category: "education"
+tags: ["education", "math functions", "python", "javascript", "coding fundamentals"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/coding/built-in-math-function-explainer-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Built-In Math Function Explainer
+
+You are an instructor who has watched students use `round()` correctly in a program without being able to say what it actually does with a number exactly halfway between two integers, because copying working syntax from an example and understanding the function's actual mathematical behavior at its edge cases are two different levels of knowing something.
+
+My function is [FUNCTION:select:square root,power or exponent,absolute value,rounding functions like round floor and ceiling,minimum and maximum,a function I will name myself], and if I chose to name my own, it is [CUSTOM_FUNCTION?]. My language is [LANGUAGE:select:Python,JavaScript].
+
+Explain [FUNCTION] in two parts. First, state plainly what it does mathematically, in terms simple enough for someone who has not taken a math class recently, square root as the number that multiplies by itself to produce the original value, absolute value as a number's distance from zero regardless of its sign, rounding functions as the different rules for handling a decimal portion, floor always rounding down, ceiling always rounding up, and standard rounding following a nearest-value rule with a specific tie-breaking behavior worth stating explicitly. Second, show the exact syntax [LANGUAGE] uses to call it, including which built-in module or object it lives on if it is not a bare global function, since some languages require an import or a namespace prefix to access math functions.
+
+Then generate two or three small practice calls using [FUNCTION] with specific concrete numbers, and present them one at a time, asking me to predict the exact output before revealing anything. Include at least one input chosen specifically to test an edge case relevant to [FUNCTION], a negative number for square root or power, a value exactly halfway between two integers for rounding, or a tie between equal values for minimum and maximum, since edge cases are where a surface-level understanding of a function usually breaks down. Wait for my answer each time before revealing the actual result, and if my prediction is wrong, explain specifically which part of the function's actual behavior differed from what I assumed.
+
+Close by asking whether I want to see [FUNCTION] used inside a slightly larger realistic expression, such as combined with a variable and another operation, since these functions are rarely called in isolation in real code the way a first example tends to show them.

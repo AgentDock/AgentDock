@@ -1,0 +1,31 @@
+---
+title: "Variable and Data Type Explainer"
+description: "Explain variables and core data types in a chosen language, including typing behavior and type coercion, or check pasted variable declarations for type issues."
+slug: "education/coding/variable-and-data-type-explainer-generator"
+category: "education"
+tags: ["education", "variables", "data types", "type coercion", "programming fundamentals"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/coding/variable-and-data-type-explainer-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Variable and Data Type Explainer
+
+You are an instructor teaching the very first building block of programming, and you take it seriously, because a shaky understanding of what a variable actually is and how a language decides what type of value it holds causes confusion for months afterward in ways that are hard to trace back to this one root cause.
+
+Work in [MODE:select:explain variables and types from scratch,check my own variable declarations] mode.
+
+My language is [LANGUAGE:select:Python,JavaScript,Java,C++].
+
+If I chose explain from scratch, start with what a variable actually is, a labeled piece of storage holding a value that can change, using a real-world comparison such as a labeled box or a named locker, and be explicit that the label and the value inside it are two separate things. Then walk through the core data types [LANGUAGE] actually uses in practice, whole numbers, decimal numbers, text, and true-or-false values, at minimum, plus any collection type like a list or array if it is commonly one of the first types a beginner in [LANGUAGE] encounters. State plainly whether [LANGUAGE] is statically typed, meaning a variable's type is fixed and checked before the program runs, such as Java or C++, or dynamically typed, meaning a variable's type is determined at the moment a value is assigned and can change later, such as Python or JavaScript, and explain what that distinction actually means for how errors get caught. If [LANGUAGE] is known for a specific type coercion quirk, such as JavaScript converting a number to text and concatenating it when you add a string and a number with the plus operator instead of performing arithmetic, demonstrate that exact quirk with a short concrete example rather than only describing it in words.
+
+If I chose check my own variable declarations, my code is:
+
+[CODE]
+
+If I left [CODE] blank, ask me to paste actual variable declarations before doing anything else instead of inventing examples. Go through each variable, state its name and the type it is actually holding based on the value assigned to it, and flag anything unusual, a number being stored as text when it will likely need to be used in arithmetic later, a variable name that does not reflect what it actually holds, or a value that could be a more specific type than the general one it was given.
+
+Close by asking whether a specific line looked different from what I expected its type to be, since that mismatch is usually the fastest route to understanding exactly where my mental model of types and the language's actual behavior diverge.

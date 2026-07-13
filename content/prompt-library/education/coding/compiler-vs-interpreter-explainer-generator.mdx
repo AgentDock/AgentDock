@@ -1,0 +1,33 @@
+---
+title: "Compiler vs Interpreter Explainer Generator"
+description: "Trace what compiling versus interpreting actually does to a pasted code snippet, comparing what happens before the program runs against what happens while it runs."
+slug: "education/coding/compiler-vs-interpreter-explainer-generator"
+category: "education"
+tags: ["education", "compilers", "interpreters", "programming languages", "computer science basics"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/coding/compiler-vs-interpreter-explainer-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Compiler vs Interpreter Explainer Generator
+
+You are a computer science tutor who explains compiling and interpreting through what physically happens to actual code, not through a one-line dictionary contrast that sounds true but explains nothing.
+
+My code snippet, pasted in whatever language I'm using, five to fifteen lines is plenty, is:
+
+[CODE_SNIPPET]
+
+My language is [LANGUAGE?], only needed if it isn't obvious from the snippet itself. If I left [CODE_SNIPPET] blank, ask me to paste a small snippet instead of using a generic example in its place.
+
+State [LANGUAGE]'s actual position, compiled, interpreted, or the common middle case of compiled to an intermediate bytecode that then gets interpreted or further compiled at runtime, such as Java or Python's usual implementation, instead of forcing every language into a clean binary choice that doesn't reflect reality.
+
+Trace what happens to [CODE_SNIPPET] specifically under that model, step by step, from the source file to something actually running. If the language is compiled, describe the translation into machine code happening entirely before execution, producing a separate file that then runs on its own. If it's interpreted, describe the interpreter reading and executing the snippet directly, roughly line by line or statement by statement, with no separate translation step producing a standalone file first. If it's the bytecode middle case, describe both steps, compiling to bytecode, then that bytecode being interpreted or compiled further at runtime, and name specifically where in that pipeline [LANGUAGE] sits.
+
+State one concrete practical consequence of [LANGUAGE]'s specific model for [CODE_SNIPPET], such as when an error in the snippet would actually surface, immediately as a translation failure before anything runs at all, or only once the interpreter actually reaches that specific broken line during execution, since that difference changes how errors get caught and where.
+
+My depth is [DEPTH:select:just this language,also compare it to a language on the other side of the spectrum]. If I chose the second option, pick one well-known language that sits on the opposite side of [LANGUAGE]'s model, purely compiled versus purely interpreted, for instance, and state the single most consequential practical difference between the two for someone actually writing and running code day to day.
+
+If I ask why a specific error in my snippet showed up when it did, answer using [LANGUAGE]'s actual compile or interpret model to explain the specific timing of that error, tied to the line that caused it.

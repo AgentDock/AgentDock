@@ -1,0 +1,29 @@
+---
+title: "OOP Concepts Explainer"
+description: "Explain a core OOP concept, such as inheritance or polymorphism, through an analogy and code example, or analyze pasted code for those concepts."
+slug: "education/coding/oop-concepts-explainer-generator"
+category: "education"
+tags: ["education", "object-oriented programming", "inheritance", "encapsulation", "polymorphism"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/coding/oop-concepts-explainer-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# OOP Concepts Explainer
+
+You are an instructor who has noticed that encapsulation and abstraction get taught as if they were nearly the same idea, both described vaguely as "hiding stuff," when they actually answer two different questions, encapsulation is about which code can directly touch an object's internal data, abstraction is about how much of an object's inner complexity a user of that object needs to see at all, and collapsing that distinction is exactly what leaves students unable to explain the difference on the spot.
+
+Work in [MODE:select:explain with an analogy and a code example,analyze my own code for these concepts] mode.
+
+If I chose explain with an analogy and a code example, my concept is [CONCEPT:select:class and object,inheritance,encapsulation,polymorphism,abstraction], and my code example should be in [LANGUAGE:select:Python,JavaScript,Java,C++]. Explain [CONCEPT] using an analogy chosen specifically because its structure matches the real behavior, a class as a blueprint and an object as a specific house built from it, inheritance as a child class receiving traits from a parent class while being free to add or override its own, polymorphism as different object types responding to the identical instruction in their own distinct way, encapsulation as a capsule around an object's internal data that only exposes a deliberate, controlled interface to the outside, and abstraction as a car's dashboard hiding the engine's actual mechanical complexity behind a small set of simple controls. State plainly which part of the analogy maps to which part of the real concept. Then provide a short code example in [LANGUAGE] that demonstrates [CONCEPT] specifically, with comments in plain language pointing at exactly which lines are doing the work that concept describes.
+
+If I chose analyze my own code for these concepts, my code is:
+
+[CODE]
+
+If I left [CODE] blank, ask me to paste a class or set of related classes before doing anything else instead of inventing an example. Read through the code and identify which of the five concepts, class and object, inheritance, encapsulation, polymorphism, and abstraction, are actually demonstrated in it, pointing to the specific lines or structures responsible for each one you find. Do not claim a concept is present if the code does not actually demonstrate it, and say plainly which of the five concepts are absent from this particular snippet rather than forcing all five into the explanation regardless of what the code actually does.
+
+Close by asking whether I want the encapsulation and abstraction distinction walked through one more time using a different pair of analogies, since that specific pair of concepts is the one most students need to hear explained twice before it separates cleanly in their head.

@@ -1,0 +1,29 @@
+---
+title: "Homeschool Attendance Log Generator"
+description: "Build a printable homeschool attendance log matched to a state's tracking unit, days or hours, with a running total toward the required amount."
+slug: "education/homeschool/attendance-log-generator"
+category: "education"
+tags: ["education", "attendance log", "hours tracking", "attendance requirements", "compliance log", "days tracker"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/homeschool/attendance-log-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Homeschool Attendance Log Generator
+
+Some states track homeschool compliance in days, others in hours, and a log built for the wrong unit is useless at review time no matter how faithfully it was kept. This tool builds the actual log format, matched to the unit your state tracks, ready to fill in day by day instead of reconstructed from memory in May.
+
+Note your state or region in [STATE_OR_REGION?] if you want a general guess at which unit applies. Choose the tracking unit directly if you already know it: [TRACKING_UNIT:select:days,hours]. Give the school year's start and end dates in [SCHOOL_YEAR_DATES?], and any known required total in [REQUIRED_HOURS_OR_DAYS?].
+
+1. Build a log template matched to [TRACKING_UNIT], a simple date-and-checkbox grid for days, or a date-and-hours-worked column for hours, covering the full span in [SCHOOL_YEAR_DATES?].
+
+2. If [REQUIRED_HOURS_OR_DAYS?] is filled in, add a running total column or note so the log shows progress toward the requirement as it's filled in, rather than requiring a separate tally at the end of the year.
+
+3. If [STATE_OR_REGION?] is filled in but [TRACKING_UNIT] wasn't chosen directly, note which unit that state or region generally uses, and say plainly that the actual figure should be confirmed against your state's current homeschool statute before you rely on it, since these numbers vary and change.
+
+4. Add a short note field per entry for anything worth remembering later, a sick day, a field trip counted as instructional time, a reason for a gap, so the log explains itself months later instead of leaving blank stretches unexplained.
+
+Close with a short instruction for what to do if a gap in the log is discovered mid-year, log going forward honestly and note the gap rather than backfilling entries that didn't actually happen, since a log's value depends on it being accurate, not complete.

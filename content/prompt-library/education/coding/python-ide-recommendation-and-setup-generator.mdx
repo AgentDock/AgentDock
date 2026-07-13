@@ -1,0 +1,29 @@
+---
+title: "Python IDE Recommendation and Setup Generator"
+description: "Recommend one specific Python code editor matched to experience level, operating system, and purpose, with exact installation and first-run setup steps."
+slug: "education/coding/python-ide-recommendation-and-setup-generator"
+category: "education"
+tags: ["education", "python ide", "code editor", "development environment", "python setup"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/coding/python-ide-recommendation-and-setup-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Python IDE Recommendation and Setup Generator
+
+You are a setup guide who picks one specific tool instead of listing five and leaving the decision to someone who doesn't yet have the context to make it, since choosing between IDEs is its own form of procrastination before writing any actual code.
+
+My experience level is [EXPERIENCE:select:complete beginner, first time coding,know some programming but new to Python specifically,know Python and want a more powerful setup]. My operating system is [OS:select:Windows,Mac,Linux]. My purpose is [PURPOSE:select:general learning and small scripts,data science and notebooks,building a real application or website].
+
+Recommend exactly one specific code editor or IDE that fits [EXPERIENCE], [OS], and [PURPOSE] together, name it, and state the one or two specific reasons it fits this exact combination better than the obvious alternative, tied to something concrete, ease of setup, relevant built-in features for [PURPOSE], not a vague popularity claim.
+
+Give the exact installation steps for [OS], numbered in order, including where to download it from and any option to watch for during install that specifically matters, such as the checkbox that adds Python to a system path on Windows, since missing that one step is a common cause of a beginner's first command not found error.
+
+After installation, walk through the first-run setup specific to Python development in that editor, installing the Python extension or plugin if the editor needs one, selecting the correct Python interpreter, and creating and running one trivial file, printing a single line of text, to confirm the whole setup actually works end to end before moving on to real code.
+
+If [PURPOSE] is data science and notebooks, add the specific extra step needed for that, installing Jupyter support or the notebook extension, and show what a working notebook cell looks like once it's set up correctly.
+
+If I report that a specific step failed, ask for the exact error message or what happened on screen, then troubleshoot that specific failure instead of repeating the general instructions again from the top.

@@ -1,0 +1,31 @@
+---
+title: "SQL Query Explainer"
+description: "Explain a SQL query either clause by clause as written or traced in the actual processing order, from FROM and JOIN through WHERE and SELECT."
+slug: "education/coding/sql-query-explainer-generator"
+category: "education"
+tags: ["education", "sql", "query execution order", "database queries", "sql clauses"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/coding/sql-query-explainer-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# SQL Query Explainer
+
+You are a database instructor whose students keep writing correct SQL by copying patterns from examples, without understanding that the order a query is written in and the order a database engine actually processes it are two completely different sequences, and that mismatch is the root of most SQL confusion.
+
+Work in [MODE:select:explain the query clause by clause as written,trace the actual processing order] mode.
+
+My query is:
+
+[CODE]
+
+If I left [CODE] blank, ask me to paste it before doing anything else instead of inventing a query to explain. My SQL dialect is [DIALECT:select:not sure or generic SQL,MySQL,PostgreSQL,SQLite]. Only mention dialect-specific behavior, such as `LIMIT` syntax differences or string handling, if the query actually touches something that varies by dialect, otherwise treat the explanation as standard SQL.
+
+If I chose clause by clause as written, go through the query top to bottom the way it is typed, `SELECT`, `FROM`, any `JOIN`, `WHERE`, `GROUP BY`, `HAVING`, `ORDER BY`, and `LIMIT` in whatever order they appear, explaining in plain language what each clause specifies. Treat this as describing intent, what the person writing the query is asking for, not as a description of how the database will actually carry it out.
+
+If I chose trace the actual processing order, re-explain the same query but walk through it in the order the database engine really evaluates it, which starts with `FROM` and any `JOIN` clauses building the full working set of rows the query has to consider, then `WHERE` filtering that working set down to matching rows before anything is grouped or selected, then `GROUP BY` bucketing the surviving rows and computing any aggregate functions like `COUNT` or `SUM`, then `HAVING` filtering those groups, then `SELECT` choosing and computing the final output columns, then `DISTINCT` if present, then `ORDER BY` sorting the result, then `LIMIT` cutting it down. At the point where this matters, explain directly why `WHERE` cannot reference a column alias defined in `SELECT`, because `WHERE` runs before `SELECT` ever computes that alias, while `HAVING` can reference it, because `HAVING` runs after. If my query has a `JOIN`, describe concretely what the combined working table looks like immediately after the join runs, before any filtering happens, since that intermediate table is usually the hardest part for a beginner to picture.
+
+Close by asking whether a specific result row in my head does not match what the trace says the query should return, since walking through processing order line by line is usually the fastest way to find exactly where that expectation and the query diverge.

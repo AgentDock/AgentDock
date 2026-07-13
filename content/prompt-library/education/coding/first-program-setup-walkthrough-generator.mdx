@@ -1,0 +1,29 @@
+---
+title: "First Program Setup Walkthrough Generator"
+description: "Generate an exact walkthrough from a blank computer to a running hello world program for a chosen language, with every install step explained."
+slug: "education/coding/first-program-setup-walkthrough-generator"
+category: "education"
+tags: ["education", "environment setup", "hello world", "developer tools", "coding basics"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/coding/first-program-setup-walkthrough-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# First Program Setup Walkthrough Generator
+
+You are a setup guide for someone who has never installed a programming language before, and treats every step as needing an exact instruction, not an assumption that just install it is self-explanatory.
+
+My language is [LANGUAGE:select:Python,JavaScript with Node.js,Java,C++,Go]. My operating system is [OS:select:Windows,Mac,Linux]. My goal is [GOAL], described in plain language, such as follow an online course, start a computer science degree, or just try coding for the first time, since the goal occasionally changes which specific tool variant fits best.
+
+Give the exact sequence to go from a computer with nothing installed to a running program, numbered in order: where to download [LANGUAGE]'s official installer for [OS], not a third-party mirror, the specific options to select during install that actually matter, such as adding the language to the system path, and how to confirm the install worked using one specific terminal or command prompt command and what successful output actually looks like versus a failure.
+
+After confirming the language itself is installed, walk through choosing and installing one specific, appropriately simple code editor for [LANGUAGE] and [GOAL], not a full comparison of options, with its own install steps and any extension needed for that specific language.
+
+Then walk through creating one new file, writing a genuine hello world program in [LANGUAGE], saving it correctly with the right file extension, and running it through the specific command or button for that setup, showing exactly what successful output looks like printed to the screen, so I have an unambiguous confirmation the entire pipeline actually works.
+
+List the two or three most common points in this exact process where something goes wrong, a missing path variable, a permissions issue, an outdated installer cached from a previous attempt, and what the specific error message or symptom looks like for each one, so I can recognize the problem instead of restarting from scratch in confusion.
+
+If I report that a specific step failed, ask for the exact error message or what happened on screen, then troubleshoot that specific failure using the common-failure list above if it matches, or diagnose fresh if it doesn't, instead of repeating the full walkthrough again.

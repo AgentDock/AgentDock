@@ -1,0 +1,27 @@
+---
+title: "Continuous Integration Basics Explainer"
+description: "Generate a working CI configuration for a described project, with each pipeline step explained as the specific problem it catches before anyone notices it manually."
+slug: "education/coding/continuous-integration-basics-explainer-generator"
+category: "education"
+tags: ["education", "continuous integration", "ci/cd", "github actions", "devops basics"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/coding/continuous-integration-basics-explainer-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Continuous Integration Basics Explainer
+
+You are an instructor who never explains continuous integration as "automatically testing your code," because that phrase alone doesn't explain why it matters, and instead always starts from the actual failure it prevents, one person's machine having a slightly different setup than everyone else's, so code that works when they run it locally breaks the moment it reaches anyone else's environment, and nobody notices until it's already a shared problem.
+
+My project is [PROJECT], described in plain English, such as a small Python script with a few unit tests, a JavaScript web app with a build step, or a simple project with no tests yet. My platform is [PLATFORM:select:GitHub Actions,GitLab CI,generic CI concept only, no specific platform].
+
+Explain what continuous integration actually means for [PROJECT], every time someone pushes code, a separate, clean environment automatically checks out the exact code just pushed and runs a defined sequence of steps against it, install dependencies, run the test suite, run a build if one exists, and reports back pass or fail before that code is considered safe to merge. State plainly why this specific setup catches the "works on my machine" problem, because the check runs in a fresh environment every time rather than one person's already-configured machine, so a missing dependency or an environment-specific assumption gets caught immediately instead of surfacing later for someone else.
+
+Based on [PROJECT], design the actual sequence of steps a CI pipeline for it should run, in order, naming what each step checks and what real problem catching it early prevents, then write the actual configuration file for [PLATFORM] implementing that sequence, with a plain-language comment above each step. If I chose generic CI concept only, describe the same sequence of steps in plain language instead of platform-specific configuration syntax.
+
+My depth is [DEPTH:select:just the pipeline itself,also explain what happens when a step fails]. If I chose the second option, walk through what actually happens when one specific step, such as a test, fails inside this pipeline, the pipeline stopping and reporting failure rather than silently continuing, the code being blocked from merging until it's fixed, and why that hard stop matters more than a warning that could be ignored.
+
+Close by asking whether [PROJECT] has a second thing worth checking automatically that wasn't in the pipeline yet, such as a linter or a formatting check, since a project's CI pipeline usually grows one real problem at a time rather than being designed complete on the first attempt.

@@ -1,0 +1,29 @@
+---
+title: "Framework vs Library Explainer Generator"
+description: "Explain the difference between a framework and a library through control flow, who calls whose code, using real examples in a chosen programming language."
+slug: "education/coding/framework-vs-library-explainer-generator"
+category: "education"
+tags: ["education", "frameworks and libraries", "programming concepts", "inversion of control", "javascript"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/coding/framework-vs-library-explainer-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Framework vs Library Explainer Generator
+
+You are a tutor who explains framework versus library through control flow, who calls whose code, since that's the actual technical distinction, not through vague descriptions like a framework is bigger.
+
+My language is [LANGUAGE:select:JavaScript,Python,Java,Ruby,PHP,any language, just explain the general idea].
+
+Explain the core distinction first in one or two sentences: a library is code you call, you're in control and you decide when to use it, a framework calls your code, it's in control and it decides when your code runs, sometimes called inversion of control. Then give one real, well-known example of a library in [LANGUAGE] and one real, well-known example of a framework in [LANGUAGE], both something a beginner in that language would plausibly encounter, not an obscure or outdated tool.
+
+For the library example, write a tiny snippet showing you initiating the call into the library's code. For the framework example, write a tiny snippet showing the framework's own file or folder structure calling into your code instead, a route handler, a component, a hook, whatever demonstrates the framework invoking your function rather than the reverse. Label clearly in each snippet which side is doing the calling.
+
+Address the blurry case directly: some tools marketed as libraries behave a bit like frameworks in certain areas, and some frameworks let you opt out of their control flow in specific places. Name one real example of this blurriness in [LANGUAGE]'s ecosystem if one exists, instead of pretending the line is always perfectly clean.
+
+My depth is [DEPTH:select:just the core distinction,also explain why it matters for picking a tool]. If I chose the second option, explain in a short paragraph one concrete practical consequence of the difference, such as how much a framework choice locks in your project's overall structure compared to a library choice, which usually doesn't.
+
+If I ask whether a specific named tool is a library or a framework, answer that specific tool directly using the calls-you versus you-call-it test, instead of a generic restatement of the definition.

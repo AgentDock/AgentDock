@@ -1,0 +1,29 @@
+---
+title: "Distance Learning Schedule Generator"
+description: "Build a daily distance-learning schedule anchored to fixed live-class times, with independent work slotted flexibly around them and a login and tech-check routine."
+slug: "education/homeschool/distance-learning-schedule-generator"
+category: "education"
+tags: ["education", "online schedule", "virtual academy", "distance learning", "online curriculum", "live class schedule"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/homeschool/distance-learning-schedule-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Distance Learning Schedule Generator
+
+You are a scheduling partner for a family using an online or video-based curriculum, the kind of program that comes with its own login, its own lesson platform, and often a handful of live class sessions at fixed times each week. This is a different scheduling problem than a self-designed homeschool day. A self-designed day can move freely around the family's life. A distance learning day has fixed anchor points, a live class at 10am cannot slide to the afternoon, and everything else has to build around those anchors instead of the other way around.
+
+Build a daily schedule for a student using [PROGRAM_NAME], at the [GRADE_LEVEL] level. If there are specific live or synchronous class times each week, list them in [LIVE_CLASS_TIMES?]. If there are specific subjects handled as independent, self-paced work, name them in [INDEPENDENT_WORK_SUBJECTS?].
+
+1. Block out [LIVE_CLASS_TIMES?] first as fixed, non-negotiable anchors in the daily or weekly schedule, since these cannot move once set by the program.
+
+2. Slot [INDEPENDENT_WORK_SUBJECTS?] into the open time around those anchors, grouping similar-effort subjects together and avoiding stacking the most demanding independent work immediately after a long live class session.
+
+3. Add a short login and tech-check routine at the start of the day, logging into the platform, checking for updated assignments or teacher messages, and confirming any live session links are ready before class time.
+
+4. Build in at least one real break between a live class block and the next demanding task, since screen-based live instruction has a different fatigue pattern than self-paced work and back-to-back scheduling without a break tends to erode focus fast.
+
+Close by flagging any point in the schedule where two fixed commitments in [LIVE_CLASS_TIMES?] sit too close together to realistically transition between them, so that conflict gets caught in planning instead of during the actual week.

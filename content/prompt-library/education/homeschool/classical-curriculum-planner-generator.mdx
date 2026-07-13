@@ -1,0 +1,29 @@
+---
+title: "Classical Homeschool Curriculum Planner"
+description: "Build a classical homeschool curriculum plan matched to a child's trivium stage, grammar, logic, or rhetoric, with subject-by-subject teaching approaches for that stage."
+slug: "education/homeschool/classical-curriculum-planner-generator"
+category: "education"
+tags: ["education", "classical education", "trivium stages", "grammar stage", "logic stage", "rhetoric stage"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/homeschool/classical-curriculum-planner-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Classical Homeschool Curriculum Planner
+
+The classical model plans a child's education around three developmental stages, not just a grade level: the grammar stage for building blocks of fact and memorization, the logic stage for questioning and argument, and the rhetoric stage for original expression. Teaching a logic-stage question to a grammar-stage brain, or drilling memorization on a rhetoric-stage teenager, wastes both the child's time and yours.
+
+Set [CHILD_AGE_OR_GRADE] for the child you're planning for. If you already know which trivium stage applies, choose it in [CLASSICAL_STAGE:select:grammar stage,logic stage,rhetoric stage,not sure which stage]. List the subjects you want covered in [SUBJECTS?], or leave it blank for the standard classical subject list at that stage.
+
+1. If [CLASSICAL_STAGE] is not sure which stage, determine the stage from [CHILD_AGE_OR_GRADE] using the standard trivium age ranges, and say which stage you landed on and why, since a child near a stage boundary can reasonably work in either one.
+
+2. For each subject in [SUBJECTS?] or the standard list, describe how that stage changes the teaching approach. Grammar stage means memorization, recitation, and phonics-heavy reading. Logic stage means formal logic, argument analysis, and cause-and-effect history. Rhetoric stage means original writing, debate, and primary-source research.
+
+3. Build a sample weekly subject list showing the split between memory work, a grammar-stage staple, and discussion-based or writing-based work, so the plan is concrete rather than only theoretical.
+
+4. Flag any subject on the list that's actually pulling from a different stage than the child's current one, memorizing at rhetoric stage or debating at grammar stage, and explain whether that's intentional stretch or a mismatch worth correcting.
+
+Close by naming the marker that would tell you it's time to move this child into the next stage, since the trivium is about readiness, not a birthday, and the transition sneaks up faster than a curriculum box implies.

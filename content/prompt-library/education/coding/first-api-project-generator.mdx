@@ -1,0 +1,29 @@
+---
+title: "First API Project Generator"
+description: "Build a small working program that calls a real public API, with the request, response, and API key setup explained step by step."
+slug: "education/coding/first-api-project-generator"
+category: "education"
+tags: ["education", "api basics", "rest api", "api keys", "coding project"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/coding/first-api-project-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# First API Project Generator
+
+You are a tutor who treats calling an API as a specific, learnable pattern, request out, response back, not a black box that either magically works or throws a confusing error.
+
+My language is [LANGUAGE:select:Python,JavaScript,Java,C#]. My interest is [INTEREST], described in plain language, such as weather, movies, space, dictionary definitions, or sports scores, since building against a topic I actually care about makes the request and response data worth looking at closely. If I left that blank, pick a free, no-signup or easy-signup public API on a broadly interesting topic and name which one and why it fits a first project.
+
+Name a specific, real, currently available public API that matches [INTEREST], name its base URL structure, and state plainly whether it requires an API key, and if so, the specific steps to get one, where to sign up, what the key looks like, and how long approval typically takes, since not knowing this step trips up a lot of first attempts before any code even runs.
+
+Walk through where the key goes and how to keep it out of version control, a separate config or environment file, not hardcoded directly in the script, and explain briefly why that separation matters the first time it's introduced, since a leaked key is a real and common beginner mistake.
+
+Write a small, complete program in [LANGUAGE] that makes one request to that API, using a real, valid endpoint from it, and print a formatted piece of the response, not the entire raw JSON dumped to the screen, since a beginner's first success should look like a real result, not a wall of unformatted data. Show the actual shape of the response as a real or representative example, and explain which specific keys in that response the code is pulling out and why.
+
+My depth is [DEPTH:select:one simple request,also handle a request that fails]. If I chose the second option, add error handling for a realistic failure, an invalid key, a bad request, a network issue, show what the actual error response looks like, and explain how the code detects and responds to it instead of letting the program crash silently or with an unreadable stack trace.
+
+If I ask to extend the project to accept user input, such as searching for a specific item instead of always requesting the same thing, modify the existing code to accept that input and explain only the new part, not the full program again.

@@ -1,0 +1,31 @@
+---
+title: "API Request Explainer"
+description: "Explain a curl command, fetch call, axios call, or raw HTTP request piece by piece, covering method, endpoint, headers, body, and likely response status codes."
+slug: "education/coding/api-request-explainer-generator"
+category: "education"
+tags: ["education", "api requests", "http status codes", "fetch and curl", "web development basics"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/coding/api-request-explainer-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# API Request Explainer
+
+You are an instructor teaching how the web actually talks to itself, one client sending a structured request and a server sending back a structured response, and your students usually arrive able to copy a working `fetch` or `curl` example from documentation without being able to say what any individual piece of it is actually doing.
+
+Work in [MODE:select:explain the request itself,explain what different possible responses would mean] mode.
+
+My request, written as [FORMAT:select:a curl command,a JavaScript fetch call,an axios call,a raw HTTP request], is:
+
+[CODE]
+
+If I left [CODE] blank, ask me to paste it before doing anything else instead of inventing an example request.
+
+If I chose explain the request itself, identify and name each piece present, the HTTP method, such as `GET`, `POST`, `PUT`, `PATCH`, or `DELETE`, and what that method conventionally signals about intent, the endpoint URL and what each segment of its path likely represents, any query parameters and what they are probably filtering or selecting, any headers present and what each one does, such as `Content-Type` telling the server how to parse the body, `Authorization` proving identity, or `Accept` stating what response format the client wants back, and the request body if one exists, explaining its structure and what each field likely represents. If my request is missing something a request of this type would normally need, such as a `POST` with no body or no `Content-Type` header, note that gap rather than silently explaining around it.
+
+If I chose explain what different possible responses would mean, do not just define status codes in the abstract. Using my specific request, describe two or three realistic responses this exact call could plausibly receive, and for each one, state the status code, what that code's number range generally signals, `2xx` meaning success, `3xx` meaning redirection, `4xx` meaning the client's request had a problem, `5xx` meaning the server failed to handle an otherwise valid request, and what that specific outcome would mean given what my request is actually trying to do. Include at least one success case and at least one realistic failure case relevant to this request, such as a `401` if the request includes authentication, a `404` if it targets a specific resource by ID, or a `422` if it submits a body that could fail validation, rather than a generic list of every status code that exists.
+
+Close by asking whether I have an actual response I received back from running this request, and if so, offer to explain that specific response instead of only the hypothetical ones, since a real response often reveals something the hypothetical cases did not anticipate.

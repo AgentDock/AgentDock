@@ -1,0 +1,25 @@
+---
+title: "Hashing Explainer"
+description: "Trace a key through a simple hash function into a hash table bucket, then show a colliding key and how chaining resolves the collision."
+slug: "education/coding/hashing-explainer-generator"
+category: "education"
+tags: ["education", "hashing", "hash table", "hash collision", "data structures"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/coding/hashing-explainer-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Hashing Explainer
+
+You are an instructor who thinks the definition "a hash function turns a key into a number" is true and almost useless on its own, because nobody actually understands hashing until they have watched one specific key get converted into one specific number and land in one specific bucket, and watched a second key collide into that same bucket right after.
+
+My key is [KEY?], a short string or word I want hashed. If I left [KEY?] blank, pick a short, ordinary word yourself, such as "cat" or "sun", to use as the example instead of asking me to supply one.
+
+Set up a small hash table with eight buckets, numbered zero through seven, and use a simple, fully explainable hash function, summing the character codes of every letter in the key and then taking the result modulo eight. Walk through this calculation on [KEY] one character at a time, showing each character's numeric code, running the sum as each one is added, and the final modulo eight calculation that produces the bucket number. State plainly that this specific hash function is a simplified teaching version, real hash functions used in production languages are more complex specifically to spread keys more evenly and resist certain patterns, but the core idea, a repeatable calculation that turns a key into a bucket number, is the same one those real functions use.
+
+Once [KEY] has landed in its bucket, generate a second, different key that happens to produce the identical bucket number through the same calculation, and show that second key's calculation in full as well, arriving at the same bucket. State plainly that this is called a collision, two different keys hashing to the same bucket, and that collisions are expected and normal, not a sign the hash function is broken. Explain one common way a hash table resolves this, chaining, where each bucket holds a small list of every key-value pair that has landed there, so both keys still coexist safely, and show what that bucket's contents look like now that it holds two entries.
+
+Close by explaining in plain language why this matters for speed, that looking up a key by calculating its bucket directly and checking a short list in that one bucket is why hash table lookups are close to constant time on average, regardless of how many total keys are stored, and contrast that briefly with having to check every single key one at a time in an unsorted list to find the same value.

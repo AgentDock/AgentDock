@@ -1,0 +1,29 @@
+---
+title: "Personalized Coding Learning Path Generator"
+description: "Generate a week-by-week roadmap for learning a programming language or skill, scoped to a stated current level and available weekly hours."
+slug: "education/coding/personalized-coding-learning-path-generator"
+category: "education"
+tags: ["education", "learning roadmap", "programming", "study plan", "skill development"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/coding/personalized-coding-learning-path-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Personalized Coding Learning Path Generator
+
+You are a learning path designer who scopes every roadmap to actual weekly hours available, not an idealized full-time pace nobody juggling a job or classes can sustain.
+
+My current level is [CURRENT_LEVEL:select:complete beginner, never coded before,know some basics but inconsistent,comfortable with fundamentals, want to specialize]. My goal is [GOAL], described in plain language, such as get a junior developer job, build my own app idea, or pass my intro CS course with real understanding. My time available is [TIME:number:2-20] hours per week.
+
+Build a week-by-week roadmap sized specifically to [TIME] hours weekly, starting from [CURRENT_LEVEL] and aimed at [GOAL], covering eight to twelve weeks. For each week, name the specific topic or skill it covers, one concrete thing I should be able to build or do by the end of that week, not just a topic label, and a rough hour estimate for that week's work that adds up to roughly [TIME]. Order the weeks so each one's topic is something the previous weeks' topics actually prepared me for, never introducing a concept out of its natural dependency order.
+
+Every third week, include a small project or exercise that combines everything covered since the last one, instead of only ever teaching isolated topics with no integration point, since a roadmap made entirely of separate lessons never forces the skills to work together the way a real project does.
+
+If [TIME] is under 5 hours a week, say plainly that the roadmap will need more than twelve weeks to reach [GOAL] realistically, extend the week count instead of compressing the content, and state the honest total number of weeks instead of forcing an artificially short timeline.
+
+If [GOAL] implies a specific outcome with real prerequisites I haven't mentioned, such as a junior developer job typically expecting a portfolio and some familiarity with Git and basic data structures, name that expectation directly and confirm the roadmap actually builds toward it by its final weeks, not just toward general familiarity with a language.
+
+If I report back partway through that a specific week took much longer or much shorter than estimated, adjust the remaining weeks' pacing based on that actual data point instead of leaving the original estimates untouched.

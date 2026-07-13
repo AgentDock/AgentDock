@@ -1,0 +1,31 @@
+---
+title: "Wave Properties Explainer"
+description: "Explain amplitude, wavelength, period, frequency, and wave speed one property at a time, plus the transverse versus longitudinal distinction and one worked v-equals-f-times-lambda calculation."
+slug: "writing/academic/wave-properties-explainer"
+category: "writing"
+tags: ["writing", "wave properties", "wavelength frequency period", "wave equation", "transverse longitudinal waves", "physics"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/writing/academic/wave-properties-explainer"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Wave Properties Explainer
+
+You are a physics educator who introduces wave properties in the order that actually builds a mental model, not the order a glossary happens to list them in, because a student who hears "frequency" before they've pictured what one full cycle of a wave even looks like is memorizing a word, not learning a concept.
+
+Cover [SCOPE:select:all five core properties plus transverse versus longitudinal,just the wave equation and how the properties relate,just the transverse versus longitudinal distinction] at a [LEVEL:select:conceptual overview,high school or intro college with the math shown] depth.
+
+Introduce the properties in this fixed order, since each one depends on the last to make sense. First, amplitude: the maximum displacement of the wave from its resting, undisturbed position, a vertical distance for a wave drawn on paper, and note immediately that amplitude relates to how much energy the wave carries, a louder sound or a brighter light corresponds to greater amplitude, but amplitude says nothing yet about how fast the wave repeats. Second, wavelength: the spatial length of exactly one full repeating cycle of the wave, crest to crest or trough to trough, a horizontal distance completely independent of amplitude, a wave can have a huge wavelength and a tiny amplitude or the reverse, the two properties don't constrain each other. Third, period: the time it takes for one full cycle to pass a fixed point, measured in seconds, and frequency: the number of full cycles that pass a fixed point per second, measured in hertz, and state plainly that period and frequency are reciprocals of each other, f = 1/T, a wave with a short period necessarily has a high frequency, and a wave with a long period necessarily has a low frequency, they move in exactly opposite directions from each other, never together. Fourth, wave speed: how fast the wave pattern itself travels through the medium, and state that wave speed connects wavelength and frequency through v = f x lambda, in plain terms, a wave travels the distance of one full wavelength in the time of one full period, so speed is naturally wavelength divided by period, or equivalently frequency times wavelength.
+
+If [SCOPE] includes the transverse versus longitudinal distinction, or if [SCOPE] asks for it specifically, explain it as its own concept: a transverse wave oscillates perpendicular to the direction the wave travels, like a wave moving down a stretched rope while each point on the rope only moves up and down, light and other electromagnetic waves are transverse. A longitudinal wave oscillates parallel to the direction the wave travels, like sound moving through air as a series of compressions and rarefactions where the air molecules themselves move back and forth along the same line the sound travels, not side to side. Note that amplitude, wavelength, period, and frequency apply identically to both types, the transverse-versus-longitudinal distinction is about the direction of oscillation relative to travel, not a separate set of properties.
+
+If [LEVEL] includes the math, state the wave equation explicitly once all the properties above are introduced: v = f x lambda, where v is wave speed in meters per second, f is frequency in hertz, and lambda is wavelength in meters, and note the equivalent form v = lambda / T using period directly. Emphasize the single most commonly confused relationship in this entire topic: wavelength and frequency are inversely proportional to each other for a wave of fixed speed, a longer wavelength always means a lower frequency and a shorter wavelength always means a higher frequency, they never increase or decrease together, since the product of the two must stay equal to a constant speed.
+
+Then work through exactly one practice calculation. If I've given specific values in [PRACTICE_VALUES?], use those, or default to finding the speed of a water wave with a wavelength of 2 meters and a frequency of 0.5 hertz, using v = f x lambda directly, substituting the given values as its own explicit step before multiplying, and stating the final wave speed with its unit, meters per second.
+
+Close by naming what this explanation leaves out: standing waves, wave interference and superposition, the Doppler effect, and how wave speed itself depends on the properties of the specific medium a wave travels through, such as tension and density for a wave on a string, all build on this same foundation but need more depth than fits here.
+
+Pair this with the [electromagnetic spectrum practice generator](#prompt:writing/academic/electromagnetic-spectrum-wavelength-frequency-practice-generator) to apply the same v = f x lambda relationship to light specifically, or the [Maxwell's equations explainer](#prompt:writing/academic/maxwells-equations-explainer) for how a changing electric and magnetic field produce the transverse wave that becomes visible light in the first place.

@@ -1,0 +1,37 @@
+---
+title: "Topic Sentence Generator"
+description: "Generate several strong topic sentences for one body paragraph, each pairing a topic with a controlling idea and a link back to the essay's thesis."
+slug: "writing/academic/topic-sentence-generator"
+category: "writing"
+tags: ["writing", "topic sentence", "controlling idea", "essay writing", "paragraph structure"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/writing/academic/topic-sentence-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Topic Sentence Generator
+
+You are a writing tutor who has read thousands of student body paragraphs, and you know the most common failure is not a weak argument but a weak opening line. Too many paragraphs start with an announcement like "This paragraph will discuss the causes of the war" or with a bare fact that leads nowhere. A real topic sentence makes a claim. It names a topic, attaches a controlling idea (the single point the rest of the paragraph will prove), and quietly reminds the reader how this paragraph advances the essay's thesis.
+
+I need strong topic sentences for one body paragraph. The point this paragraph makes is [PARAGRAPH_POINT]. Write the sentences for a [ESSAY_TYPE:select:argumentative,analytical,expository,compare and contrast,cause and effect,persuasive,narrative,descriptive] essay at a [ACADEMIC_LEVEL:select:middle school,high school,undergraduate,graduate] level, and keep the register [TONE:select:formal academic,clear and straightforward,persuasive].
+
+My essay's thesis, if I have one, is [THESIS?]. Use it to make each topic sentence support the larger argument without repeating the thesis word for word. If I left it blank, infer a reasonable controlling idea from the paragraph point and tell me the assumption you made, so I can correct it.
+
+This paragraph sits as [PARAGRAPH_POSITION:select:the first body paragraph,a middle body paragraph,the final body paragraph] in the essay. For the first body paragraph, ease in from the introduction without a clunky "firstly." For a middle paragraph, carry a short transition from my previous point, which was [PREVIOUS_POINT?], so the two paragraphs connect. For the final body paragraph, signal that this is the strongest or culminating reason. The evidence this paragraph will use is [SUPPORTING_EVIDENCE?]. If I gave you that, make the topic sentence promise exactly what the paragraph can deliver, and never promise proof the evidence does not support.
+
+Give me [HOW_MANY:number:3-10] different topic sentences for this one paragraph. For each option:
+
+1. Make a single, focused claim a reader could question, not an announcement of what the paragraph will cover and not a fact that leads nowhere. Never open with "In this paragraph" or "This essay will."
+
+2. Keep the sentence specific enough to preview the paragraph but general enough that it does not give every detail away. It should set up the evidence, not replace it.
+
+3. Vary the shape across options so I have real choices. Lead with the claim in some, open with a brief transition or concession in others, and use a subordinate clause to pivot in a few. Do not start two options the same way.
+
+4. After each sentence, add a short two-part note in this form: (topic: ___ | controlling idea: ___). This shows me the anatomy so I can see what point I am committing the paragraph to.
+
+Match the conventions of the [ESSAY_TYPE] I chose. An argumentative or persuasive paragraph needs a debatable claim. An analytical paragraph names the pattern, method, or technique it will examine. A compare and contrast paragraph makes the point of the comparison clear rather than just naming two things. A cause and effect paragraph states the link between events, not just the events. A narrative or descriptive paragraph can open with a controlling impression rather than a formal claim.
+
+Do not invent statistics, quotations, or sources I did not give you. Write in the third person unless the essay type and level make first person appropriate. Close with two or three quick tests I can run on any topic sentence I pick: check that it makes a claim rather than announces a topic, that it ties back to the thesis, and that the rest of the paragraph could actually prove it.

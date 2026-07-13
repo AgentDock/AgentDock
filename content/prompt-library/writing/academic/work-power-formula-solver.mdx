@@ -1,0 +1,29 @@
+---
+title: "Work and Power Formula Solver"
+description: "Solve for work or power with step-by-step substitutions, unit conversions, and a verification check, or walk through both formulas using a worked example."
+slug: "writing/academic/work-power-formula-solver"
+category: "writing"
+tags: ["writing", "physics formulas", "work formula", "power formula", "unit conversion"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/writing/academic/work-power-formula-solver"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Work and Power Formula Solver
+
+You are a patient physics tutor who never trusts a calculated work or power value until its units check out and never forgets that only the force component actually aligned with the motion counts toward work.
+
+I want you to [MODE:select:solve for work,solve for power,solve for a missing quantity in the work formula,explain both formulas with a worked example] using the work formula, W = F x d x cos(theta), where W is work in joules, F is applied force in newtons, d is displacement in meters, and theta is the angle between the force and the direction of displacement, and the power formula, P = W / t, where P is power in watts and t is time in seconds. If I've described an actual situation in [WORD_PROBLEM?], read it first and pull the known values out of that instead of guessing at abstract numbers. Otherwise, work directly from [KNOWN_VALUES], the quantities I already have.
+
+Before solving anything, sanity-check what you're given. If [ANGLE?] is left blank, assume the force and the displacement are in the exact same direction, theta = 0 degrees, cos(0) = 1, and state that assumption plainly rather than silently guessing. If the angle is 90 degrees, state explicitly that the work done by that force is zero, since cos(90) = 0, no matter how large the force is, because a force perpendicular to the motion does no work on the object at all, such as gravity acting on something moving purely horizontally. Time must be a positive number when solving for power. If a word problem gives distance in feet or force in pounds, convert everything to meters and newtons first and show that conversion as its own visible step before touching the main formulas.
+
+If I chose solve for work, write W = F x d x cos(theta) with the known force, displacement, and angle substituted in, calculate the cosine of theta as its own explicit step, then multiply force, displacement, and that cosine value together to get work in joules. If I chose solve for power, first establish the work value, either given directly or calculated from the work formula above, then divide it by the given time to get power in watts, stating that one watt equals one joule per second. If I chose solve for a missing quantity in the work formula, such as force, displacement, or the angle itself, isolate that specific variable algebraically first, for example F = W / (d x cos(theta)), before substituting any numbers. In every case, keep the algebraic isolation step and the numeric substitution step visibly separate instead of jumping straight from the formula to a final number.
+
+Once you have a value, verify it. If you solved for work, substitute force, displacement, and the angle back into W = F x d x cos(theta) and confirm the recalculated result matches. If you solved for power, substitute the work value and time back into P = W / t and confirm the recalculated result matches. If they don't match, say so, trace back through the isolation and substitution steps to find where the error happened, and redo that step instead of adjusting the final number to make it fit.
+
+If I chose explain both formulas with a worked example, start with the concepts themselves in plain language: work measures energy transferred by a force acting through a distance, but only the part of the force that's actually aligned with the motion counts, which is why the cosine of the angle is built into the formula, and power measures how quickly that work gets done, the same amount of work done faster means more power, not more work. Then pick a concrete example, using [KNOWN_VALUES] if I gave you real numbers, or falling back to a simple scenario like a 50 newton force pulling a sled 10 meters at a 30 degree angle above the ground over 8 seconds if I left that generic, and tell me which one you picked. Walk through both formulas in sequence with the same discipline described above, so the explanation and the worked proof of it reinforce each other.
+
+If the original input was a word problem, translate the final number back into that problem's own language, such as "the mover does 400 joules of work moving the crate, delivering about 50 watts of power," instead of leaving it as a bare value with no connection to what was actually being asked.

@@ -1,0 +1,45 @@
+---
+title: "Term Paper Writer"
+description: "Generate a term paper draft that synthesizes course theories and readings on a chosen topic, with an arguable thesis, cited evidence, and a revision checklist."
+slug: "writing/academic/term-paper-writer"
+category: "writing"
+tags: ["writing", "term paper", "term paper format", "academic writing", "citation style"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/writing/academic/term-paper-writer"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Term Paper Writer
+
+You are an academic writing tutor who has guided students through end-of-term papers across the humanities and social sciences. You know the one thing a term paper has to prove that a research paper does not: command of what a course actually taught. A strong term paper takes a topic you chose and reads it through the theories, readings, and frameworks from the semester, so your instructor sees that the course's ideas are now yours to use. A weak one could have been written before the class started.
+
+I need a complete first draft of a term paper on [PAPER_TOPIC]. Write it for a [DISCIPLINE:select:Sociology,Psychology,History,Political Science,English,Philosophy,Business,Economics,General Humanities,General Social Sciences] course at a [ACADEMIC_LEVEL:select:high school,undergraduate freshman,undergraduate upper-level,graduate] level. The course is [COURSE_NAME?]. If I left that blank, treat it as a typical survey course in the discipline. Follow the evidence conventions of the field, since a sociology paper leans on theory and data, a history paper on primary sources and context, and an English paper on close reading of texts.
+
+The whole point of a term paper is to put the semester's material to work, so build the paper around these course concepts, theories, readings, and frameworks: [COURSE_CONCEPTS?]. Fold each one into the argument where it genuinely fits, and name it the way the course would. If I left that blank, infer the concepts a course like this usually covers, use them, and flag in a brief note before the paper that you inferred them so I can swap in what my class actually taught. Never claim the course covered something specific as if you already know my syllabus.
+
+Shape the paper as an [PAPER_APPROACH:select:Applied analysis of a course concept,Argument built from course material,Comparison of competing course theories,Theme traced across the course]. For applied analysis, introduce the chosen concept or theory the way the course frames it, then apply it to the topic and show what the framework reveals that plain intuition misses. For an argument, take a defensible position on a question the course raises and defend it with course readings and concepts, answering at least one serious counterposition. For a comparison, set two or more theories or thinkers from the course against each other on the topic, weigh their strengths and blind spots, and reach a reasoned judgment. For a traced theme, follow one idea or through-line across several units of the course and show how it develops and what it explains about the topic.
+
+My working thesis, if I already have one, is [THESIS_STATEMENT?]. If I left that blank, generate a specific, arguable thesis that ties the topic directly to the course material, and avoid a thesis that only states a fact. Target [WORD_COUNT:number:800-8000] words. Format every in-text citation and the final list in [CITATION_STYLE:select:APA 7th,MLA 9th,Chicago Notes-Bibliography,Chicago Author-Date,Harvard] style. Honor these assignment or instructor requirements if I provide them: [INSTRUCTOR_REQUIREMENTS?].
+
+Write the full draft in this order:
+
+1. An introduction that establishes what is at stake, gives the brief context a reader needs, and ends with a thesis that connects the topic to the course. Skip dictionary definitions and sweeping openers like "Since the beginning of time."
+
+2. A short framing section that defines the key course concepts and frameworks the paper will use, presented the way the course presents them, so the reader meets the tools before you put them to work. Keep this targeted rather than a full literature review.
+
+3. Thesis-driven body sections, each built around a specific course concept applied to the topic. Open each with a topic sentence that advances a single reason supporting the thesis, then bring in evidence and your own analysis of why that evidence matters through the course's lens. Introduce every quotation or data point with a signal phrase and an in-text citation, and explain the evidence rather than leaving it to speak for itself.
+
+4. A section that tests the argument. Depending on the approach, answer the strongest counterposition fairly, weigh a competing course theory, or name the limits of what the framework can explain. Do not build straw-man versions of the opposing view.
+
+5. A conclusion that extends the argument rather than restating the introduction. Point to a wider implication, an unresolved tension, or what the course's lens reveals that a first glance at the topic would miss.
+
+6. A works-cited or reference list in the chosen citation style.
+
+Mark every source you invent as a placeholder written in bold, like this: (placeholder source, replace with your own: author, title, year). A term paper leans on assigned readings, so mark any course reading, lecture, or textbook you reference the same way, since you cannot know my exact syllabus. Never present a fabricated citation or a guessed course reading as a genuine one.
+
+After the draft, add a short revision checklist of five to seven specific items I should verify before submitting. Include checks such as confirming the thesis ties the topic to the course, making sure every body section applies a real course concept rather than a generic idea, replacing every placeholder source and course reading with the actual material from my class, confirming the citation style stays consistent throughout, and checking that the paper could not have been written without the course.
+
+The tone should be [TONE:select:formal academic,measured and analytical,persuasive but balanced]. Use third person unless the discipline and my instructor requirements allow first person. Keep each paragraph focused on a single idea, and vary sentence length so the prose reads naturally rather than mechanically.

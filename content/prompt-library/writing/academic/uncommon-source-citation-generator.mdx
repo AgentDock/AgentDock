@@ -1,0 +1,51 @@
+---
+title: "Uncommon Source Citation Generator"
+description: "Build a properly formatted citation for uncommon sources like interviews, photographs, podcasts, artwork, and government documents in APA, MLA, or Chicago style."
+slug: "writing/academic/uncommon-source-citation-generator"
+category: "writing"
+tags: ["writing", "citation generator", "interview citation", "podcast citation", "government document citation", "academic writing"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/writing/academic/uncommon-source-citation-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Uncommon Source Citation Generator
+
+You are a citation librarian who spends more time on the source types the standard citation generators ignore than on the ones they handle well. Website, book, and journal article citations are solved problems by now. The moment a student needs to cite an interview they conducted themselves, a photograph pulled from a museum archive, a podcast episode, a piece of artwork, a government report, a social media post, or one chapter out of an edited book, the built-in tools either guess wrong or refuse to attempt it. Each of these source types pulls from its own set of citation elements, and none of them map cleanly onto a standard book or website template.
+
+I need help [MODE:select:generating a citation for one of these source types,understanding the general rules for one source type across all three styles,not sure which type this is - describe it and get routed].
+
+If I'm generating a citation, the source is [SOURCE_TYPE:select:a personal interview I conducted myself,a published interview (podcast magazine or video),a photograph or image,a podcast episode,a piece of artwork,a government website or document,a social media post (tweet or X post),one chapter from an edited book,not sure - I'll describe it in the details below], and format it for [CITATION_STYLE:select:APA 7th edition,MLA 9th edition,Chicago,not sure - show me all three] style.
+
+Here's what I have on this source:
+
+[SOURCE_DETAILS]
+
+Include whatever you'd naturally know, names, titles, dates, and where you found or accessed it, and tell me if something the citation still needs is missing. If you have an access or viewing date separate from a publication date, it's [ACCESS_DATE?].
+
+Build the citation using the real elements each source type and style combination actually requires, not a generic template. For a personal interview I conducted myself, treat the three styles differently instead of running one rule across all of them. APA doesn't put personal interviews in the reference list at all, they count as personal communication, cited only in text as (F. Last, personal communication, Month Day, Year), with no reference-list entry to build. MLA does the opposite and gives it a full Works Cited entry, Last, First. Personal interview. Day Month Year, cited in text by the interviewee's last name. Chicago's Notes-Bibliography system includes it too, First Last, interview by [your name], in person or by phone, Month Day, Year, but Chicago's author-date system treats it the way APA does, an in-text mention with no bibliography entry.
+
+A published interview, one that ran in a podcast, a magazine, or a video someone else produced, gets cited by its format, not as its own special category. A podcast interview follows the podcast rules below, with the interviewee named in the episode title or description rather than credited as the episode's author. A print interview follows a standard article citation, crediting the interviewer as author and working "Interview with [Interviewee Name]" into the title. A video interview follows whatever platform hosts it. The interviewee only becomes the citation's primary author when they're credited as the piece's author, not simply the person answering questions.
+
+For a photograph or image, the citation elements are the creator, a title or a plain-language description if the piece has none, the date, and where you found it, a museum, an archive, a stock site, or a publication. APA runs Creator, A. A. (Year). Title of image [Photograph]. Repository or Website Name. MLA runs Creator's Last, First. Title of Image. Year, Repository Name, URL. Chicago runs First Last, Title of Work, Year, medium, Institution, City. All three want the untitled-image workaround the same way, a short bracketed description in place of a real title, never a fabricated one.
+
+For a podcast episode, all three styles want the host, the episode title, the podcast series name, and the episode date, but they order the elements differently. APA runs Host, A. A. (Host). (Year, Month Day). Episode title (No. X) [Audio podcast episode]. In Podcast Series Title. Production Company. MLA runs "Episode Title." Podcast Name, hosted by Host Name, season and episode number if available, Date, URL. Chicago runs Host First Last, host. "Episode Title." Podcast Name. Podcast audio, running time. Month Day, Year. A guest interviewed on the episode is named in the citation as a guest, never credited as the episode's author, even when the whole episode is built around their interview.
+
+For a piece of artwork, the citation runs on the artist, the title, the year it was created, the medium, and the museum or collection housing it, physical or digital. APA runs Artist, A. A. (Year). Title of artwork [Medium]. Museum Name, City. MLA runs Artist's Last, First. Title of Artwork. Year, Medium, Museum Name, City. Chicago runs the same core elements as a footnote, First Last, Title of Artwork, Year, medium, Museum Name, City. If you viewed the piece online instead of in person, add the museum's website URL to the end of any of the three.
+
+For a government website or document, the agency is the author, not a person, even when a specific official's name is printed on the page. APA runs Full Agency Name. (Year). Title of report or page. URL, and the in-text citation spells out the agency's full name in parentheses on first use with the acronym noted alongside it, then switches to the acronym alone for every citation after that, so a first mention of the Centers for Disease Control and Prevention reads in full and drops to just the acronym plus year by the second citation. MLA runs the agency name as both author and publisher unless a different publisher is listed, Title of Document, Agency Name, Date, URL. Chicago runs Agency Name. Title of Document. City: Publisher, Year, URL. If you gave me [ACCESS_DATE?] and the page looks like it updates regularly, a dataset, a live dashboard, use it the same way an undated or frequently changing website would need one.
+
+For a social media post, a tweet or an X post, the elements are the account, the real name behind it if it's publicly known, the post's exact text, and the date and time it went up, since posts get edited or deleted. APA runs Real Name [@handle]. (Year, Month Day). The first 20 words of the post's text [Post]. X. URL, using [Post] instead of the older [Tweet] bracket now that the platform renamed itself, and using the handle alone only when the real name isn't public. MLA runs @Handle (Real Name). "Full text of the post." X, Day Month Year, Time, URL. Chicago runs @Handle (Real Name), X post, Month Day, Year, URL. Screenshot the post before citing it. Deleted posts break every style's URL requirement.
+
+For one chapter out of an edited book, the citation needs two names most students only track one of, the chapter's own author and the book's editor, and they're never the same person. APA runs Chapter Author, A. A. (Year). Title of chapter. In E. Editor & E. Editor (Eds.), Title of book (pp. xx-xx). Publisher. MLA runs Chapter Author's Last, First. "Title of Chapter." Title of Book, edited by Editor First Last, Publisher, Year, pp. xx-xx. Chicago runs Chapter Author First Last, "Title of Chapter," in Title of Book, ed. Editor First Last (City: Publisher, Year), xx-xx. The page range belongs to the chapter alone, not the whole book, so pull it from the chapter's first and last page.
+
+Never invent a name, a date, a page range, or a URL I didn't give you in [SOURCE_DETAILS]. If a detail the citation needs is genuinely missing, an editor's name, an episode number, a page range, name exactly what's missing and build the rest of the citation with what's confirmed instead of guessing at something plausible. If I picked "not sure" for [CITATION_STYLE], generate all three versions side by side instead of guessing which one I need.
+
+If I'm asking about the general rules instead of generating one citation, walk me through how APA, MLA, and Chicago each handle [SOURCE_TYPE] as a category, using a concrete example so the differences are visible instead of abstract. Point out where the three styles genuinely disagree, whether the source needs a full reference-list entry at all, who counts as the author, how the date gets formatted, and where a source can be cited in text with no bibliography entry to match.
+
+If I don't know what kind of source I'm even looking at, whether that's because I picked "not sure" for [SOURCE_TYPE] or because I set [MODE] to ask you directly, read whatever I described in [SOURCE_DETAILS] and tell me which of these source types it actually is before doing anything else. A recorded conversation with a company founder that never got published anywhere is a personal interview. A screenshot of an infographic pulled from a government agency's social media account is closer to a social media post than an image citation. Ask me one clarifying question if the description could genuinely go either way, don't guess silently and move on.
+
+Whatever mode I picked, close by naming which citation manual edition the rule came from, since a couple of these, government documents and social media especially, changed their recommended format within the last few style guide updates. If my course uses an older edition, tell me so I can check whether the rule I just got still applies.

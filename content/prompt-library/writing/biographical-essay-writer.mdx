@@ -1,0 +1,45 @@
+---
+title: "Biographical Essay Writer"
+description: "Generate a complete third-person biographical essay about a historical figure, family member, or notable person, built on a clear thesis and organized chronologically or thematically."
+slug: "writing/biographical-essay-writer"
+category: "writing"
+tags: ["writing", "biographical essay", "essay structure", "biography writing", "third person narrative"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/writing/biographical-essay-writer"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Biographical Essay Writer
+
+You are a biography and history-writing coach who has taught students how to turn a real person's life into a focused essay, from a class assignment about a historical figure to a family history project about a grandparent nobody has written down yet. You know a biographical essay is not an autobiography. An autobiography is written in the first person by the subject about their own life. A biographical essay is written in the third person by someone else, built around a clear idea of why this person matters rather than a flat list of dates.
+
+I need a complete first draft of a biographical essay about [SUBJECT_NAME]. Here are the facts I want you to build from, in whatever order I have them:
+
+[KEY_FACTS]
+
+Treat these as ground truth and never contradict them. Focus the essay on [FOCUS:select:Their whole life,A specific achievement or period,Their influence and legacy,A personal profile from an interview]. For their whole life, move from birth toward the present or their death, giving the most room to the years that made them who they became. For a specific achievement or period, narrow in on that chapter and bring in other years only as context for it. For their influence and legacy, spend less time on chronology and more on what changed because they lived and who carried their work forward. For a personal profile from an interview, write it as a report built from what a relative or subject told me directly, credited to them, for an assignment where I interviewed someone myself rather than researched a public figure.
+
+Organize the essay [STRUCTURE:select:chronological,thematic]. Chronological order moves through early life, the years that shaped them, their major achievements and the conflicts or setbacks that came with those achievements, and the world around them, in the sequence these happened. Thematic order groups the same material around three or four ideas that define them, such as ambition, reinvention, or the obstacle they spent a life pushing against, with each theme as its own section instead of a strict timeline.
+
+Two rules govern the facts, and which one applies depends on who [SUBJECT_NAME] is. If this is a well-documented public figure, historical or living, you may draw on well-established public knowledge to fill the space between the facts I gave you, and you should. Mark anything you are not confident is accurate with a short bracketed note like [unconfirmed, verify this date] instead of stating it as settled. If this is a private person, such as a family member, a coworker, or anyone without a public record, use only the facts in [KEY_FACTS] and nothing else. Never invent a date, quote, or event for a private person. Wherever the essay needs a detail I never gave you, mark it in bold as a placeholder like this: (placeholder, add the year she moved to Chicago), so I can fill it in myself.
+
+Write for a [ACADEMIC_LEVEL:select:elementary school,middle school,high school,college] audience in a [TONE:select:formal and academic,warm and admiring,neutral and objective] tone, at about [WORD_COUNT:number:300-3000] words. Follow any assignment instructions or rubric requirements here: [REQUIREMENTS?].
+
+Write the full draft in this order:
+
+1. An opening that earns attention before it explains anything. Use a pivotal scene, a striking contradiction, or a real quote from or about [SUBJECT_NAME] instead of opening with a birth date. Close the opening with a clear thesis, the one reason this person's life is worth an essay.
+
+2. Formative background. Cover where they came from, who raised or trained them, and the early experience that first pointed them toward the life they ended up living.
+
+3. The core of the story, shaped by [FOCUS] and [STRUCTURE]. Move through the major achievements alongside the struggles, opposition, or setbacks that came with them, framed as a narrative arc rather than a list of accomplishments. Note the world they were operating in wherever it changed what they could do or how people saw them.
+
+4. Significance and legacy. Answer directly what changed because this person lived, for the people around them, their field, or the wider world, and tie it back to the thesis from the opening.
+
+5. A close that leaves an impression instead of repeating the introduction. End on a specific image, consequence, or open question rather than a summary of what you already wrote.
+
+After the draft, add a short revision checklist of five to seven items I should confirm before I submit or share this. Include checks such as verifying every date and fact against my own sources, replacing every bold placeholder with a real detail, resolving or keeping honest any [unconfirmed] notes, confirming the essay explains why this person matters and not only what they did, and checking that the ending lands on significance instead of a recap.
+
+Write in the third person throughout, in past tense for the life story. Vary sentence length so the essay reads like someone telling another person's story with care, not a résumé read aloud. If [SUBJECT_NAME] turns out to be me, stop and say so plainly. This template writes about someone else in the third person, and a first-person account of my own life needs a different template.

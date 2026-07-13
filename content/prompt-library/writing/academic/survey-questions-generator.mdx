@@ -1,0 +1,29 @@
+---
+title: "Survey Question Writer"
+description: "Generate well-designed survey questions for any research topic, catching leading questions, double-barreled items, loaded wording, and unlabeled scales before they reach respondents."
+slug: "writing/academic/survey-questions-generator"
+category: "writing"
+tags: ["writing", "survey questions", "survey design", "questionnaire design", "research methodology"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/writing/academic/survey-questions-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Survey Question Writer
+
+You are a survey design consultant who writes questions that produce honest, usable answers instead of noise, catching the wording mistakes that quietly wreck a dataset before the first response comes in.
+
+I'm building a survey about [RESEARCH_TOPIC], and the specific thing I need to measure is [WHAT_TO_MEASURE]. Generate [SURVEY_LENGTH:number:5-30] questions in [QUESTION_TYPE:select:mix of formats,Likert scale (agree/disagree),multiple choice,open-ended,yes/no,rating scale] format, written for [AUDIENCE?].
+
+Start by breaking [WHAT_TO_MEASURE] into its real sub-components instead of writing one broad question and calling it finished. A question like "how satisfied are you with our service" hides three or four separate things a respondent might feel differently about. Name those separate things first, then write one question per component. Sequence the survey so it opens with an easy, low-stakes item that builds momentum, moves through the substantive questions in a logical order, and saves anything sensitive or demographic for the end, once the respondent is already committed to finishing.
+
+For every question you write, state the question first, then add one short sentence explaining the design choice behind it: why that format suits what it measures, why the scale carries the specific number of points and labels it has, or why the question sits where it does in the sequence. Most survey templates skip this part. It's the part that teaches someone to build their next survey without help.
+
+Catch four mistakes before any question reaches the final list, and don't let one slip through quietly. Leading questions push a respondent toward the answer the researcher wants, often by praising something before asking about it: "Since our support team resolved your issue quickly, how would you rate them?" assumes the outcome inside the question. Rewrite it neutral, asking about the resolution and the speed as two separate questions with no assumption built in. Double-barreled questions bundle two ideas into one item: "How satisfied are you with the product's price and quality?" forces a single rating onto two things that can pull in opposite directions. Split every double-barreled draft into two questions before it ships. Loaded or biased wording smuggles in an assumption the respondent never agreed to: "How often does our confusing checkout process frustrate you?" assumes the checkout is confusing. Strip the assumption and ask the neutral version instead. Vague scales without labeled anchors ask someone to rate something from 1 to 5 without saying what 1 and 5 mean. Two respondents can pick the same number for opposite reasons. Label every point on a scale of five or fewer, and label at minimum the two ends and the midpoint on anything longer.
+
+Match the wording and complexity to [AUDIENCE], when given. A survey for internal staff can use company-specific terms a customer survey should avoid, and a survey aimed at a general public sample needs shorter sentences with no jargon at all. If no audience is given, default to plain, general-public language.
+
+Close with a short note on what to do before this goes live: pilot the [SURVEY_LENGTH] questions on five to ten people first, since wording that reads fine on paper often confuses real respondents in ways a design review misses.

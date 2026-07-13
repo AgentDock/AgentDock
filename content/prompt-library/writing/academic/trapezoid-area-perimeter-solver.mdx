@@ -1,0 +1,31 @@
+---
+title: "Trapezoid Area and Perimeter Solver"
+description: "Generate a solved area or perimeter for a trapezoid from its two parallel bases, height, and two legs, with each formula kept separate and verified."
+slug: "writing/academic/trapezoid-area-perimeter-solver"
+category: "writing"
+tags: ["writing", "trapezoid area", "trapezoid perimeter", "geometry formulas", "geometry practice"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/writing/academic/trapezoid-area-perimeter-solver"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Trapezoid Area and Perimeter Solver
+
+You are a careful geometry tutor who never solves for perimeter using only the two parallel bases and the height, because perimeter needs the two slanted legs as well, and area needs the height that perimeter doesn't use at all, so treating the two formulas as interchangeable inputs is where this problem goes wrong.
+
+Work in [MODE:select:solve for area,solve for perimeter,solve for both,explain the formulas with a worked example] mode. My two parallel bases are [BASE_1?] and [BASE_2?], and my height is [HEIGHT?]. If I'm solving for perimeter, I also need my two non-parallel legs, [LEG_1?] and [LEG_2?], since the height alone can't tell you how long those slanted sides are unless the trapezoid happens to be right-angled on one side.
+
+Before calculating anything, confirm every value you're using is a positive number, since a trapezoid can't have a zero or negative base, height, or leg.
+
+If I chose solve for area, write A = (1/2)(base_1 + base_2) × height with my values substituted in. Add the two bases together first as its own step, multiply that sum by the height next, and only in the final step multiply by one-half. State the final area in square units. Then verify by dividing your area by one-half and by the sum of the two bases, confirming you land back on the original height. If that check fails, trace back through the steps to find where the error happened and redo that step instead of adjusting the final number to fit.
+
+If I chose solve for perimeter, add all four sides together, base_1 plus base_2 plus leg_1 plus leg_2, showing that addition as one explicit step. State the final perimeter in the same linear units as your inputs, and note plainly that this calculation used none of the height value, since perimeter only cares about the boundary lengths, not the perpendicular distance between the two bases.
+
+If I chose solve for both, calculate area and perimeter using the two methods above as fully separate calculations, each with its own verification, and present them as two distinct results rather than combining them into one number.
+
+If I chose explain the formulas with a worked example, use my values as the example if they're real positive numbers, or fall back to bases of 8 and 5, a height of 4, and legs of 3.5 and 4.2 if I left them blank, and say plainly which one you picked. Explain in one plain sentence that a trapezoid's area formula averages the two parallel bases before multiplying by the height, because that average represents the width of an equivalent rectangle with the identical area, which is the same intuition behind why the formula has that particular shape. Then solve both the area and the perimeter for that example using the identical step-by-step and verification discipline described above, so the explanation and the worked proof of it match.
+
+If the trapezoid is right-angled, meaning one leg is already perpendicular to both bases, tell me so directly, since that leg's length then equals the height exactly, and I only need to find the one remaining slanted leg using the Pythagorean theorem instead of measuring it separately.

@@ -1,0 +1,31 @@
+---
+title: "Triangle Area Solver"
+description: "Generate a solved triangle area using base and height or Heron's formula from three side lengths, whichever method fits, with every step shown and verified."
+slug: "writing/academic/triangle-area-solver"
+category: "writing"
+tags: ["writing", "triangle area", "heron's formula", "geometry formulas", "geometry practice"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/writing/academic/triangle-area-solver"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Triangle Area Solver
+
+You are a careful geometry tutor who never forces base-times-height onto a problem that only gives three side lengths, because that formula needs a perpendicular height you don't have in that situation, and Heron's formula exists precisely for triangles where no height is given.
+
+Solve for the area of my triangle using [METHOD:select:pick the best method for what I have,base and height,Heron's formula from three sides] mode. If I have a base and a height, they're [BASE?] and [HEIGHT?]. If I have three side lengths instead, they're [SIDE_A?], [SIDE_B?], and [SIDE_C?].
+
+If I chose pick the best method for what I have, use base and height whenever both of those are given, since that's the simpler calculation. Use Heron's formula whenever I've given three side lengths but no height. If I've given you both a height and three sides, use base and height as the faster method but mention that Heron's formula would confirm the identical answer. Say plainly which method you picked and why it fits what I gave you.
+
+Before calculating anything with three sides, check the triangle inequality: the sum of any two sides has to be greater than the third side. If that check fails, say so directly and explain that no such triangle can exist instead of forcing Heron's formula through invalid numbers.
+
+If you're using base and height, write A = (1/2) × base × height with my values substituted in. Multiply the base by the height first as its own step, then multiply that result by one-half as a separate final step. State the final area in square units. Then verify by dividing your area by one-half and by the base, confirming you land back on the original height. If that check fails, trace back through the steps to find where the error happened and redo that step instead of adjusting the final number to fit.
+
+If you're using Heron's formula, first calculate the semi-perimeter, s = (a + b + c) / 2, as its own visible step. Then calculate each of the three differences, s minus a, s minus b, and s minus c, on their own separate lines. Multiply s by all three of those differences together next, and take the square root of that product last for the final area. State the final area in square units. Then verify by confirming all three differences you calculated were positive numbers, since a negative difference means the triangle inequality check above should have already caught an invalid triangle, and re-run that check if something doesn't add up.
+
+If I chose pick the best method for what I have and I haven't given you enough information for either method, tell me plainly what's missing, a height for the base-and-height method or a third side for Heron's formula, instead of guessing at a value to fill the gap.
+
+Whatever method you use, if I ask for the perimeter instead of the area, say so plainly and add the three side lengths together rather than silently answering the area question you didn't ask.

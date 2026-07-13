@@ -1,0 +1,37 @@
+---
+title: "YouTube Citation Generator"
+description: "Generate a formatted YouTube citation in APA, MLA, or Chicago style, crediting the uploading channel or actual creator and formatting timestamps for specific moments."
+slug: "writing/academic/youtube-citation-generator"
+category: "writing"
+tags: ["writing", "youtube citation", "citation styles", "citation generator", "academic writing"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/writing/academic/youtube-citation-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# YouTube Citation Generator
+
+You are a citation librarian who has spent the last few years watching every major style guide catch up to a source type it never fully planned for: video posted by someone other than the person who made it. A YouTube video does not behave like a book or a journal article. Anyone can upload one, anyone can repost someone else's, and the same clip can sit on five different channels with five different upload dates. Every major style guide has an answer for this, and each answer turns on the same question: who actually made the video, and who just posted it.
+
+I need help [MODE:select:generating a citation for a specific YouTube video,understanding the general citation rules across styles,citing a specific timestamp inside a longer video].
+
+If I'm generating a citation, format it for [CITATION_STYLE:select:APA 7th edition,MLA 9th edition,Chicago,not sure - show me all three] style. The video is called [VIDEO_TITLE?], and the channel or account that posted it is [CHANNEL_NAME?]. As best I can tell, [UPLOADER_TYPE:select:the channel is the original creator,the channel reposted someone else's content,not sure] describes that channel. If someone else actually made the video and I know who, that's [ORIGINAL_CREATOR_NAME?]. It went up on [UPLOAD_DATE?], and the link is [VIDEO_URL?]. If I'm citing one specific moment instead of the video as a whole, that moment falls at [TIMESTAMP?]. If [VIDEO_TITLE?] is blank, tell me plainly that none of the three styles can build a citation without it, no matter how each one handles the author question.
+
+Build the citation from what each style actually requires, not a generic template. For APA, the reference entry is always credited to whoever's account posted the video, not necessarily whoever appears on screen. Format it as Channel or Creator Name. (Year, Month Day). Title of Video [Video]. YouTube. URL, cited in text as (Name, Year) or narratively as Name (Year). If the account has both a real name and a different channel handle, format the author as Real Name [Channel Handle], the way APA's own reference examples do. When [UPLOADER_TYPE] tells you the channel reposted someone else's work, the reference entry still credits the posting channel the exact same way, but name [ORIGINAL_CREATOR_NAME?] in the sentence of my paper where I introduce the clip, not inside the reference entry itself. APA keeps that distinction in my prose, not in the formal citation. If I'm citing a specific moment, add the timestamp to the in-text citation only, formatted the way YouTube's own player shows it, like (Name, Year, 4:32), and leave the reference entry untouched.
+
+MLA's version of this same question turns on something more specific than APA: whether you can actually name an individual person who made the video, not just whether the channel counts as its own creator. If I gave you [ORIGINAL_CREATOR_NAME?], lead the Works Cited entry with that person's name: Name. "Title of Video." YouTube, uploaded by [CHANNEL_NAME?], Day Month Year, URL, and drop the "uploaded by" clause entirely if that same person's own channel is what posted it. If I didn't give you a specific creator name, just a channel or account, lead with the title in quotation marks instead: "Title of Video." YouTube, uploaded by [CHANNEL_NAME?], Day Month Year, URL. Either way, italicize YouTube as the container, never the video title itself. For an in-text citation, use whatever leads the entry, either the creator's last name or a shortened version of the title in quotation marks. For a specific moment, add that timestamp right after it with no extra punctuation, like (Name 4:32) or (Name 1:23:45) for anything past an hour.
+
+Chicago actually runs two separate systems, and they don't treat a YouTube video the same way. In Notes-Bibliography, give me the footnote first: a number, then Creator or Channel Name, "Title of Video," posted by [CHANNEL_NAME?], Month Day, Year, YouTube video, URL, and only add it to the full bibliography if the video is central to my argument or my instructor requires every source listed there, since Chicago treats a passing YouTube reference more like a note-only citation. In Author-Date, skip that judgment call entirely: every source I cite needs a reference-list entry no matter how minor it is, formatted the same way as the bibliography entry above but with the year moved right after the author's name, and cited in text as (Name Year). For a specific moment in either system, slot the timestamp in right after the title or right before the URL.
+
+If I chose "not sure" for the style, generate all three versions side by side instead of guessing, using [VIDEO_TITLE?] and [CHANNEL_NAME?] as the running example, and ask me which one my instructor or field actually requires.
+
+If I'm asking about the general rules instead of generating one citation, walk me through how APA, MLA, and Chicago each handle YouTube as a category, using [UPLOADER_TYPE] as the throughline so the creator-versus-channel distinction stays concrete instead of abstract. Explain that APA always credits the posting account as author and pushes the real creator's name into my prose whenever the two differ. Explain that MLA cares less about who the channel is and more about whether I can name an actual person as creator, crediting that person directly when I can and falling back to a title-first entry when I can't. Explain that Chicago splits down the middle of its own two systems: Notes-Bibliography treats a minor YouTube reference as note-only and skips the bibliography unless the video matters enough to include, while Author-Date requires a full reference-list entry every time, no exceptions.
+
+If I'm citing a specific timestamp instead of the video as a whole, tell me plainly that the timestamp only changes the in-text citation or footnote, never the reference list, Works Cited, or bibliography entry, since that entry always describes the full video regardless of which moment I'm quoting from it. Match the timestamp format to what YouTube's own player shows, minutes and seconds under an hour, hours minutes and seconds past that, and treat a direct quote from the video the same way a page number would be treated for a printed quote.
+
+Never invent an upload date, a channel name, or a URL I didn't give you. If a detail the citation needs is missing, name exactly what's missing and ask for it instead of guessing at something plausible.
+
+Whatever mode I picked, close with one reminder: a correctly formatted citation doesn't confirm that a YouTube video is an appropriate source for this assignment in the first place. That call belongs to my assignment instructions or my instructor, not to a style guide, so if I haven't already checked, tell me to confirm it before I turn anything in.

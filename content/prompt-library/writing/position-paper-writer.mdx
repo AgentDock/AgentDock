@@ -1,0 +1,47 @@
+---
+title: "Position Paper Writer"
+description: "Generate a formal position paper that states a clear stance, lays out background and evidence, answers the opposing view, and closes with a recommendation."
+slug: "writing/position-paper-writer"
+category: "writing"
+tags: ["writing", "position paper", "model un", "policy writing", "argumentative writing"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/writing/position-paper-writer"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Position Paper Writer
+
+You are an advisor who has coached Model UN delegates, policy analysts, and graduate students through position papers for years. You know a position paper is not a persuasive essay: it commits to one defensible stance on a contested issue, grounds that stance in background and evidence, treats the opposing view with respect, and ends with a recommendation the reader can act on. You also know a Model UN paper reads nothing like a corporate board memo, so you write to the conventions of the setting instead of forcing every issue into one template.
+
+I need a complete position paper on [ISSUE]. Write it for a [CONTEXT:select:Model UN,Policy or Committee,Academic,Business or Organizational] setting and follow that setting's conventions. For Model UN, represent a national delegation, write in the third person ("the delegation of ..." rather than "I believe"), align the stance with real foreign policy, reference relevant treaties or past resolutions, and propose multilateral solutions. For Policy or Committee, ground the argument in current legislation, regulation, or precedent and recommend a specific action a decision-making body can take. For Academic, advance a scholarly stance, engage the existing literature, and defend the thesis with reasoned evidence. For Business or Organizational, frame the issue around operational impact, cost, and risk, then recommend a clear course of action for leadership.
+
+The party I represent is [REPRESENTED_PARTY?]. For Model UN this is your country or delegation, for Policy or Business it is your organization, agency, or company, and for Academic you may leave it blank to write from your own analytical standpoint. The position I want to defend is [POSITION?]. If I left that blank, choose the stronger, more defensible stance the represented party would realistically hold, and commit to it fully, because a position paper wins by arguing one side well rather than surveying every side.
+
+Address [AUDIENCE?] as the reader. If I did not name an audience, write for the body that would receive this paper: a committee, a review panel, a board, or an informed reader who has not yet decided. Keep that reader in view and answer the objections they would actually raise. Target [WORD_COUNT:number:400-3000] words in a [TONE:select:formal and diplomatic,measured and analytical,firm and advocacy-driven] tone.
+
+Write the full paper in this order:
+
+1. An introduction that names the issue, states why it matters now, and gives the brief background a reader needs to follow the debate. End the introduction with a clear statement of the position, the equivalent of a thesis, so no reader is unsure where the paper stands.
+
+2. A background section that establishes the facts, history, and stakeholders behind the issue. For Model UN, connect the issue to the represented country's history and interests. For policy and business, summarize what has been tried and where the issue stands today.
+
+3. Body sections that defend the position. Open each with a topic sentence stating one reason the position holds, then supply specific evidence, data, or precedent and explain why that evidence supports the stance. Introduce every quotation, statistic, or source with a signal phrase.
+
+4. A fair treatment of the opposing view. State the strongest objection to the position in neutral language, explain why a reasonable party would hold it, then respond with evidence, logic, or a limited concession. Do not build a straw-man version of the opposition.
+
+5. A recommendation section that turns the position into action. Propose one clear course, policy, or resolution and explain in concrete terms what should happen, who should do it, and what result it aims for. For Model UN, frame this as multilateral solutions the committee could adopt.
+
+6. A short conclusion that reinforces the stance and the recommendation without simply repeating the introduction.
+
+7. If I chose a citation style, a works-cited or bibliography list that matches it.
+
+Handle sources in [CITATION_STYLE:select:None,MLA 9th,APA 7th,Chicago] style. If I chose a style, format in-text citations and the final list to match it. If I chose None, reference sources inside the sentences in plain language without a formal list.
+
+Mark every fact, statistic, treaty, or source you are not certain about as a placeholder written in bold, like this: (placeholder, replace with a verified source: publication, year). This lets me find and swap in real research. Never present an invented citation or figure as a genuine one.
+
+After the paper, add a short checklist of five to seven specific items I should verify before submitting. Include checks such as confirming the position is stated in one clear sentence, making sure each body section ties back to the position, confirming the opposing view is answered rather than ignored, checking that the recommendation is concrete and actionable, and replacing every placeholder source.
+
+Keep each paragraph focused on one idea, vary sentence length so the writing reads naturally rather than mechanically, and use transitions so each section leads into the next.

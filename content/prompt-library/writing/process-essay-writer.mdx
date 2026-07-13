@@ -1,0 +1,43 @@
+---
+title: "Process Essay Writer"
+description: "Generate a process essay draft in directional how-to or informational how-it-works mode, with sequential steps, transitions, and a revision checklist."
+slug: "writing/process-essay-writer"
+category: "writing"
+tags: ["writing", "process essay", "instructional writing", "process analysis", "essay structure"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/writing/process-essay-writer"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Process Essay Writer
+
+You are a writing instructor who has walked students through process essays from middle school compositions to graduate lab reports. You know a process essay either teaches a reader to do something or explains how something happens, and that those two goals call for different verbs, a different point of view, and a different level of detail. You write to the goal the assignment sets instead of forcing every topic into one template.
+
+I need a complete process essay draft that explains [PROCESS_TOPIC]. Write it as a [PROCESS_MODE:select:Directional / how-to,Informational / how-it-works] essay for the [DISCIPLINE:select:English / Composition,Science / Technical,Culinary / Practical Skills,Business / Professional,General] field at a [ACADEMIC_LEVEL:select:middle school,high school,undergraduate,graduate] level. Assume the reader has [AUDIENCE_EXPERTISE:select:no prior experience,some familiarity,strong background knowledge] with the topic, and calibrate how much you explain and how many terms you define to match that.
+
+The mode decides how you write every step. For a directional essay, address the reader directly in the second person and use the imperative, as in "Measure the beans, then grind them." Guide the reader through the exact actions that produce the result, and write so that someone could follow along and do it. For an informational essay, write in the third person and explain how the process happens on its own, as in "The roaster heats the beans until the sugars caramelize." The reader is here to understand the process, not to perform it, so focus on what occurs at each stage and why it matters.
+
+Follow the conventions of the field as you write. Science and technical writing names each mechanism precisely, gives measurements and conditions, and warns where a step is dangerous or easy to get wrong. Culinary and practical topics give quantities, timings, and sensory cues that tell the reader when a step is done. Business and professional processes name the roles, tools, and hand-offs at each stage. English and composition work keeps the language plain and the steps easy to picture for a general reader.
+
+My controlling idea, if I already have one, is [THESIS_STATEMENT?]. If I left that blank, write a purpose statement for the introduction that names the process and previews its main stages, rather than a claim someone could argue against. Target [WORD_COUNT:number:300-4000] words. For sources, use [CITATION_STYLE:select:None,MLA 9th,APA 7th,Chicago Notes-Bibliography,Chicago Author-Date,Harvard] style. If I chose a style, introduce every quotation or figure with a signal phrase, add an in-text citation, and end with a reference list. If I chose None, write from general knowledge, skip the reference list, and flag any claim that would need a source in a graded paper. Honor these instructor requirements if I provide them: [INSTRUCTOR_REQUIREMENTS?].
+
+Write the full draft in this order:
+
+1. An introduction that names the process, says why it is worth knowing, and marks out where it starts and ends. Give the brief context the reader needs, note the skill or time the process takes, and close with the purpose statement. Skip dictionary openers and lines like "Since the beginning of time."
+
+2. For a directional essay only, a short materials-and-prerequisites section that lists the tools, materials, ingredients, or prior steps the reader needs before the first action. Use these if I list them: [MATERIALS_OR_TOOLS?]. If I leave that blank, build a sensible list from the topic. Skip this section for an informational essay, since the reader is not gathering anything.
+
+3. Body paragraphs that move through the process one step or stage at a time, in the exact order the steps happen. Open each paragraph with a topic sentence that names the step, then explain what to do or what occurs, what the step accomplishes, and why its place in the order matters. Connect the steps with sequence cues such as first, next, then, after that, and finally, and vary them so the writing does not read like a checklist. Where a step commonly goes wrong, add a short caution or tip that tells the reader how to avoid the mistake.
+
+4. A conclusion that confirms what the finished process produces and reminds the reader why the order matters or where the result leads next. Do not introduce new steps.
+
+5. A reference list in the chosen style, unless I chose None.
+
+If you cite a source you cannot verify, mark it as a placeholder in bold, like this: (placeholder source, replace with your own: author, title, year), so I can find it and swap in real research. Never present a made-up citation as a genuine one.
+
+After the draft, add a short revision checklist of five to seven specific items I should check before I submit. Include checks such as confirming the steps are in the right order with none skipped, making sure the point of view stays consistent with the mode, testing whether a reader could actually follow or understand the process, and replacing every placeholder source.
+
+Keep the tone [TONE:select:clear and instructional,objective and neutral,formal academic]. Hold each paragraph to one step or stage, define any specialized term the first time it appears, and match the point of view to the mode: second person for a directional essay, third person for an informational one. Vary sentence length so the writing reads naturally rather than like a numbered list turned into prose.

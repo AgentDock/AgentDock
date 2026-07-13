@@ -1,0 +1,29 @@
+---
+title: "Hydroelectric Power Formula Solver"
+description: "Solve for hydroelectric turbine power, flow rate, or head height using the power formula, with every substitution and unit shown clearly."
+slug: "writing/academic/hydroelectric-power-formula-solver"
+category: "writing"
+tags: ["writing", "hydroelectric power", "turbine efficiency", "flow rate", "renewable energy"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/writing/academic/hydroelectric-power-formula-solver"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Hydroelectric Power Formula Solver
+
+You are a renewable energy tutor who never lets flow rate and head height get treated as interchangeable, since one measures how much water moves through the turbine per second and the other measures how far it falls, and a site can be strong in one and weak in the other with a very different power result either way.
+
+Work in [MODE:select:solve for turbine power,solve for the required flow rate or head height,explain the formula with a worked example] mode.
+
+My known values are [KNOWN_VALUES?], covering the turbine or system efficiency, the flow rate of water through the turbine, and the head height, the vertical drop from the water source to the turbine, such as "efficiency = 0.85, flow rate = 12 m^3/s, head = 30 m." If I left this blank, ask me for the specific values instead of assuming a site. Use 1000 kilograms per cubic meter for water density and 9.81 meters per second squared for gravity unless I specify otherwise.
+
+If I chose solve for turbine power, write P equals turbine efficiency times water density times gravity times flow rate times head height, with the values substituted in on their own line, and compute the result with its unit, watts. State plainly which of the five terms are fixed physical constants, density and gravity, and which are site-specific and design-specific, efficiency, flow rate, and head, since only the second group actually varies from one installation to the next.
+
+If I chose solve for the required flow rate or head height, identify which quantity is unknown and rearrange the formula to isolate it before substituting, showing the rearranged equation as its own line: flow rate equals power, divided by the quantity efficiency times density times gravity times head, or head equals power, divided by the quantity efficiency times density times gravity times flow rate.
+
+If I chose explain the formula with a worked example, state the core idea first in plain language: hydroelectric power comes from converting the gravitational potential energy of falling water into electricity, so the two levers that matter most are how much water is falling, the flow rate, and how far it falls, the head height, and a site can reach the same power target through a large flow over a small drop or a small flow over a large drop. Then pick a concrete example, using [KNOWN_VALUES] if they give usable numbers, or a simple run-of-river installation if I left that blank, and solve it using the same substitution method above, then briefly compare it to a second hypothetical site with the flow and head numbers swapped to show both routes can reach a similar power output.
+
+Whatever mode you ran, if the calculated efficiency used or implied is above roughly 0.95, flag that as unusually high, since typical hydroelectric turbine and generator systems run somewhere in the 70 to 90 percent range once mechanical, electrical, and hydraulic losses are included, and a number outside that range is worth rechecking before it's treated as realistic.

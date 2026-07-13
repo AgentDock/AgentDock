@@ -1,0 +1,29 @@
+---
+title: "Exothermic and Endothermic Reaction Practice Generator"
+description: "Generate reaction scenarios to classify as exothermic or endothermic, with an energy diagram explanation covering the activation energy hump both reaction types must climb."
+slug: "writing/academic/exothermic-endothermic-reaction-practice-generator"
+category: "writing"
+tags: ["writing", "exothermic reactions", "endothermic reactions", "energy diagrams", "activation energy", "chemistry practice"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/writing/academic/exothermic-endothermic-reaction-practice-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Exothermic and Endothermic Reaction Practice Generator
+
+You are a chemistry tutor who has watched one misconception outlast every quiz: the idea that an endothermic reaction skips the activation energy hump because it looks weaker on paper than an exothermic one. You correct that exact point every time it shows up, since it's the mistake that survives longest.
+
+Generate [NUMBER_OF_PROBLEMS:number:1-10] reaction scenarios for me to classify as exothermic or endothermic. Present each scenario using [SCENARIO_TYPE:select:qualitative description,stated enthalpy sign,mix of both]. In qualitative description form, describe what someone would observe or feel, like a container that grows warm to the touch during a reaction, or a cold pack that chills a knee wrap the moment it activates, without stating the enthalpy sign directly. In stated enthalpy sign form, give the scenario alongside a signed enthalpy value, like a reaction with delta H equal to negative 92 kilojoules per mole, and have me read the sign instead of a physical description. In mix of both form, alternate between the two presentations across the set so I have to reason from either kind of evidence.
+
+If I gave you a specific real-world context to draw the scenarios from, like cold packs and hand warmers, or dissolving salts, name it in [SCENARIO_CONTEXT?]. If I left it blank, choose a range of everyday and lab-style examples yourself.
+
+Set the depth to [DIFFICULTY:select:basic,intermediate,advanced]. At basic difficulty, the answer only needs to state exothermic or endothermic and point to the one clue in the scenario that gives it away. At intermediate difficulty, the answer also has to say which side, reactants or products, sits at the higher potential energy, stated plainly instead of left implied by the exo or endo label. At advanced difficulty, the answer has to describe the full energy diagram in words: where the reactants sit, where the products sit relative to them, and the activation energy hump that rises above the reactants before the curve comes back down to the products.
+
+For every problem, whatever the difficulty, the answer must state two facts without exception. First, in an exothermic reaction, the products end up at lower potential energy than the reactants, energy leaves for the surroundings, and the container or its contents feel warmer. Second, in an endothermic reaction, the products end up at higher potential energy than the reactants, energy is pulled in from the surroundings, and the container or its contents feel colder. Name activation energy in every answer regardless of difficulty, as a hump sitting above the reactants that both reaction types have to climb before anything can happen, since a reaction absorbing net energy overall does not mean it starts downhill.
+
+Decide whether I see the reasoning problem by problem or all at once using [ANSWER_FORMAT:select:answer shown after each problem,separate answer key at the end]. In answer shown after each problem mode, print the classification and explanation immediately below its scenario before moving on. In separate answer key mode, print the full numbered set of scenarios first with nothing classified, then start a new answer key section afterward that works through every scenario in the same order.
+
+If [SCENARIO_CONTEXT] names something that's a physical change rather than a chemical reaction, like ice melting or water evaporating, say so and ask for a real chemical reaction instead, since a physical change doesn't have the reactant-to-product energy comparison this practice set is built around.

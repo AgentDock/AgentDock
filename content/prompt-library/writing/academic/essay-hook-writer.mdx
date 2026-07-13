@@ -1,0 +1,29 @@
+---
+title: "Essay Hook Writer"
+description: "Generate several attention-grabbing essay hooks, each built from a different technique such as a statistic, question, or anecdote, with an explanation of why it works."
+slug: "writing/academic/essay-hook-writer"
+category: "writing"
+tags: ["writing", "essay hooks", "opening lines", "hook techniques", "academic writing"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/writing/academic/essay-hook-writer"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Essay Hook Writer
+
+You are a writing coach who has read thousands of first drafts, and you know the sentence most likely to lose a reader is the very first one. Students reach for the same handful of openers: a sweeping claim like "Since the beginning of time, people have..." or a definition lifted from the dictionary, like "Webster's Dictionary defines success as..." Both are dead on arrival. A reader who has seen either opener a hundred times learns nothing about the specific essay ahead of them. A real hook has one job: make the reader want the next sentence.
+
+I'm writing about [ESSAY_TOPIC]. This is a [ESSAY_TYPE:select:argumentative,narrative,expository,persuasive,college application,general academic] essay, and I want the opening to fit that genre. My thesis or the angle I'm taking, if I've settled on one, is [THESIS_OR_ANGLE?]. If I left that blank, build each hook from the topic alone and tell me what angle it assumes, so I can pick whichever one is closest to where the essay is actually headed.
+
+Give me [HOOK_COUNT:number:3-8] hook options, each built from a different technique so I have real choices instead of several versions of the same idea. Draw from these approaches, using each one before you repeat any of them. Start with a surprising statistic or fact that reframes how big or urgent the topic is. Try a provocative question the rest of the essay will go on to answer. Write a vivid anecdote, a short, specific scene involving a person, a moment, a decision. Add a bold or debatable statement that provokes the reader without simply restating [THESIS_OR_ANGLE] word for word. That's the job of the thesis itself, not the hook. Consider a relevant quote from someone credible, used to set up tension rather than as decoration. Close the set with a vivid scene-setting description that puts the reader somewhere specific before pulling back to the topic. If [HOOK_COUNT] asks for more options than there are techniques, return to whichever technique suits [ESSAY_TYPE] best and write a genuinely different version of it, not a reworded copy.
+
+Match the technique mix to the essay type. An argumentative or persuasive essay leans on the bold statement, the provocative question, and the statistic, because those signal a stance early. A narrative or college application essay leans on the anecdote and the scene-setting description, because the reader needs to be inside a moment before the essay explains what it means. An expository or general academic essay leans on the statistic and the quote, because the opening has to earn credibility before it explains. Keep the register [TONE:select:formal academic,conversational,dramatic and vivid,quietly confident] across every option, and let the technique, not the wording, create the variety.
+
+For each hook, write the opening exactly as it would appear on the page, no more than three sentences. Underneath it, add a short note that names the technique, explains in one sentence why it should work on a reader who has never seen this topic before, and says exactly how it connects [ESSAY_TOPIC] to [THESIS_OR_ANGLE]. A hook that can't explain its own connection to the essay is decoration, not an opening.
+
+Do not use "Since the beginning of time," "Throughout history," "In today's society," or any dictionary-definition opener like "Webster's Dictionary defines ___ as." These are the most overused openings in student writing, and a reader who has graded a hundred essays disengages the moment one appears. Do not invent statistics, quotes, or sources. If a technique needs a real number or a real quote I haven't given you, write the hook as a clearly marked placeholder I can fill in myself, and say so.
+
+Close with a two-question test I can run on whichever hook I choose: does it earn the next sentence, and does it point somewhere the essay actually goes.

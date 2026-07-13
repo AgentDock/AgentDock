@@ -1,0 +1,31 @@
+---
+title: "Italian Grammar Error Correction Generator"
+description: "Turn Italian text into a corrected version, flagging article and gender mismatches, wrong prepositions, verb agreement errors, and double negation problems."
+slug: "education/language/italian-grammar-error-correction-generator"
+category: "education"
+tags: ["education", "italian grammar", "grammar correction", "double negation", "preposition errors"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/language/italian-grammar-error-correction-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Italian Grammar Error Correction Generator
+
+Non ho niente. Two negative words, non and niente, sitting in the same clause, and in Italian that sentence is not just correct, it's the only correct way to say I don't have anything. English treats a double negative as a mistake that cancels itself out. Italian treats it as reinforcement, and an English speaker who tries to sound more careful by removing the second negative, ho niente, actually breaks the sentence instead of fixing it. That's the specific trap this tool is built to catch, along with the article and preposition mistakes that show up just as often in real writing.
+
+Paste the Italian text you want checked into:
+
+[ITALIAN_TEXT]
+
+Focus on [FOCUS_AREAS?] if there's a specific trap you already suspect, article and gender mismatches, wrong prepositions, verb agreement, or double negation, or leave it blank and check the whole thing for all four.
+
+Set explanation depth to [EXPLANATION_DEPTH:select:Quick correction only,Correction with a short rule explanation,Full breakdown of why the original reads as non-native].
+
+For every article or gender mismatch, name the noun's actual gender and which rule the original sentence broke, whether that's a plain il versus la mismatch or one of the trickier lo and gli trigger cases. For every wrong preposition, give the correct one and, where the choice is genuinely idiomatic rather than rule-based, say so plainly instead of implying there was a rule to derive it from. For every verb agreement error, point out whether the mistake is subject-verb agreement or a wrong tense choice, since English speakers conflate the two constantly.
+
+For double negation, never flag non ho niente, non lo so mai, or any other correctly doubled negative as an error. If the pasted text drops the second negative to sound more careful, ho niente instead of non ho niente, treat that as the error and add the non back, explaining that Italian negation reinforces rather than cancels.
+
+Close with a corrected version of the full text and a short count of how many mistakes fell into each category, so a learner sees which specific trap they hit most.

@@ -1,0 +1,29 @@
+---
+title: "Listening and Dictation Practice Generator"
+description: "Build a listening or dictation passage in Spanish, French, Italian, German, or Portuguese, flagging words where spelling and sound diverge, like seseo, liaison, or devoicing."
+slug: "education/language/listening-and-dictation-practice-generator"
+category: "education"
+tags: ["education", "listening practice", "dictation", "pronunciation traps", "language comprehension"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/language/listening-and-dictation-practice-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Listening and Dictation Practice Generator
+
+Rad and Rat sound identical in German. Wheel and advice, two completely different words, collapse into the same sound the moment either one lands at the end of a phrase, because German devoices word-final consonants regardless of how they're spelled, a rule called Auslautverhärtung. Casa and caza sound identical too, if the speaker is Latin American, since seseo merges what Spain's distinción keeps separate. A learner drilled only on reading never meets these traps, because on the page casa and caza still look different. This generator builds a short passage meant to be read aloud, either by you practicing pronunciation or by someone reading it to you for dictation, and flags the specific words inside it where spelling and sound genuinely diverge in ways a listener has to already know about to catch.
+
+Language is [LANGUAGE:select:Spanish,French,Italian,German,Portuguese].
+
+Topic is [TOPIC?] (a subject for the passage, or leave blank for a general-interest default).
+
+Level is [LEVEL:select:A1 (beginner),A2 (elementary),B1 (intermediate),B2 (upper intermediate)].
+
+Practice mode is [MODE:select:Read-aloud passage with a pronunciation trap list,Dictation passage with key words blanked out for a listener to fill in].
+
+Write a short passage in [LANGUAGE] at [LEVEL] on [TOPIC]. If Spanish is selected, include at least one pair of words that are homophones under seseo, like casa and caza, and note that a speaker using Spain's distinción pronounces them differently while a Latin American speaker does not, so which trap applies depends on whose recording a learner is actually practicing with. If French is selected, build in at least one liaison, a normally silent final consonant pronounced because the next word starts with a vowel, like les amis sounding like lay-zamis rather than two separate words, and flag exactly where it happens in the passage. If German is selected, include a word ending in a voiced consonant that devoices in this position, Rad sounding identical to Rat, and flag the specific word. If Portuguese is selected, cover a nasal vowel or diphthong that has no equivalent sound in English and is easy to mishear as an oral vowel instead.
+
+If dictation mode is selected, provide a second version of the passage with the flagged trap words blanked out, for a listener to fill in while someone reads the full passage aloud, followed by an answer key. If read-aloud mode is selected, list the trap words separately after the passage with a short pronunciation note for each, so the person reading aloud knows exactly where to be careful. Close by naming which single trap in this passage is most likely to cause an actual misunderstanding rather than just an odd-sounding sentence.

@@ -1,0 +1,33 @@
+---
+title: "French Irregular Verb Practice Generator"
+description: "Practice high-frequency French irregular verbs, être, avoir, aller, faire, venir, prendre, mettre, and dire, drilling conjugated forms that barely resemble their own infinitive."
+slug: "education/language/french-irregular-verb-practice-generator"
+category: "education"
+tags: ["education", "french irregular verbs", "verb conjugation", "high frequency verbs", "etre avoir"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/language/french-irregular-verb-practice-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# French Irregular Verb Practice Generator
+
+The most common French verbs are also the least regular, and that's not a coincidence. Être and avoir get used in nearly every sentence, to describe something and to build the passé composé itself, and neither one bends to any pattern a learner can apply elsewhere. Aller goes from vais to va to allons, three stems for one verb. Dire drops its expected -ez ending entirely, vous dites, not vous disez, which is the single most irregular form in the present tense of any -re verb. A learner who's only drilled regular -er, -ir, and -re verbs has no tools for any of this, because these verbs were never trying to fit the pattern in the first place.
+
+Verb group is [VERB_GROUP:select:The core four (être, avoir, aller, faire),High-frequency -ir/-re irregulars (venir, prendre, mettre, dire),Modal-style irregulars (pouvoir, vouloir, devoir, savoir),Mixed practice across all of them].
+
+Specific verb is [VERB?] (name one directly to narrow the drill, or leave blank to draw from the selected group).
+
+Tense is [TENSE:select:Présent,Passé composé,Imparfait,Futur simple,Conditionnel présent].
+
+CEFR level is [CEFR_LEVEL:select:A1 (beginner),A2 (elementary),B1 (intermediate),B2 (upper intermediate),C1 (advanced)].
+
+I need [ITEM_COUNT:number:8-25] drill items.
+
+For être, avoir, aller, and faire, build every form from the actual irregular stem, never from a rule, and call out the forms most likely to get regularized by mistake, il est not il ête, nous avons not nous avoir-ons, ils vont not ils allent, vous faites not vous faisez. For venir and its relatives, note the stem change that hits every person except nous and vous, je viens, tu viens, il vient, but nous venons and vous venez keep the original ven- root. For prendre, flag that the ils form doubles the n, ils prennent, while nous and vous keep a single n, nous prenons, vous prenez, since that's an easy typo a learner won't catch on their own. For dire, lead with vous dites directly, since that single form breaks the expected -ez pattern every other -re verb follows.
+
+For each item, give the pronoun and infinitive and ask for the conjugated form, then reveal the answer with a one-line note on what makes that specific form irregular, a stem change, a dropped ending, a form that shares no letters with its infinitive. Match example sentences to [CEFR_LEVEL], keeping A1 to short standalone statements and letting C1 place the verb inside a longer sentence with a second clause.
+
+Close by naming which verb in this drill has the form furthest from what a learner would guess by applying any regular rule, since that's the one that needs rote memorization rather than logic.

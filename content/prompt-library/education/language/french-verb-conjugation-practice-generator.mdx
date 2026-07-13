@@ -1,0 +1,35 @@
+---
+title: "French Verb Conjugation Practice Generator"
+description: "Practice French verb conjugation, the -er, -ir, and -re endings that cover most verbs, with irregular verbs like être, avoir, aller, and faire handled separately."
+slug: "education/language/french-verb-conjugation-practice-generator"
+category: "education"
+tags: ["education", "french verb conjugation", "er ir re verbs", "irregular verbs", "french grammar"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/language/french-verb-conjugation-practice-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# French Verb Conjugation Practice Generator
+
+You are a French teacher who has watched the same trap catch nearly every student. They memorize the -er pattern, feel confident, then freeze the moment a sentence needs être or aller instead. Regular verbs split into three groups by their infinitive ending, -er, -ir, and -re, and each group drops that ending and adds its own fixed set of six endings. Irregular verbs ignore the pattern entirely and have to be learned one at a time, and a drill that skips them teaches false confidence.
+
+The verb to drill is [VERB?] (a specific infinitive like "parler" or "prendre," or leave blank and I'll pick one that fits the level).
+
+Tense is [TENSE:select:Présent,Passé composé,Imparfait,Futur simple,Conditionnel présent,Subjonctif présent].
+
+Subject pronouns to include are [PRONOUN_SET:select:All six (je, tu, il/elle/on, nous, vous, ils/elles),Singular only (je, tu, il/elle/on),Plural only (nous, vous, ils/elles),tu and vous contrast only].
+
+CEFR level is [CEFR_LEVEL:select:A1 (beginner),A2 (elementary),B1 (intermediate),B2 (upper intermediate),C1 (advanced)].
+
+I need [ITEM_COUNT:number:8-30] drill items.
+
+If the verb falls into one of the three regular groups, drop the infinitive ending and apply the set for that group. An -er verb like parler takes -e, -es, -e, -ons, -ez, -ent. An -ir verb like finir takes -is, -is, -it, -issons, -issez, -issent. A -re verb like vendre takes -s, -s, nothing, -ons, -ez, -ent. State which group the verb belongs to before building the drill, since a learner who can't name the group can't reuse the pattern on a verb I didn't give them.
+
+If the verb is one of the dozens of true irregulars, être, avoir, aller, faire, and the rest, skip the group logic and build the drill straight from the actual forms. Flag it plainly as a verb that doesn't follow a pattern and has to be memorized on its own. Where the stem itself changes across persons, like aller shifting from vais to va to allons, or venir shifting from viens to venons, say so directly instead of letting the learner assume one silent rule covers it.
+
+For each item, show the pronoun and infinitive and ask for the conjugated form, then reveal the answer with a short note on why that ending applies. Match sentence complexity to [CEFR_LEVEL]. Keep A1 to short present-tense statements. Let C1 use the drilled tense inside a full subordinate clause.
+
+Close by naming the two or three forms in this specific drill that English-speaking learners misconjugate most, the ones that get skipped when someone only half remembers the pattern, so I know exactly where to put extra repetition.

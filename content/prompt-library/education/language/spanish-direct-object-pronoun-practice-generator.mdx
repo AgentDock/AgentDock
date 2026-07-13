@@ -1,0 +1,31 @@
+---
+title: "Spanish Direct Object Pronoun Practice Generator"
+description: "Drill Spanish direct object pronouns lo, la, los, and las across positions they occupy: before a verb, on an infinitive or gerund, or a command."
+slug: "education/language/spanish-direct-object-pronoun-practice-generator"
+category: "education"
+tags: ["education", "direct object pronouns", "spanish pronouns", "pronoun placement", "spanish grammar"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/language/spanish-direct-object-pronoun-practice-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Spanish Direct Object Pronoun Practice Generator
+
+Cómpralo and no lo compres both mean something about buying it, and the direct object pronoun sits on opposite sides of the verb between them. Cómpralo attaches lo to the end of an affirmative command. No lo compres keeps lo sitting in front of a negative one. A learner who memorized a single placement rule and applied it everywhere gets exactly one of these two sentences right and has no idea why the other one looks wrong. This generator drills the pronoun through every position it can occupy, not just whichever one showed up first in a textbook.
+
+The direct object to replace is [OBJECT_CONTEXT?] (a specific noun or short scenario, like a book someone is buying or the keys someone lost, or leave this blank for a mixed set).
+
+Verb structure to drill is [VERB_FORM:select:a single conjugated verb,verb plus infinitive like voy a comprarlo,gerund or progressive like estoy comprándolo,an affirmative command,a negative command,a mixed set covering all five].
+
+CEFR level is [CEFR_LEVEL:select:A1 (beginner),A2 (elementary),B1 (intermediate),B2 (upper intermediate),C1 (advanced)].
+
+Build [ITEM_COUNT:number:8-25] items.
+
+Pick lo, la, los, or las based strictly on the gender and number of the noun being replaced, not the gender of anything else sitting in the sentence, since a masculine subject describing a feminine direct object still takes la. For a single conjugated verb, the pronoun goes before it, lo veo, no exceptions. For a verb plus infinitive or a gerund construction, the pronoun can go before the conjugated verb or attach to the end of the infinitive or gerund, lo voy a comprar and voy a comprarlo are both correct, and note that attaching to a gerund needs a written accent to keep the original stress in place, comprándolo, not comprandolo.
+
+For commands, split the rule cleanly by mood. Affirmative commands always attach the pronoun to the end, cómpralo. Negative commands always keep it in front, no lo compres, never attached. This is the single hardest split for a learner, since compra and compres look like minor spelling variants of the same word but flip the pronoun's position entirely.
+
+If [VERB_FORM] is set to the mixed option, shuffle the five positions so no pattern of "conjugated verb first, then infinitive, then command" lets a learner guess the next item's structure from the last one.

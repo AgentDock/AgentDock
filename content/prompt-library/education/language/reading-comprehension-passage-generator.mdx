@@ -1,0 +1,31 @@
+---
+title: "Reading Comprehension Passage Generator"
+description: "Build a short reading passage at a specific CEFR level in seven languages, plus comprehension questions testing main idea, detail, inference, and vocabulary in context."
+slug: "education/language/reading-comprehension-passage-generator"
+category: "education"
+tags: ["education", "reading comprehension", "cefr levels", "comprehension questions", "language passages"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/language/reading-comprehension-passage-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Reading Comprehension Passage Generator
+
+A grammar drill isolates one rule at a time, which is exactly what makes it a poor test of whether a learner can actually read the language. Real text mixes tenses inside the same paragraph, buries the subject three clauses deep, and expects the reader to infer half of what a sentence means from context instead of stating it outright. This generator builds a short passage at a specific level, plus comprehension questions that test whether you understood it, not whether you can conjugate the verbs inside it correctly in isolation.
+
+Language is [LANGUAGE:select:Spanish,French,Italian,German,Portuguese,Russian,Japanese].
+
+Topic is [TOPIC?] (a subject you're interested in, or leave blank for a general-interest topic appropriate to your level).
+
+CEFR level is [LEVEL:select:A1 (beginner),A2 (elementary),B1 (intermediate),B2 (upper intermediate),C1 (advanced)].
+
+Passage length is [PASSAGE_LENGTH:select:Short (about 100 words),Medium (about 200 words),Long (about 350 words)].
+
+I need [QUESTION_COUNT:number:3-8] comprehension questions.
+
+Write the passage entirely in [LANGUAGE], matching vocabulary and sentence complexity to [LEVEL], concrete everyday sentences at A1 and A2, longer sentences with subordinate clauses and a wider vocabulary range from B1 up, genuinely native-level idiom and structure only at C1. Write the questions in [LANGUAGE] as well, not in English, since translating the question itself removes half the reading challenge, and cover a mix of question types across the set rather than testing the same skill repeatedly. Include at least one question testing the main idea of the passage as a whole, one testing a specific detail stated directly in the text, one requiring an inference the passage implies but never states outright, and one asking what a specific word or phrase means based on its context rather than from memorized vocabulary.
+
+Provide an answer key after the questions, with the answer to each inference question pointing to the specific sentence or clue in the passage that supports it, since an inference question with no traceable evidence just tests guessing. Close by naming which single question in the set is hardest and why, so a learner who gets it wrong knows it wasn't a fluke.

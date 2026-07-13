@@ -1,0 +1,29 @@
+---
+title: "German Plural Noun Practice Generator"
+description: "Practice German plural noun formation noun by noun, since das Buch becomes die Bücher and die Mutter becomes die Mütter with no shared predictable rule."
+slug: "education/language/german-plural-noun-practice-generator"
+category: "education"
+tags: ["education", "german plurals", "noun plural patterns", "umlaut plural", "german nouns"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/language/german-plural-noun-practice-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# German Plural Noun Practice Generator
+
+Das Buch becomes die Bücher, an -er ending plus an umlaut shift on the u. Die Mutter becomes die Mütter, no ending added at all, just the umlaut. Two nouns, two completely different plural strategies, and nothing in either word's spelling predicts which one applies. German plural formation isn't a rule you derive, it's a property you memorize noun by noun, the same way English speakers just know child becomes children and not childs.
+
+Five patterns cover almost every German noun. Add -e, often with an umlaut on masculine and neuter nouns, Stuhl becomes Stühle. Add -er, almost always with an umlaut when the stem vowel allows it, Buch becomes Bücher, Haus becomes Häuser. Add -en or -n, the pattern for roughly ninety percent of feminine nouns, Frau becomes Frauen. Add -s, mostly for loanwords ending in a vowel other than -e, Auto becomes Autos. Or add nothing at all, common for masculine and neuter nouns already ending in -el, -en, or -er, sometimes picking up an umlaut anyway the way Mutter becomes Mütter and Tochter becomes Töchter.
+
+Set [NOUN_LIST?] to specific nouns you want drilled, or leave it blank and I'll pull a mixed set across genders and patterns.
+
+Focus is [PATTERN_FOCUS:select:-e ending,-er ending (usually with umlaut),-en or -n ending,-s ending (loanwords),No change (with or without umlaut),Mixed drill across all patterns].
+
+I need [DRILL_COUNT:number:10-40] nouns at [CEFR_LEVEL:select:A1 (beginner),A2 (elementary),B1 (intermediate)].
+
+For every noun, give the singular form with its article and ask for the correct plural, then confirm the answer states which of the five patterns it followed and whether an umlaut applies. Never imply the pattern was predictable from the singular alone, since two nouns that look similar, Buch and Bruch for instance, can take completely different plural strategies, Bücher against Brüche.
+
+If the mixed focus is chosen, deliberately pair nouns that look like they should follow the same pattern but don't, so a learner builds the habit of checking each noun individually instead of guessing from a nearby example. Close by flagging any noun in the set with an irregular or unpredictable plural that breaks even its own gender's usual tendency, since those are exactly the nouns worth extra repetition.

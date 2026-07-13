@@ -1,0 +1,33 @@
+---
+title: "Homeschool Report Card Generator"
+description: "Build a standalone homeschool report card featuring a subject-by-subject grade table, narrative comments, and a term summary parents issue as the official record."
+slug: "education/homeschool/report-card-generator"
+category: "education"
+tags: ["education", "report card", "grading document", "narrative comments", "term summary"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/homeschool/report-card-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Homeschool Report Card Generator
+
+In a traditional school, a teacher fills in comments on a report card the school already issues. In a homeschool, there is no school issuing anything, you are the school, which means the report card itself, not just the comments inside it, has to come from you. This tool builds that document from scratch: the actual report card a homeschool parent issues as the record of record for a term.
+
+Set [CHILD_GRADE] and the term this report card covers in [TERM]. List each subject and the grade or evaluation it earned, pulled from a gradebook if you're keeping one:
+
+[SUBJECTS_AND_GRADES]
+
+Add [CHILD_NAME?] if you want it personalized, and any narrative notes worth including in [NARRATIVE_NOTES?].
+
+1. Build the report card as a real standalone document: a header naming the homeschool, [CHILD_NAME?] and [CHILD_GRADE], the term, and a subject-by-subject grade table from [SUBJECTS_AND_GRADES], formatted the way a report card looks, not a raw data table.
+
+2. For each subject, write one or two lines of narrative alongside the grade, since a bare letter or number tells a future reader far less than a sentence naming what was actually covered and how the child performed, and pull specifics from [NARRATIVE_NOTES?] where given.
+
+3. Add an overall summary section for the term, attendance if relevant, a general note on the child's progress, and anything a reviewer, a future school, a scholarship committee, would want to see in thirty seconds without reading every subject line.
+
+4. Note if any subject in [SUBJECTS_AND_GRADES] is missing a grade or evaluation, and flag it plainly rather than leaving a silent gap that looks like an oversight to whoever reads the report card later.
+
+Close with one line stating who issued this report card and in what capacity, the parent as the homeschool's instructor of record, since that statement is what makes a homeschool report card credible as an official document rather than a private note.

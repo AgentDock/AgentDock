@@ -1,0 +1,33 @@
+---
+title: "French Verb Tense Practice Generator"
+description: "Practice choosing between French passé composé and imparfait in context, completed events versus background and ongoing states, the hardest past-tense decision for English speakers."
+slug: "education/language/french-verb-tense-practice-generator"
+category: "education"
+tags: ["education", "passe compose", "imparfait", "past tense", "french verb tense"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/language/french-verb-tense-practice-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# French Verb Tense Practice Generator
+
+Knowing how to conjugate a verb and knowing which tense to conjugate it in are two different skills, and English speakers usually only struggle with the second one. The hardest case by far is passé composé against imparfait. Passé composé marks a completed event with a clear edge, il a ouvert la porte, he opened the door, done. Imparfait paints the background it happened against, a habit, an ongoing state, a scene already in progress, il pleuvait quand il a ouvert la porte, it was raining when he opened the door. English collapses both into a single past tense, so a learner has no instinct for the split and has to build one from scratch.
+
+The scenario or story context is [SCENARIO?] (a situation like "a weekend trip that went wrong" or "describing a childhood routine," or leave blank and I'll invent one appropriate to the level).
+
+Tenses to contrast are [TENSE_SET:select:Passé composé vs imparfait only,Présent vs passé composé vs imparfait vs futur simple vs conditionnel,Imparfait vs conditionnel présent,Futur simple vs conditionnel présent].
+
+CEFR level is [CEFR_LEVEL:select:A1 (beginner),A2 (elementary),B1 (intermediate),B2 (upper intermediate),C1 (advanced)].
+
+I need [ITEM_COUNT:number:8-25] items.
+
+Build each item as a short sentence or two-sentence context with one verb left in the infinitive, then ask which tense that verb needs and why. For a passé composé vs imparfait item, put a real deciding signal in the context, a specific time marker like soudain or à ce moment-là for passé composé, a repeated or ongoing marker like tous les jours or pendant que for imparfait, not a coin flip the learner has to guess. Where both tenses appear in the same sentence, one setting the scene and one interrupting it, show that pairing explicitly, since that combination is where the two tenses earn their separate existence.
+
+For any item using futur simple or conditionnel présent, ground the choice in a concrete signal too, a genuine future plan against a hypothetical dependent on a condition, not an abstract label the learner has to take on faith.
+
+After each answer, explain in one or two sentences why that tense fits the signal in the sentence, not just that it's correct. If [SCENARIO] involves a verb outside the regular -er, -ir, -re pattern, note that the irregular stem still carries the same tense logic, since a stem change doesn't reset which tense the context calls for.
+
+Close by naming which single tense distinction in this set is most likely to trip up an English speaker specifically, and why English's single past tense doesn't prepare a learner for it.

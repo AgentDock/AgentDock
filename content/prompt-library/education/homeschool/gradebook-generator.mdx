@@ -1,0 +1,31 @@
+---
+title: "Homeschool Gradebook Generator"
+description: "Build a homeschool gradebook structured to match each subject's grading approach, whether letter grades, mastery tracking, or narrative, with a path to a transcript-ready grade."
+slug: "education/homeschool/gradebook-generator"
+category: "education"
+tags: ["education", "gradebook", "grading system", "mastery grading", "transcript prep"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/homeschool/gradebook-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Homeschool Gradebook Generator
+
+Public school grading exists to compare a student against a whole cohort using a common scale. A homeschool gradebook doesn't have that job, there's no cohort to compare against, but a transcript for college or a scholarship application eventually needs numbers or letters that translate into something a stranger reading it will recognize. This tool builds a gradebook that does the second job without pretending to do the first.
+
+Set [CHILD_GRADE] and list the subjects to track in [SUBJECTS]. Choose your grading approach: [GRADING_APPROACH:select:letter grades,percentage,mastery/pass-fail,narrative only,no formal grading]. If you want specific entries built from it, describe the assignments or work actually completed:
+
+[ASSIGNMENTS_OR_WORK?]
+
+1. Build a gradebook structure per subject in [SUBJECTS], matched to [GRADING_APPROACH], a weighted percentage table, a simple mastery checklist, or a narrative log, whichever fits the approach chosen rather than forcing every subject into a letter-grade format that doesn't suit how it's actually being taught.
+
+2. If [ASSIGNMENTS_OR_WORK?] is filled in, populate sample entries from it so the structure isn't empty, showing exactly how a real piece of work becomes a gradebook entry under [GRADING_APPROACH].
+
+3. If [GRADING_APPROACH] is narrative only or no formal grading, explain how to convert that record into a transcript-compatible grade later if college or scholarship applications eventually need one, so choosing not to grade now doesn't paint you into a corner later.
+
+4. Flag any subject in [SUBJECTS] where the chosen [GRADING_APPROACH] is a poor fit, mastery/pass-fail rarely works well for a subject with genuine performance range like writing, and suggest an alternative for that specific subject.
+
+Close with a one-line explanation of how this gradebook would translate into a transcript entry if [CHILD_GRADE] is high-school level, since that's the point most homeschool families eventually need the gradebook to actually serve.

@@ -1,0 +1,35 @@
+---
+title: "Spanish Sentence Translation Practice Generator"
+description: "Translate an English sentence into Spanish and explain the grammar decision behind each choice: tense, ser and estar, por and para, and pronoun placement."
+slug: "education/language/spanish-sentence-translation-practice-generator"
+category: "education"
+tags: ["education", "sentence translation", "ser estar", "por para", "spanish grammar"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/language/spanish-sentence-translation-practice-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Spanish Sentence Translation Practice Generator
+
+A word-for-word translation gets the vocabulary right and the grammar wrong more often than not, because English and Spanish make different choices at almost every turn: which tense fits, whether ser or estar applies, whether por or para is the right preposition, where the pronoun lands in the sentence. A learner who translates literally usually produces something a Spanish speaker can follow, but it reads off in ways that are hard to self-diagnose without someone naming the specific choice that went wrong. This tool translates the sentence and shows the reasoning behind each grammar decision.
+
+English sentence is [ENGLISH_SENTENCE] (paste the sentence or short passage you want translated).
+
+Formality is [FORMALITY:select:Informal (tú),Formal (usted)].
+
+Regional variant is [REGIONAL_VARIANT:select:Latin American Spanish,Peninsular Spanish (Spain)].
+
+CEFR level is [CEFR_LEVEL:select:A2 (elementary),B1 (intermediate),B2 (upper intermediate),C1 (advanced)].
+
+Explanation depth is [EXPLANATION_DEPTH:select:Just the translation,Translation plus a short note on the trickiest choice,Full breakdown of every grammar choice made].
+
+Translate the sentence into natural Spanish first, not a literal word-for-word rendering, matching the requested [FORMALITY] and [REGIONAL_VARIANT]. If the regional variant is Peninsular Spanish and the sentence addresses more than one person informally, use vosotros. If it's Latin American Spanish, use ustedes for that same plural informal case, since Latin American Spanish doesn't use vosotros in any register.
+
+If explanation depth calls for it, name the specific tense chosen and why, whether the sentence needed preterite or imperfect, indicative or subjunctive, and state the trigger if a subjunctive was required. Note any point where ser or estar had to be chosen, and why that specific choice was correct over the other option. Flag any preposition decision, especially por versus para, since English "for" covers both and gives an English speaker no clue which one applies, por marking reason or duration and para marking purpose or destination. Note where an object pronoun had to move earlier in the sentence than its English counterpart, since Spanish generally places these before a conjugated verb.
+
+If the English sentence is ambiguous in a way that changes the Spanish translation, state the ambiguity directly and give both readings rather than silently picking one.
+
+Close by naming the single grammar choice in this translation most likely to trip up an English speaker translating the same sentence unaided, and explain briefly why.

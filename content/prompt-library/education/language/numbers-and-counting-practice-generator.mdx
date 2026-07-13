@@ -1,0 +1,37 @@
+---
+title: "Numbers and Counting Practice Generator"
+description: "Build a numbers and counting drill covering French quatre-vingts arithmetic against Belgian and Swiss septante and nonante, German's inverted number order, and Russian case agreement."
+slug: "education/language/numbers-and-counting-practice-generator"
+category: "education"
+tags: ["education", "numbers practice", "french numbers", "german number order", "russian case agreement"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/language/numbers-and-counting-practice-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Numbers and Counting Practice Generator
+
+Soixante-neuf. Soixante-dix. The first means sixty-nine, following the pattern every learner expects. The second means seventy, and it's built as sixty-ten, because standard French never developed separate words for seventy, eighty, and ninety the way Spanish, Italian, and English did. Eighty is quatre-vingts, four-twenties, ninety is quatre-vingt-dix, four-twenty-ten, and ninety-seven is quatre-vingt-dix-sept, four-twenty-ten-seven, arithmetic hiding inside vocabulary. Belgium and Switzerland skipped this and kept septante for seventy and nonante for ninety, with huitante for eighty surviving in some Swiss cantons but not others. Neither system is more correct, they're regional standards, and a learner heading to Brussels or Geneva needs to recognize both. This generator drills whichever number system actually trips a learner up, not just French's, since German inverts unit and ten order and Russian changes a noun's ending depending on which number sits in front of it.
+
+Language is [LANGUAGE:select:French,German,Russian,Spanish,Italian,Portuguese].
+
+Number range is [NUMBER_RANGE:select:0-20,21-69,70-99,100-999,Mixed practice across all ranges].
+
+Region variant, French only, ignore for other languages, is [REGION_VARIANT:select:Standard France,Belgian or Swiss,Compare both side by side].
+
+Level is [LEVEL:select:A1 (beginner),A2 (elementary),B1 (intermediate)].
+
+I need [ITEM_COUNT:number:10-30] items.
+
+Build items as a number written in digits that the learner writes out in words, or a number written in words that the learner converts to digits, alternating direction across the set. If French is selected and [NUMBER_RANGE] touches 70 through 99, apply [REGION_VARIANT], building standard France's soixante-dix, quatre-vingts, and quatre-vingt-dix pattern, or Belgian and Swiss septante, huitante, and nonante, or both side by side labeled by region.
+
+If German is selected, build every two-digit number in its inverted unit-then-ten order, joined by und and written as one word, so 21 becomes einundzwanzig, literally one-and-twenty, and 24 becomes vierundzwanzig, since a learner who reads German numbers left to right the way English works reverses the digits by mistake.
+
+If Russian is selected, attach each number to a noun and require the noun's correct case ending rather than the bare number alone. The number 1, and any compound number ending in 1 except 11, takes a noun in the nominative singular. Numbers 2 through 4, and compounds ending in those digits except 12 through 14, take genitive singular. Numbers 5 and up, including every number ending in 11 through 14 regardless of the final digit, take genitive plural.
+
+If Spanish is selected, cover the cien versus ciento distinction directly, cien standing alone or right before a noun, mil, or millón, ciento appearing the moment any number from 1 to 99 follows it, so 100 books is cien libros but 101 is ciento uno.
+
+Close by naming the one number in the set most likely to be misread if a learner defaults to English word order or vocabulary.

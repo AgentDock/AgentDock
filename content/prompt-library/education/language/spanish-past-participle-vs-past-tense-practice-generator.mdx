@@ -1,0 +1,39 @@
+---
+title: "Spanish Past Participle vs Past Tense Practice Generator"
+description: "Drill the Spanish present perfect against the simple past, covering the ten irregular past participles that break the -ado/-ido pattern and the regional usage split."
+slug: "education/language/spanish-past-participle-vs-past-tense-practice-generator"
+category: "education"
+tags: ["education", "present perfect", "past participles", "preterite", "spanish conjugation"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/language/spanish-past-participle-vs-past-tense-practice-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Spanish Past Participle vs Past Tense Practice Generator
+
+He hablado and hablé both translate to roughly "I spoke" or "I have spoken" in English, but they're not interchangeable the way that overlap suggests, and which one sounds natural depends on more than grammar alone. It depends on which side of the Atlantic the speaker learned Spanish. This tool drills the form of the present perfect, haber plus a past participle, its ten most common irregular participles, and the regional split in when each tense gets reached for.
+
+Verbs or theme are [VERB_LIST] (specific verbs, or a topic like "things you did this morning" or "a trip you took last year").
+
+Tense focus is [TENSE_FOCUS:select:Present perfect only (he hablado),Simple past or preterite only (hablé),Both side by side to compare].
+
+Participle type is [PARTICIPLE_TYPE:select:Regular past participles,Irregular past participles (escrito, hecho, dicho, visto, and others),Mixed].
+
+Regional usage is [REGIONAL_USAGE:select:Peninsular Spanish (present perfect for events inside today's timeframe),Latin American Spanish (preterite preferred for nearly everything, present perfect used sparingly)].
+
+CEFR level is [CEFR_LEVEL:select:A2 (elementary),B1 (intermediate),B2 (upper intermediate)].
+
+I need [ITEM_COUNT:number:10-30] items.
+
+Build the present perfect as haber conjugated to match the subject, he, has, ha, hemos, habéis, han, followed by the past participle, which stays fixed regardless of the subject's gender or number in this construction. For irregular participles, cover escrito (escribir), hecho (hacer), dicho (decir), visto (ver), puesto (poner), vuelto (volver), roto (romper), muerto (morir), abierto (abrir), and cubierto (cubrir), and flag each one clearly instead of letting a learner assume every participle simply adds -ado or -ido.
+
+If both tenses were requested, build a pair of sentences with the same verb and roughly the same meaning so the contrast is visible directly, hablé ayer next to he hablado hoy, with one line noting which timeframe pushes toward which tense.
+
+Apply the regional usage setting to every sentence in the batch, not as a footnote but as the actual tense chosen. Under Peninsular Spanish, default to the present perfect for anything inside today, this week, or this year, and the preterite outside that window. Under Latin American Spanish, default to the preterite across nearly every timeframe, since that's the dominant pattern across most of the region regardless of how recent the event was.
+
+Match vocabulary and sentence length to [CEFR_LEVEL], and vary the subject pronoun across items so haber gets practiced across more than one conjugated form instead of the yo form repeated in every sentence.
+
+Close by naming which irregular participles appeared in this batch, and note that unlike the irregular preterite stems, these ten participles never change form for gender or number no matter what the subject is.

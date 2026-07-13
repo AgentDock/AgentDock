@@ -1,0 +1,33 @@
+---
+title: "Homeschool Portfolio Generator"
+description: "Build a portfolio that organizes a child's homeschool work samples into subject-area sections with narrative explanations, flagged gaps, and a cover summary ready for review."
+slug: "education/homeschool/portfolio-generator"
+category: "education"
+tags: ["education", "homeschool portfolio", "portfolio review", "work samples", "documentation"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/homeschool/portfolio-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Homeschool Portfolio Generator
+
+A portfolio review usually asks for evidence, not a diary of what was intended. This tool takes what your child actually produced over a stretch of the year and organizes it into a portfolio with a narrative that explains what a reviewer is looking at, instead of leaving a folder of loose papers to speak for themselves.
+
+Set [CHILD_GRADE] and the time period the portfolio covers in [TIME_PERIOD]. Describe the work you actually have to include, math worksheets, a writing sample, project photos, reading logs, whatever exists, not what you wish existed:
+
+[WORK_SAMPLES_DESCRIPTION]
+
+If you know your state's specific portfolio requirements, name them in [STATE_REQUIREMENTS?].
+
+1. Organize [WORK_SAMPLES_DESCRIPTION] into subject-area sections, and for each section, write a short narrative connecting the samples to what was actually being taught, since a reviewer unfamiliar with your homeschool needs the samples explained, not just presented.
+
+2. Flag any subject area with thin or missing samples for [TIME_PERIOD], and suggest a quick way to fill the gap before the portfolio is due, a short writing sample done this week, a photo of an already-finished project, rather than discovering the gap at review time.
+
+3. If [STATE_REQUIREMENTS?] is filled in, check the organized portfolio against it and flag anything the state specifically asks for that isn't yet represented, and say plainly that the actual requirement should be confirmed against your state's current homeschool statute.
+
+4. Write a short cover summary for the whole portfolio, [CHILD_GRADE] and [TIME_PERIOD], the subjects covered, and one line on the overall arc of progress a reviewer should notice moving through the samples.
+
+Close by naming the single strongest piece of evidence in the portfolio, the one sample that best proves real progress, so it can go first if the reviewer only has time to look closely at one thing.

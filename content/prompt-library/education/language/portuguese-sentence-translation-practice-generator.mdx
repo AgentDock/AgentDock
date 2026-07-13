@@ -1,0 +1,31 @@
+---
+title: "Portuguese Sentence Translation Practice Generator"
+description: "Write a Brazilian or European Portuguese translation of an English sentence with grammar reasoning shown, flagging Spanish-Portuguese false friends, tense choice, and the tu-você split."
+slug: "education/language/portuguese-sentence-translation-practice-generator"
+category: "education"
+tags: ["education", "portuguese translation", "false friends", "tu and você", "sentence translation"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/language/portuguese-sentence-translation-practice-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Portuguese Sentence Translation Practice Generator
+
+A correct Portuguese translation and a translation built the way a Spanish speaker would naturally reach for it are sometimes two different sentences. The two languages sit close enough that a Spanish speaker learning Portuguese often translates by swapping Spanish words for their closest Portuguese cousin one at a time, and the sentence that comes out is grammatically parseable and subtly wrong, built on false friends and borrowed word order that Portuguese doesn't actually use the same way. A learner starting from English alone doesn't hit this specific trap, but does hit the tu-versus-você register question and the European-versus-Brazilian split that a translation drill built only for Spanish or French was never designed to handle. This generator translates a specific sentence into Portuguese with the grammar reasoning shown, flagging both the ordinary decisions any translation makes and, when relevant, the specific word a Spanish-speaking learner would likely reach for by habit instead.
+
+The English sentence is [ENGLISH_SENTENCE].
+
+Variant is [VARIANT:select:Brazilian Portuguese,European Portuguese,Show both side by side].
+
+Register is [REGISTER:select:Informal (tu, or você depending on variant),Formal (o senhor or a senhora),Let context decide and explain the choice].
+
+CEFR level is [CEFR_LEVEL:select:A1 (beginner),A2 (elementary),B1 (intermediate),B2 (upper intermediate),C1 (advanced)].
+
+Translate [ENGLISH_SENTENCE] into natural Portuguese at the [CEFR_LEVEL] complexity level in the requested [VARIANT], then walk back through the choices that produced it. State which tense the verb landed in and why, since English's single past tense often maps to either the preterite or the imperfect depending on whether the action is complete or ongoing. Flag gender agreement on adjectives and past participles, and state the noun's gender plainly rather than leaving it implicit.
+
+If the sentence contains a word with a close Spanish cognate that's actually a false friend in Portuguese, embaraçada meaning embarrassed rather than pregnant, or polvo meaning octopus rather than dust, flag it directly and explain what a Spanish speaker's instinct would have produced instead. If [VARIANT] is Both side by side, show the sentence with você as the informal pronoun for Brazilian Portuguese and tu for European Portuguese, along with any conjugation difference the pronoun switch forces, since the two variants diverge here in a way most translation drills for other Romance languages don't need to account for at all.
+
+If [REGISTER] is set to let context decide, infer formality from the sentence itself and state which signal in the English sentence drove that call. Close by naming the single decision in this translation most likely to trip up a learner, whether that's a Spanish-speaker false friend, a tense choice, or the tu-você regional split.

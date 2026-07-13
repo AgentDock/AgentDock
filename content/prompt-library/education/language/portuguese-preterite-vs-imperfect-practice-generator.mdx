@@ -1,0 +1,33 @@
+---
+title: "Portuguese Preterite vs Imperfect Practice Generator"
+description: "Build contrastive Portuguese preterite-and-imperfect drills anchored in real verb pairs like comia and comi, and conhecia and conheci, within a single sentence."
+slug: "education/language/portuguese-preterite-vs-imperfect-practice-generator"
+category: "education"
+tags: ["education", "portuguese grammar", "preterite and imperfect", "past tense contrast", "verb pairs"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/language/portuguese-preterite-vs-imperfect-practice-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Portuguese Preterite vs Imperfect Practice Generator
+
+Comia and comi look one letter apart and mean different things entirely. Comia says someone used to eat, or was eating, a repeated or ongoing action without a clear endpoint. Comi says someone ate, once, and the action is finished. English collapses both into ate or was eating without forcing a choice, so a learner translating word by word has no instinct for which one Portuguese needs at that moment. This generator builds sentences that force the choice every time, instead of letting a learner default to whichever tense they memorized first.
+
+Variant is [VARIANT:select:Brazilian Portuguese,European Portuguese,Either is fine].
+
+The topic or scenario is [SCENARIO_TOPIC?] (a childhood memory, a trip, a typical day interrupted by something unusual, or leave this blank for a mixed set).
+
+CEFR level is [CEFR_LEVEL:select:A1 (beginner),A2 (elementary),B1 (intermediate),B2 (upper intermediate),C1 (advanced)].
+
+Practice format is [FORMAT:select:fill in the correct tense given a sentence with a blank,pick preterite or imperfect and explain why in one sentence,translate an English sentence and choose the tense that fits].
+
+Build [ITEM_COUNT:number:8-25] items.
+
+Base at least a few items on the classic pattern where imperfect sets a routine and preterite marks the one time it broke. Quando eu era criança, comia cereal todos os dias, mas um dia comi panquecas em vez disso, the imperfect paints the background habit, the preterite marks the single specific exception. That structure is where the contrast earns its keep, not in two isolated sentences that never interact.
+
+Include at least one pair using a verb that changes meaning depending on which past tense carries it. Conhecia os teus pais means I used to know your parents, ongoing familiarity, while conheci os teus pais means I met your parents, a specific first encounter. Sabia and soube split the same way, sabia a resposta is knew the answer as an existing fact, soube a verdade is found out the truth at one specific moment. These pairs trip up learners harder than the routine cases, since the English translation shifts entirely between the two, not just the tense marker.
+
+For every item, require a one-sentence justification alongside the answer, naming whether the action is a single completed event, an ongoing state, a habitual routine, or a background scene, so the learner practices the reasoning and not just pattern-matching a form. If [VARIANT] is European Portuguese, keep verb forms consistent with tu conjugation where the scenario calls for a second person, and if Brazilian Portuguese, keep them consistent with você, matching whichever variant produces the more natural sentence for that context.

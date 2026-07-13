@@ -1,0 +1,33 @@
+---
+title: "German Adjective Practice Generator"
+description: "Practice German weak, mixed, and strong adjective declension, the three patterns that decide an ending's form depending on whether an article precedes the noun."
+slug: "education/language/german-adjective-practice-generator"
+category: "education"
+tags: ["education", "german adjectives", "adjective declension", "weak mixed strong", "adjective endings"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/language/german-adjective-practice-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# German Adjective Practice Generator
+
+Der alte Mann and alter Mann both mean the old man, and the adjective ending changes from alte to alter depending on whether der is standing there in front of it. That's not a random spelling quirk, it's German's core adjective rule working exactly as designed, somewhere near the noun, the gender and case have to get signaled once, and only once. When der already signals it, the adjective can relax into a plain -e or -en. When nothing precedes the adjective, it has to carry the full signal itself.
+
+Weak declension applies when a definite article, der, die, das, or one of their case forms, precedes the adjective. It only uses two endings, -e and -en, -e for nominative singular in every gender and accusative singular feminine and neuter, -en everywhere else in that pattern.
+
+Mixed declension applies after an indefinite article or ein-word, ein, mein, kein, dein. It mostly matches the weak pattern, except in three spots where ein itself carries no ending, nominative masculine singular, nominative neuter singular, and accusative neuter singular. In those three spots the adjective has to pick up the strong ending instead, since nothing else in the phrase is signaling gender or case.
+
+Strong declension applies when no article precedes the adjective at all, kalter Kaffee, alte Bücher, drei kleine Kinder. Here the adjective alone has to carry the full gender and case signal, since there's no article doing any of that work.
+
+Set [NOUN_PHRASE_LIST?] to specific noun phrases you want drilled, like the old man or cold coffee, or leave it blank and I'll build a mixed set.
+
+Focus is [DECLENSION_FOCUS:select:Weak (after a definite article),Mixed (after ein or an ein-word),Strong (no article at all),Mixed drill across all three].
+
+I need [DRILL_COUNT:number:10-40] prompts at [CEFR_LEVEL:select:A1 (beginner),A2 (elementary),B1 (intermediate)].
+
+For every prompt, show the article situation clearly, definite article present, ein-word present, or no article, along with the case and gender needed, and ask for the correctly declined adjective ending. Explain each answer by naming which of the three patterns applied and why, especially for the three mixed declension spots where ein carries no ending of its own and the adjective has to compensate.
+
+Close by flagging any phrase that shifts pattern entirely once the case changes, since der alte Mann in the nominative and den alten Mann in the accusative both use weak declension but land on different specific endings, and a learner who memorized one form alone will miss the other.

@@ -1,0 +1,29 @@
+---
+title: "Field Trip Portfolio Entry Generator"
+description: "Turn a completed field trip into a dated, subject-tagged homeschool portfolio entry with a narrative summary, learning outcomes, and an instructional-hours log line."
+slug: "education/homeschool/field-trip-portfolio-entry-generator"
+category: "education"
+tags: ["education", "portfolio entry", "field trip log", "instructional hours", "homeschool records"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/homeschool/field-trip-portfolio-entry-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Field Trip Portfolio Entry Generator
+
+You are a homeschool parent's records partner for turning a trip that already happened into documentation a portfolio, an umbrella school, or a state evaluator can actually use. A finished field trip only counts as instruction if something records what was learned and how long it took, not just that the outing occurred. This tool assumes the trip is done and turns what happened into a dated, subject-tagged entry. It is not the pre-trip planning that gets a learner ready to go before the car leaves the driveway.
+
+Write a portfolio entry for a completed trip to [DESTINATION] on [TRIP_DATE], for a learner at the [GRADE_LEVEL] level. Describe what actually happened in [WHAT_HAPPENED], a few phrases are enough if that is all you remember. Set [SUBJECT_AREA:select:science,history or social studies,language arts,math,art,physical education,life skills,multiple subjects] to the closest match for what the trip covered. If you tracked the time spent, note it in [HOURS_SPENT:number:0.5-8?].
+
+1. Turn [WHAT_HAPPENED] into a short narrative paragraph written in complete sentences, the kind a reviewer unfamiliar with the trip could read and understand exactly what the learner did and saw.
+
+2. Name two to four specific things the learner appears to have learned or practiced, tied to [SUBJECT_AREA], stated as skills or knowledge rather than vague impressions like had fun or learned a lot.
+
+3. Suggest the closest general subject-area label for [GRADE_LEVEL] if a state or evaluator would expect one on this entry, and say plainly that this is a suggestion to confirm against your own state's portfolio format, not a verified standards citation.
+
+4. Write the log line, a one-sentence dated entry in the format a portfolio or instructional hours log would use, including [TRIP_DATE], [DESTINATION], [SUBJECT_AREA], and [HOURS_SPENT?] if it was provided.
+
+Close by flagging anything the entry is missing that a strong portfolio record usually has, such as no stated time spent or too vague a description of what happened, so you can fill the gap while the trip is still fresh in memory instead of months later.

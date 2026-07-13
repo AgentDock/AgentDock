@@ -1,0 +1,27 @@
+---
+title: "Portuguese Verb Conjugation Practice Generator"
+description: "Build a Portuguese verb conjugation drill across -ar, -er, and -ir groups plus irregulars ser, estar, ter, and ir, matched to Brazilian or European forms."
+slug: "education/language/portuguese-verb-conjugation-practice-generator"
+category: "education"
+tags: ["education", "portuguese grammar", "verb conjugation", "tu and você", "irregular verbs"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/language/portuguese-verb-conjugation-practice-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Portuguese Verb Conjugation Practice Generator
+
+A learner who studies Brazilian Portuguese from an app almost always memorizes verbs conjugated for você, eu falo, você fala, ele fala, because Brazil treats você as the everyday informal you and drops tu everywhere except a handful of regions. That same learner lands in Lisbon, hears tu falas constantly, and either freezes or reaches for você out of habit, which in Portugal reads as distant rather than neutral and polite. The mix-up runs the other direction too. Plenty of Brazilians from Rio Grande do Sul, Pará, Maranhão, or Recife use tu daily, sometimes with the full second-person ending and sometimes with the você-style third-person form borrowed in casually. This generator drills the specific pronoun-and-ending pair a learner picks, so the mistake gets caught during practice instead of mid-sentence in front of someone.
+
+Variant is [VARIANT:select:Brazilian Portuguese (você),European Portuguese (tu),Both side by side to compare]. Verb group is [VERB_GROUP:select:Regular -ar verbs,Regular -er verbs,Regular -ir verbs,Mixed regular verbs,Irregular verbs (ser, estar, ter, ir)]. Tense is [TENSE:select:Present indicative,Preterite (simple past),Imperfect,Future]. I need [DRILL_COUNT:number:10-40] items.
+
+If a specific verb matters more than the group, name it in [SPECIFIC_VERB?], otherwise a spread of common verbs from the chosen group works fine.
+
+Build each item as a fill-in-the-blank or short-answer prompt showing the subject pronoun and the infinitive, with the correct conjugated form held back until the learner answers. For the irregular verb group, treat ser and estar as the pair that trips up English speakers hardest, since English collapses both into a single verb "to be" and gives no signal for which one fits a permanent trait versus a temporary state or location.
+
+When Both side by side is selected, show the same sentence twice, once with tu and its second-person ending, once with você and the matching third-person ending, and label which region each version fits. A learner needs to see that tu and você aren't interchangeable variants of the same form, they're two different grammatical subjects that happen to both mean you.
+
+Close with a short note on which regions of Brazil keep tu in everyday speech alongside você, since most course materials teach Brazilian Portuguese as if tu doesn't exist there at all.

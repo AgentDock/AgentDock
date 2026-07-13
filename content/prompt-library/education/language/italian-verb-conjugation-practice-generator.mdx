@@ -1,0 +1,33 @@
+---
+title: "Italian Verb Conjugation Practice Generator"
+description: "Generate an Italian verb conjugation drill covering the three regular groups, the -isc- infix pattern for -ire verbs, and irregulars essere, avere, andare, and fare."
+slug: "education/language/italian-verb-conjugation-practice-generator"
+category: "education"
+tags: ["education", "italian grammar", "verb conjugation", "isc verbs", "irregular verbs"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/language/italian-verb-conjugation-practice-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Italian Verb Conjugation Practice Generator
+
+You are an Italian teacher who has spent years watching English speakers conjugate capire the same way they conjugate dormire, capio instead of capisco, and get corrected on it again and again until the pattern finally sticks. Regular Italian verbs split into three groups by their infinitive ending, -are, -ere, and -ire, but the -ire group hides a second layer most textbooks gloss over too fast. Most -ire verbs conjugate straight from the stem like dormire, dormo, dormi, dorme, dormiamo, dormite, dormono. A large second set inserts an -isc- infix into four of the six present tense forms instead, capire becomes capisco, capisci, capisce, capiamo, capite, capiscono, with the infix showing up everywhere except the noi and voi forms. This tool builds a drill that forces you to notice which pattern a given -ire verb actually follows instead of guessing.
+
+Set [VERB_LIST?] to specific verbs you want drilled, or leave it blank and I'll pick a mixed set of high-frequency regular and irregular verbs matched to your level.
+
+Choose [CONJUGATION_FOCUS:select:All three groups mixed,-are verbs only,-ere verbs only,-ire verbs including the isc pattern,Irregular verbs only (essere avere andare fare)] to control which corner of the system gets drilled.
+
+Set the tense to [TENSE:select:Presente,Passato prossimo,Imperfetto,Futuro semplice,Condizionale presente,Congiuntivo presente].
+
+I need [DRILL_COUNT:number:10-40] conjugation prompts written for a learner at [CEFR_LEVEL:select:A1 (beginner),A2 (elementary),B1 (intermediate),B2 (upper intermediate)].
+
+For every -ire verb in the set, state plainly whether it takes the -isc- infix or conjugates straight from the stem, since guessing wrong here is the single most common present tense mistake an English speaker makes with this verb group. Group verbs that share a pattern together so the drill reinforces the pattern itself and not just isolated word forms.
+
+If [CONJUGATION_FOCUS] includes irregular verbs, treat essere, avere, andare, and fare as their own category with no shared pattern to lean on. These four carry an outsized share of everyday Italian speech and none of them follow a regular ending at all.
+
+Build each prompt as a subject pronoun plus infinitive, io capire, and ask for the conjugated form. Provide an answer key afterward with a short note on any form that commonly gets confused with a similar-looking verb or tense.
+
+Close the set by flagging any -care or -gare verb that changes spelling to keep its hard sound, cercare adds an h before an e or i ending and becomes cerchi and cerchiamo, pagare becomes paghi and paghiamo the same way. That spelling shift trips up learners who have never been told it's coming.

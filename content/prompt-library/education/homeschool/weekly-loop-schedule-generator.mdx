@@ -1,0 +1,29 @@
+---
+title: "Homeschool Weekly Loop Schedule Generator"
+description: "Build a rotating loop schedule where a missed day delays the subject rotation instead of erasing it, unlike a fixed Monday-through-Friday schedule."
+slug: "education/homeschool/weekly-loop-schedule-generator"
+category: "education"
+tags: ["education", "loop schedule", "rotating schedule", "flexible scheduling", "schedule method"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/homeschool/weekly-loop-schedule-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Homeschool Weekly Loop Schedule Generator
+
+A fixed Monday-through-Friday schedule breaks the moment a Tuesday gets skipped, because Tuesday's subject just doesn't happen that week. The loop method fixes that by ungluing subjects from specific days entirely: subjects sit in a rotating order, and each day you simply pick up the loop wherever you left off, so a missed day delays the rotation instead of erasing a subject.
+
+List your subjects in the order you want them to loop in [SUBJECTS]. Set how many loop subjects you can realistically cover in one sitting in [SESSIONS_PER_DAY:number:2-6]. Note the child's age or grade in [CHILD_AGE_OR_GRADE?] if session length should scale to it.
+
+1. Build the loop order from [SUBJECTS], and explain the logic behind the order, whether it's balancing heavy subjects against light ones, or alternating desk work with something more physical or creative, so the sequence isn't arbitrary.
+
+2. Show a sample two-week run of the loop in action, moving [SESSIONS_PER_DAY] subjects forward each day and looping back to the start once every subject has had a turn, so you can see exactly how the rotation behaves in practice, including what happens after a skipped day.
+
+3. Flag any subject that needs more frequent turns than a straight loop gives it, daily math practice can't wait for a six-subject loop to come back around, and suggest pulling that subject out of the loop into a fixed daily slot instead.
+
+4. Note how many days a full loop cycle takes at the current [SESSIONS_PER_DAY], and whether that cycle length actually fits how often each subject needs to happen for real progress.
+
+Close by naming the one adjustment most likely to fix a loop that isn't working, fewer subjects per session, a subject pulled out to a fixed daily slot, so a stalled loop gets a specific fix instead of an abandoned system.

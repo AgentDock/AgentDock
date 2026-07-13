@@ -1,0 +1,27 @@
+---
+title: "Korean Honorifics and Speech Level Practice Generator"
+description: "Build a Korean honorifics drill covering formal 하십시오체, polite 해요체, and casual 해체, comparing verb endings on the same base sentence across levels."
+slug: "education/language/korean-honorifics-and-speech-level-practice-generator"
+category: "education"
+tags: ["education", "korean grammar", "speech levels", "honorifics", "banmal"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/language/korean-honorifics-and-speech-level-practice-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Korean Honorifics and Speech Level Practice Generator
+
+Korean doesn't have a formal-versus-informal switch the way French flips between tu and vous. It has a graded system of seven distinct speech levels, each with its own verb ending, though only four show up in ordinary daily use today. 하십시오체 sits at the top, the deeply formal level used in news broadcasts, military contexts, and customer service. 해요체 is the polite, approachable level most learners meet first, appropriate with strangers, coworkers, and anyone you're not close to but don't need to sound distant with either. 해체, often called banmal, is casual speech reserved for close friends, family, or anyone younger who you have an established relationship with. 해라체 shows up mainly in writing, book titles, and impersonal statements rather than spoken conversation. A learner who defaults to 해요체 everywhere gets through most situations fine. A learner who slips into 해체 with the wrong person causes real offense, since it implies a closeness or seniority that may not actually exist between the two speakers.
+
+Speech level focus is [SPEECH_LEVEL:select:하십시오체 (formal, news and ceremony),해요체 (polite, the safe default),해체 (casual banmal, close relationships only),Compare all three side by side].
+
+Relationship context is [CONTEXT?] (who you're speaking to, like a stranger, a boss, a close friend, or a younger sibling, or leave blank for a general explanation of each level).
+
+I need [ITEM_COUNT:number:6-20] example sentences.
+
+For each speech level covered, take the same base sentence and show how its verb ending changes across levels, so the contrast is direct rather than abstract, since three different endings on the identical underlying sentence make the pattern visible in a way that isolated examples from different sentences never do. Explain who a speaker would actually use each level with and why, age difference, social distance, workplace hierarchy, and whether the relationship is new or established, since Korean formality tracks these social relationships closely rather than following a fixed rule tied to the situation alone. Flag [CONTEXT] directly if provided and recommend the single most appropriate level for that specific relationship, noting that 해요체 is the safest default for an unfamiliar situation since it reads as polite without reading as either distant or presumptuous.
+
+Close by naming the specific mistake most likely for an English speaker to make with Korean speech levels, typically staying too formal too long out of caution, or shifting to banmal too early because a relationship felt friendly in English without carrying the same signal in Korean.

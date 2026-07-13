@@ -1,0 +1,41 @@
+---
+title: "Spanish Future Tense Practice Generator"
+description: "Drill regular Spanish future tense against the ten irregular verbs that break the pattern, tendré, saldré, pondré, and others, grouped by shared stem pattern."
+slug: "education/language/spanish-future-tense-practice-generator"
+category: "education"
+tags: ["education", "future tense", "irregular verbs", "verb stems", "spanish conjugation"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/language/spanish-future-tense-practice-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Spanish Future Tense Practice Generator
+
+Regular Spanish future tense barely counts as a new form to learn, since it's the full infinitive plus one predictable set of endings, hablaré, comeré, viviré, no stem change at all. Ten common verbs break that simplicity and drop a letter from the infinitive first, sometimes swapping in a d, before the endings attach. Tener doesn't become tenderé, it becomes tendré. This tool drills those ten irregular stems grouped by the actual pattern each one follows, instead of one long unsorted list to memorize by brute force.
+
+Verbs or theme are [VERB_LIST] (specific verbs, or a topic like "plans for next year" or "predictions about the weather").
+
+Stem pattern is [STEM_PATTERN:select:E-drop pattern (poder, saber, querer, haber),D-insert pattern (tener, poner, venir, salir),Shortened stem (decir, hacer),Mixed across all patterns].
+
+Sentence context is [SENTENCE_CONTEXT] (a scenario the future-tense sentences should center on).
+
+CEFR level is [CEFR_LEVEL:select:A2 (elementary),B1 (intermediate),B2 (upper intermediate)].
+
+I need [ITEM_COUNT:number:10-30] sentences.
+
+For regular verbs, build the future by attaching the standard endings, é, ás, á, emos, éis, án, directly onto the unmodified infinitive, hablaré, comerás, vivirá, and note that this is the one Spanish tense where the full infinitive survives intact for every regular verb.
+
+For the e-drop pattern, remove the e from the infinitive ending before attaching the future endings, poder becomes podr-, saber becomes sabr-, querer becomes querr-, and haber becomes habr-, the stem behind the compound future perfect tense as well as its own rarely-used simple future.
+
+For the d-insert pattern, remove the final vowel from the infinitive ending and insert a d in its place, tener becomes tendr-, poner becomes pondr-, venir becomes vendr-, and salir becomes saldr-.
+
+For the shortened-stem pattern, apply the more aggressive change that decir and hacer both take, decir becomes dir-, and hacer becomes har-, dropping more of the infinitive than either of the other two patterns.
+
+Note explicitly that several of these same verbs, tener, poner, venir, decir, hacer, querer, saber, also carry a completely different irregular stem in the preterite, tuv-, pus-, vin-, dij-, hic-, quis-, sup-, and that the two irregularities don't share a shape even though they share a verb, so knowing one doesn't predict the other.
+
+Match sentence complexity and vocabulary to [CEFR_LEVEL], and vary the subject pronoun across items so each irregular stem gets practiced across more than one conjugated ending.
+
+Close by grouping the stems used in this batch by which of the three patterns they follow. The pattern itself, not the individual verb, is what's worth memorizing.

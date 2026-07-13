@@ -1,0 +1,27 @@
+---
+title: "Pronunciation Guide Generator"
+description: "Explain how a Spanish, French, Italian, German, or Portuguese word or phrase actually sounds using a plain-English phonetic respelling instead of full IPA."
+slug: "education/language/pronunciation-guide-generator"
+category: "education"
+tags: ["education", "pronunciation guide", "phonetic respelling", "ipa alternative", "foreign word sounds"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/language/pronunciation-guide-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Pronunciation Guide Generator
+
+A textbook pronunciation guide usually goes one of two ways. Either it drops full IPA on the page, symbols and diacritics most learners never learned to read, or it skips pronunciation almost entirely and lets the learner guess from spelling, which works fine in Italian and falls apart in French, where five different spellings can produce the same nasal vowel. This generator takes a specific word or phrase and breaks down how it actually sounds using a plain phonetic respelling in English letters, plus a direct note on whichever sound in it doesn't exist in English at all, since that's the one spelling alone will never fix.
+
+Target language is [LANGUAGE:select:Spanish,French,Italian,German,Portuguese].
+
+Word or phrase is [WORD_OR_PHRASE].
+
+Level is [LEVEL:select:A1 (beginner),A2 (elementary),B1 (intermediate),B2 (upper intermediate)].
+
+Break the word into syllables, mark which syllable carries the stress, and respell each syllable using familiar English letter combinations rather than IPA symbols. Directly beneath the respelling, name any sound in the word that has no real English equivalent and describe how to physically produce it. Cover the sound if it's genuinely present in [WORD_OR_PHRASE]. The Spanish tapped r in pero against the rolled rr in perro, where a single tap versus a trilled roll changes the word from but to dog. The French nasal vowels spelled on, an, in, and un, none of which resemble how English nasalizes anything. Italian geminate consonants, where doubling a letter in spelling doubles the consonant's actual length, so pena, meaning pain or sorrow, and penna, meaning pen, are different words distinguished only by how long the n sound is held. German's two ch sounds, the soft ich-laut after front vowels like i and e, produced far forward near the hard palate, against the harder ach-laut after back vowels like a and o, produced in the back of the throat, the same word Buch shifting from the back sound to the front one the moment it becomes Bücher. Portuguese nasal vowels and diphthongs marked with a tilde, ã and õ, plus nasal diphthongs like ão, which carry no equivalent nasal quality in English.
+
+If [WORD_OR_PHRASE] doesn't contain one of these specific traps, respell it plainly and flag whichever general pattern for [LANGUAGE] is most likely to trip up a beginner at [LEVEL] instead. Close with one short sentence contrasting the word against how an English speaker would misread it on sight, so the gap between spelling and sound is explicit rather than implied.

@@ -1,0 +1,31 @@
+---
+title: "Spanish Preterite vs Imperfect Practice Generator"
+description: "Build contrastive drills that force a choice between the Spanish preterite and imperfect in one sentence, grounded in real pairs like comía and comí."
+slug: "education/language/spanish-preterite-vs-imperfect-practice-generator"
+category: "education"
+tags: ["education", "preterite imperfect", "past tense contrast", "spanish conjugation", "spanish grammar"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/language/spanish-preterite-vs-imperfect-practice-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Spanish Preterite vs Imperfect Practice Generator
+
+Comía and comí look one letter apart and mean different things entirely. Comía says someone used to eat, or was eating, a repeated or ongoing action without a clear endpoint. Comí says someone ate, once, and the action is finished. English collapses both into "ate" or "was eating" without forcing a choice, so a learner translating word by word has no instinct for which one Spanish needs at that moment. This generator builds sentences that force the choice every time, instead of letting a learner default to whichever tense they memorized first.
+
+The topic or scenario is [SCENARIO_TOPIC?] (a childhood memory, a trip, a typical day interrupted by something unusual, or leave this blank for a mixed set).
+
+CEFR level is [CEFR_LEVEL:select:A1 (beginner),A2 (elementary),B1 (intermediate),B2 (upper intermediate),C1 (advanced)].
+
+Practice format is [FORMAT:select:fill in the correct tense given a sentence with a blank,pick preterite or imperfect and explain why in one sentence,translate an English sentence and choose the tense that fits].
+
+Build [ITEM_COUNT:number:8-25] items.
+
+Base at least a few items on the classic pattern where imperfect sets a routine and preterite marks the one time it broke. Cuando era niño, comía cereal todos los días, pero un día comí panqueques en su lugar, the imperfect paints the background habit, the preterite marks the single specific exception. That structure is where the contrast earns its keep, not in two isolated sentences that never interact.
+
+Include at least one pair using a verb that changes meaning depending on which past tense carries it. Conocía a tus padres means I used to know your parents, ongoing familiarity, while conocí a tus padres means I met your parents, a specific first encounter. Sabía and supe split the same way, sabía la respuesta is knew the answer as an existing fact, supe la verdad is found out the truth at one specific moment. These pairs trip up learners harder than the routine cases, since the English translation shifts entirely between the two, not just the tense marker.
+
+For every item, require a one-sentence justification alongside the answer, naming whether the action is a single completed event, an ongoing state, a habitual routine, or a background scene, so the learner practices the reasoning and not just pattern-matching a form.

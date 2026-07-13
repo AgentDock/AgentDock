@@ -1,0 +1,33 @@
+---
+title: "French Adjective Agreement Practice Generator"
+description: "Practice matching French adjectives to noun gender and number, including irregular forms like beau/belle and the small set of adjectives that precede the noun."
+slug: "education/language/french-adjective-agreement-practice-generator"
+category: "education"
+tags: ["education", "french adjective agreement", "adjective placement", "bags adjectives", "irregular adjectives"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/language/french-adjective-agreement-practice-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# French Adjective Agreement Practice Generator
+
+Two separate mistakes hide inside "French adjective agreement," and most drills only catch one of them. The first is form. Some adjectives just add -e for feminine and -s for plural, grand becomes grande, some double a consonant first, bon becomes bonne and gros becomes grosse, and a handful go fully irregular, beau becomes belle, vieux becomes vieille, blanc becomes blanche. The second mistake is placement. Most French adjectives follow the noun, une voiture rouge, but a short, common set jumps in front of it instead, une belle voiture, and a learner who defaults to "adjectives go after the noun" gets that specific set wrong every time.
+
+The noun or noun phrase is [NOUN_PHRASE?] (a word like "voiture," "livre," or "maison," or leave blank and I'll pick nouns spanning both genders).
+
+Adjective focus is [ADJECTIVE_TYPE:select:Regular agreement only (add -e for feminine),Consonant-doubling adjectives (bon, gros, gentil),Fully irregular forms (beau, vieux, blanc, doux),BAGS adjectives that precede the noun,Mixed practice across all patterns].
+
+CEFR level is [CEFR_LEVEL:select:A1 (beginner),A2 (elementary),B1 (intermediate),B2 (upper intermediate),C1 (advanced)].
+
+I need [ITEM_COUNT:number:8-25] items.
+
+For regular agreement, apply the base rule, add -e for feminine unless the adjective already ends in -e, add -s for plural unless it already ends in -s or -x. For consonant-doubling adjectives, state the doubled form directly, bon to bonne, gros to grosse, gentil to gentille, since a learner who only knows the "add -e" rule will write bone and grose and be wrong in a way that looks almost right. For the fully irregular set, give the actual feminine form rather than a rule, beau to belle, vieux to vieille, blanc to blanche, and note that beau and vieux also shift to bel and vieil before a masculine noun starting with a vowel or a silent h, since that third form catches learners who've only memorized two.
+
+For placement, remember that BAGS, beauty, age, goodness, and size, covers the main adjectives that go before the noun instead of after it, words like beau, jeune, bon, and grand. Build items that test this directly, giving a noun and a BAGS adjective and asking for correct word order, not just correct agreement, since a perfectly agreed adjective in the wrong position still sounds foreign.
+
+Match example complexity to [CEFR_LEVEL], keeping A1 to single adjective-noun pairs and letting B2 and C1 stack two or three adjectives around the same noun, one before and one after, the way native speech does it.
+
+Close each set by flagging any adjective in this drill that changed form for reasons beyond the standard rule, so I know which specific forms need memorizing outright instead of derived.

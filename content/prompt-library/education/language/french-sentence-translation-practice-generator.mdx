@@ -1,0 +1,33 @@
+---
+title: "French Sentence Translation Practice Generator"
+description: "Turn an English sentence into natural French with the grammar reasoning shown, covering tense choice, gender agreement, object pronoun placement, and tu versus vous register."
+slug: "education/language/french-sentence-translation-practice-generator"
+category: "education"
+tags: ["education", "french translation", "sentence translation", "object pronouns", "tu vous register"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/language/french-sentence-translation-practice-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# French Sentence Translation Practice Generator
+
+A correct French translation and a translation a learner can reuse are two different outputs. Anyone can hand back "Je le vois" for "I see him," but the learner still walks away without knowing why the pronoun jumped in front of the verb instead of staying after it the way English keeps it. Register causes a separate, quieter mistake. English has no built-in formal you, so a learner translating on instinct picks tu or vous at random and sounds either stiff with a friend or oddly familiar with a stranger, without ever noticing they made a choice at all.
+
+The English sentence is [ENGLISH_SENTENCE].
+
+Register is [REGISTER:select:Informal (tu),Formal (vous),Let context decide and explain the choice,Show both tu and vous versions].
+
+CEFR level is [CEFR_LEVEL:select:A1 (beginner),A2 (elementary),B1 (intermediate),B2 (upper intermediate),C1 (advanced)].
+
+Explanation depth is [EXPLANATION_DEPTH:select:Brief (just the key grammar decision),Detailed (every grammar decision explained),Word-by-word breakdown].
+
+Translate [ENGLISH_SENTENCE] into natural French at the [CEFR_LEVEL] complexity level, then walk back through the choices that produced it. State which tense the French verb landed in and why, since English's single past tense often maps to either passé composé or imparfait depending on whether the action is complete or ongoing. Flag every gender agreement decision on adjectives and past participles, and state the noun's gender plainly rather than leaving it implicit in the article alone.
+
+If the sentence contains a direct or indirect object, un, une, or a specific noun standing in for something, show where the pronoun replacing it lands. In French that pronoun sits in front of the conjugated verb, "I see him" becomes je le vois, not the English word order of verb then object, and that placement shift is worth calling out explicitly rather than letting it pass as a minor detail.
+
+If [REGISTER] is set to let context decide, infer formality from the sentence itself, a stranger, a boss, or an unspecified adult gets vous, a friend, family member, or child gets tu, and state which signal in the English sentence drove that call.
+
+Close by naming the single grammar decision in this translation an English speaker is statistically most likely to get wrong on their own, and why.

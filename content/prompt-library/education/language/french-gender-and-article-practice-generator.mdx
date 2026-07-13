@@ -1,0 +1,33 @@
+---
+title: "French Gender and Article Practice Generator"
+description: "Practice French articles, le versus la, un versus une, and the partitive du, de la, and des, including noun endings that signal the wrong gender."
+slug: "education/language/french-gender-and-article-practice-generator"
+category: "education"
+tags: ["education", "french articles", "noun gender", "partitive articles", "gender exceptions"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/language/french-gender-and-article-practice-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# French Gender and Article Practice Generator
+
+Learners get taught a shortcut early, words ending in -e are usually feminine, words ending in a consonant are usually masculine, and the shortcut works often enough to feel trustworthy right up until it fails on a word they use constantly. Le problème is masculine. So is un musée and un silence, despite that -e ending everyone was told to trust. La main is feminine, breaking the pattern that almost every other -ain word is masculine. There's a second layer past gender itself too, the partitive articles du, de la, and des, which mark "some" of an uncountable noun and get skipped entirely by learners who only ever practiced le, la, un, and une.
+
+The noun or word list is [NOUN_SET?] (a theme like "the kitchen" or "everyday objects," or a specific word list, or leave blank and I'll pick nouns that span the common gender traps).
+
+Article type to drill is [ARTICLE_TYPE:select:Definite articles (le, la, les),Indefinite articles (un, une, des),Partitive articles (du, de la, de l', des),Mixed practice across all three].
+
+CEFR level is [CEFR_LEVEL:select:A1 (beginner),A2 (elementary),B1 (intermediate),B2 (upper intermediate),C1 (advanced)].
+
+I need [ITEM_COUNT:number:8-25] items.
+
+For definite and indefinite articles, give the noun and ask for the correct article, then state the noun's gender plainly rather than leaving it implied by the article alone. Deliberately include a mix of nouns that follow the usual ending patterns and nouns that break them, and mark the pattern-breaking ones clearly, since those are the words worth extra repetition, not the ones a learner already guesses correctly by habit.
+
+For partitive articles, build items around uncountable nouns, food, drink, or abstract qualities, where "some" applies rather than "a" or "the." Use du before a masculine noun, de la before a feminine noun, de l' before either gender starting with a vowel or a silent h, and des before a plural. Include at least one item where the sentence is negated or follows an expression of quantity like beaucoup de, since both cases collapse the partitive down to plain de, a shift that trips up learners who've only drilled the affirmative form.
+
+Match example complexity to [CEFR_LEVEL], A1 sticking to single concrete nouns and B2 or C1 mixing partitive and definite uses of the same noun in one passage, du pain next to le pain, to test whether the learner tracks which grammatical role the noun is playing rather than memorizing one fixed article per word.
+
+Close by listing which nouns in this set have a gender that contradicts their ending, so those specific exceptions get flagged instead of blending back into the regular pattern the next time I see them.

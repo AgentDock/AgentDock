@@ -1,0 +1,41 @@
+---
+title: "Spanish Common Mistakes Practice Generator"
+description: "Read Spanish writing from English-speaking learners and flag L1-interference errors a spellchecker misses: false cognates, missing personal a, wrong prepositions, and subjunctive avoidance."
+slug: "education/language/spanish-common-mistakes-practice-generator"
+category: "education"
+tags: ["education", "spanish mistakes", "false cognates", "l1 interference", "spanish grammar"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/language/spanish-common-mistakes-practice-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Spanish Common Mistakes Practice Generator
+
+A Spanish sentence can be grammatically parseable and still carry the fingerprints of an English speaker's first language all over it. Realizar looks close enough to realize that a learner reaches for it without a second thought, but it means to carry out or accomplish, not to realize, which is darse cuenta in Spanish. None of these slips break the sentence outright, they mark it as translated rather than composed, and a spellchecker or basic grammar checker won't catch a single one of them. This tool reads Spanish written by an English-speaking learner and flags exactly this category of error.
+
+Spanish text is (paste one or more sentences, or a short paragraph, that you wrote yourself):
+
+[SPANISH_TEXT]
+
+Error focus is [ERROR_FOCUS:select:All common error types,False cognates only,Personal "a" and preposition errors,Gender and agreement slips,Subjunctive avoidance,Literal translation patterns].
+
+CEFR level is [CEFR_LEVEL:select:A2 (elementary),B1 (intermediate),B2 (upper intermediate),C1 (advanced)].
+
+Feedback style is [FEEDBACK_STYLE:select:Just flag the errors,Flag and correct,Flag, correct, and explain why each one is wrong].
+
+Read the text and check for false cognates first, words that resemble English but carry a different meaning, embarazada does not mean embarrassed, it means pregnant, and realizar does not mean to realize, it means to carry out or accomplish. Flag any of these on sight, since they're often grammatically fine sentences that say something the writer never intended.
+
+Check for a missing personal a in front of a direct object that's a person, since English has no equivalent word and learners routinely skip it without noticing, veo a mi hermano, not veo mi hermano, with the standard exception that tener usually drops the personal a even before a person.
+
+Check for verbs that require a specific preposition where a learner defaulted to a literal English one or dropped it entirely, since many Spanish verbs pair with a fixed preposition that doesn't match its English translation at all.
+
+Check for gender and number agreement slips between nouns and their adjectives or articles, and for subjunctive avoidance, an indicative verb sitting in a clause that a trigger phrase like quiero que or es importante que should have pushed into the subjunctive instead.
+
+Check for literal translation patterns, sentence structures that are grammatically valid in Spanish but that no native speaker would produce, because the underlying logic was borrowed straight from English word order instead of built in Spanish.
+
+Match the explanation depth and vocabulary in feedback to [CEFR_LEVEL], and organize flagged errors by category rather than in the order they appear in the text, so a learner can see if one specific error type is showing up repeatedly across the whole passage.
+
+Close with the single error category that appeared most often in this text. A pattern repeated three times across a paragraph is worth more attention than three unrelated one-off slips.

@@ -1,0 +1,33 @@
+---
+title: "Literature-Based Homeschool Curriculum Planner"
+description: "Build a full-year literature-based homeschool curriculum with a book spine in reading order and history, language arts, and other subjects sequenced around it."
+slug: "education/homeschool/literature-based-curriculum-planner-generator"
+category: "education"
+tags: ["education", "literature-based curriculum", "reading spine", "living books", "homeschool planning"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/homeschool/literature-based-curriculum-planner-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Literature-Based Homeschool Curriculum Planner
+
+A single literature-based unit study builds one book into one cross-subject unit. This tool works at a bigger scale: it plans an entire year's spine of books, in reading order, with history, language arts, and often science hanging off that spine as the year moves forward, the difference between one book-based unit and a whole curriculum built the same way.
+
+Set [CHILD_AGES_OR_GRADES] and the term you're planning for in [TERM_LENGTH:select:full school year,one semester]. If you already have books chosen, list them below:
+
+[BOOK_LIST?]
+
+Name which subjects should hang off the literature spine in [SUBJECTS_TO_SPINE?], most commonly history and language arts, sometimes science, versus which subjects run on their own separate track all year.
+
+1. Build a reading list in order for [TERM_LENGTH], using [BOOK_LIST?] where given and reasonable additions where it's thin, sequenced so each book's era or setting picks up roughly where the last one left off if history is one of the spined subjects.
+
+2. For each subject in [SUBJECTS_TO_SPINE?], show what that subject looks like across the year when it's following the literature spine instead of a standalone textbook, history moving chronologically through whatever era each book is set in rather than a fixed curriculum's own sequence.
+
+3. Flag any subject in [SUBJECTS_TO_SPINE?] that's a poor fit for a literature-spine approach for this particular list, math almost never spines well off literature, and confirm it's running on a separate track rather than being forced into the reading list.
+
+4. Note the pacing risk of a literature-spine year: a slow reader or a longer-than-expected book can push the whole spine's sequence behind, so build in one or two buffer weeks across [TERM_LENGTH] rather than assuming every book finishes exactly on schedule.
+
+Close by naming the one book on the list most likely to need an alternate pick, based on length, reading level mismatch with [CHILD_AGES_OR_GRADES], or thin subject connections, so you have a backup in mind before the year gets there.

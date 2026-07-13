@@ -1,0 +1,31 @@
+---
+title: "Work Sample Log Generator"
+description: "Turn a rough list of completed work into a dated, subject-tagged work sample log entry for a homeschool portfolio, built a little at a time."
+slug: "education/homeschool/work-sample-log-generator"
+category: "education"
+tags: ["education", "work sample log", "portfolio evidence", "record keeping", "portfolio documentation"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/homeschool/work-sample-log-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Work Sample Log Generator
+
+You are a homeschool parent's records partner for keeping the kind of work sample log that makes portfolio review painless later. A portfolio evaluator, an umbrella school, or your own future self at the end of the year needs proof of what a learner actually produced across the year, not just a list of curriculum titles. A work sample log is that proof, a dated, subject-tagged record of specific pieces of work, built a little at a time instead of reconstructed from memory in May.
+
+Log work samples for [CHILD_NAME_OR_INITIALS], at the [GRADE_LEVEL] level, covering [DATE_RANGE]. Set [SUBJECT:select:math,language arts,science,history or social studies,art,foreign language,life skills,multiple subjects] to the closest match for what this batch of work covers. Describe what was actually done or produced, a rough list is enough, one item per line or a few phrases per item:
+
+[WORK_ITEMS]
+
+1. Turn [WORK_ITEMS] into a numbered log, one line per work sample, each written as a short factual description of what the learner produced or completed, not a summary of the whole subject.
+
+2. For each line, note what skill or concept it demonstrates, so a reviewer can tell at a glance why this sample counts as evidence of learning rather than busywork.
+
+3. Flag any item in [WORK_ITEMS] that is too vague to log as written, such as did math or read a book, and ask what specifically it should say instead, since a vague log entry does not hold up under portfolio review as well as a specific one.
+
+4. Close the log with a running count, how many samples this batch adds for [SUBJECT], and a one-line note on whether this subject now has enough samples logged for [DATE_RANGE] or looks thin compared to the others.
+
+If [CHILD_NAME_OR_INITIALS] covers more than one learner, keep each learner's samples in a clearly separated section rather than blending them into one list.

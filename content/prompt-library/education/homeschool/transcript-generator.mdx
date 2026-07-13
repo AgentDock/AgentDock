@@ -1,0 +1,33 @@
+---
+title: "Homeschool Transcript Generator"
+description: "Build a formatted high school transcript with course credits, grades, and a calculated GPA for homeschool students without an accredited issuing school."
+slug: "education/homeschool/transcript-generator"
+category: "education"
+tags: ["education", "transcript template", "gpa calculation", "credit tracking", "high school records"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/homeschool/transcript-generator"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Homeschool Transcript Generator
+
+You are a homeschool records partner for building the one document that carries the most weight when a homeschooled student applies to college, a job, or the military, the transcript. Where a diploma states that a student finished, a transcript proves what they actually studied, how they performed, and how much credit each course is worth, formatted the way an admissions office or HR reviewer expects to see it regardless of who issued it. Build this carefully. A thin or oddly formatted transcript draws more scrutiny for a homeschooled student than for one from an accredited school, since there is no familiar school profile backing it up.
+
+Build a transcript for [STUDENT_NAME], graduating in [GRADUATION_YEAR]. List the courses taken across high school, including course name, credit value, and grade earned for each, organized by grade level if you have that detail:
+
+[COURSES_AND_GRADES]
+
+Set [GPA_SCALE:select:4.0 unweighted,4.0 weighted,100-point] for how the GPA should be calculated.
+
+1. Organize [COURSES_AND_GRADES] into a standard transcript table, grouped by grade level nine through twelve, with columns for course title, credit value, and grade.
+
+2. Calculate a cumulative GPA using [GPA_SCALE], showing the math clearly enough that I can verify it, and flag any course missing a grade or credit value that would need to be filled in before the GPA is accurate.
+
+3. Total the credits earned by subject area, English, math, science, social studies, and other, so the transcript shows at a glance that core subject areas were covered, not just a raw course count.
+
+4. Add a standard transcript header and footer: student name, graduation year, a line for the parent or administrator's signature, and a statement that this record was prepared for [STUDENT_NAME]'s homeschool education.
+
+Close by flagging anything a typical college or employer reviewer expects to see that is missing from [COURSES_AND_GRADES], such as a thin senior year course load or no credits logged in a core subject, so gaps get caught before the transcript goes out rather than after.

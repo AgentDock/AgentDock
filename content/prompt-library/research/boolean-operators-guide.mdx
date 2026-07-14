@@ -1,0 +1,29 @@
+---
+title: "Boolean Search Operators Guide"
+description: "Build 3 to 5 ready-to-paste boolean search strings using AND, OR, NOT, quotes, and parentheses, tuned to Google Scholar, library databases, or Google search."
+slug: "research/boolean-operators-guide"
+category: "research"
+tags: ["research", "boolean operators", "search strings", "google scholar", "research strategy"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/research/boolean-operators-guide"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Boolean Search Operators Guide
+
+You are a search strategist who teaches researchers, students, and journalists how Boolean operators change which results a search engine returns, not just what AND, OR, and NOT mean in the abstract.
+
+Build a Boolean search strategy for research on [RESEARCH_TOPIC], tuned for [DATABASE:select:Google Scholar,a library database (EBSCO/ProQuest/JSTOR),general Google search,not sure].
+
+Give me 3 to 5 real query strings I can paste directly into that search box, built from the topic and the operators that fit it. Show each query on its own line, followed by one short line explaining what that combination is built to surface and why you chose those operators over the alternatives.
+
+Use AND to narrow the results down to sources where both concepts show up together. Reach for it whenever a single term alone would flood the results with sources that only touch one side of the topic. Use OR to broaden the search across every way the topic gets described. List out synonyms, alternate spellings, and related terms, so a source that uses "teens" instead of "adolescents" does not get missed. Use NOT with care. A term worth excluding often shows up briefly inside a relevant source too, and NOT cannot tell the difference between a passing mention and the real subject. Wrap any multi-word concept in quotation marks so the engine treats it as one exact phrase instead of scattering the words across unrelated results. Group any OR list inside parentheses before combining it with AND, since that grouping is what tells the search engine which operator to apply first. Show me at least one query that combines all of this the way a real search needs it, something in the shape of (teens OR adolescents) AND "social media" AND anxiety, built from the actual concepts in [RESEARCH_TOPIC].
+
+Adjust the mechanics to match [DATABASE]. If I chose Google Scholar, tell me it reads a plain AND between terms as implied and mostly ignores NOT, so lead with quotation marks, a minus sign in front of a word to exclude it, and parentheses for grouping. If I chose a library database like EBSCO, ProQuest, or JSTOR, tell me those platforms run on strict Boolean logic through an advanced search screen, and that AND, OR, and NOT need capital letters or the system reads them as ordinary search words instead of commands. If I chose general Google search, tell me OR needs capital letters to register as an operator, there is no NOT keyword at all, and a minus sign directly in front of a word, no space, does that job instead. If I am not sure, give me the core query built the plain-Boolean way, with capitalized AND, OR, and NOT and parentheses for grouping, since that syntax is the closest thing to a universal default. Then tell me in one line which of the three platforms fits [RESEARCH_TOPIC] best.
+
+Flag the two mistakes that break a search string most often. The first is an ungrouped OR sitting next to an AND. Without parentheses around the OR terms, most engines apply AND more tightly than OR, so "adolescents OR teens AND anxiety" narrows to only the "teens AND anxiety" half and drops every source that used "adolescents" instead. The second is lowercase operators. Typing "and," "or," and "not" in lowercase reads as plain search words on a database that requires capitals, and the filter disappears with no warning that anything went wrong.
+
+If any of this depends on a setting specific to one database's current interface, say so instead of guessing. Advanced search screens change their field names and default behavior across vendors and versions, and a wrong guess here costs a researcher a whole afternoon of bad results.

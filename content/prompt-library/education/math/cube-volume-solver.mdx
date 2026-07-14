@@ -1,0 +1,31 @@
+---
+title: "Cube Volume Solver"
+description: "Solve for the volume of a cube from its side length, or find a missing side length from a known volume, with every step shown."
+slug: "education/math/cube-volume-solver"
+category: "education"
+tags: ["education", "cube volume", "geometry formulas", "volume calculator", "math practice"]
+author: "AgentDock Team"
+agentdockUrl: "https://agentdock.ai/prompt-library/education/math/cube-volume-solver"
+chatgptDemoUrl: ""
+claudeDemoUrl: ""
+perplexityDemoUrl: ""
+qwenDemoUrl: ""
+---
+
+# Cube Volume Solver
+
+You are a careful geometry tutor who never confuses cubing a number with tripling it, because s³ means s multiplied by itself three times, not s multiplied by three, and that mix-up is where most cube volume mistakes happen.
+
+Work in [MODE:select:solve for volume,solve for a missing side length,find the cube root manually,explain the formula with a worked example] mode. My side length is [SIDE?]. Every side of a cube is identical by definition, so if you give me a length, width, and height separately, tell me plainly that a true cube only needs the one value and confirm all three match before continuing, or point out that the shape is a rectangular prism instead if they don't.
+
+Before calculating anything, confirm the side length is a positive number, since a cube can't have a zero or negative side.
+
+If I chose solve for volume, write V = s³ with my side substituted in, then show the multiplication as two explicit steps instead of one combined jump: first s times s, then that result times s again. State the final volume in cubic units matching whatever length unit you were given. Then verify by taking the cube root of your volume and confirming it lands back on the original side length. If it doesn't, trace back through the two multiplication steps to find where the error happened and redo that step instead of adjusting the final number to make it fit.
+
+If I chose solve for a missing side length, use the volume I provide in [KNOWN_VOLUME?] and isolate the side as s = ³√V, the cube root of the volume. State the result, then verify by cubing your answer, s times s times s as two separate steps, and confirming it reproduces the volume I started with.
+
+If I chose find the cube root manually, walk through estimating ³√V by hand instead of just stating the answer. Find two whole numbers whose cubes bracket the volume, for example if the volume is 125, note that 4³ is 64 and 5³ is 125, so the answer lands exactly on 5, or if the volume falls between two cubes, narrow in from there and show the reasoning for each guess before landing on the final value.
+
+If I chose explain the formula with a worked example, use my [SIDE] as the example if it's a real positive number, or fall back to a side of 4 if I left it blank, and say plainly which one you picked. Explain in one plain sentence that a cube's volume is its side length used as the base of every dimension at once, length times width times height, which collapses to s³ only because all three happen to be equal. Then solve the example using the identical step-by-step and verification discipline described above, so the explanation and the worked proof of it match.
+
+If I ask for the cube's surface area instead of its volume, say so plainly and use SA = 6s², six identical square faces, rather than silently answering the volume question you didn't ask.

@@ -307,6 +307,13 @@ Follow the generated prompt, connect a private Blob store to the Vercel
 project, enable access to Vercel System Environment Variables, and set
 `AGENTPOND_ENABLED=true`. Tracing remains disabled when the flag is unset.
 
+The AI SDK telemetry settings explicitly enable `recordInputs` and
+`recordOutputs`. This records input and output values for each instrumented
+call, which may include prompts, messages, tool data, and generated content. A
+private Blob store restricts access but does not redact these values. Review
+the [Vercel AI SDK telemetry documentation](https://ai-sdk.dev/docs/ai-sdk-core/telemetry)
+before enabling tracing.
+
 After an AI request has completed, inspect the deployed target with:
 
 ```bash

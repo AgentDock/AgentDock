@@ -157,7 +157,9 @@ export class CoreLLM {
         model: this.model,
         ...options,
         experimental_telemetry: {
-          isEnabled: process.env.AGENTPOND_ENABLED === 'true'
+          isEnabled: process.env.AGENTPOND_ENABLED === 'true',
+          recordInputs: true,
+          recordOutputs: true
         }
       });
 
@@ -410,7 +412,9 @@ export class CoreLLM {
         model: this.model,
         ...options,
         experimental_telemetry: {
-          isEnabled: process.env.AGENTPOND_ENABLED === 'true'
+          isEnabled: process.env.AGENTPOND_ENABLED === 'true',
+          recordInputs: true,
+          recordOutputs: true
         },
         onFinish: wrappedOnFinish,
         onStepFinish: wrappedStepFinish,

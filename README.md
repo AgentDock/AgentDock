@@ -293,6 +293,34 @@ Example implementations showcase specialized use cases and advanced functionalit
 
 ## 🔐 Environment Configuration Details
 
+### Optional AgentPond tracing
+
+AgentDock can export OpenInference model and tool traces directly to a private
+Vercel Blob store for local analysis. Initialize AgentPond 0.6 from the project
+root:
+
+```bash
+npx agentpond@0.6.0 init --platform vercel
+```
+
+Follow the generated prompt, connect a private Blob store to the Vercel
+project, enable access to Vercel System Environment Variables, and set
+`AGENTPOND_ENABLED=true`. Tracing remains disabled when the flag is unset.
+
+The AI SDK telemetry settings explicitly enable `recordInputs` and
+`recordOutputs`. This records input and output values for each instrumented
+call, which may include prompts, messages, tool data, and generated content. A
+private Blob store restricts access but does not redact these values. Review
+the [Vercel AI SDK telemetry documentation](https://ai-sdk.dev/docs/ai-sdk-core/telemetry)
+before enabling tracing.
+
+After an AI request has completed, inspect the deployed target with:
+
+```bash
+npx agentpond@0.6.0 sync
+npx agentpond@0.6.0 traces list --limit 10
+```
+
 The AgentDock Open Source Client requires API keys for LLM providers to function. These are configured in an environment file (`.env` or `.env.local`) which you create based on the provided `.env.example` file.
 
 ### LLM Provider API Keys

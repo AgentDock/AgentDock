@@ -155,7 +155,12 @@ export class CoreLLM {
       // Generate text using the model
       const result = await generateText({
         model: this.model,
-        ...options
+        ...options,
+        experimental_telemetry: {
+          isEnabled: process.env.AGENTPOND_ENABLED === 'true',
+          recordInputs: true,
+          recordOutputs: true
+        }
       });
 
       // Log that the call was successfully made with these parameters
@@ -406,6 +411,11 @@ export class CoreLLM {
       const streamResult = streamText({
         model: this.model,
         ...options,
+        experimental_telemetry: {
+          isEnabled: process.env.AGENTPOND_ENABLED === 'true',
+          recordInputs: true,
+          recordOutputs: true
+        },
         onFinish: wrappedOnFinish,
         onStepFinish: wrappedStepFinish,
         toolCallStreaming: true,

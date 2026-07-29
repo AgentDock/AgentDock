@@ -46,7 +46,7 @@ jest.mock('../../llm/provider-registry', () => ({
   ProviderRegistry: {
     getProvider: jest.fn((provider) => {
       if (provider === 'anthropic') return { defaultModel: 'claude-default' };
-      if (provider === 'openai') return { defaultModel: 'gpt-default' };
+      if (provider === 'openai') return { defaultModel: 'gpt-4' };
       return null;
     }),
     getNodeTypeFromProvider: jest.fn(() => 'mock-node-type'),
@@ -149,7 +149,7 @@ describe('AgentNode Fallback Tests', () => {
         expect.objectContaining({
           provider: 'openai',
           apiKey: 'mock-fallback-key',
-          model: 'gpt-default'
+          model: 'gpt-4'
         })
       );
     });

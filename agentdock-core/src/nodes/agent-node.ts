@@ -156,7 +156,10 @@ export class AgentNode extends BaseNode<AgentNodeConfig> {
       const fallbackProviderOrDefault =
         config.fallbackProvider || this.llm.getProvider();
       const fallbackModelOrDefault =
-        config.fallbackModel || 'claude-3-5-sonnet-20240620';
+        config.fallbackModel ??
+        ProviderRegistry.getProvider(
+          fallbackProviderOrDefault as LLMProvider
+        )?.defaultModel;
 
       if (
         config.fallbackApiKey === config.apiKey &&

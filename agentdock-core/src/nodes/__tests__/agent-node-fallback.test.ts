@@ -144,10 +144,12 @@ describe('AgentNode Fallback Tests', () => {
         })
       );
       // Check call arguments for fallback LLM
-      expect(require('../../llm').createLLM).toHaveBeenCalledWith(
+      expect(require('../../llm').createLLM).toHaveBeenNthCalledWith(
+        2,
         expect.objectContaining({
           provider: 'openai',
-          apiKey: 'mock-fallback-key'
+          apiKey: 'mock-fallback-key',
+          model: 'gpt-default'
         })
       );
     });

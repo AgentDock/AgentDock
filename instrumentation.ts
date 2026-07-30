@@ -1,3 +1,4 @@
+/** Registers opt-in AgentPond tracing for the Next.js Node.js runtime. */
 export async function register() {
   if (
     process.env.NEXT_RUNTIME !== 'nodejs' ||

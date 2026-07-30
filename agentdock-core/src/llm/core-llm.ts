@@ -158,8 +158,8 @@ export class CoreLLM {
         ...options,
         experimental_telemetry: {
           isEnabled: process.env.AGENTPOND_ENABLED === 'true',
-          recordInputs: true,
-          recordOutputs: true
+          recordInputs: process.env.AGENTPOND_RECORD_CONTENT === 'true',
+          recordOutputs: process.env.AGENTPOND_RECORD_CONTENT === 'true'
         }
       });
 
@@ -413,8 +413,8 @@ export class CoreLLM {
         ...options,
         experimental_telemetry: {
           isEnabled: process.env.AGENTPOND_ENABLED === 'true',
-          recordInputs: true,
-          recordOutputs: true
+          recordInputs: process.env.AGENTPOND_RECORD_CONTENT === 'true',
+          recordOutputs: process.env.AGENTPOND_RECORD_CONTENT === 'true'
         },
         onFinish: wrappedOnFinish,
         onStepFinish: wrappedStepFinish,

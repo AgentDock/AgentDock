@@ -295,30 +295,31 @@ Example implementations showcase specialized use cases and advanced functionalit
 
 ### Optional AgentPond tracing
 
-AgentDock can export OpenInference model and tool traces directly to a private
-Vercel Blob store for local analysis. Initialize AgentPond 0.6 from the project
-root:
+AgentDock can export OpenInference model and tool traces directly to object
+storage you control. Use Node.js 22 or newer. For a Vercel-backed provider,
+install Vercel CLI 50.20 or newer and link the project before initializing
+AgentPond from the project root:
 
 ```bash
-npx agentpond@0.6.0 init --platform vercel
+npx agentpond@0.9.0 init
 ```
 
-Follow the generated prompt, connect a private Blob store to the Vercel
-project, enable access to Vercel System Environment Variables, and set
+Follow the generated prompt, configure a
+[Files SDK provider](https://files-sdk.dev/docs/providers), and set
 `AGENTPOND_ENABLED=true`. Tracing remains disabled when the flag is unset.
 
-The AI SDK telemetry settings explicitly enable `recordInputs` and
-`recordOutputs`. This records input and output values for each instrumented
-call, which may include prompts, messages, tool data, and generated content. A
-private Blob store restricts access but does not redact these values. Review
-the [Vercel AI SDK telemetry documentation](https://ai-sdk.dev/docs/ai-sdk-core/telemetry)
-before enabling tracing.
+Prompts and responses are omitted by default. Set
+`AGENTPOND_RECORD_CONTENT=true` only when you intend to record input and output
+values, which may include prompts, messages, tool data, and generated content.
+Private object storage restricts access but does not redact these values.
+Review the [Vercel AI SDK telemetry documentation](https://ai-sdk.dev/docs/ai-sdk-core/telemetry)
+before enabling content capture.
 
 After an AI request has completed, inspect the deployed target with:
 
 ```bash
-npx agentpond@0.6.0 sync
-npx agentpond@0.6.0 traces list --limit 10
+npx agentpond@0.9.0 sync
+npx agentpond@0.9.0 traces list --limit 10
 ```
 
 The AgentDock Open Source Client requires API keys for LLM providers to function. These are configured in an environment file (`.env` or `.env.local`) which you create based on the provided `.env.example` file.

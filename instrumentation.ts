@@ -7,11 +7,11 @@ export async function register() {
   }
 
   const [
-    { createVercelSpanExporter },
+    { createFilesSpanExporterFromRuntimeEnv },
     { isOpenInferenceSpan, OpenInferenceSimpleSpanProcessor },
     { registerOTel }
   ] = await Promise.all([
-    import('@agentpond/vercel'),
+    import('@agentpond/files-sdk/otel'),
     import('@arizeai/openinference-vercel'),
     import('@vercel/otel')
   ]);
@@ -20,7 +20,7 @@ export async function register() {
     serviceName: 'agentdock',
     spanProcessors: [
       new OpenInferenceSimpleSpanProcessor({
-        exporter: createVercelSpanExporter(),
+        exporter: createFilesSpanExporterFromRuntimeEnv(),
         spanFilter: isOpenInferenceSpan,
         reparentOrphanedSpans: true
       })

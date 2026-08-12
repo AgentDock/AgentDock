@@ -4,6 +4,7 @@ export interface GlobalSettings {
   apiKeys: {
     openai: string;
     anthropic: string;
+    atlascloud: string;
     gemini: string;
     deepseek: string;
     groq: string;
@@ -23,6 +24,7 @@ export const DEFAULT_SETTINGS: GlobalSettings = {
   apiKeys: {
     openai: '',
     anthropic: '',
+    atlascloud: '',
     gemini: '',
     deepseek: '',
     groq: ''

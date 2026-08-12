@@ -1,6 +1,7 @@
 import { CoreLLM, createLLM } from '..';
 import {
   createAnthropicModel,
+  createAtlasCloudModel,
   createCerebrasModel,
   createGeminiModel,
   createOpenAIModel
@@ -10,6 +11,7 @@ import { LLMConfig } from '../types';
 // Mock the model creation functions
 jest.mock('../model-utils', () => ({
   createAnthropicModel: jest.fn(),
+  createAtlasCloudModel: jest.fn(),
   createOpenAIModel: jest.fn(),
   createGeminiModel: jest.fn(),
   createCerebrasModel: jest.fn()
@@ -30,6 +32,27 @@ describe('CoreLLM', () => {
   });
 
   describe('createLLM', () => {
+    it('should create an Atlas Cloud LLM instance', () => {
+      const mockModel = {
+        provider: 'openai.chat',
+        modelId: 'qwen/qwen3.8-max'
+      };
+      (createAtlasCloudModel as jest.Mock).mockReturnValue(mockModel);
+
+      const config: LLMConfig = {
+        provider: 'atlascloud',
+        model: 'qwen/qwen3.8-max',
+        apiKey: 'test-key'
+      };
+
+      const llm = createLLM(config);
+
+      expect(createAtlasCloudModel).toHaveBeenCalledWith(config);
+      expect(llm).toBeInstanceOf(CoreLLM);
+      expect(llm.getProvider()).toBe('openai.chat');
+      expect(llm.getModelId()).toBe('qwen/qwen3.8-max');
+    });
+
     it('should create an OpenAI LLM instance', () => {
       // Mock implementation
       const mockModel = {

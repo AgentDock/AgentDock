@@ -19,6 +19,7 @@ export interface TokenUsage {
  */
 export type LLMProvider =
   | 'anthropic'
+  | 'atlascloud'
   | 'cerebras'
   | 'deepseek'
   | 'gemini'
@@ -73,6 +74,11 @@ export interface StepData {
 // Provider-specific configurations
 export interface AnthropicConfig extends LLMConfig {
   provider: 'anthropic';
+}
+
+export interface AtlasCloudConfig extends LLMConfig {
+  provider: 'atlascloud';
+  baseURL?: string;
 }
 
 export interface OpenAIConfig extends LLMConfig {
@@ -134,6 +140,7 @@ export interface GroqConfig extends LLMConfig {
 
 export type ProviderConfig =
   | AnthropicConfig
+  | AtlasCloudConfig
   | CerebrasConfig
   | DeepSeekConfig
   | GeminiConfig

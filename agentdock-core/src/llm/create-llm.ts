@@ -7,6 +7,7 @@ import { LogCategory, logger } from '../logging';
 import { CoreLLM } from './core-llm';
 import {
   createAnthropicModel,
+  createAtlasCloudModel,
   createCerebrasModel,
   createDeepSeekModel,
   createGeminiModel,
@@ -29,6 +30,9 @@ export function createLLM(config: LLMConfig): CoreLLM {
   switch (config.provider) {
     case 'anthropic':
       model = createAnthropicModel(config);
+      break;
+    case 'atlascloud':
+      model = createAtlasCloudModel(config);
       break;
     case 'openai':
       model = createOpenAIModel(config);

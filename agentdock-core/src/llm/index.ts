@@ -46,6 +46,7 @@ export type {
 export { createLLM } from './create-llm';
 export {
   createAnthropicModel,
+  createAtlasCloudModel,
   createOpenAIModel,
   createGeminiModel,
   createDeepSeekModel,

@@ -30,6 +30,12 @@ const storage = SecureStorage.getInstance('agentdock');
 // Memoize API key providers to prevent recreation on each render
 const API_KEY_PROVIDERS: ApiKeyProvider[] = [
   {
+    key: 'atlascloud',
+    label: 'Atlas Cloud API Key',
+    icon: KeyRound,
+    description: 'Used for OpenAI-compatible models hosted by Atlas Cloud'
+  },
+  {
     key: 'openai',
     label: 'OpenAI API Key',
     icon: KeyRound,
@@ -558,6 +564,15 @@ function SettingsPage() {
                         <div className="pt-2">
                           <ModelDisplay
                             provider="anthropic"
+                            refreshTrigger={modelsRefreshTrigger}
+                            onRefreshComplete={handleRefreshTrigger}
+                          />
+                        </div>
+                      )}
+                      {key === 'atlascloud' && (
+                        <div className="pt-2">
+                          <ModelDisplay
+                            provider="atlascloud"
                             refreshTrigger={modelsRefreshTrigger}
                             onRefreshComplete={handleRefreshTrigger}
                           />

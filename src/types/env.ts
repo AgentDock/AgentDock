@@ -22,6 +22,7 @@ import { z } from 'zod';
 const envSchema = z.object({
   // LLM Provider API Keys - make all optional but validate format when present
   ANTHROPIC_API_KEY: z.string().min(1).startsWith('sk-ant-').optional(),
+  ATLASCLOUD_API_KEY: z.string().min(1).optional(),
   OPENAI_API_KEY: z.string().min(1).startsWith('sk-').optional(),
   GEMINI_API_KEY: z.string().min(1).optional(),
   DEEPSEEK_API_KEY: z.string().min(1).optional(),
@@ -56,6 +57,7 @@ export function getEnvConfig(): EnvConfig {
     const env = envSchema.parse({
       // LLM Provider API Keys
       ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
+      ATLASCLOUD_API_KEY: process.env.ATLASCLOUD_API_KEY,
       OPENAI_API_KEY: process.env.OPENAI_API_KEY,
       GEMINI_API_KEY: process.env.GEMINI_API_KEY,
       DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY,
@@ -79,6 +81,7 @@ export function getEnvConfig(): EnvConfig {
     // This ensures keys are accessible even if they don't match expected format
     return {
       ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
+      ATLASCLOUD_API_KEY: process.env.ATLASCLOUD_API_KEY,
       OPENAI_API_KEY: process.env.OPENAI_API_KEY,
       GEMINI_API_KEY: process.env.GEMINI_API_KEY,
       DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY,
@@ -147,6 +150,7 @@ export function getProviderApiKey(
   // Direct access to environment variables as fallback
   const envVarMap: Record<string, string | undefined> = {
     anthropic: process.env.ANTHROPIC_API_KEY,
+    atlascloud: process.env.ATLASCLOUD_API_KEY,
     openai: process.env.OPENAI_API_KEY,
     gemini: process.env.GEMINI_API_KEY,
     deepseek: process.env.DEEPSEEK_API_KEY,
@@ -171,6 +175,7 @@ export function debugDirectEnvAccess(provider: LLMProvider): string | null {
   // Map provider to environment variable name
   const envVarMap: Record<string, string> = {
     anthropic: 'ANTHROPIC_API_KEY',
+    atlascloud: 'ATLASCLOUD_API_KEY',
     openai: 'OPENAI_API_KEY',
     gemini: 'GEMINI_API_KEY',
     deepseek: 'DEEPSEEK_API_KEY',

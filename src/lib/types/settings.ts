@@ -26,6 +26,7 @@ export interface GlobalSettings {
   apiKeys: {
     openai: string;
     anthropic: string;
+    atlascloud?: string;
     gemini?: string;
     deepseek?: string;
   };

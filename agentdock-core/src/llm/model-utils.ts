@@ -7,12 +7,15 @@ import { LanguageModel } from 'ai';
 import { createError, ErrorCode } from '../errors';
 import { LogCategory, logger } from '../logging';
 import {
+  AtlasCloudConfig,
   CerebrasConfig,
   DeepSeekConfig,
   GeminiConfig,
   GroqConfig,
   LLMConfig
 } from './types';
+
+const ATLASCLOUD_BASE_URL = 'https://api.atlascloud.ai/v1';
 
 // Add structuredClone polyfill if it doesn't exist
 if (typeof globalThis.structuredClone === 'undefined') {
@@ -59,6 +62,24 @@ export function createOpenAIModel(config: LLMConfig): LanguageModel {
     compatibility: 'strict'
     // Note: Temperature is passed at the request level, not at model creation
   })(config.model);
+}
+
+/**
+ * Create an Atlas Cloud model through its OpenAI-compatible endpoint.
+ */
+export function createAtlasCloudModel(config: LLMConfig): LanguageModel {
+  if (!config.apiKey) {
+    throw createError('llm', 'API key is required', ErrorCode.LLM_API_KEY);
+  }
+
+  const atlasConfig = config as AtlasCloudConfig;
+  const provider = createOpenAI({
+    apiKey: config.apiKey,
+    baseURL: atlasConfig.baseURL || ATLASCLOUD_BASE_URL,
+    compatibility: 'strict'
+  });
+
+  return provider(config.model);
 }
 
 /**

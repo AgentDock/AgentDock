@@ -73,6 +73,37 @@ const ERROR_PATTERNS: Record<LLMProvider | 'byok', ProviderErrorPattern[]> = {
     }
   ],
 
+  atlascloud: [
+    {
+      pattern: /rate\s*limit/i,
+      errorCode: ErrorCodes.LLM_RATE_LIMIT,
+      statusCode: 429,
+      userMessage:
+        "You've reached the rate limit for Atlas Cloud API. Please try again later."
+    },
+    {
+      pattern: /context\s*length|maximum\s*context\s*length|token\s*limit/i,
+      errorCode: ErrorCodes.LLM_EXECUTION,
+      statusCode: 400,
+      userMessage:
+        "The prompt exceeds the model's maximum context length. Please reduce your input."
+    },
+    {
+      pattern:
+        /invalid\s*api\s*key|api\s*key\s*invalid|authentication|unauthorized/i,
+      errorCode: ErrorCodes.LLM_API_KEY,
+      statusCode: 401,
+      userMessage: 'Invalid Atlas Cloud API key. Please check your credentials.'
+    },
+    {
+      pattern: /service\s*unavailable|server\s*error|5\d\d/i,
+      errorCode: ErrorCodes.SERVICE_UNAVAILABLE,
+      statusCode: 503,
+      userMessage:
+        'Atlas Cloud service is currently unavailable. Please try again later.'
+    }
+  ],
+
   // OpenAI error patterns
   openai: [
     {

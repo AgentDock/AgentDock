@@ -55,7 +55,7 @@ describe('PRIMEExtractor', () => {
       };
 
       expect(() => new PRIMEExtractor(invalidConfig, mockCostTracker)).toThrow(
-        'Configuration error for provider: Invalid provider "invalid-provider". Must be one of: openai, anthropic, cerebras, deepseek, gemini, groq'
+        'Configuration error for provider: Invalid provider "invalid-provider". Must be one of: openai, anthropic, atlascloud, cerebras, deepseek, gemini, groq'
       );
     });
 

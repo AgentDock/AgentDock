@@ -5,6 +5,10 @@ import {
   validateAnthropicApiKey
 } from './anthropic-adapter';
 import {
+  fetchAtlasCloudModels,
+  validateAtlasCloudApiKey
+} from './atlascloud-adapter';
+import {
   fetchCerebrasModels,
   validateCerebrasApiKey
 } from './cerebras-adapter';
@@ -23,6 +27,7 @@ import { fetchOpenAIModels, validateOpenAIApiKey } from './openai-adapter';
 
 // Re-export all provider adapters
 export * from './anthropic-adapter';
+export * from './atlascloud-adapter';
 export * from './cerebras-adapter';
 export * from './deepseek-adapter';
 export * from './openai-adapter';
@@ -46,6 +51,8 @@ export async function validateProviderApiKey(
     switch (providerId) {
       case 'anthropic':
         return validateAnthropicApiKey(apiKey);
+      case 'atlascloud':
+        return validateAtlasCloudApiKey(apiKey);
       case 'openai':
         return validateOpenAIApiKey(apiKey);
       case 'gemini':
@@ -92,6 +99,8 @@ export async function fetchProviderModels(
     switch (providerId) {
       case 'anthropic':
         return fetchAnthropicModels(apiKey);
+      case 'atlascloud':
+        return fetchAtlasCloudModels(apiKey);
       case 'openai':
         return fetchOpenAIModels(apiKey);
       case 'gemini':

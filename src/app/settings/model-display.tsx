@@ -144,6 +144,7 @@ const ModelsTable = memo(
 interface ModelDisplayProps {
   provider:
     | 'anthropic'
+    | 'atlascloud'
     | 'cerebras'
     | 'deepseek'
     | 'gemini'

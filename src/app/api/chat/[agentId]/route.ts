@@ -175,6 +175,7 @@ async function resolveApiKey(
     // Get API key directly from environment variables
     const envVarMap: Record<string, string | undefined> = {
       anthropic: process.env.ANTHROPIC_API_KEY,
+      atlascloud: process.env.ATLASCLOUD_API_KEY,
       openai: process.env.OPENAI_API_KEY,
       gemini: process.env.GEMINI_API_KEY,
       deepseek: process.env.DEEPSEEK_API_KEY,

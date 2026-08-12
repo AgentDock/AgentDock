@@ -26,6 +26,7 @@ export class ModelRegistry {
     if (!this._modelsByProvider) {
       this._modelsByProvider = new Map([
         ['anthropic', []],
+        ['atlascloud', []],
         ['openai', []],
         ['gemini', []],
         ['deepseek', []],

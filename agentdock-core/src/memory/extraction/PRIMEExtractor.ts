@@ -381,6 +381,7 @@ JSON: [{content, type, importance, reasoning}]`;
     const validProviders: LLMProvider[] = [
       'openai',
       'anthropic',
+      'atlascloud',
       'cerebras',
       'deepseek',
       'gemini',

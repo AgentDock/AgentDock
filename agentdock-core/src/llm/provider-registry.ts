@@ -19,6 +19,13 @@ const DEFAULT_PROVIDERS: Record<LLMProvider, ProviderMetadata> = {
       // Currently no special configurations needed
     }
   },
+  atlascloud: {
+    id: 'atlascloud',
+    displayName: 'Atlas Cloud',
+    description: 'OpenAI-compatible models hosted by Atlas Cloud',
+    defaultModel: 'qwen/qwen3.8-max',
+    validateApiKey: (key: string) => key.length > 0
+  },
   openai: {
     id: 'openai',
     displayName: 'OpenAI',
@@ -197,6 +204,9 @@ export class ProviderRegistry {
    * Get provider from node type
    */
   static getProviderFromNodeType(nodeType: string): LLMProvider {
+    if (nodeType === 'llm.atlascloud') {
+      return 'atlascloud';
+    }
     if (nodeType === 'llm.openai') {
       return 'openai';
     }
@@ -219,6 +229,9 @@ export class ProviderRegistry {
    * Get node type from provider
    */
   static getNodeTypeFromProvider(provider: LLMProvider): string {
+    if (provider === 'atlascloud') {
+      return 'llm.atlascloud';
+    }
     if (provider === 'openai') {
       return 'llm.openai';
     }
@@ -241,6 +254,9 @@ export class ProviderRegistry {
    * Get provider from node list
    */
   static getProviderFromNodes(nodes: string[]): LLMProvider {
+    if (nodes.includes('llm.atlascloud')) {
+      return 'atlascloud';
+    }
     if (nodes.includes('llm.openai')) {
       return 'openai';
     }

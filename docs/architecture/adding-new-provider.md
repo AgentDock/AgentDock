@@ -14,6 +14,33 @@ Adding a new provider involves:
 4. Updating the `createLLM` function
 5. Testing the new provider integration
 
+## Atlas Cloud
+
+Atlas Cloud is available as the built-in `atlascloud` provider. It uses the
+OpenAI-compatible Chat Completions endpoint at
+`https://api.atlascloud.ai/v1`, with `qwen/qwen3.8-max` as the default model.
+
+Set the API key and use the provider in an agent template:
+
+```bash
+ATLASCLOUD_API_KEY=your-api-key
+```
+
+```json
+{
+  "nodes": ["llm.atlascloud"],
+  "nodeConfigurations": {
+    "llm.atlascloud": {
+      "model": "qwen/qwen3.8-max"
+    }
+  }
+}
+```
+
+The settings page can validate the key and load the current model catalog from
+Atlas Cloud. A template can optionally set `baseURL` in its LLM configuration
+when routing through a compatible proxy.
+
 ## Step 1: Add Provider Configuration Types
 
 First, add the provider-specific configuration types to `src/llm/types.ts`:
@@ -486,4 +513,4 @@ Key best practices for tool integration:
 2. **Implement fallbacks**: Always have a fallback mechanism in case the LLM is not available or encounters an error.
 3. **Use proper error handling**: Wrap LLM calls in try/catch blocks to handle errors gracefully.
 4. **Keep messages focused**: Create clear system and user messages that focus on the specific task.
-5. **Use appropriate temperature**: Set the temperature based on the task requirements (lower for factual tasks, higher for creative tasks). 
+5. **Use appropriate temperature**: Set the temperature based on the task requirements (lower for factual tasks, higher for creative tasks).

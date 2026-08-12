@@ -41,6 +41,7 @@ export interface ChatSettings extends BaseChatSettings {
  */
 export type LLMProvider =
   | 'anthropic'
+  | 'atlascloud'
   | 'cerebras'
   | 'deepseek'
   | 'gemini'
